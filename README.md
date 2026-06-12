@@ -1,2 +1,1 @@
-# broberg-ai-site
-broberg.ai — managed via cardmem
+The humble beginnings of the broberg.ai website universe.
