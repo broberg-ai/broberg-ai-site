@@ -49,8 +49,8 @@ if (config.isProd) {
 }
 
 // ── Pages ───────────────────────────────────────────────────────────────────
-app.get("/", () => html(renderHome("da")));
-app.get("/en", () => html(renderHome("en")));
+app.get("/", async () => html(await renderHome("da")));
+app.get("/en", async () => html(await renderHome("en")));
 
 // Flagships — locale-specific path segment (flagskibe ↔ flagships).
 app.get(`/${flagshipsSegment("da")}`, () => html(renderFlagships("da")));

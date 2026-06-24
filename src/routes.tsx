@@ -10,6 +10,7 @@ import { Platforms } from "@/components/sections.tsx";
 import { renderPage } from "@/render/html.tsx";
 import { resolveAssets } from "@/render/assets.ts";
 import { homeFallback } from "@/data/fallback.ts";
+import { loadHome } from "@/content/compose.ts";
 import { flagshipsSegment } from "@/i18n.ts";
 
 function page(children: any, meta: { title: string; description: string; locale: Locale; canonical?: string }) {
@@ -24,8 +25,10 @@ function page(children: any, meta: { title: string; description: string; locale:
   );
 }
 
-export function renderHome(locale: Locale): string {
-  const model = homeFallback;
+export async function renderHome(locale: Locale): Promise<string> {
+  // Prefer live cms content from the local store; fall back to mockup-v6 copy
+  // until the first ICD pushes / backfill land.
+  const model = (await loadHome(locale)) ?? homeFallback;
   return page(<RenderSections sections={model.sections} />, {
     title: model.title,
     description: model.description,

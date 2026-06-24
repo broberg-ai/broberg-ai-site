@@ -3,19 +3,18 @@
    (cms intercom #61). `columns` recurses into per-column slots with the same
    switch. `interactive` resolves an interactiveId to one of OUR bespoke widgets. */
 import type { JSX } from "preact";
-import { HeroFrequency } from "@/components/widgets/HeroFrequency.tsx";
 
 export interface Block {
   _block: string;
   [key: string]: unknown;
 }
 
-// Our interactive widgets, addressed by cms `interactiveId`. The data-driven
-// ones (e.g. universe-diagram) get their labels wired once the composition
-// source is confirmed; until then they render their static shell.
-const INTERACTIVES: Record<string, () => JSX.Element> = {
-  "hero-frequency": HeroFrequency,
-};
+// The `interactive` block addresses EDITOR-EMBEDDED cms interactives by id
+// (cms #62). Our 3 bespoke widgets (hero-frequency / universe-diagram /
+// count-up) are NOT cms interactives — they are keyed on section `kind` and
+// driven by cms props, so they are not registered here. Add real cms-Int ids
+// to this map if/when editors embed any.
+const INTERACTIVES: Record<string, () => JSX.Element> = {};
 
 function asString(v: unknown): string {
   return typeof v === "string" ? v : "";
