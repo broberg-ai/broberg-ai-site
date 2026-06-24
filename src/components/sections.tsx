@@ -1,0 +1,260 @@
+/* The eight landing sections. Each takes its typed data (from cms, or the
+   fallback). Rich copy carries <em>/<strong>/<br> from the approved mockup, so a
+   few fields render as HTML. The block-renderer (render/blocks.tsx) dispatches
+   on section kind. */
+import type {
+  HeroData,
+  UniverseData,
+  PlatformsData,
+  CasesData,
+  MethodData,
+  InsightsData,
+  AboutData,
+  ContactData,
+  Cta,
+} from "@/content/types.ts";
+import { HeroFrequency } from "@/components/widgets/HeroFrequency.tsx";
+import { UniverseDiagram } from "@/components/widgets/UniverseDiagram.tsx";
+import { CountUp } from "@/components/widgets/CountUp.tsx";
+import { LivePill } from "@/components/widgets/LivePill.tsx";
+import { Logo } from "@/components/Logos.tsx";
+import { FALLBACK_LIVE_FEED } from "@/data/fallback.ts";
+
+function CtaButton({ cta }: { cta: Cta }) {
+  const cls = cta.ghost ? "btn btn-ghost" : "btn";
+  const scroll = cta.scroll ? { "data-scroll": cta.scroll } : {};
+  if (cta.href) {
+    return (
+      <a class={cls} href={cta.href} data-testid={cta.testid} {...scroll}>
+        {cta.label} <span class="ar">→</span>
+      </a>
+    );
+  }
+  return (
+    <button class={cls} data-testid={cta.testid} {...scroll}>
+      {cta.label} <span class="ar">→</span>
+    </button>
+  );
+}
+
+function SecHead({ eyebrow, headingHtml, lead }: { eyebrow: string; headingHtml: string; lead: string }) {
+  return (
+    <div class="sec-head">
+      <div class="eyebrow">{eyebrow}</div>
+      <h2 dangerouslySetInnerHTML={{ __html: headingHtml }} />
+      <div class="divider" />
+      <p class="lead">{lead}</p>
+    </div>
+  );
+}
+
+export function Hero({ data }: { data: HeroData }) {
+  return (
+    <section class="hero" id="top">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">{data.eyebrow}</div>
+          <h1 dangerouslySetInnerHTML={{ __html: data.titleHtml }} />
+          <p class="lead" dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
+          <div class="cta-row">
+            {data.ctas.map((c) => (
+              <CtaButton key={c.testid} cta={c} />
+            ))}
+          </div>
+          <LivePill label={data.livePillLabel} lines={FALLBACK_LIVE_FEED} />
+        </div>
+        <div class="hero-art">
+          <HeroFrequency />
+        </div>
+      </div>
+      <div class="wrap">
+        <div class="statbar">
+          {data.stats.map((s, i) => (
+            <CountUp key={i} stat={s} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Universe({ data }: { data: UniverseData }) {
+  return (
+    <section id="universet">
+      <div class="wrap reveal">
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
+        <div class="universe-grid">
+          <UniverseDiagram core={data.core} infra={data.infra} customers={data.customers} />
+          <div>
+            {data.tiers.map((t, i) => (
+              <div class="tier" key={i}>
+                <b>{t.title}</b>
+                <br />
+                <span>{t.body}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Platforms({ data }: { data: PlatformsData }) {
+  return (
+    <section id="platforme" style="background:var(--dark2)">
+      <div class="wrap reveal">
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.heading} lead={data.lead} />
+        <div class="grid g4">
+          {data.items.map((p) => (
+            <div class="card" key={p.name}>
+              <div class="plat-h">
+                <div class="logot">
+                  <Logo k={p.logoKey} />
+                </div>
+                <div class="nm">{p.name}</div>
+                <span class="badge">{p.status}</span>
+              </div>
+              <p>{p.blurb}</p>
+            </div>
+          ))}
+        </div>
+        <div style="margin-top:24px">
+          <CtaButton cta={data.allLink} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Cases({ data }: { data: CasesData }) {
+  return (
+    <section id="cases">
+      <div class="wrap reveal">
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
+        <div class="grid g2">
+          {data.items.map((c) => (
+            <div class="card" key={c.title}>
+              <div class="kicker">{c.kicker}</div>
+              <div class="case-h">{c.title}</div>
+              <p>{c.body}</p>
+              {c.quote && (
+                <div class="quote">
+                  {c.quote}
+                  {c.attr && <div class="attr">— {c.attr}</div>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Method({ data }: { data: MethodData }) {
+  return (
+    <section id="metoden" style="background:var(--dark2)">
+      <div class="wrap reveal">
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
+        <div class="flow">
+          {data.steps.map((s, i) => (
+            <>
+              <span class={s.live ? "step live" : "step"}>{s.label}</span>
+              {i < data.steps.length - 1 && <span class="arr">→</span>}
+            </>
+          ))}
+        </div>
+        <div class="grid g3">
+          {data.cards.map((c, i) => (
+            <div class="card" key={i}>
+              <p dangerouslySetInnerHTML={{ __html: c.html }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Insights({ data }: { data: InsightsData }) {
+  return (
+    <section id="indsigter">
+      <div class="wrap reveal">
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
+        <div class="grid g3">
+          {data.posts.map((p) => (
+            <a class="blogcard" key={p.slug} href={`/${p.category}/${p.slug}`} data-testid={`blog-${p.slug}`}>
+              <div class="blogthumb" />
+              <div class="blogbody">
+                <span class="nyt">{p.tag}</span>
+                <h3>{p.title}</h3>
+                <p>{p.excerpt}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function About({ data }: { data: AboutData }) {
+  return (
+    <section id="om" style="background:var(--dark2)">
+      <div class="wrap reveal">
+        <div class="about">
+          <div>
+            <svg class="svg-wrap" viewBox="0 0 200 200" style="max-width:190px" role="img" aria-label="monogram">
+              <circle cx="100" cy="100" r="92" fill="rgba(0,178,255,.06)" stroke="rgba(0,178,255,.3)" stroke-width="1.5" />
+              <text x="100" y="120" text-anchor="middle" font-family="Cormorant Garamond" font-size="80" font-weight="600" fill="#f0f4f8">
+                b<tspan fill="#F3522C">.</tspan>
+              </text>
+            </svg>
+          </div>
+          <div>
+            <div class="eyebrow">{data.eyebrow}</div>
+            <h2 style="margin-bottom:12px" dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
+            <p class="lead" dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
+            <div style="margin-top:16px">
+              {data.pills.map((p) => (
+                <span class="pill" key={p}>
+                  {p}
+                </span>
+              ))}
+            </div>
+            <div class="clients">
+              <span class="lbl">{data.clientsLabel}</span>
+              {data.clients.map((c) => (
+                <span class="c" key={c}>
+                  {c}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Contact({ data }: { data: ContactData }) {
+  return (
+    <section id="kontakt">
+      <div class="wrap reveal">
+        <div class="cta-final">
+          <div class="eyebrow" style="display:inline-flex">
+            {data.eyebrow}
+          </div>
+          <h2 dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
+          <p class="lead" style="margin:18px auto 30px">
+            {data.lead}
+          </p>
+          <a href={`mailto:${data.email}`} class="btn" data-testid="kontakt-cta-mail">
+            {data.email} <span class="ar">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}

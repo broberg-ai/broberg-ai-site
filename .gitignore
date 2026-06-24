@@ -142,6 +142,9 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
+# Local ICD content store (seeded from cms; lives on a Fly volume in prod)
+.content-store/
+
 # cardmem — secret-bearing files, never commit
 .mcp.json
 .env

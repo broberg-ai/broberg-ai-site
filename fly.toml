@@ -1,0 +1,38 @@
+# broberg.ai — Fly app (org broberg-ai, region arn). The app shell is
+# provisioned by cms; we deploy into it. The content store MUST sit on a
+# persistent volume so ICD pushes survive restart/redeploy (cms docs).
+app = "broberg-ai"
+primary_region = "arn"
+
+[build]
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+  CONTENT_DIR = "/data/content-store"
+  READ_API_BASE = "https://webhouse.app/api/cms"
+  CMS_SITE = "broberg-ai"
+  # WH_READ_TOKEN + REVALIDATE_SECRET come from `fly secrets`, never here.
+
+# Persistent volume for the local content store (ICD writes + backfill).
+[mounts]
+  source = "content_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "5s"
+    method = "GET"
+    path = "/healthz"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

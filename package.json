@@ -1,0 +1,25 @@
+{
+  "name": "broberg-ai-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/server.tsx",
+    "build:client": "vite build",
+    "build": "bun run build:client",
+    "start": "NODE_ENV=production bun run src/server.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.6.14",
+    "preact": "^10.25.4",
+    "preact-render-to-string": "^6.5.13"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.14",
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.0",
+    "vite": "^6.0.7"
+  }
+}
