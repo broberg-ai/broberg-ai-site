@@ -257,7 +257,11 @@ header {
 .btn-ghost:hover {
   background: var(--blue-glow);
 }
-.btn .ar,
+/* Solid CTA: arrow matches the dark button text (orange-on-blue was 1.46:1,
+   below WCAG AA). Ghost CTA sits on the dark page, where orange reads fine. */
+.btn .ar {
+  color: var(--dark);
+}
 .btn-ghost .ar {
   color: var(--orange);
 }
