@@ -36,40 +36,41 @@ const components = wrap(
   </g>,
 );
 
-// A card travels the plan→board→build→check→live loop and rounds back; the core
-// pulses. Nails: the self-repeating workflow that refines round by round.
-const STAGES = [
-  { cx: 180, cy: 48 },
-  { cx: 267, cy: 112 },
-  { cx: 234, cy: 214 },
-  { cx: 126, cy: 214 },
-  { cx: 92, cy: 112 },
+// The work-loop with its real, labelled stages: a card travels Idé → Plan →
+// Opgavetavle → AI-agent bygger → Kvalitetstjek → Live and rounds back to Idé;
+// the core pulses. "Live" is green. Nails: the concrete steps a piece of work
+// runs through, repeating round by round until it's finished.
+const CM_C = 135;
+const CM_STAGES = [
+  { cx: 180, cy: 55, lx: 180, ly: 37, anchor: "middle", label: "Idé" },
+  { cx: 249, cy: 95, lx: 262, ly: 91, anchor: "start", label: "Plan" },
+  { cx: 249, cy: 175, lx: 262, ly: 180, anchor: "start", label: "Opgavetavle" },
+  { cx: 180, cy: 215, lx: 180, ly: 240, anchor: "middle", label: "AI-agent bygger" },
+  { cx: 111, cy: 175, lx: 98, ly: 180, anchor: "end", label: "Kvalitetstjek" },
+  { cx: 111, cy: 95, lx: 98, ly: 91, anchor: "end", label: "Live", green: true },
 ];
 const cardmem = wrap(
-  <g>
-    <circle class="illu-flow" cx="180" cy="140" r="92" fill="none" stroke="rgba(0,178,255,.32)" stroke-width="1.6" stroke-dasharray="4 7" />
-    {STAGES.map((s, i) => (
-      <circle
-        class="node"
-        key={i}
-        cx={s.cx}
-        cy={s.cy}
-        r="6"
-        fill={i === 4 ? "#F3522C" : "#00b2ff"}
-        style={`animation-delay:${i * 0.4}s`}
-      />
+  <g font-family="'DM Sans',sans-serif" font-size="10.5">
+    <circle class="illu-flow" cx="180" cy={CM_C} r="80" fill="none" stroke="rgba(0,178,255,.3)" stroke-width="1.6" stroke-dasharray="4 7" />
+    {CM_STAGES.map((s, i) => (
+      <g key={i}>
+        <circle class="node" cx={s.cx} cy={s.cy} r="6" fill={s.green ? "#2ecc71" : "#00b2ff"} style={`animation-delay:${i * 0.5}s`} />
+        <text x={s.lx} y={s.ly} text-anchor={s.anchor} fill={s.green ? "#2ecc71" : "rgba(240,244,248,.82)"} font-weight={s.green ? "600" : "400"}>
+          {s.label}
+        </text>
+      </g>
     ))}
-    <circle class="pulse-core" cx="180" cy="140" r="30" fill="rgba(0,178,255,.12)" stroke="#00b2ff" stroke-width="1.5" />
-    <circle cx="180" cy="140" r="5" fill="#40c8ff" />
+    <circle class="pulse-core" cx="180" cy={CM_C} r="26" fill="rgba(0,178,255,.12)" stroke="#00b2ff" stroke-width="1.5" />
+    <circle cx="180" cy={CM_C} r="4.5" fill="#40c8ff" />
     {/* the iterating card, orbiting the loop, kept upright */}
     <g>
-      <animateTransform attributeName="transform" type="rotate" from="0 180 140" to="360 180 140" dur="9s" repeatCount="indefinite" />
-      <g transform="translate(180 48)">
+      <animateTransform attributeName="transform" type="rotate" from={`0 180 ${CM_C}`} to={`360 180 ${CM_C}`} dur="10s" repeatCount="indefinite" />
+      <g transform={`translate(180 55)`}>
         <g>
-          <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="-360 0 0" dur="9s" repeatCount="indefinite" />
-          <rect x="-16" y="-11" width="32" height="22" rx="5" fill="rgba(243,82,44,.2)" stroke="#F3522C" stroke-width="1.6" />
-          <line x1="-9" y1="-3" x2="9" y2="-3" stroke="#F3522C" stroke-width="1.4" />
-          <line x1="-9" y1="3" x2="4" y2="3" stroke="rgba(243,82,44,.6)" stroke-width="1.4" />
+          <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="-360 0 0" dur="10s" repeatCount="indefinite" />
+          <rect x="-14" y="-10" width="28" height="20" rx="5" fill="rgba(243,82,44,.2)" stroke="#F3522C" stroke-width="1.5" />
+          <line x1="-8" y1="-2" x2="8" y2="-2" stroke="#F3522C" stroke-width="1.3" />
+          <line x1="-8" y1="3" x2="3" y2="3" stroke="rgba(243,82,44,.6)" stroke-width="1.3" />
         </g>
       </g>
     </g>

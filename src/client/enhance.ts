@@ -5,10 +5,13 @@
 function smoothScroll() {
   document.querySelectorAll<HTMLElement>("[data-scroll]").forEach((el) => {
     el.addEventListener("click", (e) => {
-      e.preventDefault();
       const id = el.getAttribute("data-scroll");
       const target = id === "top" ? document.body : id ? document.getElementById(id) : null;
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Target not on this page → let the element's href navigate (cross-page,
+      // e.g. a nav link on /flagskibe/* going back to /#section).
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
       document.querySelector(".navlinks")?.classList.remove("mobile-open");
     });
   });
@@ -104,8 +107,17 @@ function reducedMotion() {
   }
 }
 
-smoothScroll();
-countUps();
-liveFeed();
-mobileNav();
-reducedMotion();
+// Run each feature independently so a page-specific element missing on a subpage
+// can never abort the shared nav/dropdown wiring (cms #116). Nav goes first.
+function safe(fn: () => void) {
+  try {
+    fn();
+  } catch (e) {
+    console.error("[enhance]", e);
+  }
+}
+safe(mobileNav);
+safe(smoothScroll);
+safe(countUps);
+safe(liveFeed);
+safe(reducedMotion);

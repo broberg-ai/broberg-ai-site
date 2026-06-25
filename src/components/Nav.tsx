@@ -17,44 +17,44 @@ export function Nav() {
               Univers <span class="car">▾</span>
             </button>
             <div class="dd">
-              <a data-scroll="universet" data-testid="dd-universet">
+              <a href="/#universet" data-scroll="universet" data-testid="dd-universet">
                 <b>Universet</b>
                 <span>Sådan hænger det sammen</span>
               </a>
-              <a data-scroll="platforme" data-testid="dd-platforme">
+              <a href="/#platforme" data-scroll="platforme" data-testid="dd-platforme">
                 <b>Flagskibe</b>
                 <span>Platformene bag det hele</span>
               </a>
-              <a data-scroll="metoden" data-testid="dd-metoden">
+              <a href="/#metoden" data-scroll="metoden" data-testid="dd-metoden">
                 <b>Metoden</b>
                 <span>Derfor går det lynhurtigt</span>
               </a>
             </div>
           </div>
-          <button class="navlink simple" data-scroll="cases" data-testid="nav-cases">
+          <a class="navlink simple" href="/#cases" data-scroll="cases" data-testid="nav-cases">
             Cases
-          </button>
+          </a>
           <div class="navitem">
             <button class="navlink dropdown-toggle" data-testid="nav-ressourcer" aria-haspopup="true" aria-expanded="false">
               Ressourcer <span class="car">▾</span>
             </button>
             <div class="dd">
-              <a data-scroll="indsigter" data-testid="dd-indsigter">
+              <a href="/#indsigter" data-scroll="indsigter" data-testid="dd-indsigter">
                 <b>Indsigter</b>
                 <span>Blog om AI-native byg</span>
               </a>
-              <a data-scroll="om" data-testid="dd-om">
+              <a href="/#om" data-scroll="om" data-testid="dd-om">
                 <b>Om Christian</b>
                 <span>30+ år som pioner</span>
               </a>
             </div>
           </div>
-          <button class="navlink simple" data-scroll="om" data-testid="nav-om">
+          <a class="navlink simple" href="/#om" data-scroll="om" data-testid="nav-om">
             Om
-          </button>
-          <button class="btn" data-scroll="kontakt" data-testid="nav-cta-kontakt">
+          </a>
+          <a class="btn" href="/#kontakt" data-scroll="kontakt" data-testid="nav-cta-kontakt">
             Lad os bygge
-          </button>
+          </a>
         </nav>
       </div>
     </header>
