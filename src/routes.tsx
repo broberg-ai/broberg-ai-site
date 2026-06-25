@@ -69,7 +69,6 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   const name = str(d.name) || slug;
   const status = str(d.status) || "live";
   const tagline = str(d.tagline);
-  const url = str(d.url);
   const bodyHtml = richtextBlock(str(d.body));
   const features = Array.isArray(d.features) ? (d.features as string[]) : [];
   const links = Array.isArray(d.links) ? (d.links as { label: string; url: string }[]) : [];
@@ -88,11 +87,8 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
             <h2>{name}</h2>
             {tagline ? <p class="lead">{tagline}</p> : null}
             <div class="cta-row">
-              {url ? (
-                <a class="btn" href={url} target="_blank" rel="noopener" data-testid="flagship-visit">
-                  Besøg {name} <span class="ar">→</span>
-                </a>
-              ) : null}
+              {/* Visit link lives at the end of the body content (cms), not here
+                  — the top button was redundant (Christian, cms #103). */}
               <a class="btn btn-ghost" href="/flagskibe" data-testid="flagship-all">
                 Alle flagskibe <span class="ar">→</span>
               </a>
