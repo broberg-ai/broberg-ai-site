@@ -16,8 +16,11 @@ export default defineConfig({
         styles: "src/styles/app.css",
       },
       output: {
-        entryFileNames: "assets/[name].js",
-        assetFileNames: "assets/[name][extname]",
+        // Content-hashed names so a new deploy busts the cache (paired with the
+        // immutable cache header); resolveAssets reads the hashed names from the
+        // Vite manifest.
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash][extname]",
       },
     },
   },

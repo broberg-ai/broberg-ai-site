@@ -168,11 +168,14 @@ export function UniverseDiagram({
         )}
       </g>
 
-      {/* Core — on top, does not orbit. */}
-      <circle class="pulse-core" cx="220" cy="220" r="40" fill="rgba(0,178,255,.12)" stroke="#00b2ff" stroke-width="1.5" />
-      <text x="220" y="225" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="14" font-weight="600" fill="#f0f4f8">
-        {core}
-      </text>
+      {/* Core — on top, does not orbit; clickable to its flagship page. */}
+      <a class="unode" href={`/flagskibe/${slugify(core)}`} data-testid={`universe-node-${slugify(core)}`}>
+        <circle cx="220" cy="220" r="44" fill="transparent" pointer-events="all" />
+        <circle class="pulse-core" cx="220" cy="220" r="40" fill="rgba(0,178,255,.12)" stroke="#00b2ff" stroke-width="1.5" />
+        <text x="220" y="225" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="14" font-weight="600" fill="#f0f4f8">
+          {core}
+        </text>
+      </a>
     </svg>
   );
 }

@@ -86,13 +86,6 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
             </div>
             <h2>{name}</h2>
             {tagline ? <p class="lead">{tagline}</p> : null}
-            <div class="cta-row">
-              {/* Visit link lives at the end of the body content (cms), not here
-                  — the top button was redundant (Christian, cms #103). */}
-              <a class="btn btn-ghost" href="/flagskibe" data-testid="flagship-all">
-                Alle flagskibe <span class="ar">→</span>
-              </a>
-            </div>
           </div>
         </div>
         <div class="divider" />
@@ -115,6 +108,12 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
             ))}
           </div>
         ) : null}
+        {/* Back link at the END — content first, "all flagships" last (cms #108). */}
+        <div class="cta-row" style="margin-top:36px">
+          <a class="btn btn-ghost" href="/flagskibe" data-testid="flagship-all">
+            Alle flagskibe <span class="ar">→</span>
+          </a>
+        </div>
       </div>
     </section>,
     { title: `${name} — broberg.ai`, description: tagline || `${name} — et broberg.ai-flagskib.`, locale },

@@ -21,6 +21,33 @@ const app = new Hono();
 const html = (s: string) => new Response(s, { headers: { "content-type": "text/html; charset=utf-8" } });
 const notFound = (s: string) => new Response(s, { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
 
+// Canonical-domain guard: 301 GET requests that land on the bare Fly host to
+// https://broberg.ai (so a stale fly.dev tab never strands anyone + SEO).
+// EXCLUDE /icd (cms POSTs the ICD push there) and /healthz (Fly health check) —
+// redirecting those would break content pushes / mark the machine unhealthy.
+app.use("*", async (c, next) => {
+  const host = c.req.header("host") || "";
+  const path = c.req.path;
+  if (c.req.method === "GET" && host.startsWith("broberg-ai.fly.dev") && path !== "/icd" && path !== "/healthz") {
+    return c.redirect(`https://broberg.ai${path}`, 301);
+  }
+  await next();
+});
+
+// Cache policy: SSR HTML can change every second (ICD edits + deploys), so it
+// must always revalidate — this is what stopped Christian seeing stale pages.
+// Hashed prod assets are immutable (a new deploy = a new URL). /icd + /healthz
+// keep no cache header.
+app.use("*", async (c, next) => {
+  await next();
+  const p = c.req.path;
+  if (config.isProd && p.startsWith("/assets/")) c.header("cache-control", "public, max-age=31536000, immutable");
+  else if (config.isProd && p.startsWith("/fonts/")) c.header("cache-control", "public, max-age=2592000");
+  else if (p === "/icd" || p === "/healthz") {
+    /* leave default */
+  } else c.header("cache-control", "no-cache, must-revalidate");
+});
+
 app.get("/healthz", (c) => c.json({ ok: true }));
 
 // ICD content-push receiver (cms → us on every save/publish).
