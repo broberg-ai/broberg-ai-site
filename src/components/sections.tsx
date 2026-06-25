@@ -206,8 +206,8 @@ export function About({ data }: { data: AboutData }) {
         <div class="about">
           <div>
             <svg class="svg-wrap" viewBox="0 0 200 200" style="max-width:190px" role="img" aria-label="monogram">
-              <circle cx="100" cy="100" r="92" fill="rgba(0,178,255,.06)" stroke="rgba(0,178,255,.3)" stroke-width="1.5" />
-              <text x="100" y="120" text-anchor="middle" font-family="Cormorant Garamond" font-size="80" font-weight="600" fill="#f0f4f8">
+              <circle cx="100" cy="100" r="92" fill="rgba(0,178,255,.06)" stroke="rgba(0,178,255,.32)" stroke-width="1.5" />
+              <text x="100" y="103" text-anchor="middle" dominant-baseline="central" font-family="'DM Sans', -apple-system, sans-serif" font-size="86" font-weight="600" letter-spacing="-3" fill="#f0f4f8">
                 b<tspan fill="#F3522C">.</tspan>
               </text>
             </svg>
