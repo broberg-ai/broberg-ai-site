@@ -36,6 +36,9 @@
   --light: #f0f4f8;
   --muted: rgba(240, 244, 248, 0.5);
   --orange: #f3522c;
+  /* Slightly lighter orange for TEXT/arrows so they clear WCAG AA on dark
+     (the brand #f3522c is 4.28:1; this hits ≥4.5:1). Graphics keep --orange. */
+  --orange-text: #ff6a45;
   --orange-soft: rgba(243, 82, 44, 0.12);
   --fd: "Cormorant Garamond", Georgia, serif;
   --fb: "DM Sans", -apple-system, sans-serif;
@@ -94,7 +97,7 @@ em {
   color: var(--blue);
 }
 em.o {
-  color: var(--orange);
+  color: var(--orange-text);
 }
 .eyebrow {
   font-size: 11px;
@@ -121,7 +124,7 @@ em.o {
   max-width: 640px;
 }
 .orange {
-  color: var(--orange);
+  color: var(--orange-text);
 }
 strong {
   color: var(--light);
@@ -150,7 +153,7 @@ header {
   cursor: pointer;
 }
 .logo .ai {
-  color: var(--orange);
+  color: var(--orange-text);
 }
 .navlinks {
   display: flex;
@@ -263,7 +266,7 @@ header {
   color: var(--dark);
 }
 .btn-ghost .ar {
-  color: var(--orange);
+  color: var(--orange-text);
 }
 .mobile-only {
   display: none;
@@ -583,7 +586,7 @@ section {
 }
 .kicker {
   font-size: 12px;
-  color: var(--orange);
+  color: var(--orange-text);
   font-weight: 600;
   margin-bottom: 5px;
 }
@@ -951,7 +954,7 @@ footer {
   font-size: 12.5px;
 }
 .flowchip-arrow {
-  color: var(--orange);
+  color: var(--orange-text);
   font-size: 13px;
 }
 .trail-grid {
@@ -961,6 +964,11 @@ footer {
   margin-top: 30px;
   align-items: start;
 }
+/* Let grid children shrink below content width (default min-width:auto is what
+   let the table push the column past the mobile viewport — cms #119). */
+.trail-grid > * {
+  min-width: 0;
+}
 @media (max-width: 760px) {
   .trail-grid {
     grid-template-columns: 1fr;
@@ -968,9 +976,14 @@ footer {
 }
 .ctable {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   margin-top: 12px;
   font-size: 13px;
+}
+.ctable th,
+.ctable td {
+  word-break: break-word;
 }
 .ctable th,
 .ctable td {
