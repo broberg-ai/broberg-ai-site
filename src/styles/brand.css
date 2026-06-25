@@ -271,17 +271,93 @@ header {
   .navlinks {
     position: absolute;
     top: 64px;
-    right: 0;
+    right: 12px;
+    left: 12px;
     flex-direction: column;
-    align-items: flex-start;
-    background: rgba(28, 32, 39, 0.97);
+    align-items: stretch;
+    gap: 2px;
+    background: rgba(28, 32, 39, 0.98);
     border: 1px solid var(--card-border);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 10px;
     display: none;
   }
   .navlinks.mobile-open {
     display: flex;
+  }
+  .navitem {
+    width: 100%;
+  }
+  .navlinks .navlink {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .navlinks .btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 6px;
+  }
+  /* Dropdowns become inline accordions on touch (no hover available). */
+  .dd {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    padding: 0 0 4px 12px;
+    display: none;
+  }
+  .navitem.open .dd {
+    display: block;
+  }
+}
+
+/* Phone refinements — tighter rhythm, 2-up stats, full-width CTAs, scaled type. */
+@media (max-width: 620px) {
+  .wrap {
+    padding: 0 20px;
+  }
+  section {
+    padding: 64px 0;
+  }
+  .hero {
+    padding-top: 112px;
+    padding-bottom: 40px;
+  }
+  .sec-head {
+    margin-bottom: 32px;
+  }
+  h1 {
+    font-size: clamp(33px, 9vw, 46px);
+  }
+  .statbar {
+    gap: 10px;
+  }
+  .stat {
+    flex-basis: calc(50% - 5px);
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-size: 28px;
+  }
+  .cta-row {
+    gap: 10px;
+  }
+  .cta-row .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .feed {
+    width: 100%;
+  }
+  .quote {
+    font-size: 16px;
+  }
+  .cta-final {
+    padding: 44px 22px;
   }
 }
 section {
