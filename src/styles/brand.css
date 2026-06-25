@@ -720,6 +720,53 @@ section {
     stroke-dashoffset: -22;
   }
 }
+/* Orbiting node rings — infra slow, customers a bit faster. The group rotates
+   about the diagram centre; each label counter-rotates about its own centre so
+   it stays upright while orbiting. */
+.orbit-infra,
+.orbit-cust {
+  transform-box: view-box;
+  transform-origin: 220px 220px;
+}
+.orbit-infra {
+  animation: orbit 104s linear infinite;
+}
+.orbit-cust {
+  animation: orbit 64s linear infinite;
+}
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.orbit-infra .lbl,
+.orbit-cust .lbl {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.orbit-infra .lbl {
+  animation: orbit-rev 104s linear infinite;
+}
+.orbit-cust .lbl {
+  animation: orbit-rev 64s linear infinite;
+}
+@keyframes orbit-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+.unode {
+  cursor: pointer;
+}
+.unode .planet {
+  transition: r 0.15s ease;
+}
+.unode:hover .planet {
+  r: 8;
+}
+.unode:hover .lbl {
+  fill: #f0f4f8;
+}
 .flow {
   display: flex;
   align-items: center;

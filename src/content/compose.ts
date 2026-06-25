@@ -87,11 +87,21 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
   const casePosts = postsInCategory("cases");
   const insightPosts = postsInCategory("indsigter");
 
-  const infra: DiagramNode[] = platformItems.map((p) => ({ label: p.name }));
-  // Universe customer nodes are their OWN list (globals.universeCustomers) —
-  // separate from the About wall of brand clients (globals.clients), cms #68.
+  // Infra nodes = the support engines, EXCLUDING the core (cardmem) so it is not
+  // repeated as both centre and an orbiting node. Each links to its platform.
+  const coreName = (str(globals.universeCore) || "cardmem").toLowerCase();
+  const infra: DiagramNode[] = platforms
+    .filter((p) => str(dataOf(p).name).toLowerCase() !== coreName)
+    .map((p) => {
+      const d = dataOf(p);
+      const slug = String(p.slug ?? str(d.name)).toLowerCase();
+      return { label: str(d.name), href: str(d.url) || `/flagskibe/${slug}` };
+    });
+  // Customer nodes are their OWN list (globals.universeCustomers) — separate from
+  // the About wall of brand clients (globals.clients), cms #68. They scroll to Cases.
   const customers: DiagramNode[] = arr<{ name?: string }>(globals.universeCustomers).map((c) => ({
     label: str(c.name),
+    scroll: "cases",
   }));
 
   const built = sections

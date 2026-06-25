@@ -41,6 +41,8 @@ export interface Tier {
 }
 export interface DiagramNode {
   label: string;
+  href?: string;
+  scroll?: string;
 }
 export interface UniverseData {
   eyebrow: string;
