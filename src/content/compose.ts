@@ -18,6 +18,8 @@ import type {
   Platform,
   CaseItem,
   DiagramNode,
+  Stat,
+  PostCard,
 } from "@/content/types.ts";
 import { homeFallback } from "@/data/fallback.ts";
 
@@ -71,20 +73,29 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
     };
   });
 
-  // Resolve the "cases" category, then the posts that point at it.
-  const casesCat = categories.find((c) => {
-    const d = dataOf(c);
-    return String(c.slug).toLowerCase() === "cases" || str(d.name).toLowerCase() === "cases";
-  });
-  const caseKey = casesCat ? [String(casesCat.slug), casesCat.id, dataOf(casesCat).name] : ["cases"];
-  const casePosts = posts.filter((p) => caseKey.includes(dataOf(p).category as never));
+  // Resolve posts by category — both cases cards and insights cards live in
+  // `posts` (cms #62/#68); read them rather than the fallback copy.
+  const postsInCategory = (name: string): StoredDoc[] => {
+    const cat = categories.find((c) => {
+      const d = dataOf(c);
+      return String(c.slug).toLowerCase() === name || str(d.name).toLowerCase() === name;
+    });
+    const keys = cat ? [String(cat.slug), cat.id, dataOf(cat).name] : [name];
+    return posts.filter((p) => keys.includes(dataOf(p).category as never));
+  };
+  const casePosts = postsInCategory("cases");
+  const insightPosts = postsInCategory("indsigter");
 
   const infra: DiagramNode[] = platformItems.map((p) => ({ label: p.name }));
-  const customers: DiagramNode[] = arr<{ name?: string }>(globals.clients).map((c) => ({ label: str(c.name) }));
+  // Universe customer nodes are their OWN list (globals.universeCustomers) —
+  // separate from the About wall of brand clients (globals.clients), cms #68.
+  const customers: DiagramNode[] = arr<{ name?: string }>(globals.universeCustomers).map((c) => ({
+    label: str(c.name),
+  }));
 
-  const built = sections.map((sec) => mapSection(dataOf(sec), { globals, platformItems, casePosts, infra, customers })).filter(
-    (s): s is SectionData => s !== null,
-  );
+  const built = sections
+    .map((sec) => mapSection(dataOf(sec), { globals, platformItems, casePosts, insightPosts, infra, customers }))
+    .filter((s): s is SectionData => s !== null);
 
   return {
     title: str(globals.siteTitle) || homeFallback.title,
@@ -97,6 +108,7 @@ interface Ctx {
   globals: Data;
   platformItems: Platform[];
   casePosts: StoredDoc[];
+  insightPosts: StoredDoc[];
   infra: DiagramNode[];
   customers: DiagramNode[];
 }
@@ -115,12 +127,15 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
     case "hero": {
       const fbHero = fb?.kind === "hero" ? fb.data : undefined;
       const ctas = frameCtas(d);
+      // Stat labels/targets/pre/suf authored in cms (section field or globals);
+      // the live numbers come from our fleet aggregation at render time.
+      const cmsStats = arr<Stat>(d.stats).length ? arr<Stat>(d.stats) : arr<Stat>(ctx.globals.stats);
       const hero: HeroData = {
         eyebrow: str(d.eyebrow) || fbHero?.eyebrow || "",
         titleHtml: str(d.heading) || fbHero?.titleHtml || "",
         leadHtml: str(d.subheading) || fbHero?.leadHtml || "",
         ctas: ctas.length ? ctas : (fbHero?.ctas ?? []),
-        stats: fbHero?.stats ?? [], // our fleet aggregate; cms holds label/fallback
+        stats: cmsStats.length ? cmsStats : (fbHero?.stats ?? []),
         livePillLabel: str(ctx.globals.heroPillLabel) || fbHero?.livePillLabel || "Live",
       };
       return { kind: "hero", data: hero };
@@ -138,7 +153,8 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           eyebrow: str(d.eyebrow) || fbU?.eyebrow || "",
           headingHtml: str(d.heading) || fbU?.headingHtml || "",
           lead: str(d.subheading) || fbU?.lead || "",
-          core: str(ctx.globals.siteName) || fbU?.core || "cardmem",
+          // Dedicated field (cms #68) — NOT siteName, which is the wordmark.
+          core: str(ctx.globals.universeCore) || fbU?.core || "cardmem",
           infra: ctx.infra.length ? ctx.infra : (fbU?.infra ?? []),
           customers: ctx.customers.length ? ctx.customers : (fbU?.customers ?? []),
           tiers: tiers.length ? tiers : (fbU?.tiers ?? []),
@@ -182,30 +198,42 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
       };
     }
     case "method": {
-      // Method copy (flow steps + cards) is authored; keep the approved fallback
-      // and let cms override only the frame.
       const fbM = fb?.kind === "method" ? fb.data : undefined;
-      if (!fbM) return null;
+      // Flow steps + cards authored in cms (fields cms is adding); fall back to
+      // the approved copy until they exist.
+      const steps = arr<{ label: string; live?: boolean }>(d.steps);
+      const cards = arr<{ html: string }>(d.cards);
       return {
         kind: "method",
         data: {
-          ...fbM,
-          eyebrow: str(d.eyebrow) || fbM.eyebrow,
-          headingHtml: str(d.heading) || fbM.headingHtml,
-          lead: str(d.subheading) || fbM.lead,
+          eyebrow: str(d.eyebrow) || fbM?.eyebrow || "",
+          headingHtml: str(d.heading) || fbM?.headingHtml || "",
+          lead: str(d.subheading) || fbM?.lead || "",
+          steps: steps.length ? steps : (fbM?.steps ?? []),
+          cards: cards.length ? cards : (fbM?.cards ?? []),
         },
       };
     }
     case "insights": {
       const fbI = fb?.kind === "insights" ? fb.data : undefined;
-      if (!fbI) return null;
+      // Cards come from `posts` in the insights category (cms #68), not fallback.
+      const posts: PostCard[] = ctx.insightPosts.map((p) => {
+        const pd = dataOf(p);
+        return {
+          tag: "Nyt",
+          slug: String(p.slug ?? ""),
+          category: "indsigter",
+          title: str(pd.title),
+          excerpt: str(pd.excerpt),
+        };
+      });
       return {
         kind: "insights",
         data: {
-          ...fbI,
-          eyebrow: str(d.eyebrow) || fbI.eyebrow,
-          headingHtml: str(d.heading) || fbI.headingHtml,
-          lead: str(d.subheading) || fbI.lead,
+          eyebrow: str(d.eyebrow) || fbI?.eyebrow || "",
+          headingHtml: str(d.heading) || fbI?.headingHtml || "",
+          lead: str(d.subheading) || fbI?.lead || "",
+          posts: posts.length ? posts : (fbI?.posts ?? []),
         },
       };
     }
