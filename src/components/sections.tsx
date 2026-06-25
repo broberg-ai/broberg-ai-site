@@ -90,7 +90,7 @@ export function Universe({ data }: { data: UniverseData }) {
               <div class="tier" key={i}>
                 <b>{t.title}</b>
                 <br />
-                <span>{t.body}</span>
+                <span dangerouslySetInnerHTML={{ __html: t.body }} />
               </div>
             ))}
           </div>

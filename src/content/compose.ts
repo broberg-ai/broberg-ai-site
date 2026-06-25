@@ -22,6 +22,7 @@ import type {
   PostCard,
 } from "@/content/types.ts";
 import { homeFallback } from "@/data/fallback.ts";
+import { richtextInline } from "@/content/richtext.ts";
 
 type Data = Record<string, unknown>;
 const isPub = (d: StoredDoc) => d.status === "published";
@@ -146,7 +147,7 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
       // blocks {_block:"tier", heading, body} (cms #63).
       const tiers = arr<Data>(d.blocks)
         .filter((b) => str(b._block) === "tier")
-        .map((b) => ({ title: str(b.heading), body: str(b.body) }));
+        .map((b) => ({ title: str(b.heading), body: richtextInline(str(b.body)) }));
       return {
         kind: "universe",
         data: {
@@ -246,7 +247,7 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
         data: {
           eyebrow: str(d.eyebrow) || fbA?.eyebrow || "Om",
           headingHtml: str(d.heading) || str(g.aboutHeading) || fbA?.headingHtml || "",
-          leadHtml: str(g.aboutBio) || fbA?.leadHtml || "",
+          leadHtml: richtextInline(str(g.aboutBio)) || fbA?.leadHtml || "",
           pills: arr<string>(g.skills).length ? arr<string>(g.skills) : (fbA?.pills ?? []),
           clientsLabel: str(d.subheading) || fbA?.clientsLabel || "",
           clients: clients.length ? clients : (fbA?.clients ?? []),
