@@ -177,6 +177,9 @@ export function TrailDetail({ slug }: { slug: string }) {
             ))}
           </div>
           <div class="cta-row" style="margin-top:36px">
+            <a class="btn btn-ghost" href="https://trailmem.com" target="_blank" rel="noopener" data-testid="flagship-visit">
+              Besøg trailmem.com <span class="ar">→</span>
+            </a>
             <a class="btn btn-ghost" href="/flagskibe" data-testid="flagship-all">
               Alle flagskibe <span class="ar">→</span>
             </a>
