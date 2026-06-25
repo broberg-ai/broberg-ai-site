@@ -221,7 +221,47 @@ const trail: SlideData = {
   },
 };
 
-const REGISTRY: Record<string, SlideData> = { components, cardmem, buddy, trail };
+const cms: SlideData = {
+  slug: "cms",
+  s1: {
+    eyebrow: "cms · @webhouse/cms",
+    heading: "Et CMS bygget til AI fra bunden.",
+    lead: "@webhouse/cms er motoren der gør broberg.ai-universets sites redigerbare — et AI-native content-system hvor indhold, struktur og design styres ét sted og forplanter sig til hver kanal. Skemaet er kode; indholdet er data.",
+    chips: ["Sider", "Blog", "Media", "Formularer", "SEO", "i18n", "Interaktive", "Roller"],
+  },
+  s2: {
+    eyebrow: "Sådan virker det",
+    heading: "Skriv ét sted. Live med det samme.",
+    steps: [
+      ["Definér struktur i kode", "Collections + felter som versioneret kode."],
+      ["Redigér i admin'en", "— eller via AI-chat/MCP."],
+      ["Tryk gem → live", "Indholdet pushes til sitet, ~2 sek til live."],
+      ["Skift storage-udbyder", "Fil / SQLite / GitHub / Supabase — uden at røre indholdet."],
+    ],
+    table: {
+      cols: ["Dimension", "Traditionelt", "@webhouse/cms"],
+      rows: [
+        ["Skema", "Klik i UI", "Kode, versioneret"],
+        ["AI", "Bolt-on", "Indbygget (chat+MCP)"],
+        ["Storage", "Låst", "Fil/SQLite/GitHub/Supabase"],
+        ["Multi-site", "Per-installation", "Ét system, mange sites"],
+      ],
+    },
+  },
+  s3: {
+    eyebrow: "Hvorfor det betyder noget",
+    heading: "Samme motor bag hver kunde.",
+    prose: "Hvert site i universet — fra broberg.ai til kundeløsninger — kører på samme CMS. Forbedringer og sikkerhed forplanter sig til alle på én gang. AI kan læse og skrive indhold direkte (chat + MCP), så mennesket kuraterer i stedet for at taste.",
+    stats: [
+      ["8", "npm-pakker"],
+      ["4", "storage-udbydere"],
+      ["∞", "sites"],
+    ],
+    cta: { label: "Se webhouse.app", href: "https://webhouse.app" },
+  },
+};
+
+const REGISTRY: Record<string, SlideData> = { components, cardmem, buddy, trail, cms };
 
 export function hasSlides(slug: string): boolean {
   return slug.toLowerCase() in REGISTRY;
