@@ -1080,6 +1080,38 @@ footer {
   color: var(--muted);
   line-height: 1.6;
 }
+
+/* 3-slide flagship colour journey: blue → transition → orange (cms #121) */
+.fslide-1 {
+  background: radial-gradient(ellipse 90% 55% at 50% -5%, rgba(0, 178, 255, 0.08), transparent 68%);
+}
+.fslide-2 {
+  background: linear-gradient(180deg, rgba(0, 178, 255, 0.05) 0%, rgba(243, 82, 44, 0.05) 100%);
+}
+.fslide-3 {
+  background: radial-gradient(ellipse 90% 60% at 50% 108%, rgba(243, 82, 44, 0.1), transparent 68%);
+}
+.fslide-3 .eyebrow {
+  color: var(--orange-text);
+}
+.fslide-3 .eyebrow::before {
+  background: var(--blue);
+}
+.fslide-3 .divider {
+  background: linear-gradient(90deg, var(--orange), var(--blue));
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 24px;
+  max-width: 560px;
+}
+@media (max-width: 520px) {
+  .stat-row {
+    grid-template-columns: 1fr;
+  }
+}
 .richtext {
   max-width: 760px;
   color: var(--muted);
