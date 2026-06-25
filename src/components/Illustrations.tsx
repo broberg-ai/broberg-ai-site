@@ -76,7 +76,47 @@ const cardmem = wrap(
   </g>,
 );
 
-const REGISTRY: Record<string, JSX.Element> = { components, cardmem };
+// An always-awake eye at the centre with a radar sweep; thin lines reach out to
+// fleet nodes that pulse as the sweep passes. Nails: always watching + binds the
+// fleet as one nervous system.
+const BUDDY_NODES = [
+  { cx: 180, cy: 40 },
+  { cx: 296, cy: 92 },
+  { cx: 300, cy: 196 },
+  { cx: 180, cy: 240 },
+  { cx: 60, cy: 196 },
+  { cx: 64, cy: 92, orange: true },
+];
+const buddy = wrap(
+  <g>
+    <g stroke="rgba(0,178,255,.16)" stroke-width="1.2">
+      {BUDDY_NODES.map((n, i) => (
+        <line key={i} x1="180" y1="140" x2={n.cx} y2={n.cy} />
+      ))}
+    </g>
+    <circle cx="180" cy="140" r="50" fill="none" stroke="rgba(0,178,255,.18)" stroke-width="1.2" />
+    <circle cx="180" cy="140" r="86" fill="none" stroke="rgba(0,178,255,.12)" stroke-width="1.2" />
+    <circle class="illu-flow" cx="180" cy="140" r="116" fill="none" stroke="rgba(0,178,255,.14)" stroke-width="1.2" stroke-dasharray="4 7" />
+    {/* radar sweep */}
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="0 180 140" to="360 180 140" dur="6s" repeatCount="indefinite" />
+      <path d="M180 140 L180 24 A116 116 0 0 1 258 56 Z" fill="rgba(0,178,255,.10)" />
+      <line x1="180" y1="140" x2="180" y2="24" stroke="#00b2ff" stroke-width="2" stroke-linecap="round" opacity=".85" />
+    </g>
+    {/* fleet nodes — pulse as the sweep passes */}
+    <g>
+      {BUDDY_NODES.map((n, i) => (
+        <circle class="node" key={i} cx={n.cx} cy={n.cy} r="5.5" fill={n.orange ? "#F3522C" : "#00b2ff"} style={`animation-delay:${i * 0.9}s`} />
+      ))}
+    </g>
+    {/* always-awake eye */}
+    <path d="M150 140 Q180 120 210 140 Q180 160 150 140 Z" fill="rgba(0,178,255,.10)" stroke="#00b2ff" stroke-width="1.6" />
+    <circle class="pulse-core" cx="180" cy="140" r="9" fill="rgba(0,178,255,.3)" stroke="#40c8ff" stroke-width="1.5" />
+    <circle cx="180" cy="140" r="3.4" fill="#f0f4f8" />
+  </g>,
+);
+
+const REGISTRY: Record<string, JSX.Element> = { components, cardmem, buddy };
 
 export function hasIllustration(k: string): boolean {
   return k.toLowerCase() in REGISTRY;
