@@ -530,11 +530,13 @@ section {
   }
 }
 .card {
+  display: block;
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: 16px;
   padding: 24px;
   transition: border-color 0.2s, transform 0.2s;
+  color: inherit;
 }
 .card:hover {
   border-color: rgba(0, 178, 255, 0.32);

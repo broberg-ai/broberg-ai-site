@@ -5,9 +5,9 @@ export function Nav() {
   return (
     <header>
       <div class="wrap nav">
-        <div class="logo" data-scroll="top" data-testid="nav-logo">
+        <a class="logo" href="/" data-testid="nav-logo">
           broberg<span class="ai">.ai</span>
-        </div>
+        </a>
         <button class="navlink mobile-only" data-testid="nav-mobile-toggle" aria-label="Menu" aria-expanded="false">
           ☰
         </button>
