@@ -1,14 +1,25 @@
 /* The universe diagram: a pulsing cardmem core with infra engines (blue) and
    customer solutions (orange) orbiting it. The two rings orbit at different
-   speeds (infra slow, customers a bit faster — CSS in brand.css), the signal
-   spokes + dashed rings pulse, and every node is a clickable link. Labels
-   counter-rotate so they stay upright while orbiting. Geometry + motion are in
-   code; all TEXT (core / infra[] / customers[]) comes from cms. */
+   speeds (infra slow, customers a bit faster); the signal spokes ride along and
+   the dashed rings pulse. Every node is a clickable link, and each label is
+   FIXED-MOUNTED to its planet — it travels with the dot and stays upright,
+   because it counter-rotates about THE DOT (not about itself).
+
+   This uses SVG SMIL <animateTransform> with explicit rotation centres: the
+   orbit group rotates about the diagram centre (220,220); each label group is
+   translated onto its dot and rotates the opposite way about (0,0) = the dot,
+   at the SAME duration, so the tag stays welded + upright. Geometry + motion
+   are code; all TEXT (core / infra[] / customers[]) comes from cms.
+   (enhance.ts pauses these animations under prefers-reduced-motion.) */
 import type { JSX } from "preact";
 import type { DiagramNode } from "@/content/types.ts";
 
-// Fixed start positions (≈ a ring around the centre); the orbit animation
-// rotates the whole group around 220,220. Labels are zipped on in order.
+const CENTER = 220;
+const INFRA_DUR = "104s";
+const CUST_DUR = "64s";
+
+// Fixed start positions (≈ a ring around the centre). dot = (cx,cy); the label
+// sits at (tx,ty), offset onto the dot's local frame as (tx-cx, ty-cy).
 const INFRA_SLOTS = [
   { cx: 220, cy: 88, tx: 220, ty: 72 },
   { cx: 340, cy: 160, tx: 340, ty: 143 },
@@ -27,18 +38,55 @@ const CUSTOMER_SLOTS = [
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-function NodeLink({ node, testid, children }: { node: DiagramNode; testid: string; children: JSX.Element[] }) {
-  const ext = !!node.href && /^https?:/.test(node.href);
+function linkAttrs(node: DiagramNode, testid: string): Record<string, string> {
   const attrs: Record<string, string> = { class: "unode", "data-testid": testid };
   if (node.scroll) attrs["data-scroll"] = node.scroll;
   else if (node.href) {
     attrs.href = node.href;
-    if (ext) {
+    if (/^https?:/.test(node.href)) {
       attrs.target = "_blank";
       attrs.rel = "noopener";
     }
   }
-  return <a {...attrs}>{children}</a>;
+  return attrs;
+}
+
+function Node({
+  node,
+  slot,
+  dur,
+  r,
+  hit,
+}: {
+  node: DiagramNode;
+  slot: { cx: number; cy: number; tx: number; ty: number };
+  dur: string;
+  r: number;
+  hit: number;
+}) {
+  const fill = r >= 5 ? "#00b2ff" : "#F3522C";
+  return (
+    <a {...linkAttrs(node, `universe-node-${slugify(node.label)}`)}>
+      <g transform={`translate(${slot.cx} ${slot.cy})`}>
+        <circle r={hit} fill="transparent" pointer-events="all" />
+        <circle class="planet" r={r} fill={fill} />
+        {/* Label welded to this dot: counter-rotate about (0,0) = the dot. */}
+        <g>
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="0 0 0"
+            to="-360 0 0"
+            dur={dur}
+            repeatCount="indefinite"
+          />
+          <text class="lbl" x={slot.tx - slot.cx} y={slot.ty - slot.cy}>
+            {node.label}
+          </text>
+        </g>
+      </g>
+    </a>
+  );
 }
 
 export function UniverseDiagram({
@@ -83,7 +131,15 @@ export function UniverseDiagram({
       <circle class="ring" cx="220" cy="220" r="195" stroke="rgba(243,82,44,.18)" stroke-width="1" fill="none" stroke-dasharray="2 7" />
 
       {/* Infra engines — slow orbit; spokes ride along + keep their dash pulse. */}
-      <g class="orbit-infra" font-family="'DM Sans',sans-serif" font-size="9.5" fill="rgba(240,244,248,.85)" text-anchor="middle">
+      <g font-family="'DM Sans',sans-serif" font-size="9.5" fill="rgba(240,244,248,.85)" text-anchor="middle">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from={`0 ${CENTER} ${CENTER}`}
+          to={`360 ${CENTER} ${CENTER}`}
+          dur={INFRA_DUR}
+          repeatCount="indefinite"
+        />
         <g class="signal" stroke="rgba(0,178,255,.3)" stroke-width="1.2">
           <line x1="220" y1="180" x2="220" y2="92" />
           <line x1="258" y1="202" x2="336" y2="163" />
@@ -92,36 +148,24 @@ export function UniverseDiagram({
           <line x1="182" y1="238" x2="104" y2="277" />
           <line x1="182" y1="202" x2="104" y2="163" />
         </g>
-        {INFRA_SLOTS.map((s, i) => {
-          const n = infra[i];
-          if (!n) return null;
-          return (
-            <NodeLink key={i} node={n} testid={`universe-node-${slugify(n.label)}`}>
-              <circle cx={s.cx} cy={s.cy} r="16" fill="transparent" pointer-events="all" />
-              <circle class="planet" cx={s.cx} cy={s.cy} r="5" fill="#00b2ff" />
-              <text class="lbl" x={s.tx} y={s.ty}>
-                {n.label}
-              </text>
-            </NodeLink>
-          );
-        })}
+        {INFRA_SLOTS.map((s, i) =>
+          infra[i] ? <Node key={i} node={infra[i]} slot={s} dur={INFRA_DUR} r={5} hit={16} /> : null,
+        )}
       </g>
 
       {/* Customer solutions — a bit faster orbit. */}
-      <g class="orbit-cust" font-family="'DM Sans',sans-serif" font-size="8.5" fill="rgba(240,244,248,.6)" text-anchor="middle">
-        {CUSTOMER_SLOTS.map((s, i) => {
-          const n = customers[i];
-          if (!n) return null;
-          return (
-            <NodeLink key={i} node={n} testid={`universe-node-${slugify(n.label)}`}>
-              <circle cx={s.cx} cy={s.cy} r="14" fill="transparent" pointer-events="all" />
-              <circle class="planet" cx={s.cx} cy={s.cy} r="4" fill="#F3522C" />
-              <text class="lbl" x={s.tx} y={s.ty}>
-                {n.label}
-              </text>
-            </NodeLink>
-          );
-        })}
+      <g font-family="'DM Sans',sans-serif" font-size="8.5" fill="rgba(240,244,248,.6)" text-anchor="middle">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from={`0 ${CENTER} ${CENTER}`}
+          to={`360 ${CENTER} ${CENTER}`}
+          dur={CUST_DUR}
+          repeatCount="indefinite"
+        />
+        {CUSTOMER_SLOTS.map((s, i) =>
+          customers[i] ? <Node key={i} node={customers[i]} slot={s} dur={CUST_DUR} r={4} hit={14} /> : null,
+        )}
       </g>
 
       {/* Core — on top, does not orbit. */}

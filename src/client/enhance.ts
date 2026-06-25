@@ -94,7 +94,18 @@ function mobileNav() {
   });
 }
 
+// Respect prefers-reduced-motion: pause the SVG SMIL orbit animations.
+function reducedMotion() {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll("svg").forEach((s) => {
+      const svg = s as unknown as SVGSVGElement;
+      if (typeof svg.pauseAnimations === "function") svg.pauseAnimations();
+    });
+  }
+}
+
 smoothScroll();
 countUps();
 liveFeed();
 mobileNav();
+reducedMotion();

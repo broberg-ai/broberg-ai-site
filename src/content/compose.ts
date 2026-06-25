@@ -95,7 +95,9 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
     .map((p) => {
       const d = dataOf(p);
       const slug = String(p.slug ?? str(d.name)).toLowerCase();
-      return { label: str(d.name), href: str(d.url) || `/flagskibe/${slug}` };
+      // Link to the INTERNAL flagship detail page (cms builds these out; they
+      // get richer as those pages are finished) — not the external site.
+      return { label: str(d.name), href: `/flagskibe/${slug}` };
     });
   // Customer nodes are their OWN list (globals.universeCustomers) — separate from
   // the About wall of brand clients (globals.clients), cms #68. They scroll to Cases.
