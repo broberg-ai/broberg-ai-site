@@ -48,6 +48,9 @@ if (config.isProd) {
   app.use("/fonts/*", serveStatic({ root: "./public" }));
 }
 
+// Favicon — ".ai" wordmark mark, served from public/ in dev + prod.
+app.get("/favicon.svg", serveStatic({ path: "./public/favicon.svg" }));
+
 // ── Pages ───────────────────────────────────────────────────────────────────
 app.get("/", async () => html(await renderHome("da")));
 app.get("/en", async () => html(await renderHome("en")));
