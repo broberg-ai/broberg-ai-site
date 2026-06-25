@@ -73,11 +73,18 @@ app.get("/en/:slug", (c) => html(renderGenericPage("en", c.req.param("slug"))));
 app.get("/:slug", (c) => html(renderGenericPage("da", c.req.param("slug"))));
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
+// Backfill BEFORE serving so the store is populated from cms before the first
+// request — otherwise a cold start would briefly serve the thin skeleton. The
+// persistent volume means this only runs on the very first boot; later restarts
+// find the store already populated (storeIsEmpty=false) and skip it.
 await ensureRoot();
 if (await storeIsEmpty()) {
-  runBackfill()
-    .then((r) => console.log(r.skipped ? "[backfill] skipped (no read token)" : `[backfill] seeded ${r.seeded} docs`))
-    .catch((e) => console.error("[backfill] failed", e));
+  try {
+    const r = await runBackfill();
+    console.log(r.skipped ? "[backfill] skipped (no read token)" : `[backfill] seeded ${r.seeded} docs`);
+  } catch (e) {
+    console.error("[backfill] failed — serving skeleton until ICD/backfill populates", e);
+  }
 }
 
 console.log(`broberg.ai listening on :${config.port}`);
