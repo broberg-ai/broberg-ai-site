@@ -56,14 +56,14 @@ app.get("/", async () => html(await renderHome("da")));
 app.get("/en", async () => html(await renderHome("en")));
 
 // Flagships — locale-specific path segment (flagskibe ↔ flagships).
-app.get(`/${flagshipsSegment("da")}`, () => html(renderFlagships("da")));
-app.get(`/${flagshipsSegment("da")}/:slug`, (c) => {
-  const r = renderFlagshipDetail("da", c.req.param("slug"));
+app.get(`/${flagshipsSegment("da")}`, async () => html(await renderFlagships("da")));
+app.get(`/${flagshipsSegment("da")}/:slug`, async (c) => {
+  const r = await renderFlagshipDetail("da", c.req.param("slug"));
   return r ? html(r) : notFound(renderGenericPage("da", "ikke-fundet"));
 });
-app.get(`/en/${flagshipsSegment("en")}`, () => html(renderFlagships("en")));
-app.get(`/en/${flagshipsSegment("en")}/:slug`, (c) => {
-  const r = renderFlagshipDetail("en", c.req.param("slug"));
+app.get(`/en/${flagshipsSegment("en")}`, async () => html(await renderFlagships("en")));
+app.get(`/en/${flagshipsSegment("en")}/:slug`, async (c) => {
+  const r = await renderFlagshipDetail("en", c.req.param("slug"));
   return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
 });
 

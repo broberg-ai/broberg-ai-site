@@ -9,7 +9,7 @@
    read token + first ICD pushes land. Per-field fallbacks keep it resilient. */
 import type { Locale } from "@/config.ts";
 import { DEFAULT_LOCALE } from "@/config.ts";
-import { list, type StoredDoc } from "@/content/store.ts";
+import { list, get, type StoredDoc } from "@/content/store.ts";
 import type {
   PageModel,
   SectionData,
@@ -282,6 +282,30 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
     default:
       return fb ?? null;
   }
+}
+
+// A single platform (flagship) by slug, for the /flagskibe/:slug detail page.
+// Returns the raw cms doc (data under .data) or null when missing/unpublished.
+export async function loadPlatform(locale: Locale, slug: string): Promise<StoredDoc | null> {
+  const doc = await get("platforms", slug);
+  if (!doc || doc.status !== "published") return null;
+  if (doc.locale && locOf(doc) !== locale) return null;
+  return doc;
+}
+
+// All published platforms for the /flagskibe index, in order.
+export async function loadPlatforms(locale: Locale): Promise<Platform[]> {
+  return forLocale(await list("platforms"), locale)
+    .sort((a, b) => num(dataOf(a).order) - num(dataOf(b).order))
+    .map((p) => {
+      const d = dataOf(p);
+      return {
+        name: str(d.name),
+        logoKey: String(p.slug ?? str(d.name)).toLowerCase(),
+        blurb: str(d.blurb) || str(d.tagline),
+        status: str(d.status) || "live",
+      };
+    });
 }
 
 // Read a per-request snapshot of the store, then build the model from it. The

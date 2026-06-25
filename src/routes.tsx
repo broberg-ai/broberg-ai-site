@@ -10,7 +10,10 @@ import { Platforms } from "@/components/sections.tsx";
 import { renderPage } from "@/render/html.tsx";
 import { resolveAssets } from "@/render/assets.ts";
 import { homeFallback } from "@/data/fallback.ts";
-import { loadHome } from "@/content/compose.ts";
+import { loadHome, loadPlatform, loadPlatforms } from "@/content/compose.ts";
+import { richtextBlock } from "@/content/richtext.ts";
+import { Logo } from "@/components/Logos.tsx";
+import type { PlatformsData } from "@/content/types.ts";
 import { flagshipsSegment } from "@/i18n.ts";
 
 function page(children: any, meta: { title: string; description: string; locale: Locale; canonical?: string }) {
@@ -37,11 +40,18 @@ export async function renderHome(locale: Locale): Promise<string> {
 }
 
 // Flagships index — a dedicated page for ALL platforms (Christian: "en
-// selvstændig side om ALLE flagskibene"). Reuses the platforms section for now.
-export function renderFlagships(locale: Locale): string {
-  const platforms = homeFallback.sections.find((s) => s.kind === "platforms");
+// selvstændig side om ALLE flagskibene"), rendered from the cms platforms.
+export async function renderFlagships(locale: Locale): Promise<string> {
+  const items = await loadPlatforms(locale);
   const seg = flagshipsSegment(locale);
-  return page(platforms?.kind === "platforms" ? <Platforms data={platforms.data} /> : <></>, {
+  const data: PlatformsData = {
+    eyebrow: "Flagskibe",
+    heading: "Motorerne bag det hele.",
+    lead: "De AI-native platforme vi selv har bygget — og som hver ny kundeløsning står på skuldrene af.",
+    items: items.length ? items : [],
+    allLink: { label: "Til forsiden", href: "/", testid: "flagships-home-link" },
+  };
+  return page(<Platforms data={data} />, {
     title: "Flagskibe — broberg.ai",
     description: "De AI-native platforme bag broberg.ai-universet.",
     locale,
@@ -49,23 +59,69 @@ export function renderFlagships(locale: Locale): string {
   });
 }
 
-export function renderFlagshipDetail(locale: Locale, slug: string): string | null {
-  const platforms = homeFallback.sections.find((s) => s.kind === "platforms");
-  if (platforms?.kind !== "platforms") return null;
-  const item = platforms.data.items.find((p) => p.name.toLowerCase() === slug.toLowerCase());
-  if (!item) return null;
+// Flagship detail — renders the cms platform doc in the brand design. `body` is
+// richtext (Markdown) → richtextBlock. cms fills the content; this is the shell.
+export async function renderFlagshipDetail(locale: Locale, slug: string): Promise<string | null> {
+  const doc = await loadPlatform(locale, slug);
+  if (!doc) return null;
+  const d = (doc.data ?? {}) as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  const name = str(d.name) || slug;
+  const status = str(d.status) || "live";
+  const tagline = str(d.tagline);
+  const url = str(d.url);
+  const bodyHtml = richtextBlock(str(d.body));
+  const features = Array.isArray(d.features) ? (d.features as string[]) : [];
+  const links = Array.isArray(d.links) ? (d.links as { label: string; url: string }[]) : [];
+
   return page(
-    <section>
+    <section id="top">
       <div class="wrap reveal">
-        <div class="sec-head">
-          <div class="eyebrow">Flagskib</div>
-          <h2>{item.name}</h2>
-          <div class="divider" />
-          <p class="lead">{item.blurb}</p>
+        <div class="plat-detail-head">
+          <div class="logot logot-lg">
+            <Logo k={slug.toLowerCase()} />
+          </div>
+          <div>
+            <div class="eyebrow">
+              Flagskib · {status}
+            </div>
+            <h2>{name}</h2>
+            {tagline ? <p class="lead">{tagline}</p> : null}
+            <div class="cta-row">
+              {url ? (
+                <a class="btn" href={url} target="_blank" rel="noopener" data-testid="flagship-visit">
+                  Besøg {name} <span class="ar">→</span>
+                </a>
+              ) : null}
+              <a class="btn btn-ghost" href="/flagskibe" data-testid="flagship-all">
+                Alle flagskibe <span class="ar">→</span>
+              </a>
+            </div>
+          </div>
         </div>
+        <div class="divider" />
+        {bodyHtml ? <div class="richtext" dangerouslySetInnerHTML={{ __html: bodyHtml }} /> : null}
+        {features.length ? (
+          <div style="margin-top:22px">
+            {features.map((f) => (
+              <span class="pill" key={f}>
+                {f}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {links.length ? (
+          <div class="cta-row" style="margin-top:22px">
+            {links.map((l) => (
+              <a class="btn btn-ghost" key={l.url} href={l.url} target="_blank" rel="noopener" data-testid="flagship-link">
+                {l.label} <span class="ar">→</span>
+              </a>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>,
-    { title: `${item.name} — broberg.ai`, description: item.blurb, locale },
+    { title: `${name} — broberg.ai`, description: tagline || `${name} — et broberg.ai-flagskib.`, locale },
   );
 }
 

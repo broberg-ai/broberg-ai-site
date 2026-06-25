@@ -863,6 +863,85 @@ footer {
 .svg-wrap {
   width: 100%;
 }
+/* Flagship detail page */
+.plat-detail-head {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+}
+@media (max-width: 620px) {
+  .plat-detail-head {
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+.logot-lg {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+}
+.logot-lg svg {
+  width: 36px;
+  height: 36px;
+}
+.richtext {
+  max-width: 760px;
+  color: var(--muted);
+  font-size: 15.5px;
+  line-height: 1.78;
+}
+.richtext h2,
+.richtext h3,
+.richtext h4 {
+  font-family: var(--fd);
+  color: var(--light);
+  font-weight: 600;
+  margin: 28px 0 10px;
+  line-height: 1.2;
+}
+.richtext h2 {
+  font-size: 28px;
+}
+.richtext h3 {
+  font-size: 22px;
+}
+.richtext h4 {
+  font-size: 18px;
+}
+.richtext p {
+  margin: 12px 0;
+}
+.richtext strong {
+  color: var(--light);
+}
+.richtext a {
+  color: var(--blue);
+  border-bottom: 1px solid rgba(0, 178, 255, 0.3);
+}
+.richtext a:hover {
+  color: var(--blue-light);
+}
+.richtext ul,
+.richtext ol {
+  margin: 12px 0 12px 22px;
+}
+.richtext li {
+  margin: 7px 0;
+}
+.richtext code {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 13.5px;
+}
+.richtext blockquote {
+  border-left: 3px solid var(--orange);
+  padding-left: 16px;
+  margin: 16px 0;
+  color: var(--light);
+  font-style: italic;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
