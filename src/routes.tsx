@@ -13,6 +13,7 @@ import { homeFallback } from "@/data/fallback.ts";
 import { loadHome, loadPlatform, loadPlatforms } from "@/content/compose.ts";
 import { richtextBlock } from "@/content/richtext.ts";
 import { Logo } from "@/components/Logos.tsx";
+import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import type { PlatformsData } from "@/content/types.ts";
 import { flagshipsSegment } from "@/i18n.ts";
 
@@ -76,17 +77,20 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   return page(
     <section id="top">
       <div class="wrap reveal">
-        <div class="plat-detail-head">
-          <div class="logot logot-lg">
-            <Logo k={slug.toLowerCase()} />
-          </div>
-          <div>
-            <div class="eyebrow">
-              Flagskib · {status}
+        <div class={hasIllustration(slug) ? "plat-detail-head" : "plat-detail-head one-col"}>
+          <div class="plat-detail-text">
+            <div class="logot logot-lg">
+              <Logo k={slug.toLowerCase()} />
             </div>
+            <div class="eyebrow">Flagskib · {status}</div>
             <h2>{name}</h2>
             {tagline ? <p class="lead">{tagline}</p> : null}
           </div>
+          {hasIllustration(slug) ? (
+            <div class="plat-illu">
+              <Illustration k={slug} />
+            </div>
+          ) : null}
         </div>
         <div class="divider" />
         {bodyHtml ? <div class="richtext" dangerouslySetInnerHTML={{ __html: bodyHtml }} /> : null}

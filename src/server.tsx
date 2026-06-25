@@ -26,7 +26,16 @@ const notFound = (s: string) => new Response(s, { status: 404, headers: { "conte
 // EXCLUDE /icd (cms POSTs the ICD push there) and /healthz (Fly health check) —
 // redirecting those would break content pushes / mark the machine unhealthy.
 app.use("*", async (c, next) => {
-  const host = c.req.header("host") || "";
+  // On HTTP/2 the Host header is empty (replaced by :authority), so fall back to
+  // the request URL's host — otherwise the redirect never fires on Fly.
+  let host = c.req.header("host") || "";
+  if (!host) {
+    try {
+      host = new URL(c.req.url).host;
+    } catch {
+      /* ignore */
+    }
+  }
   const path = c.req.path;
   if (c.req.method === "GET" && host.startsWith("broberg-ai.fly.dev") && path !== "/icd" && path !== "/healthz") {
     return c.redirect(`https://broberg.ai${path}`, 301);

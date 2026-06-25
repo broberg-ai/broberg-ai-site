@@ -867,14 +867,25 @@ footer {
 }
 /* Flagship detail page */
 .plat-detail-head {
-  display: flex;
-  gap: 22px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 30px;
+  align-items: center;
 }
-@media (max-width: 620px) {
+.plat-detail-head.one-col {
+  grid-template-columns: 1fr;
+}
+.plat-detail-text .logot-lg {
+  margin-bottom: 14px;
+}
+@media (max-width: 760px) {
   .plat-detail-head {
-    flex-direction: column;
-    gap: 14px;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .plat-illu {
+    order: -1;
+    max-width: 340px;
   }
 }
 .logot-lg {
@@ -885,6 +896,43 @@ footer {
 .logot-lg svg {
   width: 36px;
   height: 36px;
+}
+/* Per-flagship illustrations (Illustrations.tsx) */
+.illu-snap {
+  animation: illu-snap 4.4s ease-in-out infinite;
+}
+.illu-snap.d2 {
+  animation-delay: 1.4s;
+}
+@keyframes illu-snap {
+  0% {
+    transform: translateX(-120px);
+    opacity: 0;
+  }
+  22%,
+  82% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.illu-glow {
+  animation: illu-glow 3.2s ease-in-out infinite;
+}
+@keyframes illu-glow {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.illu-flow {
+  animation: sflow 3s linear infinite;
 }
 .richtext {
   max-width: 760px;
