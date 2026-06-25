@@ -971,12 +971,56 @@ footer {
 .richtext a:hover {
   color: var(--blue-light);
 }
-.richtext ul,
-.richtext ol {
+.richtext ul {
   margin: 12px 0 12px 22px;
 }
-.richtext li {
+.richtext ul li {
   margin: 7px 0;
+}
+/* Ordered lists (Key features) render as the pitch's circled-number component:
+   a numbered disc + a vertical connector line between steps. */
+.richtext ol {
+  list-style: none;
+  counter-reset: feat;
+  margin: 18px 0;
+  padding: 0;
+}
+.richtext ol > li {
+  counter-increment: feat;
+  position: relative;
+  padding-left: 50px;
+  min-height: 32px;
+  margin: 0 0 18px;
+}
+.richtext ol > li::before {
+  content: counter(feat);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--blue-glow);
+  border: 1px solid rgba(0, 178, 255, 0.3);
+  color: var(--blue);
+  font-family: var(--fb);
+  font-weight: 700;
+  font-size: 14px;
+}
+.richtext ol > li::after {
+  content: "";
+  position: absolute;
+  left: 15.5px;
+  top: 36px;
+  bottom: -18px;
+  width: 1px;
+  background: rgba(0, 178, 255, 0.2);
+}
+.richtext ol > li:last-child::after {
+  display: none;
 }
 .richtext code {
   background: var(--card);
