@@ -934,6 +934,139 @@ footer {
 .illu-flow {
   animation: sflow 3s linear infinite;
 }
+
+/* Trail bespoke page bits (reusable across flagships) */
+.flowchips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.flowchip {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 100px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+}
+.flowchip-arrow {
+  color: var(--orange);
+  font-size: 13px;
+}
+.trail-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 18px;
+  margin-top: 30px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .trail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.ctable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.ctable th,
+.ctable td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--card-border);
+}
+.ctable th {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.ctable td {
+  color: var(--muted);
+}
+.ctable td:first-child {
+  color: var(--light);
+  font-weight: 500;
+}
+.ctable-win {
+  color: var(--blue) !important;
+}
+.stat-trio {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.stat-card {
+  text-align: center;
+  padding: 18px;
+}
+.stat-card .stat-num {
+  font-family: var(--fd);
+  font-size: 38px;
+  font-weight: 600;
+  color: var(--blue);
+  line-height: 1;
+}
+.stat-card .stat-cap {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 7px;
+}
+.worksteps {
+  list-style: none;
+  counter-reset: ws;
+  margin: 0;
+  padding: 0;
+  max-width: 760px;
+}
+.worksteps > li {
+  counter-increment: ws;
+  position: relative;
+  padding-left: 54px;
+  margin: 0 0 22px;
+}
+.worksteps > li::before {
+  content: counter(ws);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--blue-glow);
+  border: 1px solid rgba(0, 178, 255, 0.3);
+  color: var(--blue);
+  font-weight: 700;
+}
+.worksteps > li::after {
+  content: "";
+  position: absolute;
+  left: 16.5px;
+  top: 38px;
+  bottom: -22px;
+  width: 1px;
+  background: rgba(0, 178, 255, 0.2);
+}
+.worksteps > li:last-child::after {
+  display: none;
+}
+.workstep-title {
+  font-weight: 600;
+  color: var(--light);
+  margin-bottom: 4px;
+}
+.worksteps p {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
 .richtext {
   max-width: 760px;
   color: var(--muted);

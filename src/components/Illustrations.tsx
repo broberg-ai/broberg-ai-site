@@ -117,7 +117,62 @@ const buddy = wrap(
   </g>,
 );
 
-const REGISTRY: Record<string, JSX.Element> = { components, cardmem, buddy };
+// A growing memory graph / second brain: nodes (experiences, decisions) linked
+// by thin edges, new nodes sprouting in, and an active path lighting up orange
+// when "searched" (RAG). Nails: knowledge learned once, remembered forever; the
+// graph grows wiser over time.
+const TR_NODES = [
+  { cx: 180, cy: 140, r: 13, core: true },
+  { cx: 92, cy: 74 },
+  { cx: 268, cy: 78 },
+  { cx: 304, cy: 158 },
+  { cx: 250, cy: 222 },
+  { cx: 138, cy: 232 },
+  { cx: 60, cy: 168 },
+  { cx: 112, cy: 118 },
+  { cx: 232, cy: 122 },
+];
+const TR_EDGES = [
+  [0, 7], [0, 8], [0, 4], [0, 5], [7, 1], [7, 6], [8, 2], [8, 3], [4, 3], [5, 6],
+];
+const TR_PATH = [
+  [0, 8], [8, 2],
+]; // active retrieval path (orange)
+const trail = wrap(
+  <g>
+    <g stroke="rgba(0,178,255,.22)" stroke-width="1.2">
+      {TR_EDGES.map(([a, b], i) => (
+        <line key={i} x1={TR_NODES[a].cx} y1={TR_NODES[a].cy} x2={TR_NODES[b].cx} y2={TR_NODES[b].cy} />
+      ))}
+    </g>
+    {/* active retrieval path — lights up orange */}
+    <g class="illu-flow" stroke="#F3522C" stroke-width="2" stroke-dasharray="3 5" fill="none">
+      {TR_PATH.map(([a, b], i) => (
+        <line key={i} x1={TR_NODES[a].cx} y1={TR_NODES[a].cy} x2={TR_NODES[b].cx} y2={TR_NODES[b].cy} />
+      ))}
+    </g>
+    {TR_NODES.map((n, i) =>
+      n.core ? (
+        <g key={i}>
+          <circle class="pulse-core" cx={n.cx} cy={n.cy} r={n.r} fill="rgba(0,178,255,.14)" stroke="#00b2ff" stroke-width="1.6" />
+          <circle cx={n.cx} cy={n.cy} r="4.5" fill="#40c8ff" />
+        </g>
+      ) : (
+        <circle
+          class="node"
+          key={i}
+          cx={n.cx}
+          cy={n.cy}
+          r="6"
+          fill={i === 2 ? "#F3522C" : "#00b2ff"}
+          style={`animation-delay:${i * 0.45}s`}
+        />
+      ),
+    )}
+  </g>,
+);
+
+const REGISTRY: Record<string, JSX.Element> = { components, cardmem, buddy, trail };
 
 export function hasIllustration(k: string): boolean {
   return k.toLowerCase() in REGISTRY;

@@ -14,6 +14,7 @@ import { loadHome, loadPlatform, loadPlatforms } from "@/content/compose.ts";
 import { richtextBlock } from "@/content/richtext.ts";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
+import { TrailDetail } from "@/components/TrailDetail.tsx";
 import type { PlatformsData } from "@/content/types.ts";
 import { flagshipsSegment } from "@/i18n.ts";
 
@@ -63,6 +64,14 @@ export async function renderFlagships(locale: Locale): Promise<string> {
 // Flagship detail — renders the cms platform doc in the brand design. `body` is
 // richtext (Markdown) → richtextBlock. cms fills the content; this is the shell.
 export async function renderFlagshipDetail(locale: Locale, slug: string): Promise<string | null> {
+  // trail gets a bespoke, richer page (cms #117.2).
+  if (slug.toLowerCase() === "trail") {
+    return page(<TrailDetail slug="trail" />, {
+      title: "trail — videnmotor & anden hjerne — broberg.ai",
+      description: "Trail kompilerer dit materiale til en levende brand intelligence base — AI der skriver i din stemme, med dine fakta.",
+      locale,
+    });
+  }
   const doc = await loadPlatform(locale, slug);
   if (!doc) return null;
   const d = (doc.data ?? {}) as Record<string, unknown>;
