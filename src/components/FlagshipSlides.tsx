@@ -221,48 +221,10 @@ const trail: SlideData = {
   },
 };
 
-const cms: SlideData = {
-  slug: "cms",
-  s1: {
-    eyebrow: "cms · @webhouse/cms",
-    heading: "Det tekniske fundament bag AI-native sites.",
-    lead: "Motoren bag hvert site i broberg.ai-universet — en AI-native content-motor bygget fra bunden. Ikke WordPress, ikke Wix: framework-agnostisk, statisk-først (0 runtime-JS), 64 integrerede AI-værktøjer. Skemaet er kode; indholdet er fil-baseret JSON.",
-    chips: ["22 felttyper", "Statisk output", "Media + AI-alt-tekst", "SEO + GEO", "i18n", "Formularer", "Interaktive", "Roller"],
-  },
-  s2: {
-    eyebrow: "Tre måder at lave content",
-    heading: "Chat med dit site — eller lad agenterne om det.",
-    steps: [
-      ["Indbygget chatbot", "Chat med dit site i admin'en (samme 64 værktøjer som MCP'en) og opret alt content via chat."],
-      ["Mobil-app", "Det samme fra telefonen: chat med dit site, content på farten."],
-      ["Selvstyrende content-agenter", "Content der bygger sig selv — AI skriver, oversætter og optimerer på egen hånd."],
-      ["Du kuraterer", "AI Lock sikrer at agenter aldrig overskriver en menneskelig rettelse."],
-    ],
-    table: {
-      cols: ["Egenskab", "WordPress", "@webhouse/cms"],
-      rows: [
-        ["Loadtid (mobil)", "3–6 sek", "0.4–0.8 sek"],
-        ["Lighthouse", "55–70", "95–100"],
-        ["Sikkerhed", "43% af alle hacks", "Ingen CMS-angreb"],
-        ["AI", "Plugin-baseret", "Native · 64 værktøjer"],
-        ["GEO", "Ingen", "llms.txt · RSS · JSON-LD"],
-      ],
-    },
-  },
-  s3: {
-    eyebrow: "Hvorfor det betyder noget",
-    heading: "Samme motor bag hver kunde — med en feature ingen andre har.",
-    prose: "Hvert site i universet kører på samme CMS, så forbedringer og sikkerhed forplanter sig til alle på én gang. Og den har AI Lock — feltbaseret content-beskyttelse så AI aldrig overskriver hvad et menneske har redigeret. Det eneste CMS i verden med den funktion.",
-    stats: [
-      ["95+", "Lighthouse"],
-      ["0", "runtime-JS"],
-      ["64", "AI-værktøjer"],
-    ],
-    cta: { label: "Besøg webhouse.app", href: "https://webhouse.app" },
-  },
-};
-
-const REGISTRY: Record<string, SlideData> = { components, cardmem, buddy, trail, cms };
+// cms is intentionally NOT here yet — its 3-slide copy is being consolidated by
+// the cms session into one final spec (cms #135). Until then /flagskibe/cms
+// falls back to the generic page so no half-version is live.
+const REGISTRY: Record<string, SlideData> = { components, cardmem, buddy, trail };
 
 export function hasSlides(slug: string): boolean {
   return slug.toLowerCase() in REGISTRY;
