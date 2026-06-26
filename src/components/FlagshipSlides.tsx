@@ -683,7 +683,7 @@ const cms: FlagshipPage = {
 const aiSdk: FlagshipPage = {
   slug: "ai-sdk",
   description:
-    "Hvert AI-kald i broberg.ai-universet går gennem ÉN facade — Claude, GPT, Gemini, Mistral, Black Forest Labs. Skift model ved at ændre et tier-ord, ikke din kode. Og er data personfølsomt, bliver det i Europa.",
+    "Hvert AI-kald i broberg.ai-universet går gennem ÉN facade — Claude, GPT, Gemini, Mistral, Black Forest Labs. Skift model ved at ændre et niveau, ikke din kode. Og er data personfølsomt, bliver det i Europa.",
   slides: [
     {
       hero: true,
@@ -692,7 +692,7 @@ const aiSdk: FlagshipPage = {
       blocks: [
         {
           k: "lead",
-          html: "Hvert AI-kald i broberg.ai-universet går gennem ÉN facade — Claude, GPT, Gemini, Mistral, Black Forest Labs. Skift model ved at ændre et <em>tier-ord</em>, ikke din kode. Og er data personfølsomt, bliver det i Europa.",
+          html: "Hvert AI-kald i broberg.ai-universet går gennem ÉN facade — Claude, GPT, Gemini, Mistral, Black Forest Labs. Skift model ved at ændre et <em>niveau</em>, ikke din kode. Og er data personfølsomt, bliver det i Europa.",
         },
         {
           k: "chips",
@@ -734,10 +734,10 @@ const aiSdk: FlagshipPage = {
           label: "Rå provider-SDK vs. ai-sdk",
           cols: ["Dimension", "Direkte", "ai-sdk"],
           rows: [
-            ["Skift udbyder", "Overalt i koden", "Ét tier-ord"],
+            ["Skift udbyder", "Overalt i koden", "Ét niveau"],
             ["Pris-overblik", "Ingen", "tokens + USD + latency pr. kald"],
-            ["Når en model dør", "Crash hos brugeren", "Graceful fallback (F022)"],
-            ["Følsom data", "Manuelt ansvar", "EU-tier indbygget"],
+            ["Når en model dør", "Crash hos brugeren", "Graceful fallback"],
+            ["Følsom data", "Manuelt ansvar", "Automatisk i EU"],
           ],
         },
       ],
@@ -748,14 +748,14 @@ const aiSdk: FlagshipPage = {
       blocks: [
         {
           k: "prose",
-          text: "ai-sdk vælger den bedste model til opgaven — men i samme sekund data er personfølsomt, ruter det AUTOMATISK til en europæisk model (Mistral, Paris-hosted, ingen Schrems II). Aldrig US, aldrig CN. Du skal ikke huske det; det er indbygget.",
+          text: "ai-sdk vælger den bedste model til opgaven — men i samme sekund data er personfølsomt, dirigeres det AUTOMATISK til en europæisk model (Mistral, Paris-hosted, ingen Schrems II). Aldrig US, aldrig CN. Du skal ikke huske det; det er indbygget.",
         },
         {
           k: "cards",
           items: [
             ["Fysioterapeut", "Patientdata — journaler og helbredsoplysninger der aldrig må forlade EU."],
             ["Bureau", "Klientdata på tværs af mange kunder — beskyttet pr. kald, automatisk."],
-            ["Fagekspert", "Helbred / journal og anden følsom faglig viden — EU-tier indbygget."],
+            ["Fagekspert", "Helbred / journal og anden følsom faglig viden — automatisk i EU."],
           ],
         },
         {

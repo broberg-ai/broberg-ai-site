@@ -227,8 +227,8 @@ const cms = wrap(
 
 // One facade routing out to many providers: a central ai-sdk hub distributes to
 // five provider satellites (Claude / GPT / Gemini / Mistral / BFL) over pulsing
-// links; the EU route (Mistral) is the orange accent. Nails: change a tier-word,
-// not your code — and sensitive data stays in Europe.
+// links; the EU route (Mistral) is the orange accent. Nails: change a level-word
+// ("niveau"), not your code — and sensitive data stays in Europe.
 const AISDK_NODES = [
   { cx: 180, cy: 48, label: "Claude", lx: 180, ly: 33, anchor: "middle" },
   { cx: 267, cy: 112, label: "GPT", lx: 281, ly: 116, anchor: "start" },
