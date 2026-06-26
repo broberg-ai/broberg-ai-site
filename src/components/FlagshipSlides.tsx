@@ -371,31 +371,13 @@ const components: FlagshipPage = {
         },
         {
           k: "table",
-          label: "Sammenlign",
+          label: "Genbrug vs. genopfind",
           cols: ["Dimension", "Genopfind", "components"],
           rows: [
             ["Hastighed", "Fra bunden hver gang", "Samlet af færdige dele"],
             ["Konsistens", "Driver fra hinanden", "Ens overalt"],
             ["Sikkerhed", "Fixes pr. projekt", "Fix for hele flåden"],
             ["Vedligehold", "N kopier", "Én kilde"],
-          ],
-        },
-      ],
-    },
-    {
-      eyebrow: "For dig som kunde",
-      heading: "Dit produkt arver hele flådens kvalitet.",
-      blocks: [
-        {
-          k: "prose",
-          text: "Du møder aldrig pakkerne — men du får gavn af dem hver dag. Dit site bygges af dele der allerede kører på snesevis af andre produkter: afprøvet i drift, ikke skrevet fra bunden til dig. Det giver færre fejl, hurtigere levering, og en sikkerhed du ikke betaler for at opfinde — retter vi et hul ét sted, er dit site dækket samme dag. Byggeklodser som login, betaling, mail og push følger med — uden regningen for at bygge dem.",
-        },
-        {
-          k: "stats",
-          items: [
-            ["Afprøvet", "i drift"],
-            ["Fix ét sted", "dækket overalt"],
-            ["Ingen", "gen-bygning"],
           ],
         },
       ],
