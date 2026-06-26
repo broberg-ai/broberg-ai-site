@@ -364,6 +364,37 @@ const pitchVault = wrap(
   </g>,
 );
 
+// Managed drift: a server rack of stacked units with calmly pulsing status lights
+// (alive + stable, never alarming), an orange data-flow feeding in, and an EU
+// star-ring / Stockholm badge. Sky #38bdf8 + orange accent. Nails: we run it, in EU.
+const hosting = wrap(
+  <g>
+    {/* orange data-flow into the rack */}
+    <path class="illu-flow" d="M34 121 H92" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" />
+    {/* server rack — 4 stacked units */}
+    {[0, 1, 2, 3].map((k) => {
+      const y = 66 + k * 38;
+      return (
+        <g key={k}>
+          <rect x="96" y={y} width="120" height="30" rx="6" fill="rgba(56,189,248,.06)" stroke="#38bdf8" stroke-width="1.5" />
+          <circle class="node" cx="109" cy={y + 15} r="3.4" fill={k === 0 ? "#F3522C" : "#38bdf8"} style={`animation-delay:${k * 0.5}s`} />
+          <line x1="122" y1={y + 11} x2="200" y2={y + 11} stroke="rgba(125,211,252,.35)" stroke-width="1.3" />
+          <line x1="122" y1={y + 19} x2="180" y2={y + 19} stroke="rgba(125,211,252,.22)" stroke-width="1.3" />
+        </g>
+      );
+    })}
+    {/* EU star-ring + Stockholm badge */}
+    <circle cx="282" cy="74" r="27" fill="rgba(56,189,248,.08)" stroke="#38bdf8" stroke-width="1.4" />
+    {Array.from({ length: 8 }, (_, i) => {
+      const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+      return <circle key={i} cx={282 + Math.cos(a) * 14} cy={74 + Math.sin(a) * 14} r="1.5" fill="#7dd3fc" />;
+    })}
+    <text x="282" y="118" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(240,244,248,.8)">
+      Stockholm
+    </text>
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -374,6 +405,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   upmetrics,
   contracts,
   "pitch-vault": pitchVault,
+  hosting,
 };
 
 export function hasIllustration(k: string): boolean {

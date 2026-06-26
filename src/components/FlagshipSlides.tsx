@@ -1188,6 +1188,95 @@ const pitchVault: FlagshipPage = {
   ],
 };
 
+// hosting (universe-node "Drift") — 5 slides, gradient t=0/.25/.5/.75/1, no
+// external CTA. Qualitative, no SLA numbers (cms #184/#185, Christian-approved).
+const hosting: FlagshipPage = {
+  slug: "hosting",
+  description:
+    "Managed hosting & drift — hele kæden fra domæne til sikker drift i EU. Vi bygger det ikke bare; vi driver det, og du tænker aldrig på servere, deploys, backups eller nedbrud.",
+  slides: [
+    {
+      hero: true,
+      eyebrow: "drift · managed · EU",
+      heading: "Vi bygger det ikke bare — vi driver det.",
+      blocks: [
+        {
+          k: "lead",
+          text: "De fleste bureauer afleverer en hjemmeside og siger farvel. Vi bliver. Din side eller app kører, er sikker og ligger i Europa — og du tænker aldrig på servere, deploys, backups eller nedbrud. Vi ejer hele kæden, fra domænet registreres til tjenesten kører i drift.",
+        },
+        {
+          k: "chips",
+          items: ["Domæne", "DNS", "Deploy", "Oppetid", "Backup", "Incident-respons"],
+        },
+      ],
+    },
+    {
+      eyebrow: "Fuld kontrol",
+      heading: "Fra domæne til drift — hele kæden, ét sted.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Vi kører vores egen DNS og styrer hele den digitale forsyningskæde: domæneregistrering, DNS, hosting og sikker drift. Ingen tredjepart at pege fingre ad når noget driller — ét team ejer det ende til ende. Hurtigere svar, færre led der kan svigte, og ansvaret falder aldrig mellem to stole.",
+        },
+      ],
+    },
+    {
+      eyebrow: "Oppetid",
+      heading: "Bygget til at blive ved med at køre.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Replikering og redundans: fejler én ting, tager en anden over. Backups kører i baggrunden. Vi overvåger oppetiden, så et problem opdages før dine brugere mærker det. Dit site går ikke i sort, mens du sover.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["Redundans", "+ replikering"],
+            ["Backups", "kører"],
+            ["Overvåget", "oppetid"],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "GDPR · EU",
+      heading: "Dine data forlader aldrig Europa.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Vi drifter alt i EU — fortrinsvist i Stockholm. GDPR er ikke noget vi bolter på bagefter; det er udgangspunktet. Ingen amerikansk sky, ingen Schrems II-gråzone, ingen data der rejser ud af Europa. For dig og dine kunder: ro i maven, der hvor det betyder mest.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["100%", "EU"],
+            ["Stockholm", "EU-region"],
+            ["GDPR", "by default"],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Managed",
+      heading: "Du sover. Vi holder øje.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Full service: vi håndterer deploys (fra gem til live), overvågning, backups og incident-respons. Du driver ikke servere, opdaterer ikke certifikater og vågner ikke kl. 3 til en alarm — det gør vi. Du fokuserer på din forretning; vi holder det kørende.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["Deploys", "håndteret"],
+            ["Døgnet rundt", "overvåget"],
+            ["Incident", "respons"],
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const REGISTRY: Record<string, FlagshipPage> = {
   components,
   cardmem,
@@ -1198,6 +1287,7 @@ const REGISTRY: Record<string, FlagshipPage> = {
   upmetrics,
   contracts,
   "pitch-vault": pitchVault,
+  hosting,
 };
 
 export function hasSlides(slug: string): boolean {
