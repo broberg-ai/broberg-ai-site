@@ -172,7 +172,60 @@ const trail = wrap(
   </g>,
 );
 
-const REGISTRY: Record<string, JSX.Element> = { components, cardmem, buddy, trail };
+// Speak to your site → a rendered page, guarded by AI Lock. A voice bubble flows
+// into a browser frame (header dots + content + a palette of tools); an orange
+// shield-lock badge guards the top-right corner. Nails: chat-driven CMS, 64
+// værktøjer, and the unique human-edit protection (AI Lock).
+const CMS_TOOLS = Array.from({ length: 16 }, (_, i) => ({
+  cx: 196 + (i % 8) * 14,
+  cy: 162 + Math.floor(i / 8) * 16,
+}));
+const cms = wrap(
+  <g>
+    {/* voice / chat bubble — "talk to your site" */}
+    <g>
+      <rect x="24" y="98" width="86" height="56" rx="14" fill="rgba(0,178,255,.10)" stroke="#00b2ff" stroke-width="1.6" />
+      <path d="M44 154 v16 l16 -16 Z" fill="rgba(0,178,255,.10)" stroke="#00b2ff" stroke-width="1.6" />
+      <rect x="60" y="112" width="14" height="22" rx="7" fill="none" stroke="#40c8ff" stroke-width="1.6" />
+      <path d="M53 128 a14 14 0 0 0 28 0" fill="none" stroke="#40c8ff" stroke-width="1.6" />
+      <path d="M67 142 v6" stroke="#40c8ff" stroke-width="1.6" />
+    </g>
+    {/* flow → */}
+    <path class="illu-flow" d="M118 126 H170" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" />
+    {/* rendered page */}
+    <g>
+      <rect x="178" y="54" width="156" height="168" rx="12" fill="rgba(0,178,255,.05)" stroke="#00b2ff" stroke-width="1.6" />
+      <line x1="178" y1="80" x2="334" y2="80" stroke="rgba(0,178,255,.4)" stroke-width="1.2" />
+      <circle cx="194" cy="67" r="3" fill="#F3522C" />
+      <circle cx="206" cy="67" r="3" fill="rgba(0,178,255,.7)" />
+      <circle cx="218" cy="67" r="3" fill="#34d399" />
+      <rect x="196" y="96" width="78" height="8" rx="4" fill="rgba(240,244,248,.5)" />
+      <rect x="196" y="114" width="120" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+      <rect x="196" y="126" width="104" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+      <rect x="196" y="138" width="114" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+      {/* tool palette — 64 værktøjer */}
+      {CMS_TOOLS.map((t, i) => (
+        <circle
+          class={i % 5 === 0 ? "node" : undefined}
+          key={i}
+          cx={t.cx}
+          cy={t.cy}
+          r="3"
+          fill={i === 3 ? "#F3522C" : i === 10 ? "#34d399" : "rgba(0,178,255,.55)"}
+          style={i % 5 === 0 ? `animation-delay:${i * 0.3}s` : undefined}
+        />
+      ))}
+    </g>
+    {/* AI Lock shield badge (top-right corner) */}
+    <g>
+      <path d="M312 40 l18 6 v13 c0 12 -9 19 -18 22 c-9 -3 -18 -10 -18 -22 v-13 Z" fill="rgba(243,82,44,.16)" stroke="#F3522C" stroke-width="1.6" />
+      <rect x="305" y="60" width="14" height="11" rx="2.5" fill="none" stroke="#F3522C" stroke-width="1.5" />
+      <path d="M308 60 v-3 a4 4 0 0 1 8 0 v3" fill="none" stroke="#F3522C" stroke-width="1.5" />
+    </g>
+  </g>,
+);
+
+const REGISTRY: Record<string, JSX.Element> = { components, cardmem, buddy, trail, cms };
 
 export function hasIllustration(k: string): boolean {
   return k.toLowerCase() in REGISTRY;

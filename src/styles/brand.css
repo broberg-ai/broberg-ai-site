@@ -1081,24 +1081,57 @@ footer {
   line-height: 1.6;
 }
 
-/* 3-slide flagship colour journey: blue → transition → orange (cms #121) */
-.fslide-1 {
-  background: radial-gradient(ellipse 90% 55% at 50% -5%, rgba(0, 178, 255, 0.08), transparent 68%);
+/* N-slide flagship colour journey: each <section.fslide> carries --t (0=blue →
+   1=orange, computed i/(n-1)); the accent + background tint interpolate so the
+   page flows blue→orange across any slide count (cms FINAL spec #137/#138). */
+.fslide {
+  --fs-accent: color-mix(in oklab, var(--blue), var(--orange) calc(var(--t, 0) * 100%));
+  --fs-accent-text: color-mix(in oklab, var(--blue), var(--orange-text) calc(var(--t, 0) * 100%));
+  background: radial-gradient(
+    ellipse 100% 58% at 50% -6%,
+    color-mix(in srgb, var(--fs-accent) 8%, transparent),
+    transparent 70%
+  );
 }
-.fslide-2 {
-  background: linear-gradient(180deg, rgba(0, 178, 255, 0.05) 0%, rgba(243, 82, 44, 0.05) 100%);
+.fslide .eyebrow {
+  color: var(--fs-accent-text);
 }
-.fslide-3 {
-  background: radial-gradient(ellipse 90% 60% at 50% 108%, rgba(243, 82, 44, 0.1), transparent 68%);
+.fslide .divider {
+  background: linear-gradient(90deg, var(--fs-accent), transparent);
 }
-.fslide-3 .eyebrow {
-  color: var(--orange-text);
+/* chat-demo bubbles (cms slide 2) */
+.chatdemo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 560px;
+  margin-top: 22px;
 }
-.fslide-3 .eyebrow::before {
-  background: var(--blue);
+.chatbubble {
+  padding: 11px 15px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 86%;
 }
-.fslide-3 .divider {
-  background: linear-gradient(90deg, var(--orange), var(--blue));
+.chatbubble.you {
+  align-self: flex-end;
+  background: var(--blue-glow);
+  border: 1px solid rgba(0, 178, 255, 0.3);
+  border-bottom-right-radius: 4px;
+  color: var(--light);
+}
+.chatbubble.ai {
+  align-self: flex-start;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-bottom-left-radius: 4px;
+  color: var(--muted);
+}
+.callout {
+  margin-top: 20px;
+  max-width: 620px;
+  border-color: rgba(0, 178, 255, 0.3);
 }
 .stat-row {
   display: grid;
