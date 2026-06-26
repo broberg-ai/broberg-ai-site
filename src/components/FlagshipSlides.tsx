@@ -406,23 +406,23 @@ const components: FlagshipPage = {
 const cardmem: FlagshipPage = {
   slug: "cardmem",
   description:
-    "cardmem er motoren der styrer hvert projekt i universet — fra første tanke til færdigt, live produkt. Idéer bliver til skrevne planer, planer til opgaver, og opgaver til kode som AI-agenter bygger. Men intet kører frit: hver ændring skal igennem et kvalitetstjek der åbner den i en rigtig browser, før den er ‘færdig’. Du beholder overblikket hele vejen — og din kunde kan følge med live.",
+    "cardmem er den AI-native projektstyring der binder idé sammen med færdig løsning. Tanker bliver til planer, planer til opgaver, og opgaver til kode som AI-agenter bygger — mens du bliver i førersædet.",
   slides: [
     {
       hero: true,
       eyebrow: "cardmem · broberg.ai's kerne",
-      heading: "Se din idé blive til et live produkt — sporbart hele vejen.",
+      heading: "Fra idé til færdig løsning — sporbart.",
       blocks: [
         {
           k: "lead",
-          text: "cardmem er motoren der styrer hvert projekt i universet — fra første tanke til færdigt, live produkt. Idéer bliver til skrevne planer, planer til opgaver, og opgaver til kode som AI-agenter bygger. Men intet kører frit: hver ændring skal igennem et kvalitetstjek der åbner den i en rigtig browser, før den er ‘færdig’. Du beholder overblikket hele vejen — og din kunde kan følge med live.",
+          text: "cardmem er den AI-native projektstyring der binder idé sammen med færdig løsning. Tanker bliver til planer, planer til opgaver, og opgaver til kode som AI-agenter bygger — mens du bliver i førersædet.",
         },
-        { k: "chips", items: ["Idé", "Plan", "Opgavetavle", "AI-agent bygger", "Kvalitetstjek", "Live"] },
+        { k: "chips", items: ["Idé", "Plan", "Opgavetavle", "AI-agent", "Kvalitetstjek", "Live"] },
       ],
     },
     {
       eyebrow: "Sådan virker det",
-      heading: "En løkke der gentager sig — til det er præcis rigtigt.",
+      heading: "Løkken der gentager sig til det er færdigt.",
       blocks: [
         {
           k: "steps",
@@ -437,47 +437,7 @@ const cardmem: FlagshipPage = {
         },
         {
           k: "prose",
-          text: "Kvalitetstjekket kan sende en opgave TILBAGE til fix før den når Live — løkken kører igen og igen, og produktet bliver bedre for hver runde, indtil det er præcis som det skal være.",
-        },
-      ],
-    },
-    {
-      eyebrow: "Når vi bygger",
-      heading: "Hastighed uden at miste kontrollen.",
-      blocks: [
-        {
-          k: "prose",
-          text: "AI-agenter bygger hurtigt — men hver ændring passerer en gate før den er ‘done’. Hver feature har en skreven plan FØR første linje kode (ingen scope-drift, intet tabt rationale), og hver leverance bærer et screenshot der beviser den virker i en rigtig browser. Ikke ‘tests grønne’ — men ‘se, det virker’. Sådan leverer vi i et tempo der ellers kræver et helt team.",
-        },
-        {
-          k: "stats",
-          items: [
-            ["Plan", "før kode"],
-            ["Ægte", "browser-tjek"],
-            ["Intet", "går live uventet"],
-          ],
-        },
-      ],
-    },
-    {
-      eyebrow: "For dig som kunde",
-      badge: "rulles ud nu",
-      heading: "Følg dit projekt blive bygget — i realtid.",
-      blocks: [
-        {
-          k: "prose",
-          text: "Kundeportalen giver dig et direkte vindue ind i dit eget projekt: live-tavlen (hvad bygges nu, hvad er næst, hvad er leveret), designs du godkender FØR de bygges, og bevis på at hver leverance virker. Fuld åbenhed, nul gætteri.",
-        },
-        {
-          k: "table",
-          label: "Uden vs. med portalen",
-          cols: ["", "Sådan plejer det at være", "Med cardmem-portalen"],
-          rows: [
-            ["Status", "Spørg og vent", "Live-tavle, altid opdateret"],
-            ["Design", "Set først når det er bygget", "Godkendt FØR der bygges"],
-            ["Leverance", "“Det er done” (tro os)", "Bevis pr. leverance — se det virke"],
-            ["Overblik", "Mails og møder", "Ét vindue ind i projektet"],
-          ],
+          text: "Det er ikke en engangs-rejse. Hele løkken kan køres igen og igen — du ser en version live, justerer, og samme workflow ruller forfra. Produktet bliver bedre for hver runde, indtil det er præcis som det skal være.",
         },
       ],
     },
@@ -486,11 +446,15 @@ const cardmem: FlagshipPage = {
       heading: "Intet går live uventet.",
       blocks: [
         {
+          k: "prose",
+          text: "Hver opgave har en skreven plan og klare succeskriterier, og bliver tjekket både visuelt og funktionelt før den lander. Indbygget kvalitetskontrol åbner hver ændring i en rigtig browser og verificerer den — fejl fanges før brugerne ser dem.",
+        },
+        {
           k: "stats",
           items: [
             ["∞", "iterationer"],
             ["Plan", "før kode"],
-            ["Du + kunde", "i førersædet"],
+            ["Du", "i førersædet"],
           ],
         },
       ],
@@ -501,77 +465,52 @@ const cardmem: FlagshipPage = {
 const buddy: FlagshipPage = {
   slug: "buddy",
   description:
-    "buddy er det altid-vågne lag i universet: det læser hver eneste ændring kritisk igennem før den lander, lader AI-medarbejderne tale sammen på tværs af projekter, og vækker dem præcis når der er arbejde.",
+    "buddy er det altid-vågne lag i broberg.ai — en lokal makker der kører ved siden af hver AI-session og holder øje med at intet går skævt, og at alle motorer spiller sammen.",
   slides: [
     {
       hero: true,
       eyebrow: "buddy · altid vågen",
-      heading: "Et AI-hold der bygger som ét — med kvalitetskontrol indbygget.",
+      heading: "Den der holder øje — døgnet rundt.",
       blocks: [
         {
           k: "lead",
-          text: "buddy er det altid-vågne lag i universet: det læser hver eneste ændring kritisk igennem før den lander, lader AI-medarbejderne tale sammen på tværs af projekter, og vækker dem præcis når der er arbejde.",
-        },
-        {
-          k: "prose",
-          text: "Fordelen for os: vi bygger hurtigt, men aldrig blindt. Hver ændring får en medlæser der fanger fejl, smutveje og påstande uden dækning — så hastighed ikke koster kontrol.",
+          text: "buddy er det altid-vågne lag i broberg.ai — en lokal makker der kører ved siden af hver AI-session og holder øje med at intet går skævt, og at alle motorer spiller sammen.",
         },
         {
           k: "chips",
-          items: [
-            "Kritisk medlæser",
-            "Fanger fejl før de lander",
-            "Fælles samtalelinje",
-            "Vækker ved arbejde",
-            "Døgnet rundt",
-            "Fælles hukommelse",
-            "Stopknap",
-          ],
+          items: ["Kritisk medlæser", "Fælles samtalelinje", "Planlagte job", "Stopknap", "Hukommelse"],
         },
       ],
     },
     {
       eyebrow: "Sådan virker det",
-      heading: "For dig som kunde: bedre arbejde, hurtigere.",
+      heading: "Ser hver tur. Binder flåden sammen.",
       blocks: [
         {
           k: "steps",
           items: [
-            ["Færre fejl når dig", "Hver ændring er læst kritisk igennem før den ship'er."],
-            [
-              "Hurtigere levering",
-              "Holdet arbejder døgnet rundt og koordinerer som ét, så dit projekt skrider frem — også mens du sover.",
-            ],
-            ["Samme standard overalt", "Ét kvalitetsniveau på tværs af alt du modtager."],
-            ["Intet tabt", "Beslutninger om dit projekt holdes i fælles hukommelse mellem hænder."],
-          ],
-        },
-        {
-          k: "table",
-          label: "Uden vs. med",
-          cols: ["Dimension", "Uden", "Med"],
-          rows: [
-            ["Kvalitetskontrol", "Afhænger af én udvikler", "Hver ændring medlæst kritisk"],
-            ["Fremdrift", "Kontortid", "Døgnet rundt"],
-            ["Overblik", "Spredt", "Ét system, én hukommelse"],
+            ["Læser hver ændring kritisk igennem", "Fanger fejl, smutveje og påstande uden dækning."],
+            ["Lader sessionerne tale sammen på tværs af projekter", "Og sender det vigtigste til din telefon."],
+            ["Vækker en session præcis når der er arbejde", ""],
+            ["Holder vigtige beslutninger i den fælles hukommelse", ""],
           ],
         },
       ],
     },
     {
       eyebrow: "Hvorfor det betyder noget",
-      heading: "Ét hold, ikke ni løsrevne dele.",
+      heading: "Ét system, ikke ni løsrevne dele.",
       blocks: [
         {
           k: "prose",
-          text: "buddy er grunden til at de mange motorer opfører sig som ét hold. Det fanger fejlene mens de er små, holder beskederne flydende og er vågent døgnet rundt — så du får et produkt der er bygget hurtigt og holdt i kort snor på samme tid.",
+          text: "buddy er grunden til at de mange motorer opfører sig som ét. Den fanger fejlene mens de er små, holder beskederne flydende og er vågen døgnet rundt — så du kan være orkestratoren i stedet for vagten.",
         },
         {
           k: "stats",
           items: [
-            ["Hver ændring", "tjekket"],
-            ["24/7", "vågent"],
-            ["1", "kvalitetsniveau"],
+            ["24/7", "vågen"],
+            ["Hver tur", "tjekket"],
+            ["1", "stopknap for hele flåden"],
           ],
         },
       ],
@@ -593,7 +532,7 @@ const trail: FlagshipPage = {
       blocks: [
         {
           k: "lead",
-          text: "Trail er virksomhedens ekstra hjerne — en levende videnmotor du kan chatte med og slå op i. Den indlæser ALT din virksomhed ved — brand, fakta, tone, historik — til én base som både dit team og en AI kan trække på. Altid i din stemme, med dine fakta. Aldrig et generisk gæt.",
+          text: "Trail er virksomhedens ekstra hjerne — en levende videnmotor du kan chatte med og slå op i. Den kompilerer alt din virksomhed ved til en base som både dit team og en AI kan trække på — altid i din stemme, med dine fakta.",
         },
         {
           k: "prose",
