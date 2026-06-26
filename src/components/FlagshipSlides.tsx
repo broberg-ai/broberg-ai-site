@@ -735,7 +735,7 @@ const aiSdk: FlagshipPage = {
           cols: ["Dimension", "Direkte", "ai-sdk"],
           rows: [
             ["Skift udbyder", "Overalt i koden", "Ét niveau"],
-            ["Pris-overblik", "Ingen", "tokens + USD + latency pr. kald"],
+            ["Pris-overblik", "Ingen", "tokens + pris + latency pr. kald"],
             ["Når en model dør", "Crash hos brugeren", "Graceful fallback"],
             ["Følsom data", "Manuelt ansvar", "Automatisk i EU"],
           ],
@@ -774,12 +774,12 @@ const aiSdk: FlagshipPage = {
       blocks: [
         {
           k: "prose",
-          text: "Træn ai-sdk på DIT brand — en custom-stil-LoRA (~$2 i træning → ~$0,025 pr. billede) genererer on-brand billeder hver gang. Og fotorealistiske portrætter af en rigtig person: 1-8 referencefotos → ligheden i ét kald (FLUX 2, EU-hosted). Bevist på Sanne-piloten.",
+          text: "Lær ai-sdk dit visuelle udtryk: en stil-model trænet på dine egne billeder leverer on-brand grafik — hver gang, i din palet, for få ører pr. styk. Og fra blot en håndfuld fotos skaber den fotorealistiske portrætter af en rigtig person, ramt i ét eneste kald og hostet i Europa. Dit brand, gengivet i skala — ikke et stockfoto i sigte.",
         },
         {
           k: "stats",
           items: [
-            ["~$0,025", "pr. billede (stil)"],
+            ["~0,18 kr.", "pr. billede (stil)"],
             ["1–8", "fotos → portræt"],
             ["EU", "hosted"],
           ],
