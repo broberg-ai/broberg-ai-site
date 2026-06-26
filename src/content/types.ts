@@ -108,6 +108,7 @@ export interface AboutData {
   eyebrow: string;
   headingHtml: string;
   leadHtml: string;
+  image?: string; // cms globals.aboutImage (square portrait URL); falls back to b.-monogram
   pills: string[];
   clientsLabel: string;
   clients: string[];

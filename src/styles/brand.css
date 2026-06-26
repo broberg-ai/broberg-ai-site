@@ -825,6 +825,17 @@ section {
     grid-template-columns: 1fr;
   }
 }
+/* About portrait — square photo rendered as a circle, same footprint + ring as the
+   b.-monogram it replaces (cms globals.aboutImage). */
+.about-photo {
+  width: 100%;
+  max-width: 190px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1.5px solid rgba(0, 178, 255, 0.32);
+}
 .pill {
   display: inline-block;
   background: var(--card);

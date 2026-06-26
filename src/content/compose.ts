@@ -260,6 +260,7 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           eyebrow: str(d.eyebrow) || fbA?.eyebrow || "Om",
           headingHtml: str(d.heading) || str(g.aboutHeading) || fbA?.headingHtml || "",
           leadHtml: richtextInline(str(g.aboutBio)) || fbA?.leadHtml || "",
+          image: str(g.aboutImage) || fbA?.image || "",
           pills: arr<string>(g.skills).length ? arr<string>(g.skills) : (fbA?.pills ?? []),
           clientsLabel: str(d.subheading) || fbA?.clientsLabel || "",
           clients: clients.length ? clients : (fbA?.clients ?? []),
