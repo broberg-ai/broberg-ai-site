@@ -1029,6 +1029,14 @@ footer {
   flex-direction: column;
   gap: 12px;
 }
+/* Lucide feature-card icon — brand accent, above the card title. */
+.card-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--orange);
+  margin-bottom: 11px;
+  display: block;
+}
 .stat-card {
   text-align: center;
   padding: 18px;
