@@ -582,7 +582,7 @@ const buddy: FlagshipPage = {
 const trail: FlagshipPage = {
   slug: "trail",
   description:
-    "Trail er virksomhedens ekstra hjerne — en levende videnmotor du kan chatte med og slå op i. Den kompilerer alt din virksomhed ved til en base som både dit team og en AI kan trække på — altid i din stemme, med dine fakta.",
+    "Trail er virksomhedens ekstra hjerne — en levende videnmotor du kan chatte med og slå op i. Den indlæser ALT din virksomhed ved — brand, fakta, tone, historik — til én base som både dit team og en AI kan trække på. Altid i din stemme, med dine fakta. Aldrig et generisk gæt.",
   cta: [{ label: "Besøg trailmem.com", href: "https://trailmem.com" }],
   slides: [
     {
@@ -593,7 +593,7 @@ const trail: FlagshipPage = {
       blocks: [
         {
           k: "lead",
-          text: "Trail er virksomhedens ekstra hjerne — en levende videnmotor du kan chatte med og slå op i. Den kompilerer alt din virksomhed ved til en base som både dit team og en AI kan trække på — altid i din stemme, med dine fakta.",
+          text: "Trail er virksomhedens ekstra hjerne — en levende videnmotor du kan chatte med og slå op i. Den indlæser ALT din virksomhed ved — brand, fakta, tone, historik — til én base som både dit team og en AI kan trække på. Altid i din stemme, med dine fakta. Aldrig et generisk gæt.",
         },
         {
           k: "prose",
@@ -633,20 +633,45 @@ const trail: FlagshipPage = {
       ],
     },
     {
+      eyebrow: "På dit eget site",
+      heading: "Din egen AI-assistent — døgnåben på dit website.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Sæt Trail på dit site som en chat dine besøgende kan spørge — eller brug den internt som dit teams opslagshjerne. Den svarer i dit fagsprog, med din virksomheds egne fakta, 24/7, og bliver klogere for hver artikel du udgiver. Ikke en support-bot der sender folk i ring, men en der faktisk kender din forretning.",
+        },
+      ],
+    },
+    {
       eyebrow: "Hvem bruger det",
       heading: "Én hjerne, mange slags virksomheder.",
       blocks: [
         {
           k: "cards",
           items: [
-            ["Bureau", "En brand intelligence-base pr. klient → AI der er on-brand for hver enkelt klient, automatisk."],
+            [
+              "Bureau",
+              "Giv hver klient sin egen brand-hjerne. Trail holder hver klients stemme, retningslinjer og materiale adskilt — så AI'en altid er on-brand for præcis den klient. Skalér fra 3 til 30 klienter uden at tonen skrider.",
+            ],
             [
               "Fagekspert",
-              "Al din akkumulerede faglige viden → en assistent i dit fagsprog, på dit eget website, 24/7. (Fx en klinik som Sanne Andersen.)",
+              "Saml årtiers viden ét sted. Trail bliver din assistent i dit eget fagsprog, på dit eget website, 24/7 — så din ekspertise arbejder for dig, også når du sover.",
             ],
             [
               "Kundeplatform",
-              "Trail som chatbot-motor med en <trail-chat>-widget: matcher og hjælper besøgende, og vidensbasen vokser for hver artikel du publicerer. (Fx Fysio Danmark Aalborg.)",
+              "Mød dine brugere med svar. <trail-chat>-widget'en matcher og hjælper besøgende i realtid, og vidensbasen vokser for hver artikel — sitet bliver klogere af sig selv.",
+            ],
+            [
+              "Udviklingsteam med AI-agenter",
+              "Stop med at genopfinde beslutninger hver mandag. Flere AI-agenter deler én hukommelse — det den ene lærer, kan de andre læse. Konventioner, root-causes og fravalg går aldrig tabt i en ny session.",
+            ],
+            [
+              "Lille & mellemstor virksomhed",
+              "Saml den viden der ligger spredt i Slack, Notion og hovederne. Én base alle kan spørge — hurtigere onboarding, og beslutninger skal ikke gen-forklares for tiende gang.",
+            ],
+            [
+              "Coach & rådgiver",
+              "Din metode bliver en praksis med hukommelse. Din indsigt forsvinder ikke i sessions-noter — den samler sig til en assistent der kender dine rammer og dit sprog.",
             ],
           ],
         },
