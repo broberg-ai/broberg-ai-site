@@ -84,6 +84,14 @@ if (config.isProd) {
   app.use("/fonts/*", serveStatic({ root: "./public" }));
 }
 
+// Media — same-origin raster assets (e.g. the About portrait) served from
+// public/media in dev + prod. Filenames aren't hashed, so the catch-all's
+// no-cache/must-revalidate applies — a re-pushed photo never serves stale.
+app.use("/media/*", serveStatic({ root: "./public" }));
+// A miss must 404 — not fall through to the SPA page handler (which would
+// answer 200 text/html and read as "broken image" to a curl/diagnostic).
+app.all("/media/*", (c) => c.text("Not found", 404));
+
 // Favicon — ".ai" wordmark mark, served from public/ in dev + prod.
 app.get("/favicon.svg", serveStatic({ path: "./public/favicon.svg" }));
 
