@@ -902,6 +902,24 @@ const aiSdk: FlagshipPage = {
       ],
     },
     {
+      eyebrow: "Når vi bygger",
+      heading: "Én motor — så du aldrig betaler for kompleksiteten.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Alle AI-kald i universet går gennem ÉN motor. Vi ser prisen på hvert eneste kald, kan skifte til en bedre eller billigere model uden at røre koden, og en model der dør rammer dig aldrig som en fejl. For dig: du betaler for det billigste der er godt nok, er aldrig låst til én leverandør, og kører altid på den nyeste model — uden at mærke skiftet.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["Hvert kald", "prissat"],
+            ["Aldrig", "vendor-låst"],
+            ["Altid", "nyeste model"],
+          ],
+        },
+      ],
+    },
+    {
       eyebrow: "Databeskyttelse · GDPR",
       heading: "Følsom data forlader aldrig Europa.",
       blocks: [
