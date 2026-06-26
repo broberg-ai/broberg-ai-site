@@ -789,7 +789,82 @@ const aiSdk: FlagshipPage = {
   ],
 };
 
-const REGISTRY: Record<string, FlagshipPage> = { components, cardmem, buddy, trail, cms, "ai-sdk": aiSdk };
+// upmetrics — 3 slides, gradient t=0/0.5/1, no external CTA (cms #153/#154).
+const upmetrics: FlagshipPage = {
+  slug: "upmetrics",
+  description:
+    "Hver fejl, hvert crash og hver AI-omkostning fra hver app fanges, grupperes og korreleres — på web og native iOS. Ét board for både fejl og forbrug — ikke to værktøjer. Problemer ses og fikses før de når brugeren.",
+  slides: [
+    {
+      hero: true,
+      eyebrow: "upmetrics · @upmetrics/sdk",
+      heading: "Ved hvad der er galt — før dine brugere gør.",
+      blocks: [
+        {
+          k: "lead",
+          text: "Hver fejl, hvert crash og hver AI-omkostning fra hver app fanges, grupperes og korreleres — på web og native iOS. Ét board for både fejl og forbrug — ikke to værktøjer. Problemer ses og fikses før de når brugeren.",
+        },
+        {
+          k: "chips",
+          items: ["Fejl", "Crash", "AI-omkostning", "Incidents", "Uptime-probes", "Deploys", "Web", "iOS"],
+        },
+      ],
+    },
+    {
+      eyebrow: "Sådan virker det",
+      heading: "Tusind fejl bliver til ét klart signal.",
+      blocks: [
+        {
+          k: "steps",
+          items: [
+            ["Fang", "12 tjenester, 5-min puls, alt rapporteres automatisk."],
+            ["Gruppér", "Tusind fejl → ét issue."],
+            ["Korrelér", "Knyttes til den deploy eller probe der udløste det."],
+            ["Løs", "Issuet lukkes når fejlen er fikset."],
+          ],
+        },
+        {
+          k: "table",
+          label: "Uden vs. med",
+          cols: ["Dimension", "Uden", "Med"],
+          rows: [
+            ["Fejl opdages", "Når en kunde klager", "Automatisk i sekundet"],
+            ["AI-omkostning", "Ukendt", "Pr. kald, i kroner"],
+            ["Stille brud efter deploy", "Opdages dage senere", "Fanget automatisk"],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Ingen blinde vinkler",
+      heading: "Hvem holder øje med vagten?",
+      blocks: [
+        {
+          k: "prose",
+          text: "upmetrics fanger alle de andres fejl — men hvem fanger upmetrics'? En uafhængig watchdog i en anden sky, et helt andet datacenter, pinger den udefra. Selv et fuldt region-nedbrud bliver fanget — fra den anden side, helt uden for den fejlende zone. Og hver app lukker sine egne issues, så signalet altid er rent. Et selvhelende univers uden blinde vinkler.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["Anden sky", "uafhængig watchdog"],
+            ["Udefra", "fanget uden for zonen"],
+            ["100%", "selvhelende"],
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+const REGISTRY: Record<string, FlagshipPage> = {
+  components,
+  cardmem,
+  buddy,
+  trail,
+  cms,
+  "ai-sdk": aiSdk,
+  upmetrics,
+};
 
 export function hasSlides(slug: string): boolean {
   return slug.toLowerCase() in REGISTRY;

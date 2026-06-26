@@ -259,7 +259,42 @@ const aiSdk = wrap(
   </g>,
 );
 
-const REGISTRY: Record<string, JSX.Element> = { components, cardmem, buddy, trail, cms, "ai-sdk": aiSdk };
+// A living EKG/pulse line across the monitored fleet: a calm blue rhythm with one
+// spike flaring ORANGE — a caught error — while a scan dot travels the whole trace.
+// Nails: continuous monitoring; problems light up the instant they happen.
+const UPM_EKG =
+  "M14 140 H70 l7 -9 l7 18 l7 -11 H150 l12 -52 l14 100 l12 -48 H210 l7 -9 l7 16 l7 -10 H346";
+const upmetrics = wrap(
+  <g fill="none">
+    {/* baseline */}
+    <line x1="14" y1="140" x2="346" y2="140" stroke="rgba(0,178,255,.12)" stroke-width="1" stroke-dasharray="2 6" />
+    {/* monitored nodes along the trace */}
+    {[40, 96, 250, 306].map((x, i) => (
+      <circle class="node" key={i} cx={x} cy="140" r="4.5" fill="#00b2ff" style={`animation-delay:${i * 0.6}s`} />
+    ))}
+    {/* calm blue rhythm (left + right of the spike) */}
+    <path d="M14 140 H70 l7 -9 l7 18 l7 -11 H150" stroke="#00b2ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+    <path d="M210 140 l7 -9 l7 16 l7 -10 H346" stroke="#00b2ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+    {/* the caught error — one orange spike */}
+    <path d="M150 140 l12 -52 l14 100 l12 -48 H210" stroke="#F3522C" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" />
+    <circle class="node" cx="162" cy="88" r="5" fill="#F3522C" />
+    {/* scan dot travelling the whole trace */}
+    <circle r="3.6" fill="#40c8ff">
+      {/* `path` is a valid <animateMotion> attribute Preact's SVG types omit. */}
+      <animateMotion dur="4.5s" repeatCount="indefinite" {...({ path: UPM_EKG } as Record<string, string>)} />
+    </circle>
+  </g>,
+);
+
+const REGISTRY: Record<string, JSX.Element> = {
+  components,
+  cardmem,
+  buddy,
+  trail,
+  cms,
+  "ai-sdk": aiSdk,
+  upmetrics,
+};
 
 export function hasIllustration(k: string): boolean {
   return k.toLowerCase() in REGISTRY;
