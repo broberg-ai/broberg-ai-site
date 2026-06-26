@@ -590,12 +590,12 @@ const cms: FlagshipPage = {
   slides: [
     {
       hero: true,
-      eyebrow: "cms · @webhouse/cms",
-      heading: "Det tekniske fundament bag AI-native sites.",
+      eyebrow: "cms · motoren bag dit site",
+      heading: "Styr hele dit website ved at tale til det.",
       blocks: [
         {
           k: "lead",
-          html: "<strong>Ikke WordPress. Ikke Wix.</strong> Motoren bag hvert site i broberg.ai-universet — bygget fra bunden: AI-native, framework-agnostisk, statisk-først (0 runtime-JS), 64 integrerede værktøjer.",
+          text: "Bed om en kampagneside på dansk og engelsk — den står klar, SEO-optimeret, på minutter. Dit site loader på under et sekund, kan ikke hackes som et WordPress, og bliver fundet af ChatGPT og Perplexity. Samme motor kører bag hvert site i universet — teknikken under den er avanceret, men det er ikke din hovedpine. Det er din fordel.",
         },
         {
           k: "table",
@@ -617,7 +617,7 @@ const cms: FlagshipPage = {
     },
     {
       eyebrow: "@webhouse/cms · chat platform",
-      heading: "64 værktøjer. Styr hele sitet med din stemme.",
+      heading: "Styr hele sitet med din stemme — 64 værktøjer bag hver kommando.",
       blocks: [
         {
           k: "lead",
@@ -655,7 +655,7 @@ const cms: FlagshipPage = {
     },
     {
       eyebrow: "Unik feature",
-      heading: "AI Lock — det eneste CMS der beskytter menneske-rettelser.",
+      heading: "Dine rettelser er fredede — det eneste CMS hvor AI aldrig overskriver et menneske.",
       blocks: [
         {
           k: "prose",
@@ -691,7 +691,7 @@ const cms: FlagshipPage = {
     },
     {
       eyebrow: "Hvorfor det betyder noget",
-      heading: "Samme motor bag hver kunde.",
+      heading: "Samme motor bag hver kunde — derfor er dit site aldrig det svage led.",
       blocks: [
         {
           k: "prose",
