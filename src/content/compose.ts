@@ -275,7 +275,7 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           eyebrow: str(d.eyebrow) || fbCo?.eyebrow || "Kontakt",
           headingHtml: str(d.heading) || fbCo?.headingHtml || "",
           lead: str(d.subheading) || fbCo?.lead || "",
-          email: str(g.contactEmail) || fbCo?.email || "christian@broberg.ai",
+          email: str(g.contactEmail) || fbCo?.email || "hej@broberg.ai",
         },
       };
     }
