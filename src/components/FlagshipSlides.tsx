@@ -130,12 +130,18 @@ const Cards = ({ items }: { items: Card[] }) => (
 
 const Stats = ({ items }: { items: Stat[] }) => (
   <div class="stat-row">
-    {items.map((s) => (
-      <div class="card stat-card" key={s[1]}>
-        <div class="stat-num">{s[0]}</div>
-        <div class="stat-cap">{s[1]}</div>
-      </div>
-    ))}
+    {items.map((s) => {
+      // Word/phrase values (e.g. "Sekunder", "Anden sky") don't fit the big
+      // number size on one line — render them smaller + no-wrap; short numeric
+      // tokens ("95+", "24/7") keep the punchy size.
+      const word = s[0].length > 5 || /\s/.test(s[0]);
+      return (
+        <div class="card stat-card" key={s[1]}>
+          <div class={word ? "stat-num stat-num-word" : "stat-num"}>{s[0]}</div>
+          <div class="stat-cap">{s[1]}</div>
+        </div>
+      );
+    })}
   </div>
 );
 
@@ -933,6 +939,73 @@ const contracts: FlagshipPage = {
   ],
 };
 
+// pitch-vault — 3 slides, gradient t=0/0.5/1, no external CTA (cms #161/#162).
+const pitchVault: FlagshipPage = {
+  slug: "pitch-vault",
+  description:
+    "Beskyt, del og spor hver pitch ét sted. Et visuelt bibliotek med thumbnails af hver præsentation — og hver færdig pitch bliver til søgbar inspiration for den næste.",
+  slides: [
+    {
+      hero: true,
+      eyebrow: "pitch-vault · broberg.ai",
+      heading: "Det sikre hvælv for dine præsentationer.",
+      blocks: [
+        {
+          k: "lead",
+          text: "Beskyt, del og spor hver pitch ét sted. Et visuelt bibliotek med thumbnails af hver præsentation — og hver færdig pitch bliver til søgbar inspiration for den næste.",
+        },
+        {
+          k: "chips",
+          items: ["Beskyt", "Del", "Spor", "Visuelt bibliotek", "Thumbnails", "Søgbar", "Del-link", "Mapper"],
+        },
+      ],
+    },
+    {
+      eyebrow: "Sådan virker det",
+      heading: "Fra pitch til genbrugelig inspiration.",
+      blocks: [
+        {
+          k: "steps",
+          items: [
+            ["Gem", "Hver pitch i hvælvet, organiseret i mapper."],
+            ["Del", "Ét sikkert link, klar til kunden."],
+            ["Spor", "Se hvad der er delt og set."],
+            ["Genbrug", "Søg på tværs, find den rette gamle pitch som afsæt."],
+          ],
+        },
+        {
+          k: "table",
+          label: "Før vs. Pitch Vault",
+          cols: ["Dimension", "Før", "Pitch Vault"],
+          rows: [
+            ["Hvor bor pitches", "Spredt i mapper og mails", "Samlet i ét sikkert hvælv"],
+            ["Find en gammel", "Led i filsystemet", "Søg på tværs + se thumbnails"],
+            ["Del med kunden", "Vedhæft en stor fil", "Ét sikkert del-link"],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Hvorfor det betyder noget",
+      heading: "Du starter aldrig på en blank side igen.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Hver pitch du laver gør hvælvet rigere — et voksende, søgbart bibliotek af din bedste inspiration. Næste pitch begynder ikke fra nul, men fra alt det I allerede har skabt. Beskyttet, delt og sporet.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["Voksende", "bibliotek"],
+            ["Søgbar", "inspiration"],
+            ["Sikker", "deling"],
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const REGISTRY: Record<string, FlagshipPage> = {
   components,
   cardmem,
@@ -942,6 +1015,7 @@ const REGISTRY: Record<string, FlagshipPage> = {
   "ai-sdk": aiSdk,
   upmetrics,
   contracts,
+  "pitch-vault": pitchVault,
 };
 
 export function hasSlides(slug: string): boolean {

@@ -324,6 +324,46 @@ const contracts = wrap(
   </g>,
 );
 
+// A secure vault of pitch thumbnails: a stack of presentation cards inside the
+// hvælv (with a lock dial), one card sliding out on an orange share-link, and a
+// search glimmer sweeping the stack. Nails: protected + shared + searchable;
+// every pitch feeds the next.
+const pitchVault = wrap(
+  <g>
+    {/* vault body + lock dial */}
+    <rect x="44" y="56" width="152" height="168" rx="16" fill="rgba(0,178,255,.05)" stroke="#00b2ff" stroke-width="1.6" />
+    <circle cx="178" cy="140" r="9" fill="none" stroke="#00b2ff" stroke-width="1.4" />
+    <path d="M178 140 V132 M178 140 L184 144" stroke="#00b2ff" stroke-width="1.4" stroke-linecap="round" />
+    {/* stacked pitch thumbnails */}
+    {[0, 1, 2].map((k) => {
+      const x = 68 + k * 9;
+      const y = 84 + k * 17;
+      return (
+        <g key={k}>
+          <rect x={x} y={y} width="74" height="44" rx="6" fill="rgba(8,12,18,.92)" stroke="#2a3340" stroke-width="1.2" />
+          <rect x={x + 8} y={y + 8} width="30" height="20" rx="3" fill="rgba(0,178,255,.18)" stroke="#00b2ff" stroke-width="1" />
+          <rect x={x + 44} y={y + 9} width="22" height="4" rx="2" fill="rgba(240,244,248,.4)" />
+          <rect x={x + 44} y={y + 18} width="16" height="4" rx="2" fill="rgba(240,244,248,.22)" />
+        </g>
+      );
+    })}
+    {/* search glimmer sweeping the stack */}
+    <rect x="62" y="80" width="5" height="78" fill="rgba(64,200,255,.45)">
+      <animateTransform attributeName="transform" type="translate" from="0 0" to="96 0" dur="3.4s" repeatCount="indefinite" />
+    </rect>
+    {/* one card slides out on a share-link */}
+    <path class="illu-flow" d="M196 130 H250" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" />
+    <g>
+      <rect x="250" y="106" width="74" height="46" rx="6" fill="rgba(8,12,18,.95)" stroke="#F3522C" stroke-width="1.4" />
+      <rect x="258" y="114" width="30" height="22" rx="3" fill="rgba(243,82,44,.16)" stroke="#F3522C" stroke-width="1" />
+      <rect x="294" y="116" width="22" height="4" rx="2" fill="rgba(240,244,248,.4)" />
+      <rect x="294" y="126" width="16" height="4" rx="2" fill="rgba(240,244,248,.22)" />
+    </g>
+    <circle class="node" cx="287" cy="180" r="5" fill="#F3522C" />
+    <path d="M287 152 V174" stroke="rgba(243,82,44,.5)" stroke-width="1.4" stroke-dasharray="3 4" />
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -333,6 +373,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   "ai-sdk": aiSdk,
   upmetrics,
   contracts,
+  "pitch-vault": pitchVault,
 };
 
 export function hasIllustration(k: string): boolean {

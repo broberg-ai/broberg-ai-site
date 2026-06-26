@@ -1037,9 +1037,14 @@ footer {
   font-family: var(--fd);
   font-size: 38px;
   font-weight: 600;
-  overflow-wrap: anywhere;
   color: var(--blue);
   line-height: 1;
+}
+/* Word/phrase stat values stay on one line at a smaller size (numbers keep 38px). */
+.stat-card .stat-num-word {
+  font-size: 23px;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 .stat-card .stat-cap {
   font-size: 12.5px;
