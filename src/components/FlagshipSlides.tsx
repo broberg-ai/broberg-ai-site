@@ -33,11 +33,19 @@ type Block =
 
 interface Slide {
   eyebrow: string;
+  badge?: string; // small discrete pill after the eyebrow (e.g. "rulles ud nu")
   heading: string;
   headingHtml?: string;
   hero?: boolean; // slide-1 layout: logo + illustration beside the heading
   blocks: Block[];
 }
+
+const Eyebrow = ({ slide }: { slide: Slide }) => (
+  <div class="eyebrow">
+    {slide.eyebrow}
+    {slide.badge ? <span class="eyebrow-badge">{slide.badge}</span> : null}
+  </div>
+);
 
 interface FlagshipPage {
   slug: string;
@@ -294,7 +302,7 @@ function SlideView({ page, slide, idx, total }: { page: FlagshipPage; slide: Sli
               <div class="logot logot-lg">
                 <Logo k={page.slug} />
               </div>
-              <div class="eyebrow">{slide.eyebrow}</div>
+              <Eyebrow slide={slide} />
               <H s={slide} />
               {head.map((b, i) => (
                 <BlockView b={b} key={i} />
@@ -317,7 +325,7 @@ function SlideView({ page, slide, idx, total }: { page: FlagshipPage; slide: Sli
     <section class="fslide" style={`--t:${t}`}>
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">{slide.eyebrow}</div>
+          <Eyebrow slide={slide} />
           <H s={slide} />
           <div class="divider" />
         </div>
@@ -398,23 +406,23 @@ const components: FlagshipPage = {
 const cardmem: FlagshipPage = {
   slug: "cardmem",
   description:
-    "cardmem er den AI-native projektstyring der binder idé sammen med færdig løsning. Tanker bliver til planer, planer til opgaver, og opgaver til kode som AI-agenter bygger — mens du bliver i førersædet.",
+    "cardmem er motoren der styrer hvert projekt i universet — fra første tanke til færdigt, live produkt. Idéer bliver til skrevne planer, planer til opgaver, og opgaver til kode som AI-agenter bygger. Men intet kører frit: hver ændring skal igennem et kvalitetstjek der åbner den i en rigtig browser, før den er ‘færdig’. Du beholder overblikket hele vejen — og din kunde kan følge med live.",
   slides: [
     {
       hero: true,
       eyebrow: "cardmem · broberg.ai's kerne",
-      heading: "Fra idé til færdig løsning — sporbart.",
+      heading: "Se din idé blive til et live produkt — sporbart hele vejen.",
       blocks: [
         {
           k: "lead",
-          text: "cardmem er den AI-native projektstyring der binder idé sammen med færdig løsning. Tanker bliver til planer, planer til opgaver, og opgaver til kode som AI-agenter bygger — mens du bliver i førersædet.",
+          text: "cardmem er motoren der styrer hvert projekt i universet — fra første tanke til færdigt, live produkt. Idéer bliver til skrevne planer, planer til opgaver, og opgaver til kode som AI-agenter bygger. Men intet kører frit: hver ændring skal igennem et kvalitetstjek der åbner den i en rigtig browser, før den er ‘færdig’. Du beholder overblikket hele vejen — og din kunde kan følge med live.",
         },
-        { k: "chips", items: ["Idé", "Plan", "Opgavetavle", "AI-agent", "Kvalitetstjek", "Live"] },
+        { k: "chips", items: ["Idé", "Plan", "Opgavetavle", "AI-agent bygger", "Kvalitetstjek", "Live"] },
       ],
     },
     {
       eyebrow: "Sådan virker det",
-      heading: "Løkken der gentager sig til det er færdigt.",
+      heading: "En løkke der gentager sig — til det er præcis rigtigt.",
       blocks: [
         {
           k: "steps",
@@ -429,7 +437,47 @@ const cardmem: FlagshipPage = {
         },
         {
           k: "prose",
-          text: "Det er ikke en engangs-rejse. Hele løkken kan køres igen og igen — du ser en version live, justerer, og samme workflow ruller forfra. Produktet bliver bedre for hver runde, indtil det er præcis som det skal være.",
+          text: "Kvalitetstjekket kan sende en opgave TILBAGE til fix før den når Live — løkken kører igen og igen, og produktet bliver bedre for hver runde, indtil det er præcis som det skal være.",
+        },
+      ],
+    },
+    {
+      eyebrow: "Når vi bygger",
+      heading: "Hastighed uden at miste kontrollen.",
+      blocks: [
+        {
+          k: "prose",
+          text: "AI-agenter bygger hurtigt — men hver ændring passerer en gate før den er ‘done’. Hver feature har en skreven plan FØR første linje kode (ingen scope-drift, intet tabt rationale), og hver leverance bærer et screenshot der beviser den virker i en rigtig browser. Ikke ‘tests grønne’ — men ‘se, det virker’. Sådan leverer vi i et tempo der ellers kræver et helt team.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["Plan", "før kode"],
+            ["Ægte", "browser-tjek"],
+            ["Intet", "går live uventet"],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "For dig som kunde",
+      badge: "rulles ud nu",
+      heading: "Følg dit projekt blive bygget — i realtid.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Kundeportalen giver dig et direkte vindue ind i dit eget projekt: live-tavlen (hvad bygges nu, hvad er næst, hvad er leveret), designs du godkender FØR de bygges, og bevis på at hver leverance virker. Fuld åbenhed, nul gætteri.",
+        },
+        {
+          k: "table",
+          label: "Uden vs. med portalen",
+          cols: ["", "Sådan plejer det at være", "Med cardmem-portalen"],
+          rows: [
+            ["Status", "Spørg og vent", "Live-tavle, altid opdateret"],
+            ["Design", "Set først når det er bygget", "Godkendt FØR der bygges"],
+            ["Leverance", "“Det er done” (tro os)", "Bevis pr. leverance — se det virke"],
+            ["Overblik", "Mails og møder", "Ét vindue ind i projektet"],
+          ],
         },
       ],
     },
@@ -438,15 +486,11 @@ const cardmem: FlagshipPage = {
       heading: "Intet går live uventet.",
       blocks: [
         {
-          k: "prose",
-          text: "Hver opgave har en skreven plan og klare succeskriterier, og bliver tjekket både visuelt og funktionelt før den lander. Indbygget kvalitetskontrol åbner hver ændring i en rigtig browser og verificerer den — fejl fanges før brugerne ser dem.",
-        },
-        {
           k: "stats",
           items: [
             ["∞", "iterationer"],
             ["Plan", "før kode"],
-            ["Du", "i førersædet"],
+            ["Du + kunde", "i førersædet"],
           ],
         },
       ],
