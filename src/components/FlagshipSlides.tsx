@@ -61,6 +61,19 @@ const WorkSteps = ({ steps }: { steps: Step[] }) => (
   </ol>
 );
 
+// Insert a soft break opportunity after each "/" so URL-ish header tokens (e.g.
+// "@webhouse/cms") wrap at the slash on narrow mobile columns, not mid-word.
+function softSlash(s: string): (string | JSX.Element)[] {
+  if (!s.includes("/")) return [s];
+  const parts = s.split("/");
+  const out: (string | JSX.Element)[] = [];
+  parts.forEach((p, i) => {
+    out.push(i < parts.length - 1 ? `${p}/` : p);
+    if (i < parts.length - 1) out.push(<wbr key={i} />);
+  });
+  return out;
+}
+
 const CTable = ({ label, cols, rows }: { label: string; cols: string[]; rows: string[][] }) => (
   <div class="card" style="min-width:0">
     <div class="eyebrow">{label}</div>
@@ -68,7 +81,7 @@ const CTable = ({ label, cols, rows }: { label: string; cols: string[]; rows: st
       <thead>
         <tr>
           {cols.map((c) => (
-            <th key={c}>{c}</th>
+            <th key={c}>{softSlash(c)}</th>
           ))}
         </tr>
       </thead>

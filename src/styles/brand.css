@@ -981,9 +981,12 @@ footer {
   margin-top: 12px;
   font-size: 13px;
 }
-.ctable th,
 .ctable td {
   word-break: break-word;
+}
+/* Header tokens (e.g. "@webhouse/cms") break at the slash (<wbr>) not mid-word. */
+.ctable th {
+  overflow-wrap: break-word;
 }
 .ctable th,
 .ctable td {
