@@ -225,7 +225,41 @@ const cms = wrap(
   </g>,
 );
 
-const REGISTRY: Record<string, JSX.Element> = { components, cardmem, buddy, trail, cms };
+// One facade routing out to many providers: a central ai-sdk hub distributes to
+// five provider satellites (Claude / GPT / Gemini / Mistral / BFL) over pulsing
+// links; the EU route (Mistral) is the orange accent. Nails: change a tier-word,
+// not your code — and sensitive data stays in Europe.
+const AISDK_NODES = [
+  { cx: 180, cy: 48, label: "Claude", lx: 180, ly: 33, anchor: "middle" },
+  { cx: 267, cy: 112, label: "GPT", lx: 281, ly: 116, anchor: "start" },
+  { cx: 234, cy: 214, label: "Gemini", lx: 246, ly: 219, anchor: "start" },
+  { cx: 126, cy: 214, label: "Mistral", lx: 114, ly: 219, anchor: "end", orange: true },
+  { cx: 93, cy: 112, label: "BFL", lx: 79, ly: 116, anchor: "end" },
+];
+const aiSdk = wrap(
+  <g font-family="'DM Sans',sans-serif" font-size="10.5">
+    {/* hub → satellite links (dashed pulse) */}
+    <g class="illu-flow" stroke-dasharray="4 7" stroke-width="1.6" fill="none">
+      {AISDK_NODES.map((n, i) => (
+        <line key={i} x1="180" y1="140" x2={n.cx} y2={n.cy} stroke={n.orange ? "rgba(243,82,44,.5)" : "rgba(0,178,255,.4)"} />
+      ))}
+    </g>
+    {/* provider satellites + labels */}
+    {AISDK_NODES.map((n, i) => (
+      <g key={i}>
+        <circle class="node" cx={n.cx} cy={n.cy} r="7" fill={n.orange ? "#F3522C" : "#00b2ff"} style={`animation-delay:${i * 0.5}s`} />
+        <text x={n.lx} y={n.ly} text-anchor={n.anchor} fill={n.orange ? "#F3522C" : "rgba(240,244,248,.82)"} font-weight={n.orange ? "600" : "400"}>
+          {n.label}
+        </text>
+      </g>
+    ))}
+    {/* central ai-sdk hub */}
+    <circle class="pulse-core" cx="180" cy="140" r="24" fill="rgba(0,178,255,.12)" stroke="#00b2ff" stroke-width="1.6" />
+    <text x="180" y="143.5" text-anchor="middle" font-size="9.5" fill="rgba(240,244,248,.92)" font-weight="600">ai-sdk</text>
+  </g>,
+);
+
+const REGISTRY: Record<string, JSX.Element> = { components, cardmem, buddy, trail, cms, "ai-sdk": aiSdk };
 
 export function hasIllustration(k: string): boolean {
   return k.toLowerCase() in REGISTRY;

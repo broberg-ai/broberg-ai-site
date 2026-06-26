@@ -679,7 +679,117 @@ const cms: FlagshipPage = {
   ],
 };
 
-const REGISTRY: Record<string, FlagshipPage> = { components, cardmem, buddy, trail, cms };
+// ai-sdk — 4 slides, gradient t=0/0.33/0.67/1, no external CTA (cms #144/#145).
+const aiSdk: FlagshipPage = {
+  slug: "ai-sdk",
+  description:
+    "Hvert AI-kald i broberg.ai-universet går gennem ÉN facade — Claude, GPT, Gemini, Mistral, Black Forest Labs. Skift model ved at ændre et tier-ord, ikke din kode. Og er data personfølsomt, bliver det i Europa.",
+  slides: [
+    {
+      hero: true,
+      eyebrow: "ai-sdk · @broberg/ai-sdk",
+      heading: "Én AI-motor bag det hele.",
+      blocks: [
+        {
+          k: "lead",
+          html: "Hvert AI-kald i broberg.ai-universet går gennem ÉN facade — Claude, GPT, Gemini, Mistral, Black Forest Labs. Skift model ved at ændre et <em>tier-ord</em>, ikke din kode. Og er data personfølsomt, bliver det i Europa.",
+        },
+        {
+          k: "chips",
+          items: [
+            "Chat",
+            "Vision",
+            "Video",
+            "Oversæt",
+            "Billede",
+            "Embedding",
+            "Tale→tekst",
+            "OCR",
+            "Moderation",
+            "Podcast",
+            "TTS",
+            "Kontrakter",
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Sådan virker det",
+      heading: "Start billigt. Gå op kun når det betaler sig.",
+      blocks: [
+        {
+          k: "chips",
+          items: [
+            "fast = Haiku",
+            "smart = Sonnet",
+            "powerful = Opus",
+            "cheap = Mistral (EU)",
+            "vision",
+            "video",
+            "embedding",
+          ],
+        },
+        {
+          k: "table",
+          label: "Rå provider-SDK vs. ai-sdk",
+          cols: ["Dimension", "Direkte", "ai-sdk"],
+          rows: [
+            ["Skift udbyder", "Overalt i koden", "Ét tier-ord"],
+            ["Pris-overblik", "Ingen", "tokens + USD + latency pr. kald"],
+            ["Når en model dør", "Crash hos brugeren", "Graceful fallback (F022)"],
+            ["Følsom data", "Manuelt ansvar", "EU-tier indbygget"],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Databeskyttelse · GDPR",
+      heading: "Følsom data forlader aldrig Europa.",
+      blocks: [
+        {
+          k: "prose",
+          text: "ai-sdk vælger den bedste model til opgaven — men i samme sekund data er personfølsomt, ruter det AUTOMATISK til en europæisk model (Mistral, Paris-hosted, ingen Schrems II). Aldrig US, aldrig CN. Du skal ikke huske det; det er indbygget.",
+        },
+        {
+          k: "cards",
+          items: [
+            ["Fysioterapeut", "Patientdata — journaler og helbredsoplysninger der aldrig må forlade EU."],
+            ["Bureau", "Klientdata på tværs af mange kunder — beskyttet pr. kald, automatisk."],
+            ["Fagekspert", "Helbred / journal og anden følsom faglig viden — EU-tier indbygget."],
+          ],
+        },
+        {
+          k: "stats",
+          items: [
+            ["🇪🇺", "EU-hosted"],
+            ["0", "Schrems II"],
+            ["Auto", "pr. kald"],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Det du kan se",
+      heading: "Billeder i din stil. Portrætter af en rigtig person.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Træn ai-sdk på DIT brand — en custom-stil-LoRA (~$2 i træning → ~$0,025 pr. billede) genererer on-brand billeder hver gang. Og fotorealistiske portrætter af en rigtig person: 1-8 referencefotos → ligheden i ét kald (FLUX 2, EU-hosted). Bevist på Sanne-piloten.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["~$0,025", "pr. billede (stil)"],
+            ["1–8", "fotos → portræt"],
+            ["EU", "hosted"],
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+const REGISTRY: Record<string, FlagshipPage> = { components, cardmem, buddy, trail, cms, "ai-sdk": aiSdk };
 
 export function hasSlides(slug: string): boolean {
   return slug.toLowerCase() in REGISTRY;
