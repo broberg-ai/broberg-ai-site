@@ -69,15 +69,55 @@ const logos: Record<string, JSX.Element> = {
       <path fill="hsl(153,38%,35%)" d="M444.94,182.62c1.92.9,24.66,26.86,28.38,30.82,18.85,20.04,40.02,35.05,61.39,52.02-22.58,25.52-56.94,51.23-84.07,73.38l-.3.19c-2.55.08-16.58-12.86-19.72-15.48-22.42-18.46-45.07-36.63-67.95-54.52,27.95-33.15,51.3-56.11,82.27-86.41Z" />
     </svg>
   ),
+  // components — redesign forslag A "Modulær kerne" (cms mockup-66e188d0, Christian
+  // valgte A): én kerne → fire genbrugte dele. Emerald accent.
   components: (
     <svg viewBox="0 0 32 32" width="24" height="24">
       <g fill="none" stroke="#34d399" stroke-width="1.5" opacity="0.9">
-        <ellipse cx="16" cy="16" rx="11" ry="4.6" transform="rotate(-32 16 16)" />
-        <ellipse cx="16" cy="16" rx="11" ry="4.6" transform="rotate(32 16 16)" />
+        <path d="M16 16 8 8M16 16 24 8M16 16 8 24M16 16 24 24" />
+        <rect x="4" y="4" width="8" height="8" rx="2.2" />
+        <rect x="20" y="4" width="8" height="8" rx="2.2" />
+        <rect x="4" y="20" width="8" height="8" rx="2.2" />
+        <rect x="20" y="20" width="8" height="8" rx="2.2" />
       </g>
-      <circle cx="16" cy="16" r="3.6" fill="#34d399" />
-      <circle cx="6.2" cy="11.4" r="1.5" fill="#6ee7b7" />
-      <circle cx="25.8" cy="20.6" r="1.5" fill="#6ee7b7" />
+      <circle cx="16" cy="16" r="3.2" fill="#34d399" />
+    </svg>
+  ),
+  // Hosting / Drift — server-lag med status-prikker (altid oppe). Sky accent.
+  hosting: (
+    <svg viewBox="0 0 32 32" width="24" height="24">
+      <g fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.9">
+        <rect x="6" y="6" width="20" height="6" rx="2.5" />
+        <rect x="6" y="14" width="20" height="6" rx="2.5" />
+        <rect x="6" y="22" width="20" height="6" rx="2.5" />
+      </g>
+      <circle cx="10.5" cy="9" r="1.4" fill="#7dd3fc" />
+      <circle cx="10.5" cy="17" r="1.4" fill="#7dd3fc" />
+      <circle cx="10.5" cy="25" r="1.4" fill="#38bdf8" />
+    </svg>
+  ),
+  // Consulting — kompas (retning & rådgivning). Violet accent.
+  consulting: (
+    <svg viewBox="0 0 32 32" width="24" height="24">
+      <g fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.9">
+        <circle cx="16" cy="16" r="11" />
+        <path d="M16 7 20 16 16 25 12 16Z" />
+      </g>
+      <circle cx="16" cy="16" r="2" fill="#a78bfa" />
+      <circle cx="16" cy="7" r="1.3" fill="#c4b5fd" />
+    </svg>
+  ),
+  // Docs — struktureret side + topic-punkter (MadCap-stil). Amber accent.
+  docs: (
+    <svg viewBox="0 0 32 32" width="24" height="24">
+      <g fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.9">
+        <path d="M9 4H20L24 8V28H9Z" />
+        <path d="M20 4V8H24" />
+        <path d="M13 14H20M13 19H20M13 24H17" />
+      </g>
+      <circle cx="11" cy="14" r="1.1" fill="#fde68a" />
+      <circle cx="11" cy="19" r="1.1" fill="#fde68a" />
+      <circle cx="11" cy="24" r="1.1" fill="#fbbf24" />
     </svg>
   ),
   "pitch-vault": (
