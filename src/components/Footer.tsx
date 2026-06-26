@@ -5,7 +5,7 @@ export function Footer() {
         <div class="logo" style="font-size:17px">
           broberg<span class="ai">.ai</span>
         </div>
-        <div>© 2026 broberg.ai · WebHouse · Aalborg · Bygget af universet selv.</div>
+        <div>© 2026 broberg.ai · Aalborg · Blokhus · Copenhagen · Build &amp; Powered by the broberg.ai universe.</div>
       </div>
     </footer>
   );

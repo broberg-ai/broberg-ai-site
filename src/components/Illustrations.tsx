@@ -286,6 +286,44 @@ const upmetrics = wrap(
   </g>,
 );
 
+// A contract moving through its lifecycle: a branded document with a signature
+// squiggle and an orange signed-seal (✓), above a kladde → sendt → underskrevet
+// status track where a pulse travels to the orange "signed" node. Nails: correct
+// from start → e-signed in seconds, fully tracked.
+const CON_STEPS = [
+  { cx: 96, label: "Kladde" },
+  { cx: 180, label: "Sendt" },
+  { cx: 264, label: "Underskrevet", orange: true },
+];
+const contracts = wrap(
+  <g font-family="'DM Sans',sans-serif" font-size="10.5">
+    {/* document */}
+    <rect x="120" y="40" width="120" height="150" rx="10" fill="rgba(0,178,255,.05)" stroke="#00b2ff" stroke-width="1.6" />
+    <rect x="136" y="58" width="64" height="8" rx="4" fill="rgba(240,244,248,.5)" />
+    <rect x="136" y="76" width="88" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+    <rect x="136" y="88" width="80" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+    <rect x="136" y="100" width="86" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+    <rect x="136" y="112" width="70" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+    {/* signature line + squiggle */}
+    <line x1="136" y1="150" x2="196" y2="150" stroke="rgba(0,178,255,.4)" stroke-width="1" stroke-dasharray="3 3" />
+    <path class="illu-flow" d="M138 150 q6 -12 12 0 t12 0 t12 -4" stroke="#F3522C" stroke-width="1.8" fill="none" stroke-linecap="round" />
+    {/* signed seal stamp */}
+    <circle class="pulse-core" cx="224" cy="166" r="18" fill="rgba(243,82,44,.14)" stroke="#F3522C" stroke-width="1.6" />
+    <path d="M216 166 l5 6 l11 -13" stroke="#F3522C" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+    {/* status track: kladde → sendt → underskrevet */}
+    <line x1="96" y1="228" x2="264" y2="228" stroke="rgba(0,178,255,.18)" stroke-width="1.4" />
+    <line class="illu-flow" x1="96" y1="228" x2="264" y2="228" stroke="#00b2ff" stroke-width="1.6" stroke-dasharray="4 7" />
+    {CON_STEPS.map((s, i) => (
+      <g key={i}>
+        <circle class="node" cx={s.cx} cy="228" r="6" fill={s.orange ? "#F3522C" : "#00b2ff"} style={`animation-delay:${i * 0.6}s`} />
+        <text x={s.cx} y="248" text-anchor="middle" fill={s.orange ? "#F3522C" : "rgba(240,244,248,.82)"} font-weight={s.orange ? "600" : "400"}>
+          {s.label}
+        </text>
+      </g>
+    ))}
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -294,6 +332,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   cms,
   "ai-sdk": aiSdk,
   upmetrics,
+  contracts,
 };
 
 export function hasIllustration(k: string): boolean {

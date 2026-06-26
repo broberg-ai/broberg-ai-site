@@ -856,6 +856,83 @@ const upmetrics: FlagshipPage = {
   ],
 };
 
+// contracts — broberg.ai Contracts (NOT "webhouse Contract Manager"). 3 slides,
+// gradient t=0/0.5/1, no external CTA yet (cms #157/#158).
+const contracts: FlagshipPage = {
+  slug: "contracts",
+  description:
+    "broberg.ai Contracts — brandede aftaler der sætter samarbejdet rigtigt op: anvendt teknologi, GDPR/databehandler og vilkår. Elektronisk signatur på sekunder, og fuld sporing af hvem der har læst hvad.",
+  slides: [
+    {
+      hero: true,
+      eyebrow: "contracts · broberg.ai",
+      heading: "Hver kundeaftale, korrekt fra start.",
+      blocks: [
+        {
+          k: "lead",
+          text: "broberg.ai Contracts — brandede aftaler der sætter samarbejdet rigtigt op: anvendt teknologi, GDPR/databehandler og vilkår. Elektronisk signatur på sekunder, og fuld sporing af hvem der har læst hvad.",
+        },
+        {
+          k: "chips",
+          items: [
+            "Samarbejdsaftale",
+            "Supportaftale",
+            "Databehandleraftale",
+            "Skabeloner",
+            "Klausuler",
+            "E-signatur",
+            "Læse-sporing",
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Sådan virker det",
+      heading: "Fra skabelon til samlet underskrift.",
+      blocks: [
+        {
+          k: "steps",
+          items: [
+            ["Skabeloner & klausuler", "Genbrugelige byggeklodser."],
+            ["Konfigurér pr. kunde", "Teknologi, GDPR, vilkår."],
+            ["Saml i en pakke", "Flere aftaler klar til samlet underskrift."],
+            ["Send & spor", "Kladde → sendt → underskrevet, versioneret."],
+          ],
+        },
+        {
+          k: "table",
+          label: "Manuelt vs. Contracts",
+          cols: ["Dimension", "Manuelt", "Contracts"],
+          rows: [
+            ["Aftalegrundlag", "Copy-paste fra sidste PDF", "Skabeloner + klausuler, korrekt hver gang"],
+            ["GDPR/databehandler", "Glemt eller løs", "Indbygget aftale-type"],
+            ["Underskrift", "Print, scan, vent", "E-signatur på sekunder"],
+            ["Status", "“Har du set den?”", "Kladde → sendt → underskrevet, sporet"],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Hvorfor det betyder noget",
+      heading: "Samarbejdet står juridisk og teknisk solidt.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Hver aftale dækker det der tæller — teknologien bag løsningen, GDPR-ansvaret og vilkårene — så både du og kunden ved præcis hvad I har sagt ja til. Versioneret, sporet og underskrevet. Ingen løse PDF'er, ingen “har du set kontrakten?”.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["Sekunder", "til signatur"],
+            ["GDPR", "indbygget"],
+            ["Fuld", "læse-sporing"],
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const REGISTRY: Record<string, FlagshipPage> = {
   components,
   cardmem,
@@ -864,6 +941,7 @@ const REGISTRY: Record<string, FlagshipPage> = {
   cms,
   "ai-sdk": aiSdk,
   upmetrics,
+  contracts,
 };
 
 export function hasSlides(slug: string): boolean {
