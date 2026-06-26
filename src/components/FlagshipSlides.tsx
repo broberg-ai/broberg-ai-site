@@ -416,52 +416,77 @@ const cardmem: FlagshipPage = {
 const buddy: FlagshipPage = {
   slug: "buddy",
   description:
-    "buddy er det altid-vågne lag i broberg.ai — en lokal makker der kører ved siden af hver AI-session og holder øje med at intet går skævt, og at alle motorer spiller sammen.",
+    "buddy er det altid-vågne lag i universet: det læser hver eneste ændring kritisk igennem før den lander, lader AI-medarbejderne tale sammen på tværs af projekter, og vækker dem præcis når der er arbejde.",
   slides: [
     {
       hero: true,
       eyebrow: "buddy · altid vågen",
-      heading: "Den der holder øje — døgnet rundt.",
+      heading: "Et AI-hold der bygger som ét — med kvalitetskontrol indbygget.",
       blocks: [
         {
           k: "lead",
-          text: "buddy er det altid-vågne lag i broberg.ai — en lokal makker der kører ved siden af hver AI-session og holder øje med at intet går skævt, og at alle motorer spiller sammen.",
+          text: "buddy er det altid-vågne lag i universet: det læser hver eneste ændring kritisk igennem før den lander, lader AI-medarbejderne tale sammen på tværs af projekter, og vækker dem præcis når der er arbejde.",
         },
-        { k: "chips", items: ["Kritisk medlæser", "Fælles samtalelinje", "Planlagte job", "Stopknap", "Hukommelse"] },
+        {
+          k: "prose",
+          text: "Fordelen for os: vi bygger hurtigt, men aldrig blindt. Hver ændring får en medlæser der fanger fejl, smutveje og påstande uden dækning — så hastighed ikke koster kontrol.",
+        },
+        {
+          k: "chips",
+          items: [
+            "Kritisk medlæser",
+            "Fanger fejl før de lander",
+            "Fælles samtalelinje",
+            "Vækker ved arbejde",
+            "Døgnet rundt",
+            "Fælles hukommelse",
+            "Stopknap",
+          ],
+        },
       ],
     },
     {
       eyebrow: "Sådan virker det",
-      heading: "Ser hver tur. Binder flåden sammen.",
+      heading: "For dig som kunde: bedre arbejde, hurtigere.",
       blocks: [
         {
           k: "steps",
           items: [
-            ["Læser hver ændring kritisk", "Fanger fejl, smutveje og påstande uden dækning."],
+            ["Færre fejl når dig", "Hver ændring er læst kritisk igennem før den ship'er."],
             [
-              "Binder sessionerne sammen",
-              "Lader dem tale sammen på tværs af projekter + sender det vigtigste til din telefon.",
+              "Hurtigere levering",
+              "Holdet arbejder døgnet rundt og koordinerer som ét, så dit projekt skrider frem — også mens du sover.",
             ],
-            ["Vækker en session når der er arbejde", "Præcis når — og kun når — der er noget at gøre."],
-            ["Holder beslutninger i fælles hukommelse", "De vigtige valg huskes på tværs af hele flåden."],
+            ["Samme standard overalt", "Ét kvalitetsniveau på tværs af alt du modtager."],
+            ["Intet tabt", "Beslutninger om dit projekt holdes i fælles hukommelse mellem hænder."],
+          ],
+        },
+        {
+          k: "table",
+          label: "Uden vs. med",
+          cols: ["Dimension", "Uden", "Med"],
+          rows: [
+            ["Kvalitetskontrol", "Afhænger af én udvikler", "Hver ændring medlæst kritisk"],
+            ["Fremdrift", "Kontortid", "Døgnet rundt"],
+            ["Overblik", "Spredt", "Ét system, én hukommelse"],
           ],
         },
       ],
     },
     {
       eyebrow: "Hvorfor det betyder noget",
-      heading: "Ét system, ikke ni løsrevne dele.",
+      heading: "Ét hold, ikke ni løsrevne dele.",
       blocks: [
         {
           k: "prose",
-          text: "buddy er grunden til at de mange motorer opfører sig som ét. Den fanger fejlene mens de er små, holder beskederne flydende og er vågen døgnet rundt — så du kan være orkestratoren i stedet for vagten.",
+          text: "buddy er grunden til at de mange motorer opfører sig som ét hold. Det fanger fejlene mens de er små, holder beskederne flydende og er vågent døgnet rundt — så du får et produkt der er bygget hurtigt og holdt i kort snor på samme tid.",
         },
         {
           k: "stats",
           items: [
-            ["24/7", "vågen"],
-            ["Hver tur", "tjekket"],
-            ["1", "stopknap for hele flåden"],
+            ["Hver ændring", "tjekket"],
+            ["24/7", "vågent"],
+            ["1", "kvalitetsniveau"],
           ],
         },
       ],
@@ -799,34 +824,34 @@ const aiSdk: FlagshipPage = {
 const upmetrics: FlagshipPage = {
   slug: "upmetrics",
   description:
-    "Hver fejl, hvert crash og hver AI-omkostning fra hver app fanges, grupperes og korreleres — på web og native iOS. Ét board for både fejl og forbrug — ikke to værktøjer. Problemer ses og fikses før de når brugeren.",
+    "Bag hvert site i broberg.ai-universet kører et lag der hele tiden holder øje — fanger fejl og crashes, sporer hvad alt koster, og slår alarm i sekundet noget knækker, på web og mobil. Du opdager sjældent at noget gik galt, fordi det er fanget og fikset først.",
   slides: [
     {
       hero: true,
       eyebrow: "upmetrics · @upmetrics/sdk",
-      heading: "Ved hvad der er galt — før dine brugere gør.",
+      heading: "Dit site fanger sine egne fejl — før dine kunder gør.",
       blocks: [
         {
           k: "lead",
-          text: "Hver fejl, hvert crash og hver AI-omkostning fra hver app fanges, grupperes og korreleres — på web og native iOS. Ét board for både fejl og forbrug — ikke to værktøjer. Problemer ses og fikses før de når brugeren.",
+          text: "Bag hvert site i broberg.ai-universet kører et lag der hele tiden holder øje — fanger fejl og crashes, sporer hvad alt koster, og slår alarm i sekundet noget knækker, på web og mobil. Du opdager sjældent at noget gik galt, fordi det er fanget og fikset først.",
         },
         {
           k: "chips",
-          items: ["Fejl", "Crash", "AI-omkostning", "Incidents", "Uptime-probes", "Deploys", "Web", "iOS"],
+          items: ["Fejl fanges automatisk", "Crashes", "Uptime", "AI-forbrug i kr.", "Web", "iOS"],
         },
       ],
     },
     {
       eyebrow: "Sådan virker det",
-      heading: "Tusind fejl bliver til ét klart signal.",
+      heading: "Et stille brud bliver aldrig en stille katastrofe.",
       blocks: [
         {
           k: "steps",
           items: [
-            ["Fang", "12 tjenester, 5-min puls, alt rapporteres automatisk."],
-            ["Gruppér", "Tusind fejl → ét issue."],
-            ["Korrelér", "Knyttes til den deploy eller probe der udløste det."],
-            ["Løs", "Issuet lukkes når fejlen er fikset."],
+            ["Fanget", "En fejl, et crash, en langsom side opdages automatisk."],
+            ["Forstået", "Tusind alarmer bliver til ét klart issue, knyttet til den ændring der udløste det."],
+            ["Fikset", "Fundet hurtigt, så nedetid bliver minutter, ikke dage."],
+            ["Bevist", "Hvert deploy får en sund/regredieret-dom."],
           ],
         },
         {
@@ -834,27 +859,27 @@ const upmetrics: FlagshipPage = {
           label: "Uden vs. med",
           cols: ["Dimension", "Uden", "Med"],
           rows: [
-            ["Fejl opdages", "Når en kunde klager", "Automatisk i sekundet"],
-            ["AI-omkostning", "Ukendt", "Pr. kald, i kroner"],
-            ["Stille brud efter deploy", "Opdages dage senere", "Fanget automatisk"],
+            ["Du opdager en fejl", "Fra en sur kunde-mail", "Automatisk, før kunden ser den"],
+            ["Når noget bryder", "Timer i blinde", "Fundet og fikset i minutter"],
+            ["Et dårligt deploy", "Opdages dage senere", "Fanget med det samme"],
           ],
         },
       ],
     },
     {
       eyebrow: "Ingen blinde vinkler",
-      heading: "Hvem holder øje med vagten?",
+      heading: "Nogen holder altid øje — også når du sover.",
       blocks: [
         {
           k: "prose",
-          text: "upmetrics fanger alle de andres fejl — men hvem fanger upmetrics'? En uafhængig watchdog i en anden sky, et helt andet datacenter, pinger den udefra. Selv et fuldt region-nedbrud bliver fanget — fra den anden side, helt uden for den fejlende zone. Og hver app lukker sine egne issues, så signalet altid er rent. Et selvhelende univers uden blinde vinkler.",
+          text: "Du skal ikke babysitte dit site. Det overvåges døgnet rundt — og selve vagten er bevogtet af en uafhængig watchdog i en anden sky, så selv et fuldt nedbrud fanges udefra. Resultatet er ro i maven: dit site er oppe, det passer på sig selv, og skulle noget ske, ved vi det før dig.",
         },
         {
           k: "stats",
           items: [
-            ["Anden sky", "uafhængig watchdog"],
-            ["Udefra", "fanget uden for zonen"],
-            ["100%", "selvhelende"],
+            ["24/7", "overvåget"],
+            ["Fanget", "før kunden"],
+            ["Ro i maven", "site passer på sig selv"],
           ],
         },
       ],
@@ -867,16 +892,20 @@ const upmetrics: FlagshipPage = {
 const contracts: FlagshipPage = {
   slug: "contracts",
   description:
-    "broberg.ai Contracts — brandede aftaler der sætter samarbejdet rigtigt op: anvendt teknologi, GDPR/databehandler og vilkår. Elektronisk signatur på sekunder, og fuld sporing af hvem der har læst hvad.",
+    "broberg.ai Contracts sætter samarbejdet juridisk og teknisk på plads fra dag ét: en samarbejdsaftale der beskriver løsningen og den anvendte teknologi, en supportaftale der fastlægger vilkårene, og en databehandleraftale der holder GDPR i orden — så både du og din kunde ved præcis hvad I har sagt ja til.",
   slides: [
     {
       hero: true,
       eyebrow: "contracts · broberg.ai",
-      heading: "Hver kundeaftale, korrekt fra start.",
+      heading: "Klarhed for begge parter — fra første underskrift.",
       blocks: [
         {
           k: "lead",
-          text: "broberg.ai Contracts — brandede aftaler der sætter samarbejdet rigtigt op: anvendt teknologi, GDPR/databehandler og vilkår. Elektronisk signatur på sekunder, og fuld sporing af hvem der har læst hvad.",
+          text: "broberg.ai Contracts sætter samarbejdet juridisk og teknisk på plads fra dag ét: en samarbejdsaftale der beskriver løsningen og den anvendte teknologi, en supportaftale der fastlægger vilkårene, og en databehandleraftale der holder GDPR i orden — så både du og din kunde ved præcis hvad I har sagt ja til.",
+        },
+        {
+          k: "prose",
+          text: "Alt brandet i dit udtryk, bygget af genbrugelige skabeloner og klausuler — underskrevet elektronisk på sekunder, og sporet så du ved hvem der har læst hvad.",
         },
         {
           k: "chips",
@@ -886,6 +915,7 @@ const contracts: FlagshipPage = {
             "Databehandleraftale",
             "Skabeloner",
             "Klausuler",
+            "Kontraktpakker",
             "E-signatur",
             "Læse-sporing",
           ],
@@ -899,10 +929,10 @@ const contracts: FlagshipPage = {
         {
           k: "steps",
           items: [
-            ["Skabeloner & klausuler", "Genbrugelige byggeklodser."],
-            ["Konfigurér pr. kunde", "Teknologi, GDPR, vilkår."],
-            ["Saml i en pakke", "Flere aftaler klar til samlet underskrift."],
-            ["Send & spor", "Kladde → sendt → underskrevet, versioneret."],
+            ["Skabeloner & klausuler", "Genbrugelige juridiske byggeklodser, korrekte hver gang."],
+            ["Konfigurér pr. kunde", "Teknologi, GDPR-grundlag og vilkår sat op for den konkrete aftale."],
+            ["Saml i en pakke", "Samarbejds-, support- og databehandleraftale klar til ÉN samlet underskrift."],
+            ["Send & spor", "Kladde → sendt → underskrevet, versioneret, med læse-kvitteringer."],
           ],
         },
         {
@@ -924,12 +954,12 @@ const contracts: FlagshipPage = {
       blocks: [
         {
           k: "prose",
-          text: "Hver aftale dækker det der tæller — teknologien bag løsningen, GDPR-ansvaret og vilkårene — så både du og kunden ved præcis hvad I har sagt ja til. Versioneret, sporet og underskrevet. Ingen løse PDF'er, ingen “har du set kontrakten?”.",
+          text: "En aftale er ikke en formalitet — den er fundamentet under samarbejdet. Contracts sikrer at fundamentet er korrekt hver gang: teknologien bag løsningen er beskrevet, GDPR-ansvaret ligger i en rigtig databehandleraftale, og vilkårene er klare for begge parter. Versioneret, sporet og underskrevet — så ingen er i tvivl om hvad de har sagt ja til.",
         },
         {
           k: "stats",
           items: [
-            ["Sekunder", "til signatur"],
+            ["3 aftaler", "ét underskrift"],
             ["GDPR", "indbygget"],
             ["Fuld", "læse-sporing"],
           ],
@@ -943,44 +973,50 @@ const contracts: FlagshipPage = {
 const pitchVault: FlagshipPage = {
   slug: "pitch-vault",
   description:
-    "Beskyt, del og spor hver pitch ét sted. Et visuelt bibliotek med thumbnails af hver præsentation — og hver færdig pitch bliver til søgbar inspiration for den næste.",
+    "Skab dine præsentationer i high-fidelity HTML — pixel-perfekte, interaktive og web-native, åbnet med ét link i enhver browser, uden PowerPoint eller PDF. Din kunde åbner en levende præsentation på enhver skærm, ikke en tung vedhæftning.",
   slides: [
     {
       hero: true,
       eyebrow: "pitch-vault · broberg.ai",
-      heading: "Det sikre hvælv for dine præsentationer.",
+      heading: "Pixel-perfekte pitches. Ét sikkert hvælv.",
       blocks: [
         {
           k: "lead",
-          text: "Beskyt, del og spor hver pitch ét sted. Et visuelt bibliotek med thumbnails af hver præsentation — og hver færdig pitch bliver til søgbar inspiration for den næste.",
+          text: "Skab dine præsentationer i high-fidelity HTML — pixel-perfekte, interaktive og web-native, åbnet med ét link i enhver browser, uden PowerPoint eller PDF. Din kunde åbner en levende præsentation på enhver skærm, ikke en tung vedhæftning.",
+        },
+        {
+          k: "prose",
+          text: "Hver pitch er en rigtig webside, ikke en flad fil — den ser ud præcis som du har bygget den. Gem dem ét sted: beskyttet, delt og sporet, med thumbnails så du ser hver pitch på et øjeblik.",
         },
         {
           k: "chips",
-          items: ["Beskyt", "Del", "Spor", "Visuelt bibliotek", "Thumbnails", "Søgbar", "Del-link", "Mapper"],
+          items: ["High-fidelity HTML", "Interaktiv", "Beskyt", "Del", "Spor", "Thumbnails", "Søgbar", "Mapper"],
         },
       ],
     },
     {
       eyebrow: "Sådan virker det",
-      heading: "Fra pitch til genbrugelig inspiration.",
+      heading: "Fra HTML-pitch til genbrugelig inspiration.",
       blocks: [
         {
           k: "steps",
           items: [
-            ["Gem", "Hver pitch i hvælvet, organiseret i mapper."],
-            ["Del", "Ét sikkert link, klar til kunden."],
-            ["Spor", "Se hvad der er delt og set."],
+            ["Skab", "Byg pitchen i high-fidelity HTML, pixel-perfekt i dit brand."],
+            ["Gem", "I hvælvet, i mapper, med auto-thumbnail."],
+            ["Del", "Ét sikkert link, åbnes i enhver browser."],
+            ["Spor", "Se hvem der åbnede og hvor længe."],
             ["Genbrug", "Søg på tværs, find den rette gamle pitch som afsæt."],
           ],
         },
         {
           k: "table",
-          label: "Før vs. Pitch Vault",
-          cols: ["Dimension", "Før", "Pitch Vault"],
+          label: "Slides/PDF vs. Pitch Vault",
+          cols: ["Dimension", "Slides/PDF", "Pitch Vault"],
           rows: [
-            ["Hvor bor pitches", "Spredt i mapper og mails", "Samlet i ét sikkert hvælv"],
-            ["Find en gammel", "Led i filsystemet", "Søg på tværs + se thumbnails"],
-            ["Del med kunden", "Vedhæft en stor fil", "Ét sikkert del-link"],
+            ["Format", "Flad fil (PPT/PDF)", "Levende high-fidelity HTML"],
+            ["Deling", "Tung vedhæftning", "Ét link, enhver browser"],
+            ["Find en gammel", "Led i filsystemet", "Søg + se thumbnails"],
+            ["Sporing", "Ingen", "Hvem åbnede, hvor længe"],
           ],
         },
       ],
@@ -991,14 +1027,14 @@ const pitchVault: FlagshipPage = {
       blocks: [
         {
           k: "prose",
-          text: "Hver pitch du laver gør hvælvet rigere — et voksende, søgbart bibliotek af din bedste inspiration. Næste pitch begynder ikke fra nul, men fra alt det I allerede har skabt. Beskyttet, delt og sporet.",
+          text: "Hver pitch du laver gør hvælvet rigere — et voksende, søgbart bibliotek af dit bedste arbejde. Næste gang du skal pitche, begynder du ikke fra nul, men fra alt det du allerede har skabt: genbrug en struktur, en sektion, et helt deck. Pixel-perfekt, beskyttet og sporet.",
         },
         {
           k: "stats",
           items: [
+            ["HTML", "high-fidelity"],
             ["Voksende", "bibliotek"],
-            ["Søgbar", "inspiration"],
-            ["Sikker", "deling"],
+            ["Sporet", "deling"],
           ],
         },
       ],
