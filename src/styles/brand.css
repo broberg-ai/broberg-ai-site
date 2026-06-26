@@ -1011,6 +1011,19 @@ footer {
 .ctable-win {
   color: var(--blue) !important;
 }
+/* Responsive header label: a too-wide token (e.g. "@webhouse/cms") shows its
+   short phone form only on narrow columns; full label everywhere else. */
+.ctable .ct-short {
+  display: none;
+}
+@media (max-width: 480px) {
+  .ctable .ct-full {
+    display: none;
+  }
+  .ctable .ct-short {
+    display: inline;
+  }
+}
 .stat-trio {
   display: flex;
   flex-direction: column;

@@ -14,13 +14,17 @@ type Stat = [string, string]; // [value, caption]
 type Card = [string, string]; // [title, desc]
 type ChatTurn = [string, "you" | "ai"];
 type Link = { label: string; href: string };
+// A table header is a plain string, or a {full,short} pair when the desktop label
+// (e.g. "@webhouse/cms") is too wide for a narrow mobile column and needs a short
+// phone form (e.g. "cms").
+type ColHead = string | { full: string; short: string };
 
 type Block =
   | { k: "lead"; text?: string; html?: string }
   | { k: "prose"; text: string }
   | { k: "chips"; items: string[] }
   | { k: "steps"; items: Step[] }
-  | { k: "table"; label: string; cols: string[]; rows: string[][] }
+  | { k: "table"; label: string; cols: ColHead[]; rows: string[][] }
   | { k: "quote"; text: string }
   | { k: "cards"; items: Card[] }
   | { k: "stats"; items: Stat[] }
@@ -61,27 +65,27 @@ const WorkSteps = ({ steps }: { steps: Step[] }) => (
   </ol>
 );
 
-// Insert a soft break opportunity after each "/" so URL-ish header tokens (e.g.
-// "@webhouse/cms") wrap at the slash on narrow mobile columns, not mid-word.
-function softSlash(s: string): (string | JSX.Element)[] {
-  if (!s.includes("/")) return [s];
-  const parts = s.split("/");
-  const out: (string | JSX.Element)[] = [];
-  parts.forEach((p, i) => {
-    out.push(i < parts.length - 1 ? `${p}/` : p);
-    if (i < parts.length - 1) out.push(<wbr key={i} />);
-  });
-  return out;
-}
+// A header that is wider than its narrow mobile column renders a short phone-only
+// label (display-toggled in CSS) so it never breaks mid-word; plain headers and
+// the desktop full label render as-is.
+const ColTh = ({ c }: { c: ColHead }) =>
+  typeof c === "string" ? (
+    <th>{c}</th>
+  ) : (
+    <th>
+      <span class="ct-full">{c.full}</span>
+      <span class="ct-short">{c.short}</span>
+    </th>
+  );
 
-const CTable = ({ label, cols, rows }: { label: string; cols: string[]; rows: string[][] }) => (
+const CTable = ({ label, cols, rows }: { label: string; cols: ColHead[]; rows: string[][] }) => (
   <div class="card" style="min-width:0">
     <div class="eyebrow">{label}</div>
     <table class="ctable">
       <thead>
         <tr>
           {cols.map((c) => (
-            <th key={c}>{softSlash(c)}</th>
+            <ColTh key={typeof c === "string" ? c : c.full} c={c} />
           ))}
         </tr>
       </thead>
@@ -565,7 +569,7 @@ const cms: FlagshipPage = {
         {
           k: "table",
           label: "Ikke som et gammelt CMS",
-          cols: ["Egenskab", "WordPress", "@webhouse/cms"],
+          cols: ["Egenskab", "WordPress", { full: "@webhouse/cms", short: "cms" }],
           rows: [
             ["Loadtid (mobil)", "3–6 sek", "0,4–0,8 sek"],
             ["Lighthouse", "55–70", "95–100"],
