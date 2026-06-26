@@ -1277,6 +1277,79 @@ const hosting: FlagshipPage = {
   ],
 };
 
+// consulting — 4 slides, gradient t=0/.33/.67/1, no external CTA. Anti-hype,
+// first-person advisory voice (cms #189/#190, Christian-approved).
+const consulting: FlagshipPage = {
+  slug: "consulting",
+  description:
+    "30 års erfaring med at bygge software — og en sund skepsis der gør at jeg ikke propper AI ind hvor det ikke hører hjemme. Vi starter med din forretning, ikke med teknologien, og sætter kun AI på agendaen hvor det faktisk betaler sig.",
+  slides: [
+    {
+      hero: true,
+      eyebrow: "consulting · rådgivning",
+      heading: "De fleste vil sælge dig mere AI. Jeg siger også fra.",
+      blocks: [
+        {
+          k: "lead",
+          text: "30 års erfaring med at bygge software — og en sund skepsis der gør at jeg ikke propper AI ind hvor det ikke hører hjemme. Vi starter med din forretning, ikke med teknologien, og sætter kun AI på agendaen hvor det faktisk betaler sig. Jeg taler ikke ud fra en PowerPoint — hele dette univers er den værktøjskasse jeg tager med.",
+        },
+        {
+          k: "chips",
+          items: ["Behovsanalyse", "Forretning først", "AI hvor det betaler sig", "Ærlig rådgivning"],
+        },
+      ],
+    },
+    {
+      eyebrow: "Sådan arbejder jeg",
+      heading: "Forretningen først. Teknologien bagefter.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Jeg starter med at forstå hvad din virksomhed faktisk har brug for — ikke med at finde et sted at klistre AI på. Nogle gange er svaret en smart automatisering; andre gange en simpel proces-ændring uden en eneste model involveret. Jeg fortæller dig også hvor AI IKKE skal bruges — et forkert valgt værktøj koster mere end det sparer.",
+        },
+      ],
+    },
+    {
+      eyebrow: "Hvorfor mig",
+      heading: "Tre ting der ikke står i en standard-pitch.",
+      blocks: [
+        {
+          k: "cards",
+          items: [
+            ["30 års erfaring", "Jeg har bygget software siden 1995. Set teknologi-bølger komme og gå — og ved hvad der holder."],
+            [
+              "Sund skepsis",
+              "Jeg sælger ikke mere AI for AI'ens skyld. Den rigtige mængde, det rigtige sted — og et ærligt nej hvor det er spild.",
+            ],
+            [
+              "Jeg bygger selv",
+              "Hele dette univers — cms · ai-sdk · components · drift — har jeg bygget. Mine anbefalinger kommer fra en der shipper, ikke en der laver slides.",
+            ],
+          ],
+        },
+      ],
+    },
+    {
+      eyebrow: "Lad os tale",
+      heading: "Skal vi finde ud af hvor AI faktisk hjælper dig?",
+      blocks: [
+        {
+          k: "prose",
+          text: "Ingen forkromede transformations-planer. En ærlig samtale om hvor AI giver mening i din virksomhed — og hvor den ikke gør. Med 30 års erfaring og hele værktøjskassen i ryggen.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["30", "års erfaring"],
+            ["AI", "hvor det betaler sig"],
+            ["Ærlig", "rådgivning"],
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const REGISTRY: Record<string, FlagshipPage> = {
   components,
   cardmem,
@@ -1288,6 +1361,7 @@ const REGISTRY: Record<string, FlagshipPage> = {
   contracts,
   "pitch-vault": pitchVault,
   hosting,
+  consulting,
 };
 
 export function hasSlides(slug: string): boolean {

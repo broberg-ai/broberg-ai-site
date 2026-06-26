@@ -395,6 +395,33 @@ const hosting = wrap(
   </g>,
 );
 
+// Choosing the RIGHT tool, not more AI: a toolbox of candidate tools (violet, one
+// dimmed = the honest "no"), with the right one lifted out and highlighted orange
+// (a check). Nails: 30 years + healthy skepticism — right tool, right place.
+const consulting = wrap(
+  <g>
+    {/* the chosen tool — lifted out, orange, glowing, with a check */}
+    <rect class="illu-glow" x="146" y="44" width="46" height="46" rx="11" fill="rgba(243,82,44,.16)" stroke="#F3522C" stroke-width="1.8" />
+    <path d="M157 67 l6 7 l14 -17" stroke="#F3522C" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+    {/* pick-up flow */}
+    <path class="illu-flow" d="M169 90 V126" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" />
+    {/* toolbox / tray */}
+    <path d="M64 152 H274 V206 a10 10 0 0 1 -10 10 H74 a10 10 0 0 1 -10 -10 Z" fill="rgba(167,139,250,.05)" stroke="#a78bfa" stroke-width="1.6" />
+    <path d="M64 152 L92 130 H246 L274 152" fill="none" stroke="#a78bfa" stroke-width="1.6" stroke-linejoin="round" />
+    {/* candidate tools inside — index 2 dimmed = the "no" */}
+    {[0, 1, 2, 3].map((k) => {
+      const x = 92 + k * 40;
+      return (
+        <rect key={k} x={x} y="166" width="30" height="34" rx="7" fill="rgba(167,139,250,.10)" stroke="#a78bfa" stroke-width="1.4" opacity={k === 2 ? "0.3" : "0.85"} />
+      );
+    })}
+    {/* gentle status dots on the kept tools */}
+    {[0, 1, 3].map((k, i) => (
+      <circle class="node" key={k} cx={107 + k * 40} cy="183" r="3" fill="#c4b5fd" style={`animation-delay:${i * 0.5}s`} />
+    ))}
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -406,6 +433,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   contracts,
   "pitch-vault": pitchVault,
   hosting,
+  consulting,
 };
 
 export function hasIllustration(k: string): boolean {
