@@ -86,10 +86,23 @@ if (config.isProd) {
   app.use("/fonts/*", serveStatic({ root: "./public" }));
 }
 
-// Media — same-origin raster assets (e.g. the About portrait) served from
-// public/media in dev + prod. Filenames aren't hashed, so the catch-all's
-// no-cache/must-revalidate applies — a re-pushed photo never serves stale.
-app.use("/media/*", serveStatic({ root: "./public" }));
+// Media — same-origin raster assets (e.g. the About portrait) from public/media.
+// Served via Bun.file so the response carries a correct Content-Length + native
+// Range support (Hono serveStatic returned Content-Length: 0, which browsers
+// honour → empty image even though curl GET streamed the bytes — cms bug report).
+app.get("/media/*", async (c) => {
+  const rel = c.req.path.replace(/^\/media\//, "");
+  if (!rel || rel.includes("..")) return c.text("Not found", 404);
+  const file = Bun.file(`./public/media/${rel}`);
+  if (!(await file.exists())) return c.text("Not found", 404);
+  // Buffer + explicit headers: a streamed Bun.file Response lost its
+  // Content-Length/Content-Type through Hono → browsers saw an empty image.
+  const buf = await file.arrayBuffer();
+  const headers = new Headers();
+  headers.set("content-type", file.type || "application/octet-stream");
+  headers.set("content-length", String(buf.byteLength));
+  return new Response(buf, { status: 200, headers });
+});
 // A miss must 404 — not fall through to the SPA page handler (which would
 // answer 200 text/html and read as "broken image" to a curl/diagnostic).
 app.all("/media/*", (c) => c.text("Not found", 404));
@@ -105,10 +118,14 @@ app.get("/uploads/*", async (c) => {
   try {
     const res = await fetch(upstream);
     if (!res.ok) return c.text("Not found", 404);
+    // Buffer to a sized body so the response carries a real Content-Length —
+    // a streamed res.body left it at 0, which browsers honour → empty image.
+    const buf = await res.arrayBuffer();
     const headers = new Headers();
     const ct = res.headers.get("content-type");
     if (ct) headers.set("content-type", ct);
-    return new Response(res.body, { status: 200, headers });
+    headers.set("content-length", String(buf.byteLength));
+    return new Response(buf, { status: 200, headers });
   } catch {
     return c.text("Upstream error", 502);
   }

@@ -816,8 +816,8 @@ section {
 }
 .about {
   display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 40px;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 48px;
   align-items: center;
 }
 @media (max-width: 880px) {
@@ -825,15 +825,17 @@ section {
     grid-template-columns: 1fr;
   }
 }
-/* About portrait — square photo rendered as a circle, same footprint + ring as the
-   b.-monogram it replaces (cms globals.aboutImage). */
+/* About portrait — a large square photo rendered as a circle that anchors the left
+   column with real visual weight against the text block (Christian: the 190px mark
+   floated in an empty column). Source is 600×600, so 420px is sharp. */
 .about-photo {
   width: 100%;
-  max-width: 190px;
+  max-width: 420px;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   object-fit: cover;
   display: block;
+  margin: 0 auto;
   border: 1.5px solid rgba(0, 178, 255, 0.32);
 }
 .pill {
