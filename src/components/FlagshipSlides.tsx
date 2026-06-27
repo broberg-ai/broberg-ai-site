@@ -478,6 +478,32 @@ const cardmem: FlagshipPage = {
       ],
     },
     {
+      eyebrow: "Arbejd hvor som helst",
+      heading: "Hele dit team. I lommen.",
+      blocks: [
+        {
+          k: "lead",
+          text: "Du koder ikke fra telefonen — du dirigerer. Cardmem mobile er mission control for hele dit AI-hold: dine agenter kører på dine egne computere og i EU-skyen i Stockholm, og du styrer det hele fra lommen — uanset hvor du selv er. Så mange agenter som du har projekter; vores egen flåde kører 15+ samtidig.",
+        },
+        {
+          k: "steps",
+          items: [
+            [
+              "Start en agent hvor som helst",
+              "Vælg maskine, model og konto, tap Launch. Fra en café i Blokhus spinder du en frisk agent op på en maskine i Stockholm.",
+            ],
+            ["Chat mens den bygger", "Følg agenten live, send en besked, se dens beslutninger i realtid."],
+            [
+              "Få et vib når den er færdig",
+              "Push direkte til telefonen i det sekund agenten er færdig eller har brug for dig. Bygget kl. 02 — du nikker fra sengen.",
+            ],
+            ["Se beviset, ikke bare et flueben", "Hvert resultat kommer med visuelt bevis (skærmbillede + verdikt) før noget går live."],
+          ],
+        },
+        { k: "quote", text: "Dit kontor er ikke et sted længere. Det er dig + din telefon." },
+      ],
+    },
+    {
       eyebrow: "For dig som kunde",
       badge: "rulles ud nu",
       heading: "Følg dit projekt blive bygget — i realtid.",
@@ -519,77 +545,47 @@ const cardmem: FlagshipPage = {
 const buddy: FlagshipPage = {
   slug: "buddy",
   description:
-    "buddy er det altid-vågne lag i universet: det læser hver eneste ændring kritisk igennem før den lander, lader AI-medarbejderne tale sammen på tværs af projekter, og vækker dem præcis når der er arbejde.",
+    "buddy er den altid-tændte dirigent for hele dit AI-hold: den starter hver agent med den rette opsætning, holder den i live, og lader agenterne spille sammen. Uden en dirigent er det enkeltspillere; med buddy er det et orkester.",
   slides: [
     {
       hero: true,
-      eyebrow: "buddy · altid vågen",
-      heading: "Et AI-hold der bygger som ét — med kvalitetskontrol indbygget.",
+      eyebrow: "Orkestratoren",
+      heading: "Én dirigent. Hele flåden spiller.",
       blocks: [
         {
           k: "lead",
-          text: "buddy er det altid-vågne lag i universet: det læser hver eneste ændring kritisk igennem før den lander, lader AI-medarbejderne tale sammen på tværs af projekter, og vækker dem præcis når der er arbejde.",
+          text: "Dine AI-agenter ved ikke om hinanden. Det gør buddy. Den er den altid-tændte dirigent: starter hver agent med den rette opsætning, holder den i live, og lader dem spille sammen — de taler sammen gennem buddy. Uden en dirigent er det enkeltspillere; med buddy er det et orkester.",
         },
+      ],
+    },
+    {
+      eyebrow: "Altid tændt",
+      heading: "Kører videre — også når du ikke gør.",
+      blocks: [
         {
           k: "prose",
-          text: "Fordelen for os: vi bygger hurtigt, men aldrig blindt. Hver ændring får en medlæser der fanger fejl, smutveje og påstande uden dækning — så hastighed ikke koster kontrol.",
+          text: "buddy lever i skyen som en tjeneste der overlever genstart og logud og forbinder sig selv igen. Den starter dine agenter dér hvor du vil have dem — på dine egne maskiner eller i EU-skyen i Stockholm — og holder dem i live: dør en agent, henter buddy den op igen med hele dens hukommelse, ikke fra nul.",
         },
         {
           k: "chips",
-          items: [
-            "Kritisk medlæser",
-            "Fanger fejl før de lander",
-            "Fælles samtalelinje",
-            "Vækker ved arbejde",
-            "Døgnet rundt",
-            "Fælles hukommelse",
-            "Stopknap",
-          ],
+          items: ["Altid tændt", "Dine maskiner + EU-sky", "Holder-i-live med hukommelse"],
         },
       ],
     },
     {
-      eyebrow: "Sådan virker det",
-      heading: "For dig som kunde: bedre arbejde, hurtigere.",
-      blocks: [
-        {
-          k: "steps",
-          items: [
-            ["Færre fejl når dig", "Hver ændring er læst kritisk igennem før den ship'er."],
-            [
-              "Hurtigere levering",
-              "Holdet arbejder døgnet rundt og koordinerer som ét, så dit projekt skrider frem — også mens du sover.",
-            ],
-            ["Samme standard overalt", "Ét kvalitetsniveau på tværs af alt du modtager."],
-            ["Intet tabt", "Beslutninger om dit projekt holdes i fælles hukommelse mellem hænder."],
-          ],
-        },
-        {
-          k: "table",
-          label: "Uden vs. med",
-          cols: ["Dimension", "Uden", "Med"],
-          rows: [
-            ["Kvalitetskontrol", "Afhænger af én udvikler", "Hver ændring medlæst kritisk"],
-            ["Fremdrift", "Kontortid", "Døgnet rundt"],
-            ["Overblik", "Spredt", "Ét system, én hukommelse"],
-          ],
-        },
-      ],
-    },
-    {
-      eyebrow: "Hvorfor det betyder noget",
-      heading: "Ét hold, ikke ni løsrevne dele.",
+      eyebrow: "Altid i spil",
+      heading: "Hele flåden, altid i spil.",
       blocks: [
         {
           k: "prose",
-          text: "buddy er grunden til at de mange motorer opfører sig som ét hold. Det fanger fejlene mens de er små, holder beskederne flydende og er vågent døgnet rundt — så du får et produkt der er bygget hurtigt og holdt i kort snor på samme tid.",
+          text: "Agenter kan vågne af sig selv — en uafhængig puls vækker den rette agent på rette tid, også selvom maskinerne sov (fx en daglig indbakke-gennemgang der kører sig selv). Og at dirigere hele flåden koster ikke ekstra pr. opgave.",
         },
         {
           k: "stats",
           items: [
-            ["Hver ændring", "tjekket"],
-            ["24/7", "vågent"],
-            ["1", "kvalitetsniveau"],
+            ["Auto", "selv-vækkende opgaver"],
+            ["Fast pris", "ikke pr. opgave"],
+            ["Genstart", "auto, med hukommelse"],
           ],
         },
       ],
