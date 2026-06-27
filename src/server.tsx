@@ -52,6 +52,8 @@ app.use("*", async (c, next) => {
   const p = c.req.path;
   if (config.isProd && p.startsWith("/assets/")) c.header("cache-control", "public, max-age=31536000, immutable");
   else if (config.isProd && p.startsWith("/fonts/")) c.header("cache-control", "public, max-age=2592000");
+  // cms-uploaded media (proxied) gets a day's cache — upload filenames are unique.
+  else if (p.startsWith("/uploads/")) c.header("cache-control", "public, max-age=86400");
   else if (p === "/icd" || p === "/healthz") {
     /* leave default */
   } else c.header("cache-control", "no-cache, must-revalidate");
@@ -91,6 +93,27 @@ app.use("/media/*", serveStatic({ root: "./public" }));
 // A miss must 404 — not fall through to the SPA page handler (which would
 // answer 200 text/html and read as "broken image" to a curl/diagnostic).
 app.all("/media/*", (c) => c.text("Not found", 404));
+
+// Uploads — same-origin proxy to the cms media archive (Sanne's pattern, cms-core
+// #1283). cms-uploaded images live on webhouse.app's volume; we stream them
+// same-origin so content stays in cms (no repo commits) and it works for every
+// broberg-ai upload. e.g. /uploads/cb-color-nr68.webp → globals.aboutImage.
+app.get("/uploads/*", async (c) => {
+  const rel = c.req.path.replace(/^\/uploads\//, "");
+  if (!rel || rel.includes("..")) return c.text("Not found", 404);
+  const upstream = `https://webhouse.app/api/uploads/${rel}?site=broberg-ai`;
+  try {
+    const res = await fetch(upstream);
+    if (!res.ok) return c.text("Not found", 404);
+    const headers = new Headers();
+    const ct = res.headers.get("content-type");
+    if (ct) headers.set("content-type", ct);
+    return new Response(res.body, { status: 200, headers });
+  } catch {
+    return c.text("Upstream error", 502);
+  }
+});
+app.all("/uploads/*", (c) => c.text("Not found", 404));
 
 // Favicon — ".ai" wordmark mark, served from public/ in dev + prod.
 app.get("/favicon.svg", serveStatic({ path: "./public/favicon.svg" }));
