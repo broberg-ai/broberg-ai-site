@@ -23,9 +23,6 @@ export function HeroFrequency() {
         <clipPath id="cin">
           <rect x="8" y="120" width="96" height="100" />
         </clipPath>
-        <clipPath id="cout">
-          <rect x="246" y="80" width="150" height="180" />
-        </clipPath>
       </defs>
       <circle class="sphere" cx="200" cy="170" r="150" fill="url(#hg)" />
       <g clip-path="url(#cin)">
@@ -37,9 +34,9 @@ export function HeroFrequency() {
           fill="none"
         />
       </g>
-      <path d="M110 110 L110 230 L240 170 Z" fill="rgba(0,178,255,.07)" stroke="url(#hl)" stroke-width="2" />
+      <path d="M110 110 L110 230 L240 170 Z" fill="none" stroke="url(#hl)" stroke-width="2" />
       <circle cx="158" cy="170" r="4" fill="#00b2ff" />
-      <g clip-path="url(#cout)">
+      <g>
         <path
           class="wOut"
           d="M236 170 q10 -42 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0"
