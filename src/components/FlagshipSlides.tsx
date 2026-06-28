@@ -1418,6 +1418,12 @@ export function hasSlides(slug: string): boolean {
   return slug.toLowerCase() in REGISTRY;
 }
 
+// Plain-data export of every flagship page (no JSX) — the source for migrating the
+// slide copy into cms (Flagskibe collection, data.slides) while this stays a fallback.
+export function allFlagshipPages(): FlagshipPage[] {
+  return Object.values(REGISTRY);
+}
+
 export function slideMeta(slug: string): { title: string; description: string } | null {
   const d = REGISTRY[slug.toLowerCase()];
   if (!d) return null;
