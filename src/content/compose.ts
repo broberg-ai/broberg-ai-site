@@ -10,6 +10,7 @@
 import type { Locale } from "@/config.ts";
 import { DEFAULT_LOCALE } from "@/config.ts";
 import { list, get, type StoredDoc } from "@/content/store.ts";
+import { validateFlagshipPage, type FlagshipPage } from "@/components/FlagshipSlides.tsx";
 import type {
   PageModel,
   SectionData,
@@ -292,6 +293,16 @@ export async function loadPlatform(locale: Locale, slug: string): Promise<Stored
   if (!doc || doc.status !== "published") return null;
   if (doc.locale && locOf(doc) !== locale) return null;
   return doc;
+}
+
+// Flagship slide-page data from cms (platforms doc `data.slides`), validated. Null
+// when missing/unpublished/wrong-locale/malformed → renderer falls back to the
+// in-code registry (no naked cutover; survives cms downtime).
+export async function loadFlagship(locale: Locale, slug: string): Promise<FlagshipPage | null> {
+  const doc = await get("platforms", slug);
+  if (!doc || doc.status !== "published") return null;
+  if (doc.locale && locOf(doc) !== locale) return null;
+  return validateFlagshipPage(slug, doc.data);
 }
 
 // All published platforms for the /flagskibe index, in order.

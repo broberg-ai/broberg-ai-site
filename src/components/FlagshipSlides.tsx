@@ -47,7 +47,7 @@ const Eyebrow = ({ slide }: { slide: Slide }) => (
   </div>
 );
 
-interface FlagshipPage {
+export interface FlagshipPage {
   slug: string;
   description: string;
   slides: Slide[];
@@ -1430,13 +1430,44 @@ export function slideMeta(slug: string): { title: string; description: string } 
   return { title: `${d.slug} — broberg.ai`, description: d.description };
 }
 
-export function FlagshipSlides({ slug }: { slug: string }): JSX.Element | null {
-  const d = REGISTRY[slug.toLowerCase()];
-  if (!d) return null;
+// The flagship copy now lives in cms (platforms doc `data.slides`, ICD'd to our
+// store); the in-code REGISTRY is the merge-proof FALLBACK. This lookup serves the
+// fallback path.
+export function flagshipFromRegistry(slug: string): FlagshipPage | null {
+  return REGISTRY[slug.toLowerCase()] ?? null;
+}
+
+const BLOCK_KINDS = new Set(["lead", "prose", "chips", "steps", "table", "quote", "cards", "stats", "chat", "callout"]);
+
+// Light runtime validation of a cms-supplied flagship payload. Returns a typed
+// FlagshipPage when the shape is sound, else null → caller falls back to the code
+// registry (never renders a malformed/half doc).
+export function validateFlagshipPage(slug: string, data: unknown): FlagshipPage | null {
+  if (!data || typeof data !== "object") return null;
+  const d = data as Record<string, unknown>;
+  const slides = d.slides;
+  if (!Array.isArray(slides) || slides.length === 0) return null;
+  for (const s of slides) {
+    if (!s || typeof s !== "object") return null;
+    const sl = s as Record<string, unknown>;
+    if (typeof sl.eyebrow !== "string" || typeof sl.heading !== "string" || !Array.isArray(sl.blocks)) return null;
+    for (const b of sl.blocks) {
+      if (!b || typeof b !== "object" || !BLOCK_KINDS.has((b as { k?: unknown }).k as string)) return null;
+    }
+  }
+  return {
+    slug,
+    description: typeof d.description === "string" ? d.description : "",
+    cta: Array.isArray(d.cta) ? (d.cta as Link[]) : undefined,
+    slides: slides as Slide[],
+  };
+}
+
+export function FlagshipSlides({ page }: { page: FlagshipPage }): JSX.Element {
   return (
     <>
-      {d.slides.map((slide, i) => (
-        <SlideView key={i} page={d} slide={slide} idx={i} total={d.slides.length} />
+      {page.slides.map((slide, i) => (
+        <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} />
       ))}
     </>
   );

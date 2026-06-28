@@ -10,11 +10,11 @@ import { Platforms } from "@/components/sections.tsx";
 import { renderPage } from "@/render/html.tsx";
 import { resolveAssets } from "@/render/assets.ts";
 import { homeFallback } from "@/data/fallback.ts";
-import { loadHome, loadPlatform, loadPlatforms } from "@/content/compose.ts";
+import { loadHome, loadPlatform, loadPlatforms, loadFlagship } from "@/content/compose.ts";
 import { richtextBlock } from "@/content/richtext.ts";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
-import { FlagshipSlides, hasSlides, slideMeta } from "@/components/FlagshipSlides.tsx";
+import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import type { PlatformsData } from "@/content/types.ts";
 import { flagshipsSegment } from "@/i18n.ts";
 
@@ -64,10 +64,15 @@ export async function renderFlagships(locale: Locale): Promise<string> {
 // Flagship detail — renders the cms platform doc in the brand design. `body` is
 // richtext (Markdown) → richtextBlock. cms fills the content; this is the shell.
 export async function renderFlagshipDetail(locale: Locale, slug: string): Promise<string | null> {
-  // Flagships with a 3-slide colour-journey page (components/cardmem/buddy/trail).
-  if (hasSlides(slug)) {
-    const meta = slideMeta(slug)!;
-    return page(<FlagshipSlides slug={slug} />, { title: meta.title, description: meta.description, locale });
+  // Slide pages: prefer the cms-authored copy (platforms doc `data.slides`, ICD'd
+  // to our store); fall back to the in-code registry when cms has none/invalid.
+  const fp = (await loadFlagship(locale, slug)) ?? flagshipFromRegistry(slug);
+  if (fp) {
+    return page(<FlagshipSlides page={fp} />, {
+      title: `${fp.slug} — broberg.ai`,
+      description: fp.description,
+      locale,
+    });
   }
   const doc = await loadPlatform(locale, slug);
   if (!doc) return null;
