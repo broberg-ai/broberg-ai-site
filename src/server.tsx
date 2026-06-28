@@ -14,6 +14,8 @@ import {
   renderFlagshipDetail,
   renderBlogPost,
   renderBlogIndex,
+  renderTagPage,
+  renderTagCloud,
   renderGenericPage,
 } from "@/routes.tsx";
 import { buildSearchIndex } from "@/content/compose.ts";
@@ -158,6 +160,19 @@ app.get(`/${flagshipsSegment("da")}/:slug`, async (c) => {
 app.get(`/en/${flagshipsSegment("en")}`, async () => html(await renderFlagships("en")));
 app.get(`/en/${flagshipsSegment("en")}/:slug`, async (c) => {
   const r = await renderFlagshipDetail("en", c.req.param("slug"));
+  return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
+});
+
+// Tags — cloud (/tags) + per-tag page (/tags/:tag), DA + EN. Registered BEFORE the
+// catch-all blog/page routes so they win over /:slug and /:category/:slug.
+app.get("/tags", async () => html(await renderTagCloud("da")));
+app.get("/en/tags", async () => html(await renderTagCloud("en")));
+app.get("/tags/:tag", async (c) => {
+  const r = await renderTagPage("da", c.req.param("tag"));
+  return r ? html(r) : notFound(renderGenericPage("da", "ikke-fundet"));
+});
+app.get("/en/tags/:tag", async (c) => {
+  const r = await renderTagPage("en", c.req.param("tag"));
   return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
 });
 

@@ -21,6 +21,9 @@ import {
   loadCategoryPosts,
   categoryLabel,
   isCategory,
+  slugifyTag,
+  loadPostsByTag,
+  buildTagCloud,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
@@ -198,9 +201,14 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
           {tags.length ? (
             <div class="post-tags">
               {tags.map((t) => (
-                <span class="pill" key={t}>
+                <a
+                  class="pill taglink"
+                  key={t}
+                  href={withLocale(locale, `/tags/${slugifyTag(t)}`)}
+                  data-testid={`tag-${slugifyTag(t)}`}
+                >
                   {t}
-                </span>
+                </a>
               ))}
             </div>
           ) : null}
@@ -283,6 +291,102 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
       </div>
     </section>,
     { title: `${catLabel} — broberg.ai`, description: catLabel, locale, canonical: withLocale(locale, `/${category}`) },
+  );
+}
+
+// Tag page — every post carrying a tag, across categories. null → unknown tag (404).
+export async function renderTagPage(locale: Locale, tagSlug: string): Promise<string | null> {
+  const { posts, label } = await loadPostsByTag(locale, tagSlug);
+  if (!posts.length) return null;
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  const n = posts.length;
+  const count = locale === "en" ? `${n} ${n === 1 ? "article" : "articles"}` : `${n} ${n === 1 ? "artikel" : "artikler"}`;
+
+  return page(
+    <section id="tag">
+      <div class="wrap reveal">
+        <div class="sec-head">
+          <div class="eyebrow">Tag</div>
+          <h2>#{label}</h2>
+          <p class="lead">{count}</p>
+          <div class="divider" />
+        </div>
+        <div class="grid g3">
+          {posts.map((p) => {
+            const pd = (p.data ?? {}) as Record<string, unknown>;
+            const cat = str(pd.category) || "indsigter";
+            return (
+              <a
+                class="blogcard"
+                key={String(p.slug)}
+                href={withLocale(locale, `/${cat}/${String(p.slug)}`)}
+                data-testid={`tagpost-${String(p.slug)}`}
+              >
+                <div class="blogthumb" />
+                <div class="blogbody">
+                  <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
+                  <h3>{str(pd.title)}</h3>
+                  <p>{str(pd.excerpt)}</p>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+        <div class="cta-row" style="margin-top:32px">
+          <a class="btn btn-ghost" href={withLocale(locale, "/tags")} data-testid="tags-all-link">
+            {locale === "en" ? "All tags" : "Alle tags"} <span class="ar">→</span>
+          </a>
+        </div>
+      </div>
+    </section>,
+    {
+      title: `#${label} — broberg.ai`,
+      description:
+        locale === "en" ? `Articles tagged "${label}" on broberg.ai.` : `Artikler tagget "${label}" på broberg.ai.`,
+      locale,
+      canonical: withLocale(locale, `/tags/${tagSlug}`),
+    },
+  );
+}
+
+// Tag cloud — every distinct tag, sized nothing fancy, linking to its tag page.
+export async function renderTagCloud(locale: Locale): Promise<string> {
+  const tags = await buildTagCloud(locale);
+  const heading = locale === "en" ? "Browse by tag" : "Find efter tag";
+  const empty = locale === "en" ? "No tags yet." : "Ingen tags endnu.";
+
+  return page(
+    <section id="tags">
+      <div class="wrap reveal">
+        <div class="sec-head">
+          <div class="eyebrow">Tags</div>
+          <h2>{heading}</h2>
+          <div class="divider" />
+        </div>
+        {tags.length ? (
+          <div class="tagcloud">
+            {tags.map((t) => (
+              <a
+                class="pill taglink"
+                key={t.slug}
+                href={withLocale(locale, `/tags/${t.slug}`)}
+                data-testid={`tagcloud-${t.slug}`}
+              >
+                {t.tag} <span class="tagcount">{t.count}</span>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p class="lead">{empty}</p>
+        )}
+      </div>
+    </section>,
+    {
+      title: locale === "en" ? "Tags — broberg.ai" : "Tags — broberg.ai",
+      description: locale === "en" ? "Browse broberg.ai articles by tag." : "Find broberg.ai-artikler efter tag.",
+      locale,
+      canonical: withLocale(locale, "/tags"),
+    },
   );
 }
 

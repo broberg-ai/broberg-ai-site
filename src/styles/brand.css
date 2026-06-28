@@ -1245,10 +1245,26 @@ footer {
   color: var(--blue-light);
 }
 .richtext ul {
-  margin: 12px 0 12px 22px;
+  margin: 12px 0 12px 4px;
+  padding: 0;
+  list-style: none;
 }
+/* Visible bullets: a small brand-blue disc before each item (the global reset
+   strips the native marker, so render our own). */
 .richtext ul li {
+  position: relative;
   margin: 7px 0;
+  padding-left: 20px;
+}
+.richtext ul li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--blue);
 }
 /* Ordered lists (Key features) render as the pitch's circled-number component:
    a numbered disc + a vertical connector line between steps. */
@@ -1582,4 +1598,37 @@ footer {
   .cmdk-foot {
     display: none;
   }
+}
+
+/* ── Tags: clickable pills + tag cloud (/tags, /tags/:tag) ─────────────────── */
+/* A .pill that is a link (post tags + cloud) gets affordance: pointer + hover. */
+a.pill.taglink {
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+a.pill.taglink:hover {
+  color: var(--blue-light);
+  border-color: rgba(0, 178, 255, 0.45);
+  background: var(--blue-glow);
+}
+a.pill.taglink:active {
+  transform: translateY(1px);
+}
+.tagcloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+  margin-top: 6px;
+  max-width: 760px;
+}
+.tagcloud .pill {
+  margin: 0;
+  font-size: 14px;
+  padding: 7px 15px;
+}
+.tagcount {
+  margin-left: 6px;
+  opacity: 0.55;
+  font-size: 0.82em;
 }

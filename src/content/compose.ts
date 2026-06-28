@@ -444,3 +444,55 @@ export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
 
   return out.filter((e) => e.title);
 }
+
+// ── Tags (clickable → /tags/<slug>, cloud at /tags) ───────────────────────────
+
+// URL slug for a tag: lowercase, spaces/punctuation → dashes. Keeps æøå (real
+// Danish, no transliteration) consistent with post slugs.
+export function slugifyTag(tag: string): string {
+  return tag
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9æøå]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// All published posts (for the locale) carrying a tag whose slug matches, newest
+// first, plus the tag's display label (original case). Empty posts → unknown tag.
+export async function loadPostsByTag(
+  locale: Locale,
+  tagSlug: string,
+): Promise<{ posts: StoredDoc[]; label: string }> {
+  let label = tagSlug;
+  const posts = forLocale(await list("posts"), locale)
+    .filter((p) => {
+      const hit = arr<string>(dataOf(p).tags).find((t) => slugifyTag(t) === tagSlug);
+      if (hit) {
+        label = hit;
+        return true;
+      }
+      return false;
+    })
+    .sort((a, b) => String(dataOf(b).date).localeCompare(String(dataOf(a).date)));
+  return { posts, label };
+}
+
+// Every distinct tag across the locale's posts, with usage counts (most-used first).
+export interface TagCount {
+  tag: string;
+  slug: string;
+  count: number;
+}
+export async function buildTagCloud(locale: Locale): Promise<TagCount[]> {
+  const map = new Map<string, TagCount>();
+  for (const p of forLocale(await list("posts"), locale)) {
+    for (const t of arr<string>(dataOf(p).tags)) {
+      const slug = slugifyTag(t);
+      if (!slug) continue;
+      const e = map.get(slug);
+      if (e) e.count++;
+      else map.set(slug, { tag: t, slug, count: 1 });
+    }
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
