@@ -422,6 +422,40 @@ const consulting = wrap(
   </g>,
 );
 
+// AutoDoc: a document that writes + updates itself — content lines with one
+// freshly auto-written line (orange pulse), an embedded screenshot that a scan
+// sweep keeps regenerating, and a rotating refresh ("auto") arc = always in sync.
+// Amber #fbbf24 + orange accent.
+const docs = wrap(
+  <g>
+    {/* document with folded corner */}
+    <path d="M58 50 H168 L194 76 V230 H58 Z" fill="rgba(251,191,36,.05)" stroke="#fbbf24" stroke-width="1.6" stroke-linejoin="round" />
+    <path d="M168 50 V76 H194" fill="none" stroke="#fbbf24" stroke-width="1.6" stroke-linejoin="round" />
+    {/* content lines */}
+    <rect x="74" y="92" width="80" height="6" rx="3" fill="rgba(253,230,138,.55)" />
+    <rect x="74" y="108" width="100" height="5" rx="2.5" fill="rgba(253,230,138,.26)" />
+    <rect x="74" y="121" width="92" height="5" rx="2.5" fill="rgba(253,230,138,.26)" />
+    {/* freshly auto-written line (orange, pulsing) */}
+    <rect class="illu-glow" x="74" y="134" width="58" height="5" rx="2.5" fill="rgba(243,82,44,.5)" />
+    {/* embedded auto-screenshot with a regenerating scan sweep */}
+    <rect x="74" y="156" width="104" height="56" rx="6" fill="rgba(251,191,36,.06)" stroke="#fbbf24" stroke-width="1.2" />
+    <circle cx="92" cy="178" r="6" fill="rgba(253,230,138,.4)" />
+    <path d="M104 196 l12 -13 l9 9 l15 -17" stroke="rgba(253,230,138,.45)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+    <rect x="74" y="156" width="5" height="56" fill="rgba(243,82,44,.5)">
+      <animateTransform attributeName="transform" type="translate" from="0 0" to="99 0" dur="3.2s" repeatCount="indefinite" />
+    </rect>
+    {/* self-updating refresh — rotating arc with "auto" */}
+    <g transform="translate(264 92)">
+      <g>
+        <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="4.5s" repeatCount="indefinite" />
+        <path d="M22 0 A22 22 0 1 1 6 -21" fill="none" stroke="#fbbf24" stroke-width="2.4" stroke-linecap="round" />
+        <path d="M6 -21 l9 1 m-9 -1 l1 9" fill="none" stroke="#fbbf24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      </g>
+      <text x="0" y="3.5" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9.5" fill="rgba(253,230,138,.85)">auto</text>
+    </g>
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -434,6 +468,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   "pitch-vault": pitchVault,
   hosting,
   consulting,
+  docs,
 };
 
 export function hasIllustration(k: string): boolean {

@@ -1346,6 +1346,59 @@ const consulting: FlagshipPage = {
   ],
 };
 
+// docs (AutoDoc) — IDEATION / "på vej", 3 slides, gradient t=0/.5/1, no external
+// CTA. Tone = coming, not "exists and works" (cms #217/#218, Christian-approved).
+const docs: FlagshipPage = {
+  slug: "docs",
+  description:
+    "Dokumentation er altid det første der bliver forældet. AutoDoc vender det om: AI skriver dokumentationen til dine API'er og din applikation — og holder den levende, helt af sig selv.",
+  slides: [
+    {
+      hero: true,
+      eyebrow: "AutoDoc",
+      heading: "Dokumentation der skriver sig selv.",
+      blocks: [
+        {
+          k: "lead",
+          text: "Dokumentation er altid det første der bliver forældet. AutoDoc vender det om: AI skriver dokumentationen til dine API'er og din applikation — og holder den levende. Hver gang du ændrer noget, følger manualen med. Helt af sig selv.",
+        },
+      ],
+    },
+    {
+      eyebrow: "Altid opdateret",
+      heading: "Den overvåger dit produkt — og skriver med.",
+      blocks: [
+        {
+          k: "prose",
+          text: "AutoDoc holder øje med både dine API'er OG hele dit udviklingsflow. Slipper du en ny side, et nyt UI-element eller et nyt endpoint, opdager AutoDoc det og opdaterer dokumentationen — inklusive friske skærmbilleder genereret automatisk. Ingen skærmbilleder der viser sidste års knapper. Ingen “TODO: dokumentér dette”.",
+        },
+        {
+          k: "chips",
+          items: ["Overvåger API'er + UI", "Auto-genererede skærmbilleder", "Følger hver release"],
+        },
+      ],
+    },
+    {
+      eyebrow: "På vej",
+      heading: "Manualer der aldrig er forældede.",
+      blocks: [
+        {
+          k: "prose",
+          text: "Brugere og udviklere møder altid dokumentation der matcher det de rent faktisk ser på skærmen. Skrevet af AI, holdt ajour af AI — så dit team kan bygge i stedet for at skrive om igen.",
+        },
+        {
+          k: "stats",
+          items: [
+            ["AI", "skriver dokumentationen"],
+            ["Ajour", "følger hver ændring"],
+            ["Auto", "screenshots, aldrig forældede"],
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const REGISTRY: Record<string, FlagshipPage> = {
   components,
   cardmem,
@@ -1358,6 +1411,7 @@ const REGISTRY: Record<string, FlagshipPage> = {
   "pitch-vault": pitchVault,
   hosting,
   consulting,
+  docs,
 };
 
 export function hasSlides(slug: string): boolean {

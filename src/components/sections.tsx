@@ -113,7 +113,13 @@ export function Platforms({ data }: { data: PlatformsData }) {
                   <Logo k={p.logoKey} />
                 </div>
                 <div class="nm">{p.name}</div>
-                <span class="badge">{p.status}</span>
+                {/* status="live" → green LIVE; anything else (e.g. ideation) → a
+                    discreet grey "Snart" so a not-yet-live node makes no false claim. */}
+                {p.status === "live" ? (
+                  <span class="badge">{p.status}</span>
+                ) : (
+                  <span class="badge badge-soon">Snart</span>
+                )}
               </div>
               <p>{p.blurb}</p>
             </a>
