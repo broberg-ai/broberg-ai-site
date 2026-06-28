@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 
 // Vite only builds the small client-enhancement bundle + the CSS.
@@ -6,6 +7,11 @@ import tailwindcss from "@tailwindcss/vite";
 // emitted to dist/client and served statically by Hono in production.
 export default defineConfig({
   plugins: [tailwindcss()],
+  // The client bundle uses the same `@/` alias as the SSR code (tsconfig paths).
+  // Bun resolves it natively; rollup needs it spelled out here.
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+  },
   build: {
     outDir: "dist/client",
     emptyOutDir: true,

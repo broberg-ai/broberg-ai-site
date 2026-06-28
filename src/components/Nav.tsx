@@ -52,6 +52,13 @@ export function Nav() {
           <a class="navlink simple" href="/#om" data-scroll="om" data-testid="nav-om">
             Om
           </a>
+          <button class="navlink navsearch" data-testid="cmdk-trigger" aria-label="Søg (⌘K)" title="Søg ⌘K">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" />
+              <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <span class="navsearch-kbd">⌘K</span>
+          </button>
           <a class="btn" href="/#kontakt" data-scroll="kontakt" data-testid="nav-cta-kontakt">
             Lad os bygge
           </a>

@@ -1321,3 +1321,265 @@ footer {
     transform: none;
   }
 }
+
+/* ── Blog post detail (cms posts → /:category/:slug) ───────────────────────── */
+/* Match section spacing so the title clears the fixed header (article ≠ section). */
+.post {
+  padding: 104px 0;
+  position: relative;
+}
+.post-title {
+  font-family: var(--fd);
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.08;
+  font-weight: 600;
+  color: var(--light);
+  margin: 6px 0 0;
+}
+.post-title em {
+  font-style: italic;
+  color: var(--blue);
+}
+.post-meta {
+  margin-top: 14px;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+.post-tags {
+  margin-top: 12px;
+}
+.post-body {
+  max-width: 760px;
+}
+.post-body > * + * {
+  margin-top: 8px;
+}
+.post-attr {
+  max-width: 760px;
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px solid var(--card-border);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.post-attr a {
+  color: var(--blue);
+  border-bottom: 1px solid rgba(0, 178, 255, 0.3);
+}
+
+/* Embedded post blocks ([block:<slug>] → cms blocks collection) */
+.postblock {
+  margin: 28px 0;
+  max-width: 760px;
+}
+.postblock.card {
+  padding: 18px 20px;
+}
+.postblock-notice.notice-warning {
+  border-color: rgba(243, 82, 44, 0.35);
+}
+.postblock-notice.notice-tip {
+  border-color: rgba(0, 178, 255, 0.3);
+}
+.postblock-carousel .block-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.postblock-carousel img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+}
+.postblock-carousel figcaption {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Nav search trigger (opens ⌘K) */
+.navsearch {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 100px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: border-color 0.15s, color 0.15s, transform 0.05s;
+}
+.navsearch:hover {
+  color: var(--light);
+  border-color: rgba(0, 178, 255, 0.4);
+}
+.navsearch:active {
+  transform: translateY(1px);
+}
+.navsearch-kbd {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+/* ── ⌘K command palette (dark theme; reusable shell from cardmem #7515) ─────── */
+.cmdk-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+  background: rgba(10, 12, 15, 0.62);
+  backdrop-filter: blur(3px);
+}
+.cmdk-box {
+  width: 600px;
+  max-width: 92vw;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--dark2);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  font-family: var(--fb);
+}
+.cmdk-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--card-border);
+}
+.cmdk-icon {
+  flex: none;
+  color: var(--muted);
+}
+.cmdk-input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--light);
+}
+.cmdk-input::placeholder {
+  color: var(--muted);
+}
+.cmdk-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 0;
+}
+.cmdk-section {
+  padding: 6px 16px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.cmdk-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.cmdk-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.cmdk-row.active {
+  background: var(--card);
+}
+.cmdk-rowtext {
+  flex: 1;
+  min-width: 0;
+}
+.cmdk-title {
+  display: block;
+  font-size: 14px;
+  color: var(--light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmdk-sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmdk-badge {
+  flex: none;
+  min-width: 64px;
+  text-align: center;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+}
+.cmdk-badge.tone-clay {
+  background: var(--orange-soft);
+  color: var(--orange-text);
+  border-color: rgba(243, 82, 44, 0.4);
+}
+.cmdk-badge.tone-olive {
+  background: var(--blue-glow);
+  color: var(--blue-light);
+  border-color: rgba(0, 178, 255, 0.4);
+}
+.cmdk-badge.tone-oat,
+.cmdk-badge.tone-neutral {
+  background: var(--card);
+  color: var(--muted);
+  border-color: var(--card-border);
+}
+.cmdk-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-top: 1px solid var(--card-border);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cmdk-kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  font-size: 10px;
+  color: var(--muted);
+}
+@media (hover: none) {
+  .cmdk-foot {
+    display: none;
+  }
+}

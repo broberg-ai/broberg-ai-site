@@ -1,6 +1,7 @@
 /* Progressive enhancement for the SSR'd page. Everything here is additive — the
    page is fully readable without it. Ported from mockup v6's inline script plus
    the mobile nav/dropdown toggles flagged in the build brief. */
+import { mountCmdk } from "@/client/cmdk.tsx";
 
 function smoothScroll() {
   document.querySelectorAll<HTMLElement>("[data-scroll]").forEach((el) => {
@@ -121,3 +122,4 @@ safe(smoothScroll);
 safe(countUps);
 safe(liveFeed);
 safe(reducedMotion);
+safe(mountCmdk);

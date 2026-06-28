@@ -24,6 +24,7 @@ import type {
 } from "@/content/types.ts";
 import { homeFallback } from "@/data/fallback.ts";
 import { richtextInline } from "@/content/richtext.ts";
+import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
 type Data = Record<string, unknown>;
 const isPub = (d: StoredDoc) => d.status === "published";
@@ -327,4 +328,119 @@ export async function loadHome(locale: Locale): Promise<PageModel | null> {
   const entries = await Promise.all(collections.map(async (c) => [c, await list(c)] as const));
   const store: Store = Object.fromEntries(entries);
   return buildHomeModel(locale, store);
+}
+
+// ── Blog / posts ──────────────────────────────────────────────────────────────
+
+// A single post by slug, for the /:category/:slug detail page. Returns the raw
+// cms doc (data under .data) or null when missing/unpublished/wrong-locale.
+export async function loadPost(locale: Locale, slug: string): Promise<StoredDoc | null> {
+  const doc = await get("posts", slug);
+  if (!doc || doc.status !== "published") return null;
+  if (doc.locale && locOf(doc) !== locale) return null;
+  return doc;
+}
+
+// A single embeddable block by slug (cms `blocks` collection), resolved for a
+// post's [block:<slug>] shortcode. Locale-agnostic: the post references its own
+// locale's block slug explicitly, so exact-slug lookup is correct.
+export async function loadBlock(slug: string): Promise<StoredDoc | null> {
+  const doc = await get("blocks", slug);
+  if (!doc || doc.status !== "published") return null;
+  return doc;
+}
+
+// The translation twin of a post, found by shared translationGroup across
+// locales (cms i18n; per-locale slugs differ). Null when the post is monolingual.
+export async function loadPostTwin(
+  doc: StoredDoc,
+): Promise<{ locale: Locale; slug: string; category: string } | null> {
+  const tg = (doc as { translationGroup?: string }).translationGroup;
+  if (!tg) return null;
+  const twin = (await list("posts")).find(
+    (p) => isPub(p) && (p as { translationGroup?: string }).translationGroup === tg && locOf(p) !== locOf(doc),
+  );
+  if (!twin) return null;
+  return { locale: locOf(twin), slug: String(twin.slug), category: str(dataOf(twin).category) };
+}
+
+// Resolve a category slug to one of its keys (slug/id/name) across locales.
+async function categoryBySlug(category: string): Promise<StoredDoc | undefined> {
+  return (await list("categories"))
+    .filter(isPub)
+    .find((c) => String(c.slug).toLowerCase() === category.toLowerCase());
+}
+
+// True when `slug` names a real category — used by the single-segment route to
+// decide category-index vs generic page.
+export async function isCategory(slug: string): Promise<boolean> {
+  return (await categoryBySlug(slug)) !== undefined;
+}
+
+// Display label for a category (its cms name), falling back to the slug.
+export async function categoryLabel(category: string): Promise<string> {
+  const cat = await categoryBySlug(category);
+  return cat ? str(dataOf(cat).name) || category : category;
+}
+
+// All published posts in a category for the given locale, newest first.
+export async function loadCategoryPosts(locale: Locale, category: string): Promise<StoredDoc[]> {
+  const posts = forLocale(await list("posts"), locale);
+  const cat = await categoryBySlug(category);
+  const keys = cat ? [String(cat.slug), cat.id, dataOf(cat).name] : [category];
+  return posts
+    .filter((p) => keys.includes(dataOf(p).category as never))
+    .sort((a, b) => String(dataOf(b).date).localeCompare(String(dataOf(a).date)));
+}
+
+// ── Search index (⌘K) ─────────────────────────────────────────────────────────
+
+// One CmdItem-shaped entry per searchable surface. Mirrors the cmdk-palette
+// CmdItem shape (id/title/subtitle/badge/badgeTone/data=href) — the client casts
+// the JSON straight into the palette, no /api/search needed. Content comes from
+// the cms store (platforms + posts) so search stays 100% editable in cms.
+export interface SearchEntry {
+  id: string;
+  title: string;
+  subtitle: string;
+  badge: string;
+  badgeTone: "clay" | "olive" | "oat" | "neutral";
+  data: string;
+}
+
+export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
+  const seg = flagshipsSegment(locale);
+  const out: SearchEntry[] = [];
+
+  const platforms = forLocale(await list("platforms"), locale).sort(
+    (a, b) => num(dataOf(a).order) - num(dataOf(b).order),
+  );
+  for (const p of platforms) {
+    const d = dataOf(p);
+    const slug = String(p.slug ?? str(d.name)).toLowerCase();
+    out.push({
+      id: `flagship:${slug}`,
+      title: str(d.name) || slug,
+      subtitle: str(d.blurb) || str(d.tagline),
+      badge: "FLAGSKIB",
+      badgeTone: "clay",
+      data: withLocale(locale, `/${seg}/${slug}`),
+    });
+  }
+
+  const posts = forLocale(await list("posts"), locale);
+  for (const p of posts) {
+    const d = dataOf(p);
+    const cat = str(d.category);
+    out.push({
+      id: `post:${String(p.slug)}`,
+      title: str(d.title),
+      subtitle: str(d.excerpt),
+      badge: cat === "cases" ? "CASE" : "INDSIGT",
+      badgeTone: cat === "cases" ? "oat" : "olive",
+      data: withLocale(locale, `/${cat}/${String(p.slug)}`),
+    });
+  }
+
+  return out.filter((e) => e.title);
 }

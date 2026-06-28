@@ -10,13 +10,26 @@ import { Platforms } from "@/components/sections.tsx";
 import { renderPage } from "@/render/html.tsx";
 import { resolveAssets } from "@/render/assets.ts";
 import { homeFallback } from "@/data/fallback.ts";
-import { loadHome, loadPlatform, loadPlatforms, loadFlagship } from "@/content/compose.ts";
-import { richtextBlock } from "@/content/richtext.ts";
+import {
+  loadHome,
+  loadPlatform,
+  loadPlatforms,
+  loadFlagship,
+  loadPost,
+  loadBlock,
+  loadPostTwin,
+  loadCategoryPosts,
+  categoryLabel,
+  isCategory,
+} from "@/content/compose.ts";
+import { richtextBlock, richtextInline } from "@/content/richtext.ts";
+import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import type { PlatformsData } from "@/content/types.ts";
-import { flagshipsSegment } from "@/i18n.ts";
+import type { StoredDoc } from "@/content/store.ts";
+import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
 function page(children: any, meta: { title: string; description: string; locale: Locale; canonical?: string }) {
   return renderPage(
@@ -135,20 +148,141 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   );
 }
 
-// Blog post — placeholder until cms posts/categories are wired.
-export function renderBlogPost(locale: Locale, category: string, slug: string): string {
+// Title with the cms `titleHighlight` word rendered as the <em> accent (mirrors
+// the hero's accent). Falls back to the plain title when no highlight is set.
+function titleWithAccent(title: string, highlight: string) {
+  if (!highlight || !title.includes(highlight)) return <>{title}</>;
+  const [before, ...after] = title.split(highlight);
+  return (
+    <>
+      {before}
+      <em>{highlight}</em>
+      {after.join(highlight)}
+    </>
+  );
+}
+
+// Blog post detail — renders a cms post (posts collection, ICD'd to our store).
+// `content` is markdown richtext with optional [block:<slug>] shortcodes that
+// resolve against the `blocks` collection. 0 hardcoded copy. null → 404.
+export async function renderBlogPost(locale: Locale, category: string, slug: string): Promise<string | null> {
+  const doc = await loadPost(locale, slug);
+  if (!doc) return null;
+  const d = (doc.data ?? {}) as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  const arr = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+
+  const title = str(d.title) || slug.replace(/-/g, " ");
+  const content = str(d.content);
+  const tags = arr(d.tags);
+  const meta = [str(d.author), str(d.date), str(d.readTime)].filter(Boolean).join(" · ");
+
+  // Resolve only the block-docs this post actually embeds.
+  const slugs = extractBlockSlugs(content);
+  const resolved = await Promise.all(slugs.map(async (s) => [s, await loadBlock(s)] as const));
+  const blocks: Record<string, StoredDoc> = {};
+  for (const [s, b] of resolved) if (b) blocks[s] = b;
+
+  const twin = await loadPostTwin(doc);
+  const catLabel = await categoryLabel(category);
+  const backLabel = locale === "en" ? "All insights" : "Alle indsigter";
+  const twinLabel = twin?.locale === "en" ? "Read in English" : "Læs på dansk";
+
   return page(
-    <section>
+    <article class="post">
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">{category}</div>
-          <h2>{slug.replace(/-/g, " ")}</h2>
+          <div class="eyebrow">{catLabel}</div>
+          <h1 class="post-title">{titleWithAccent(title, str(d.titleHighlight))}</h1>
+          {meta ? <p class="post-meta">{meta}</p> : null}
+          {tags.length ? (
+            <div class="post-tags">
+              {tags.map((t) => (
+                <span class="pill" key={t}>
+                  {t}
+                </span>
+              ))}
+            </div>
+          ) : null}
           <div class="divider" />
-          <p class="lead">Dette indlæg hentes fra cms når blog-indholdet er wired.</p>
+        </div>
+        <div class="post-body">
+          <PostBody content={content} blocks={blocks} />
+        </div>
+        {str(d.attribution) ? (
+          <p class="post-attr" dangerouslySetInnerHTML={{ __html: richtextInline(str(d.attribution)) }} />
+        ) : null}
+        <div class="cta-row" style="margin-top:36px">
+          {twin ? (
+            <a
+              class="btn btn-ghost"
+              href={withLocale(twin.locale, `/${twin.category}/${twin.slug}`)}
+              data-testid="post-lang-switch"
+              hrefLang={twin.locale}
+            >
+              {twinLabel} <span class="ar">→</span>
+            </a>
+          ) : null}
+          <a class="btn btn-ghost" href={withLocale(locale, `/${category}`)} data-testid="post-back-link">
+            {backLabel} <span class="ar">→</span>
+          </a>
         </div>
       </div>
+    </article>,
+    {
+      title: `${title} — broberg.ai`,
+      description: str(d.excerpt) || `${title} — en indsigt fra broberg.ai-maskinrummet.`,
+      locale,
+      canonical: withLocale(locale, `/${category}/${slug}`),
+    },
+  );
+}
+
+// Blog index — lists every published post in a category, newest first. null when
+// the segment is not a real category (the route then renders a generic page).
+export async function renderBlogIndex(locale: Locale, category: string): Promise<string | null> {
+  if (!(await isCategory(category))) return null;
+  const posts = await loadCategoryPosts(locale, category);
+  const catLabel = await categoryLabel(category);
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  const heading = locale === "en" ? "Insights from the engine room" : "Indsigter fra maskinrummet";
+  const empty = locale === "en" ? "No articles yet." : "Ingen artikler endnu.";
+
+  return page(
+    <section id="indsigter">
+      <div class="wrap reveal">
+        <div class="sec-head">
+          <div class="eyebrow">{catLabel}</div>
+          <h2>{heading}</h2>
+          <div class="divider" />
+        </div>
+        {posts.length ? (
+          <div class="grid g3">
+            {posts.map((p) => {
+              const pd = (p.data ?? {}) as Record<string, unknown>;
+              return (
+                <a
+                  class="blogcard"
+                  key={String(p.slug)}
+                  href={withLocale(locale, `/${category}/${String(p.slug)}`)}
+                  data-testid={`insight-card-${String(p.slug)}`}
+                >
+                  <div class="blogthumb" />
+                  <div class="blogbody">
+                    <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
+                    <h3>{str(pd.title)}</h3>
+                    <p>{str(pd.excerpt)}</p>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        ) : (
+          <p class="lead">{empty}</p>
+        )}
+      </div>
     </section>,
-    { title: `${slug} — Indsigter`, description: "Indsigt fra broberg.ai-maskinrummet.", locale },
+    { title: `${catLabel} — broberg.ai`, description: catLabel, locale, canonical: withLocale(locale, `/${category}`) },
   );
 }
 

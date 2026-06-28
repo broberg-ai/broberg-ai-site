@@ -13,8 +13,10 @@ import {
   renderFlagships,
   renderFlagshipDetail,
   renderBlogPost,
+  renderBlogIndex,
   renderGenericPage,
 } from "@/routes.tsx";
+import { buildSearchIndex } from "@/content/compose.ts";
 import { flagshipsSegment } from "@/i18n.ts";
 
 const app = new Hono();
@@ -60,6 +62,14 @@ app.use("*", async (c, next) => {
 });
 
 app.get("/healthz", (c) => c.json({ ok: true }));
+
+// ⌘K search index — the prebuilt client-side fuzzy index (platforms + posts),
+// built from the local cms store so search content stays editable in cms. The
+// palette fetches this once on first open. Tiny + revalidated like SSR HTML.
+app.get("/search-index.json", async (c) => {
+  const locale = c.req.query("locale") === "en" ? "en" : "da";
+  return c.json(await buildSearchIndex(locale));
+});
 
 // ICD content-push receiver (cms → us on every save/publish).
 app.post("/icd", handleIcd);
@@ -151,13 +161,28 @@ app.get(`/en/${flagshipsSegment("en")}/:slug`, async (c) => {
   return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
 });
 
-// Blog: /:category/:slug (DA) and /en/:category/:slug (EN).
-app.get("/en/:category/:slug", (c) => html(renderBlogPost("en", c.req.param("category"), c.req.param("slug"))));
-app.get("/:category/:slug", (c) => html(renderBlogPost("da", c.req.param("category"), c.req.param("slug"))));
+// Blog: /:category/:slug (DA) and /en/:category/:slug (EN). A real post → its
+// page; an unknown slug → 404 (not a 200 stub).
+app.get("/en/:category/:slug", async (c) => {
+  const r = await renderBlogPost("en", c.req.param("category"), c.req.param("slug"));
+  return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
+});
+app.get("/:category/:slug", async (c) => {
+  const r = await renderBlogPost("da", c.req.param("category"), c.req.param("slug"));
+  return r ? html(r) : notFound(renderGenericPage("da", "ikke-fundet"));
+});
 
-// Generic pages last (most permissive).
-app.get("/en/:slug", (c) => html(renderGenericPage("en", c.req.param("slug"))));
-app.get("/:slug", (c) => html(renderGenericPage("da", c.req.param("slug"))));
+// Single segment: a category slug → its blog index; otherwise a generic page.
+app.get("/en/:slug", async (c) => {
+  const seg = c.req.param("slug");
+  const idx = await renderBlogIndex("en", seg);
+  return html(idx ?? renderGenericPage("en", seg));
+});
+app.get("/:slug", async (c) => {
+  const seg = c.req.param("slug");
+  const idx = await renderBlogIndex("da", seg);
+  return html(idx ?? renderGenericPage("da", seg));
+});
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 // Backfill BEFORE serving so the store is populated from cms before the first
