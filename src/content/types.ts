@@ -74,12 +74,15 @@ export interface CaseItem {
   body: string;
   quote?: string;
   attr?: string;
+  slug?: string;
+  href?: string;
 }
 export interface CasesData {
   eyebrow: string;
   headingHtml: string;
   lead: string;
   items: CaseItem[];
+  allLink?: Cta;
 }
 
 export interface MethodData {

@@ -109,7 +109,7 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
   }));
 
   const built = sections
-    .map((sec) => mapSection(dataOf(sec), { globals, platformItems, casePosts, insightPosts, infra, customers }))
+    .map((sec) => mapSection(dataOf(sec), { locale, globals, platformItems, casePosts, insightPosts, infra, customers }))
     .filter((s): s is SectionData => s !== null);
 
   return {
@@ -120,6 +120,7 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
 }
 
 interface Ctx {
+  locale: Locale;
   globals: Data;
   platformItems: Platform[];
   casePosts: StoredDoc[];
@@ -194,12 +195,15 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
       const fbC = fb?.kind === "cases" ? fb.data : undefined;
       const items: CaseItem[] = ctx.casePosts.map((p) => {
         const pd = dataOf(p);
+        const slug = String(p.slug);
         return {
           kicker: str(pd.client) || "Case",
           title: str(pd.title),
           body: str(pd.excerpt),
           quote: str(pd.quote) || undefined,
           attr: str(pd.quote) ? str(pd.client) || str(pd.author) : undefined,
+          slug,
+          href: withLocale(ctx.locale, `/cases/${slug}`),
         };
       });
       return {
@@ -209,6 +213,7 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           headingHtml: str(d.heading) || fbC?.headingHtml || "",
           lead: str(d.subheading) || fbC?.lead || "",
           items: items.length ? items : (fbC?.items ?? []),
+          allLink: { label: "Se alle cases", href: withLocale(ctx.locale, "/cases"), testid: "cases-all-link", ghost: true },
         },
       };
     }

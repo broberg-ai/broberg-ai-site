@@ -139,20 +139,38 @@ export function Cases({ data }: { data: CasesData }) {
       <div class="wrap reveal">
         <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
         <div class="grid g2">
-          {data.items.map((c) => (
-            <div class="card" key={c.title}>
-              <div class="kicker">{c.kicker}</div>
-              <div class="case-h">{c.title}</div>
-              <p>{c.body}</p>
-              {c.quote && (
-                <div class="quote">
-                  {c.quote}
-                  {c.attr && <div class="attr">— {c.attr}</div>}
-                </div>
-              )}
-            </div>
-          ))}
+          {data.items.map((c) => {
+            const inner = (
+              <>
+                <div class="kicker">{c.kicker}</div>
+                <div class="case-h">{c.title}</div>
+                <p>{c.body}</p>
+                {c.quote && (
+                  <div class="quote">
+                    {c.quote}
+                    {c.attr && <div class="attr">— {c.attr}</div>}
+                  </div>
+                )}
+              </>
+            );
+            // A case post → clickable card to its detail page (mirrors the /cases
+            // index + the Platforms cards). Fallback items (no slug) stay plain.
+            return c.href ? (
+              <a class="card" href={c.href} key={c.title} data-testid={`case-card-${c.slug}`}>
+                {inner}
+              </a>
+            ) : (
+              <div class="card" key={c.title}>
+                {inner}
+              </div>
+            );
+          })}
         </div>
+        {data.allLink && (
+          <div style="margin-top:24px">
+            <CtaButton cta={data.allLink} />
+          </div>
+        )}
       </div>
     </section>
   );
