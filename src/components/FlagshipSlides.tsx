@@ -597,7 +597,10 @@ const trail: FlagshipPage = {
   slug: "trail",
   description:
     "Trail er virksomhedens ekstra hjerne — en levende videnmotor du kan chatte med og slå op i. Den indlæser ALT din virksomhed ved — brand, fakta, tone, historik — til én base som både dit team og en AI kan trække på. Altid i din stemme, med dine fakta. Aldrig et generisk gæt.",
-  cta: [{ label: "Besøg trailmem.com", href: "https://trailmem.com" }],
+  cta: [
+    { label: "Besøg trailmem.com", href: "https://trailmem.com" },
+    { label: "Læs docs", href: "https://docs.trailmem.com" },
+  ],
   slides: [
     {
       hero: true,

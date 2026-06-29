@@ -1,6 +1,6 @@
 /* Bespoke per-flagship illustrations — a context illustration that "nails" what
    each flagship page is about (Christian's design standard, cms #111). A visual
-   family: dark canvas, blue #00b2ff line work, orange #F3522C accent, subtle
+   family: dark canvas, blue var(--blue) line work, orange #F3522C accent, subtle
    CSS/SMIL motion, shared viewBox 0 0 360 280. Keyed on slug (a rendering asset
    like the logo — no cms field). cms supplies the 1-line concept; we build the SVG. */
 import type { JSX } from "preact";
@@ -17,21 +17,21 @@ const components = wrap(
   <g>
     {/* left stash + flow arrow */}
     <g opacity=".55">
-      <rect x="34" y="120" width="22" height="22" rx="6" fill="rgba(0,178,255,.10)" stroke="#00b2ff" stroke-width="1.4" />
-      <rect x="42" y="134" width="22" height="22" rx="6" fill="rgba(0,178,255,.07)" stroke="#00b2ff" stroke-width="1.4" />
+      <rect x="34" y="120" width="22" height="22" rx="6" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
+      <rect x="42" y="134" width="22" height="22" rx="6" fill="color-mix(in srgb,var(--blue) 7%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
     </g>
     <path class="illu-flow" d="M72 138 H126" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" />
     {/* assembled component */}
     <g stroke-width="1.8">
-      <rect class="illu-snap" x="150" y="64" width="38" height="38" rx="9" fill="rgba(0,178,255,.14)" stroke="#00b2ff" />
-      <rect x="196" y="64" width="38" height="38" rx="9" fill="rgba(0,178,255,.10)" stroke="#00b2ff" />
+      <rect class="illu-snap" x="150" y="64" width="38" height="38" rx="9" fill="color-mix(in srgb,var(--blue) 14%,transparent)" stroke="var(--blue)" />
+      <rect x="196" y="64" width="38" height="38" rx="9" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" />
       <rect x="242" y="64" width="38" height="38" rx="9" fill="rgba(52,211,153,.14)" stroke="#34d399" />
-      <rect x="150" y="110" width="38" height="38" rx="9" fill="rgba(0,178,255,.10)" stroke="#00b2ff" />
-      <rect class="illu-glow" x="196" y="110" width="38" height="38" rx="9" fill="rgba(0,178,255,.18)" stroke="#40c8ff" />
-      <rect x="242" y="110" width="38" height="38" rx="9" fill="rgba(0,178,255,.10)" stroke="#00b2ff" />
-      <rect class="illu-snap d2" x="150" y="156" width="38" height="38" rx="9" fill="rgba(0,178,255,.14)" stroke="#00b2ff" />
+      <rect x="150" y="110" width="38" height="38" rx="9" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" />
+      <rect class="illu-glow" x="196" y="110" width="38" height="38" rx="9" fill="color-mix(in srgb,var(--blue) 18%,transparent)" stroke="var(--blue-light)" />
+      <rect x="242" y="110" width="38" height="38" rx="9" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" />
+      <rect class="illu-snap d2" x="150" y="156" width="38" height="38" rx="9" fill="color-mix(in srgb,var(--blue) 14%,transparent)" stroke="var(--blue)" />
       <rect x="196" y="156" width="38" height="38" rx="9" fill="rgba(243,82,44,.16)" stroke="#F3522C" />
-      <rect class="illu-glow" style="animation-delay:1.1s" x="242" y="156" width="38" height="38" rx="9" fill="rgba(0,178,255,.16)" stroke="#40c8ff" />
+      <rect class="illu-glow" style="animation-delay:1.1s" x="242" y="156" width="38" height="38" rx="9" fill="color-mix(in srgb,var(--blue) 16%,transparent)" stroke="var(--blue-light)" />
     </g>
   </g>,
 );
@@ -51,17 +51,17 @@ const CM_STAGES = [
 ];
 const cardmem = wrap(
   <g font-family="'DM Sans',sans-serif" font-size="10.5">
-    <circle class="illu-flow" cx="180" cy={CM_C} r="80" fill="none" stroke="rgba(0,178,255,.3)" stroke-width="1.6" stroke-dasharray="4 7" />
+    <circle class="illu-flow" cx="180" cy={CM_C} r="80" fill="none" stroke="color-mix(in srgb,var(--blue) 30%,transparent)" stroke-width="1.6" stroke-dasharray="4 7" />
     {CM_STAGES.map((s, i) => (
       <g key={i}>
-        <circle class="node" cx={s.cx} cy={s.cy} r="6" fill={s.green ? "#2ecc71" : "#00b2ff"} style={`animation-delay:${i * 0.5}s`} />
-        <text x={s.lx} y={s.ly} text-anchor={s.anchor} fill={s.green ? "#2ecc71" : "rgba(240,244,248,.82)"} font-weight={s.green ? "600" : "400"}>
+        <circle class="node" cx={s.cx} cy={s.cy} r="6" fill={s.green ? "#2ecc71" : "var(--blue)"} style={`animation-delay:${i * 0.5}s`} />
+        <text x={s.lx} y={s.ly} text-anchor={s.anchor} fill={s.green ? "#2ecc71" : "var(--muted)"} font-weight={s.green ? "600" : "400"}>
           {s.label}
         </text>
       </g>
     ))}
-    <circle class="pulse-core" cx="180" cy={CM_C} r="26" fill="rgba(0,178,255,.12)" stroke="#00b2ff" stroke-width="1.5" />
-    <circle cx="180" cy={CM_C} r="4.5" fill="#40c8ff" />
+    <circle class="pulse-core" cx="180" cy={CM_C} r="26" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.5" />
+    <circle cx="180" cy={CM_C} r="4.5" fill="var(--blue-light)" />
     {/* the iterating card, orbiting the loop, kept upright */}
     <g>
       <animateTransform attributeName="transform" type="rotate" from={`0 180 ${CM_C}`} to={`360 180 ${CM_C}`} dur="10s" repeatCount="indefinite" />
@@ -90,30 +90,30 @@ const BUDDY_NODES = [
 ];
 const buddy = wrap(
   <g>
-    <g stroke="rgba(0,178,255,.16)" stroke-width="1.2">
+    <g stroke="color-mix(in srgb,var(--blue) 16%,transparent)" stroke-width="1.2">
       {BUDDY_NODES.map((n, i) => (
         <line key={i} x1="180" y1="140" x2={n.cx} y2={n.cy} />
       ))}
     </g>
-    <circle cx="180" cy="140" r="50" fill="none" stroke="rgba(0,178,255,.18)" stroke-width="1.2" />
-    <circle cx="180" cy="140" r="86" fill="none" stroke="rgba(0,178,255,.12)" stroke-width="1.2" />
-    <circle class="illu-flow" cx="180" cy="140" r="116" fill="none" stroke="rgba(0,178,255,.14)" stroke-width="1.2" stroke-dasharray="4 7" />
+    <circle cx="180" cy="140" r="50" fill="none" stroke="color-mix(in srgb,var(--blue) 18%,transparent)" stroke-width="1.2" />
+    <circle cx="180" cy="140" r="86" fill="none" stroke="color-mix(in srgb,var(--blue) 12%,transparent)" stroke-width="1.2" />
+    <circle class="illu-flow" cx="180" cy="140" r="116" fill="none" stroke="color-mix(in srgb,var(--blue) 14%,transparent)" stroke-width="1.2" stroke-dasharray="4 7" />
     {/* radar sweep */}
     <g>
       <animateTransform attributeName="transform" type="rotate" from="0 180 140" to="360 180 140" dur="6s" repeatCount="indefinite" />
-      <path d="M180 140 L180 24 A116 116 0 0 1 258 56 Z" fill="rgba(0,178,255,.10)" />
-      <line x1="180" y1="140" x2="180" y2="24" stroke="#00b2ff" stroke-width="2" stroke-linecap="round" opacity=".85" />
+      <path d="M180 140 L180 24 A116 116 0 0 1 258 56 Z" fill="color-mix(in srgb,var(--blue) 10%,transparent)" />
+      <line x1="180" y1="140" x2="180" y2="24" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" opacity=".85" />
     </g>
     {/* fleet nodes — pulse as the sweep passes */}
     <g>
       {BUDDY_NODES.map((n, i) => (
-        <circle class="node" key={i} cx={n.cx} cy={n.cy} r="5.5" fill={n.orange ? "#F3522C" : "#00b2ff"} style={`animation-delay:${i * 0.9}s`} />
+        <circle class="node" key={i} cx={n.cx} cy={n.cy} r="5.5" fill={n.orange ? "#F3522C" : "var(--blue)"} style={`animation-delay:${i * 0.9}s`} />
       ))}
     </g>
     {/* always-awake eye */}
-    <path d="M150 140 Q180 120 210 140 Q180 160 150 140 Z" fill="rgba(0,178,255,.10)" stroke="#00b2ff" stroke-width="1.6" />
-    <circle class="pulse-core" cx="180" cy="140" r="9" fill="rgba(0,178,255,.3)" stroke="#40c8ff" stroke-width="1.5" />
-    <circle cx="180" cy="140" r="3.4" fill="#f0f4f8" />
+    <path d="M150 140 Q180 120 210 140 Q180 160 150 140 Z" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+    <circle class="pulse-core" cx="180" cy="140" r="9" fill="color-mix(in srgb,var(--blue) 30%,transparent)" stroke="var(--blue-light)" stroke-width="1.5" />
+    <circle cx="180" cy="140" r="3.4" fill="var(--light)" />
   </g>,
 );
 
@@ -140,7 +140,7 @@ const TR_PATH = [
 ]; // active retrieval path (orange)
 const trail = wrap(
   <g>
-    <g stroke="rgba(0,178,255,.22)" stroke-width="1.2">
+    <g stroke="color-mix(in srgb,var(--blue) 22%,transparent)" stroke-width="1.2">
       {TR_EDGES.map(([a, b], i) => (
         <line key={i} x1={TR_NODES[a].cx} y1={TR_NODES[a].cy} x2={TR_NODES[b].cx} y2={TR_NODES[b].cy} />
       ))}
@@ -154,8 +154,8 @@ const trail = wrap(
     {TR_NODES.map((n, i) =>
       n.core ? (
         <g key={i}>
-          <circle class="pulse-core" cx={n.cx} cy={n.cy} r={n.r} fill="rgba(0,178,255,.14)" stroke="#00b2ff" stroke-width="1.6" />
-          <circle cx={n.cx} cy={n.cy} r="4.5" fill="#40c8ff" />
+          <circle class="pulse-core" cx={n.cx} cy={n.cy} r={n.r} fill="color-mix(in srgb,var(--blue) 14%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+          <circle cx={n.cx} cy={n.cy} r="4.5" fill="var(--blue-light)" />
         </g>
       ) : (
         <circle
@@ -164,7 +164,7 @@ const trail = wrap(
           cx={n.cx}
           cy={n.cy}
           r="6"
-          fill={i === 2 ? "#F3522C" : "#00b2ff"}
+          fill={i === 2 ? "#F3522C" : "var(--blue)"}
           style={`animation-delay:${i * 0.45}s`}
         />
       ),
@@ -184,25 +184,25 @@ const cms = wrap(
   <g>
     {/* voice / chat bubble — "talk to your site" */}
     <g>
-      <rect x="24" y="98" width="86" height="56" rx="14" fill="rgba(0,178,255,.10)" stroke="#00b2ff" stroke-width="1.6" />
-      <path d="M44 154 v16 l16 -16 Z" fill="rgba(0,178,255,.10)" stroke="#00b2ff" stroke-width="1.6" />
-      <rect x="60" y="112" width="14" height="22" rx="7" fill="none" stroke="#40c8ff" stroke-width="1.6" />
-      <path d="M53 128 a14 14 0 0 0 28 0" fill="none" stroke="#40c8ff" stroke-width="1.6" />
-      <path d="M67 142 v6" stroke="#40c8ff" stroke-width="1.6" />
+      <rect x="24" y="98" width="86" height="56" rx="14" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+      <path d="M44 154 v16 l16 -16 Z" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+      <rect x="60" y="112" width="14" height="22" rx="7" fill="none" stroke="var(--blue-light)" stroke-width="1.6" />
+      <path d="M53 128 a14 14 0 0 0 28 0" fill="none" stroke="var(--blue-light)" stroke-width="1.6" />
+      <path d="M67 142 v6" stroke="var(--blue-light)" stroke-width="1.6" />
     </g>
     {/* flow → */}
     <path class="illu-flow" d="M118 126 H170" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" />
     {/* rendered page */}
     <g>
-      <rect x="178" y="54" width="156" height="168" rx="12" fill="rgba(0,178,255,.05)" stroke="#00b2ff" stroke-width="1.6" />
-      <line x1="178" y1="80" x2="334" y2="80" stroke="rgba(0,178,255,.4)" stroke-width="1.2" />
+      <rect x="178" y="54" width="156" height="168" rx="12" fill="color-mix(in srgb,var(--blue) 5%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+      <line x1="178" y1="80" x2="334" y2="80" stroke="color-mix(in srgb,var(--blue) 40%,transparent)" stroke-width="1.2" />
       <circle cx="194" cy="67" r="3" fill="#F3522C" />
-      <circle cx="206" cy="67" r="3" fill="rgba(0,178,255,.7)" />
+      <circle cx="206" cy="67" r="3" fill="color-mix(in srgb,var(--blue) 70%,transparent)" />
       <circle cx="218" cy="67" r="3" fill="#34d399" />
-      <rect x="196" y="96" width="78" height="8" rx="4" fill="rgba(240,244,248,.5)" />
-      <rect x="196" y="114" width="120" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
-      <rect x="196" y="126" width="104" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
-      <rect x="196" y="138" width="114" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+      <rect x="196" y="96" width="78" height="8" rx="4" fill="var(--muted)" />
+      <rect x="196" y="114" width="120" height="5" rx="2.5" fill="var(--muted)" />
+      <rect x="196" y="126" width="104" height="5" rx="2.5" fill="var(--muted)" />
+      <rect x="196" y="138" width="114" height="5" rx="2.5" fill="var(--muted)" />
       {/* tool palette — 64 værktøjer */}
       {CMS_TOOLS.map((t, i) => (
         <circle
@@ -211,7 +211,7 @@ const cms = wrap(
           cx={t.cx}
           cy={t.cy}
           r="3"
-          fill={i === 3 ? "#F3522C" : i === 10 ? "#34d399" : "rgba(0,178,255,.55)"}
+          fill={i === 3 ? "#F3522C" : i === 10 ? "#34d399" : "color-mix(in srgb,var(--blue) 55%,transparent)"}
           style={i % 5 === 0 ? `animation-delay:${i * 0.3}s` : undefined}
         />
       ))}
@@ -241,21 +241,21 @@ const aiSdk = wrap(
     {/* hub → satellite links (dashed pulse) */}
     <g class="illu-flow" stroke-dasharray="4 7" stroke-width="1.6" fill="none">
       {AISDK_NODES.map((n, i) => (
-        <line key={i} x1="180" y1="140" x2={n.cx} y2={n.cy} stroke={n.orange ? "rgba(243,82,44,.5)" : "rgba(0,178,255,.4)"} />
+        <line key={i} x1="180" y1="140" x2={n.cx} y2={n.cy} stroke={n.orange ? "rgba(243,82,44,.5)" : "color-mix(in srgb,var(--blue) 40%,transparent)"} />
       ))}
     </g>
     {/* provider satellites + labels */}
     {AISDK_NODES.map((n, i) => (
       <g key={i}>
-        <circle class="node" cx={n.cx} cy={n.cy} r="7" fill={n.orange ? "#F3522C" : "#00b2ff"} style={`animation-delay:${i * 0.5}s`} />
-        <text x={n.lx} y={n.ly} text-anchor={n.anchor} fill={n.orange ? "#F3522C" : "rgba(240,244,248,.82)"} font-weight={n.orange ? "600" : "400"}>
+        <circle class="node" cx={n.cx} cy={n.cy} r="7" fill={n.orange ? "#F3522C" : "var(--blue)"} style={`animation-delay:${i * 0.5}s`} />
+        <text x={n.lx} y={n.ly} text-anchor={n.anchor} fill={n.orange ? "#F3522C" : "var(--muted)"} font-weight={n.orange ? "600" : "400"}>
           {n.label}
         </text>
       </g>
     ))}
     {/* central ai-sdk hub */}
-    <circle class="pulse-core" cx="180" cy="140" r="24" fill="rgba(0,178,255,.12)" stroke="#00b2ff" stroke-width="1.6" />
-    <text x="180" y="143.5" text-anchor="middle" font-size="9.5" fill="rgba(240,244,248,.92)" font-weight="600">ai-sdk</text>
+    <circle class="pulse-core" cx="180" cy="140" r="24" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+    <text x="180" y="143.5" text-anchor="middle" font-size="9.5" fill="var(--muted)" font-weight="600">ai-sdk</text>
   </g>,
 );
 
@@ -267,19 +267,19 @@ const UPM_EKG =
 const upmetrics = wrap(
   <g fill="none">
     {/* baseline */}
-    <line x1="14" y1="140" x2="346" y2="140" stroke="rgba(0,178,255,.12)" stroke-width="1" stroke-dasharray="2 6" />
+    <line x1="14" y1="140" x2="346" y2="140" stroke="color-mix(in srgb,var(--blue) 12%,transparent)" stroke-width="1" stroke-dasharray="2 6" />
     {/* monitored nodes along the trace */}
     {[40, 96, 250, 306].map((x, i) => (
-      <circle class="node" key={i} cx={x} cy="140" r="4.5" fill="#00b2ff" style={`animation-delay:${i * 0.6}s`} />
+      <circle class="node" key={i} cx={x} cy="140" r="4.5" fill="var(--blue)" style={`animation-delay:${i * 0.6}s`} />
     ))}
     {/* calm blue rhythm (left + right of the spike) */}
-    <path d="M14 140 H70 l7 -9 l7 18 l7 -11 H150" stroke="#00b2ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
-    <path d="M210 140 l7 -9 l7 16 l7 -10 H346" stroke="#00b2ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+    <path d="M14 140 H70 l7 -9 l7 18 l7 -11 H150" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+    <path d="M210 140 l7 -9 l7 16 l7 -10 H346" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
     {/* the caught error — one orange spike */}
     <path d="M150 140 l12 -52 l14 100 l12 -48 H210" stroke="#F3522C" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" />
     <circle class="node" cx="162" cy="88" r="5" fill="#F3522C" />
     {/* scan dot travelling the whole trace */}
-    <circle r="3.6" fill="#40c8ff">
+    <circle r="3.6" fill="var(--blue-light)">
       {/* `path` is a valid <animateMotion> attribute Preact's SVG types omit. */}
       <animateMotion dur="4.5s" repeatCount="indefinite" {...({ path: UPM_EKG } as Record<string, string>)} />
     </circle>
@@ -298,25 +298,25 @@ const CON_STEPS = [
 const contracts = wrap(
   <g font-family="'DM Sans',sans-serif" font-size="10.5">
     {/* document */}
-    <rect x="120" y="40" width="120" height="150" rx="10" fill="rgba(0,178,255,.05)" stroke="#00b2ff" stroke-width="1.6" />
-    <rect x="136" y="58" width="64" height="8" rx="4" fill="rgba(240,244,248,.5)" />
-    <rect x="136" y="76" width="88" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
-    <rect x="136" y="88" width="80" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
-    <rect x="136" y="100" width="86" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
-    <rect x="136" y="112" width="70" height="5" rx="2.5" fill="rgba(240,244,248,.2)" />
+    <rect x="120" y="40" width="120" height="150" rx="10" fill="color-mix(in srgb,var(--blue) 5%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+    <rect x="136" y="58" width="64" height="8" rx="4" fill="var(--muted)" />
+    <rect x="136" y="76" width="88" height="5" rx="2.5" fill="var(--muted)" />
+    <rect x="136" y="88" width="80" height="5" rx="2.5" fill="var(--muted)" />
+    <rect x="136" y="100" width="86" height="5" rx="2.5" fill="var(--muted)" />
+    <rect x="136" y="112" width="70" height="5" rx="2.5" fill="var(--muted)" />
     {/* signature line + squiggle */}
-    <line x1="136" y1="150" x2="196" y2="150" stroke="rgba(0,178,255,.4)" stroke-width="1" stroke-dasharray="3 3" />
+    <line x1="136" y1="150" x2="196" y2="150" stroke="color-mix(in srgb,var(--blue) 40%,transparent)" stroke-width="1" stroke-dasharray="3 3" />
     <path class="illu-flow" d="M138 150 q6 -12 12 0 t12 0 t12 -4" stroke="#F3522C" stroke-width="1.8" fill="none" stroke-linecap="round" />
     {/* signed seal stamp */}
     <circle class="pulse-core" cx="224" cy="166" r="18" fill="rgba(243,82,44,.14)" stroke="#F3522C" stroke-width="1.6" />
     <path d="M216 166 l5 6 l11 -13" stroke="#F3522C" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
     {/* status track: kladde → sendt → underskrevet */}
-    <line x1="96" y1="228" x2="264" y2="228" stroke="rgba(0,178,255,.18)" stroke-width="1.4" />
-    <line class="illu-flow" x1="96" y1="228" x2="264" y2="228" stroke="#00b2ff" stroke-width="1.6" stroke-dasharray="4 7" />
+    <line x1="96" y1="228" x2="264" y2="228" stroke="color-mix(in srgb,var(--blue) 18%,transparent)" stroke-width="1.4" />
+    <line class="illu-flow" x1="96" y1="228" x2="264" y2="228" stroke="var(--blue)" stroke-width="1.6" stroke-dasharray="4 7" />
     {CON_STEPS.map((s, i) => (
       <g key={i}>
-        <circle class="node" cx={s.cx} cy="228" r="6" fill={s.orange ? "#F3522C" : "#00b2ff"} style={`animation-delay:${i * 0.6}s`} />
-        <text x={s.cx} y="248" text-anchor="middle" fill={s.orange ? "#F3522C" : "rgba(240,244,248,.82)"} font-weight={s.orange ? "600" : "400"}>
+        <circle class="node" cx={s.cx} cy="228" r="6" fill={s.orange ? "#F3522C" : "var(--blue)"} style={`animation-delay:${i * 0.6}s`} />
+        <text x={s.cx} y="248" text-anchor="middle" fill={s.orange ? "#F3522C" : "var(--muted)"} font-weight={s.orange ? "600" : "400"}>
           {s.label}
         </text>
       </g>
@@ -331,9 +331,9 @@ const contracts = wrap(
 const pitchVault = wrap(
   <g>
     {/* vault body + lock dial */}
-    <rect x="44" y="56" width="152" height="168" rx="16" fill="rgba(0,178,255,.05)" stroke="#00b2ff" stroke-width="1.6" />
-    <circle cx="178" cy="140" r="9" fill="none" stroke="#00b2ff" stroke-width="1.4" />
-    <path d="M178 140 V132 M178 140 L184 144" stroke="#00b2ff" stroke-width="1.4" stroke-linecap="round" />
+    <rect x="44" y="56" width="152" height="168" rx="16" fill="color-mix(in srgb,var(--blue) 5%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+    <circle cx="178" cy="140" r="9" fill="none" stroke="var(--blue)" stroke-width="1.4" />
+    <path d="M178 140 V132 M178 140 L184 144" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" />
     {/* stacked pitch thumbnails */}
     {[0, 1, 2].map((k) => {
       const x = 68 + k * 9;
@@ -341,9 +341,9 @@ const pitchVault = wrap(
       return (
         <g key={k}>
           <rect x={x} y={y} width="74" height="44" rx="6" fill="rgba(8,12,18,.92)" stroke="#2a3340" stroke-width="1.2" />
-          <rect x={x + 8} y={y + 8} width="30" height="20" rx="3" fill="rgba(0,178,255,.18)" stroke="#00b2ff" stroke-width="1" />
-          <rect x={x + 44} y={y + 9} width="22" height="4" rx="2" fill="rgba(240,244,248,.4)" />
-          <rect x={x + 44} y={y + 18} width="16" height="4" rx="2" fill="rgba(240,244,248,.22)" />
+          <rect x={x + 8} y={y + 8} width="30" height="20" rx="3" fill="color-mix(in srgb,var(--blue) 18%,transparent)" stroke="var(--blue)" stroke-width="1" />
+          <rect x={x + 44} y={y + 9} width="22" height="4" rx="2" fill="var(--muted)" />
+          <rect x={x + 44} y={y + 18} width="16" height="4" rx="2" fill="var(--muted)" />
         </g>
       );
     })}
@@ -356,8 +356,8 @@ const pitchVault = wrap(
     <g>
       <rect x="250" y="106" width="74" height="46" rx="6" fill="rgba(8,12,18,.95)" stroke="#F3522C" stroke-width="1.4" />
       <rect x="258" y="114" width="30" height="22" rx="3" fill="rgba(243,82,44,.16)" stroke="#F3522C" stroke-width="1" />
-      <rect x="294" y="116" width="22" height="4" rx="2" fill="rgba(240,244,248,.4)" />
-      <rect x="294" y="126" width="16" height="4" rx="2" fill="rgba(240,244,248,.22)" />
+      <rect x="294" y="116" width="22" height="4" rx="2" fill="var(--muted)" />
+      <rect x="294" y="126" width="16" height="4" rx="2" fill="var(--muted)" />
     </g>
     <circle class="node" cx="287" cy="180" r="5" fill="#F3522C" />
     <path d="M287 152 V174" stroke="rgba(243,82,44,.5)" stroke-width="1.4" stroke-dasharray="3 4" />
@@ -389,7 +389,7 @@ const hosting = wrap(
       const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
       return <circle key={i} cx={282 + Math.cos(a) * 14} cy={74 + Math.sin(a) * 14} r="1.5" fill="#7dd3fc" />;
     })}
-    <text x="282" y="118" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(240,244,248,.8)">
+    <text x="282" y="118" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="var(--muted)">
       Stockholm
     </text>
   </g>,

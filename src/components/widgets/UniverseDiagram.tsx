@@ -64,7 +64,7 @@ function Node({
   r: number;
   hit: number;
 }) {
-  const fill = r >= 5 ? "#00b2ff" : "#F3522C";
+  const fill = r >= 5 ? "var(--blue)" : "#F3522C";
   return (
     <a {...linkAttrs(node, `universe-node-${slugify(node.label)}`)}>
       <g transform={`translate(${slot.cx} ${slot.cy})`}>
@@ -109,21 +109,21 @@ export function UniverseDiagram({
     >
       <defs>
         <radialGradient id="ug" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#00b2ff" stop-opacity=".22" />
-          <stop offset="70%" stop-color="#00b2ff" stop-opacity="0" />
+          <stop offset="0%" stop-color="var(--blue)" stop-opacity=".22" />
+          <stop offset="70%" stop-color="var(--blue)" stop-opacity="0" />
         </radialGradient>
       </defs>
       <circle cx="220" cy="220" r="210" fill="url(#ug)" />
 
       {/* Static orbit guides — the dashed ones pulse. */}
-      <circle class="ring" cx="220" cy="220" r="80" stroke="rgba(0,178,255,.25)" stroke-width="1" fill="none" />
+      <circle class="ring" cx="220" cy="220" r="80" stroke="color-mix(in srgb,var(--blue) 25%,transparent)" stroke-width="1" fill="none" />
       <circle
         class="ring"
         style="animation-delay:.6s"
         cx="220"
         cy="220"
         r="135"
-        stroke="rgba(0,178,255,.16)"
+        stroke="color-mix(in srgb,var(--blue) 16%,transparent)"
         stroke-width="1"
         fill="none"
         stroke-dasharray="3 5"
@@ -131,7 +131,7 @@ export function UniverseDiagram({
       <circle class="ring" cx="220" cy="220" r="195" stroke="rgba(243,82,44,.18)" stroke-width="1" fill="none" stroke-dasharray="2 7" />
 
       {/* Infra engines — slow orbit; spokes ride along + keep their dash pulse. */}
-      <g font-family="'DM Sans',sans-serif" font-size="9.5" fill="rgba(240,244,248,.85)" text-anchor="middle">
+      <g font-family="'DM Sans',sans-serif" font-size="9.5" fill="var(--muted)" text-anchor="middle">
         <animateTransform
           attributeName="transform"
           type="rotate"
@@ -140,7 +140,7 @@ export function UniverseDiagram({
           dur={INFRA_DUR}
           repeatCount="indefinite"
         />
-        <g class="signal" stroke="rgba(0,178,255,.3)" stroke-width="1.2">
+        <g class="signal" stroke="color-mix(in srgb,var(--blue) 30%,transparent)" stroke-width="1.2">
           <line x1="220" y1="180" x2="220" y2="92" />
           <line x1="258" y1="202" x2="336" y2="163" />
           <line x1="258" y1="238" x2="336" y2="277" />
@@ -154,7 +154,7 @@ export function UniverseDiagram({
       </g>
 
       {/* Customer solutions — a bit faster orbit. */}
-      <g font-family="'DM Sans',sans-serif" font-size="8.5" fill="rgba(240,244,248,.6)" text-anchor="middle">
+      <g font-family="'DM Sans',sans-serif" font-size="8.5" fill="var(--muted)" text-anchor="middle">
         <animateTransform
           attributeName="transform"
           type="rotate"
@@ -171,8 +171,8 @@ export function UniverseDiagram({
       {/* Core — on top, does not orbit; clickable to its flagship page. */}
       <a class="unode" href={`/flagskibe/${slugify(core)}`} data-testid={`universe-node-${slugify(core)}`}>
         <circle cx="220" cy="220" r="44" fill="transparent" pointer-events="all" />
-        <circle class="pulse-core" cx="220" cy="220" r="40" fill="rgba(0,178,255,.12)" stroke="#00b2ff" stroke-width="1.5" />
-        <text x="220" y="225" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="14" font-weight="600" fill="#f0f4f8">
+        <circle class="pulse-core" cx="220" cy="220" r="40" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.5" />
+        <text x="220" y="225" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="14" font-weight="600" fill="var(--light)">
           {core}
         </text>
       </a>
