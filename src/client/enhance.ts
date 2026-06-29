@@ -108,6 +108,24 @@ function reducedMotion() {
   }
 }
 
+// Theme toggle: flips [data-theme] on <html>, persists to localStorage (the
+// no-FOUC <head> script reads it on next load), and updates the theme-color meta.
+function themeToggle() {
+  const btn = document.querySelector('[data-testid="theme-toggle"]');
+  if (!btn) return;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  btn.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem("theme", next);
+    } catch {
+      /* ignore */
+    }
+    meta?.setAttribute("content", next === "light" ? "#ffffff" : "#1c2027");
+  });
+}
+
 // Run each feature independently so a page-specific element missing on a subpage
 // can never abort the shared nav/dropdown wiring (cms #116). Nav goes first.
 function safe(fn: () => void) {
@@ -122,4 +140,5 @@ safe(smoothScroll);
 safe(countUps);
 safe(liveFeed);
 safe(reducedMotion);
+safe(themeToggle);
 safe(mountCmdk);

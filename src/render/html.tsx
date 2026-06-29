@@ -24,6 +24,14 @@ export function renderPage(children: ComponentChildren, meta: PageMeta, assets: 
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        {/* Theme before first paint — sets [data-theme] on <html> from the saved
+            choice or prefers-color-scheme, so light mode never flashes dark (FOUC). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){}})()",
+          }}
+        />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="theme-color" content="#1c2027" />
         <title>{meta.title}</title>

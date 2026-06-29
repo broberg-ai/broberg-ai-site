@@ -43,6 +43,60 @@
   --fd: "Cormorant Garamond", Georgia, serif;
   --fb: "DM Sans", -apple-system, sans-serif;
 }
+/* ── Light mode ── [data-theme="light"] overrides the dark :root tokens. Default
+   (no attribute) stays Dark; a no-FOUC <head> script sets the attribute from
+   localStorage / prefers-color-scheme. Palette = cms #238 bud (Christian curates).
+   Token-driven UI (text/cards/buttons/sections/tables/pills/cmdk) flips for free;
+   the rules below cover surfaces a token swap can't reach. F001.8. */
+[data-theme="light"] {
+  --blue: #0096db;
+  --blue-light: #007bb8;
+  --blue-glow: rgba(0, 150, 219, 0.1);
+  --blue-glow2: rgba(0, 150, 219, 0.05);
+  --dark: #f5f7fa;
+  --dark2: #ffffff;
+  --card: #ffffff;
+  --card-border: rgba(17, 25, 38, 0.11);
+  --light: #161b22;
+  --muted: rgba(22, 29, 40, 0.6);
+  --orange: #ec4e27;
+  --orange-text: #cf3f1b;
+  --orange-soft: rgba(236, 78, 39, 0.1);
+}
+[data-theme="light"] body::after {
+  background: radial-gradient(ellipse 50% 40% at 82% 6%, rgba(0, 150, 219, 0.06), transparent 60%),
+    radial-gradient(ellipse 42% 50% at 4% 88%, rgba(236, 78, 39, 0.04), transparent 55%);
+}
+[data-theme="light"] header {
+  background: rgba(255, 255, 255, 0.78);
+}
+[data-theme="light"] .dd {
+  background: rgba(255, 255, 255, 0.98);
+}
+[data-theme="light"] .card {
+  box-shadow: 0 1px 4px rgba(17, 25, 38, 0.06);
+}
+[data-theme="light"] .cmdk-backdrop {
+  background: rgba(28, 36, 48, 0.3);
+}
+@media (max-width: 880px) {
+  [data-theme="light"] .navlinks {
+    background: rgba(255, 255, 255, 0.98);
+  }
+}
+/* Theme toggle: sun shows in Dark (→ go light), moon in Light (→ go dark). */
+.navtheme {
+  padding: 9px 11px;
+}
+.theme-moon {
+  display: none;
+}
+[data-theme="light"] .theme-sun {
+  display: none;
+}
+[data-theme="light"] .theme-moon {
+  display: inline-block;
+}
 *,
 *::before,
 *::after {
