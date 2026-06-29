@@ -189,7 +189,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
 
   const twin = await loadPostTwin(doc);
   const catLabel = await categoryLabel(category);
-  const backLabel = locale === "en" ? "All insights" : "Alle indsigter";
+  const backLabel = locale === "en" ? `All ${catLabel}` : `Alle ${catLabel}`;
   const twinLabel = twin?.locale === "en" ? "Read in English" : "Læs på dansk";
 
   return page(
