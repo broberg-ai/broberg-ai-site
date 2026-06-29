@@ -59,13 +59,24 @@ export function PostBlock({ doc }: { doc: StoredDoc }) {
       );
     }
     case "carousel": {
-      const images = Array.isArray(d.images) ? (d.images as { url: string; alt?: string }[]) : [];
+      const images = Array.isArray(d.images)
+        ? (d.images as { url: string; alt?: string; width?: number; height?: number }[])
+        : [];
       if (!images.length) return null;
       return (
         <figure class="postblock postblock-carousel">
           <div class="block-gallery">
             {images.map((im, i) => (
-              <img key={i} src={im.url} alt={im.alt ?? ""} loading="lazy" />
+              // width/height (when cms supplies the intrinsic dims) reserve the
+              // box so the lazy image causes no layout-shift/CLS. CSS keeps
+              // height:auto so the ratio stays responsive, no distortion.
+              <img
+                key={i}
+                src={im.url}
+                alt={im.alt ?? ""}
+                loading="lazy"
+                {...(im.width && im.height ? { width: im.width, height: im.height } : {})}
+              />
             ))}
           </div>
           {d.caption ? <figcaption>{str(d.caption)}</figcaption> : null}

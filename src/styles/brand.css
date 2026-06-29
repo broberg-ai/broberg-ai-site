@@ -1465,6 +1465,9 @@ footer {
 }
 .postblock-carousel img {
   width: 100%;
+  /* height:auto lets the width/height attrs reserve the box at the right ratio
+     (CLS-free) without locking a fixed pixel height that would distort. */
+  height: auto;
   border-radius: 10px;
   border: 1px solid var(--card-border);
 }
