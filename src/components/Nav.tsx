@@ -39,13 +39,21 @@ export function Nav() {
               Ressourcer <span class="car">▾</span>
             </button>
             <div class="dd">
-              <a href="/#indsigter" data-scroll="indsigter" data-testid="dd-indsigter">
+              <a href="/indsigter" data-testid="dd-indsigter">
                 <b>Indsigter</b>
                 <span>Blog om AI-native byg</span>
               </a>
-              <a href="/#om" data-scroll="om" data-testid="dd-om">
-                <b>Om Christian</b>
-                <span>30+ år som pioner</span>
+              <a href="/ai-metode" data-testid="dd-ai-metode">
+                <b>AI &amp; Metode</b>
+                <span>Håndværket bag — sådan bygger vi med AI</span>
+              </a>
+              <a href="/bag-om" data-testid="dd-bag-om">
+                <b>Bag om</b>
+                <span>Kig bag motoren i universet</span>
+              </a>
+              <a href="/cases" data-testid="dd-cases">
+                <b>Cases</b>
+                <span>Kundeløsninger i drift</span>
               </a>
             </div>
           </div>

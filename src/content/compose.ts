@@ -383,6 +383,13 @@ export async function categoryLabel(category: string): Promise<string> {
   return cat ? str(dataOf(cat).name) || category : category;
 }
 
+// Category display name + description (cms-driven) for the category index page.
+export async function categoryMeta(category: string): Promise<{ name: string; description: string }> {
+  const cat = await categoryBySlug(category);
+  const d = cat ? dataOf(cat) : {};
+  return { name: str(d.name) || category, description: str(d.description) };
+}
+
 // All published posts in a category for the given locale, newest first.
 export async function loadCategoryPosts(locale: Locale, category: string): Promise<StoredDoc[]> {
   const posts = forLocale(await list("posts"), locale);

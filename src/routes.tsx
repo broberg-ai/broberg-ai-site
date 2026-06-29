@@ -20,6 +20,7 @@ import {
   loadPostTwin,
   loadCategoryPosts,
   categoryLabel,
+  categoryMeta,
   isCategory,
   slugifyTag,
   loadPostsByTag,
@@ -251,17 +252,17 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
 export async function renderBlogIndex(locale: Locale, category: string): Promise<string | null> {
   if (!(await isCategory(category))) return null;
   const posts = await loadCategoryPosts(locale, category);
-  const catLabel = await categoryLabel(category);
+  const { name: catLabel, description } = await categoryMeta(category);
   const str = (v: unknown) => (typeof v === "string" ? v : "");
-  const heading = locale === "en" ? "Insights from the engine room" : "Indsigter fra maskinrummet";
-  const empty = locale === "en" ? "No articles yet." : "Ingen artikler endnu.";
+  const empty = locale === "en" ? "Articles on the way :)" : "Artikler på vej :)";
 
   return page(
     <section id="indsigter">
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">{catLabel}</div>
-          <h2>{heading}</h2>
+          <div class="eyebrow">Ressourcer</div>
+          <h2>{catLabel}</h2>
+          {description ? <p class="lead">{description}</p> : null}
           <div class="divider" />
         </div>
         {posts.length ? (
