@@ -52,7 +52,14 @@ function countUps() {
     { threshold: 0.16 },
   );
   document.querySelectorAll<HTMLElement>(".stat .n").forEach((n) => io.observe(n));
-  document.querySelectorAll<HTMLElement>(".reveal").forEach((r) => io.observe(r));
+  document.querySelectorAll<HTMLElement>(".reveal").forEach((r) => {
+    // A .reveal taller than the viewport can never reach the 0.16 threshold, so
+    // the observer would never fire and it'd stay at `transform: translateY()`
+    // forever — which traps vertical scrolling on iOS Safari/WebKit (the whole
+    // blog page becomes un-scrollable). Reveal those immediately; observe the rest.
+    if (r.getBoundingClientRect().height > window.innerHeight) r.classList.add("in");
+    else io.observe(r);
+  });
 }
 
 function liveFeed() {
