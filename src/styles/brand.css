@@ -113,7 +113,11 @@ body {
   color: var(--light);
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
-  overflow-x: hidden;
+  /* clip (not hidden) so the body never becomes an overflow scroll-container —
+     `overflow-x: hidden` + the fixed body::after glow breaks vertical scrolling
+     on iOS Safari/WebKit (whole page un-scrollable). clip still suppresses the
+     horizontal overflow without that side effect. */
+  overflow-x: clip;
 }
 body::after {
   content: "";
