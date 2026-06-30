@@ -302,7 +302,17 @@ export async function loadPlatform(locale: Locale, slug: string): Promise<Stored
 // Flagship slide-page data from cms (platforms doc `data.slides`), validated. Null
 // when missing/unpublished/wrong-locale/malformed → renderer falls back to the
 // in-code registry (no naked cutover; survives cms downtime).
+//
+// Non-default locales: cms docs are stored with slug "{locale}-{slug}" (e.g.
+// "en-docs") so they coexist with the DA doc without overwriting it. We try
+// the locale-prefixed key first, then fall back to the plain slug.
 export async function loadFlagship(locale: Locale, slug: string): Promise<FlagshipPage | null> {
+  if (locale !== DEFAULT_LOCALE) {
+    const localised = await get("platforms", `${locale}-${slug}`);
+    if (localised && localised.status === "published") {
+      return validateFlagshipPage(slug, localised.data);
+    }
+  }
   const doc = await get("platforms", slug);
   if (!doc || doc.status !== "published") return null;
   if (doc.locale && locOf(doc) !== locale) return null;
