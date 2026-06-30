@@ -11,6 +11,16 @@ import { marked } from "marked";
 
 marked.setOptions({ gfm: true, breaks: false });
 
+const renderer = new marked.Renderer();
+const _link = renderer.link.bind(renderer);
+renderer.link = (href, title, text) => {
+  const html = _link(href, title, text);
+  if (href && /^https?:\/\//.test(href))
+    return html.replace("<a ", '<a target="_blank" rel="noopener noreferrer" ');
+  return html;
+};
+marked.setOptions({ renderer });
+
 export function richtextInline(md: string): string {
   return md ? (marked.parseInline(md) as string) : "";
 }
