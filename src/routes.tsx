@@ -89,7 +89,7 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   // to our store); fall back to the in-code registry when cms has none/invalid.
   const fp = (await loadFlagship(locale, slug)) ?? flagshipFromRegistry(slug);
   if (fp) {
-    return page(<FlagshipSlides page={fp} />, {
+    return page(<FlagshipSlides page={fp} locale={locale} />, {
       title: `${fp.slug} — broberg.ai`,
       description: fp.description,
       locale,

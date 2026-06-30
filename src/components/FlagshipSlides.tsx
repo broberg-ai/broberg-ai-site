@@ -265,30 +265,33 @@ function renderBlocks(blocks: Block[]): JSX.Element[] {
   return out;
 }
 
-const CtaRow = ({ cta }: { cta?: Link[] }) => (
-  <div class="cta-row" style="margin-top:34px">
-    {(cta ?? []).map((l, i) => (
-      <a
-        class="btn btn-ghost"
-        key={l.href}
-        href={l.href}
-        target="_blank"
-        rel="noopener"
-        data-testid={i === 0 ? "flagship-visit" : `flagship-visit-${i}`}
-      >
-        {l.label} <span class="ar">→</span>
+const CtaRow = ({ cta, locale }: { cta?: Link[]; locale?: string }) => {
+  const isEn = locale === "en";
+  return (
+    <div class="cta-row" style="margin-top:34px">
+      {(cta ?? []).map((l, i) => (
+        <a
+          class="btn btn-ghost"
+          key={l.href}
+          href={l.href}
+          target="_blank"
+          rel="noopener"
+          data-testid={i === 0 ? "flagship-visit" : `flagship-visit-${i}`}
+        >
+          {l.label} <span class="ar">→</span>
+        </a>
+      ))}
+      <a class="btn btn-ghost" href={isEn ? "/en/flagships" : "/flagskibe"} data-testid="flagship-all">
+        {isEn ? "All flagships" : "Alle flagskibe"} <span class="ar">→</span>
       </a>
-    ))}
-    <a class="btn btn-ghost" href="/flagskibe" data-testid="flagship-all">
-      Alle flagskibe <span class="ar">→</span>
-    </a>
-  </div>
-);
+    </div>
+  );
+};
 
-function SlideView({ page, slide, idx, total }: { page: FlagshipPage; slide: Slide; idx: number; total: number }) {
+function SlideView({ page, slide, idx, total, locale }: { page: FlagshipPage; slide: Slide; idx: number; total: number; locale?: string }) {
   const t = total > 1 ? idx / (total - 1) : 0;
   const last = idx === total - 1;
-  const ctaRow = last ? <CtaRow cta={page.cta} /> : null;
+  const ctaRow = last ? <CtaRow cta={page.cta} locale={locale} /> : null;
 
   if (slide.hero) {
     const illu = hasIllustration(page.slug);
@@ -1466,11 +1469,11 @@ export function validateFlagshipPage(slug: string, data: unknown): FlagshipPage 
   };
 }
 
-export function FlagshipSlides({ page }: { page: FlagshipPage }): JSX.Element {
+export function FlagshipSlides({ page, locale }: { page: FlagshipPage; locale?: string }): JSX.Element {
   return (
     <>
       {page.slides.map((slide, i) => (
-        <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} />
+        <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} locale={locale} />
       ))}
     </>
   );
