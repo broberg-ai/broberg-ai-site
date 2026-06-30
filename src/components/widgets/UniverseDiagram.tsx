@@ -109,6 +109,7 @@ export function UniverseDiagram({
     <svg
       class="svg-wrap"
       viewBox="0 0 440 440"
+      overflow="visible"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
@@ -120,6 +121,8 @@ export function UniverseDiagram({
           <stop offset="70%" stop-color="var(--blue)" stop-opacity="0" />
         </radialGradient>
       </defs>
+      {/* Shift content 20px right so left-side labels have room to breathe. */}
+      <g transform="translate(20 0)">
       <circle cx="220" cy="220" r="210" fill="url(#ug)" />
 
       {/* Static orbit guides — the dashed ones pulse. */}
@@ -189,6 +192,7 @@ export function UniverseDiagram({
           </g>
         </g>
       </a>
+      </g>
     </svg>
   );
 }
