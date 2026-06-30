@@ -84,7 +84,7 @@ export function Universe({ data }: { data: UniverseData }) {
       <div class="wrap reveal">
         <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
         <div class="universe-grid">
-          <UniverseDiagram core={data.core} infra={data.infra} customers={data.customers} />
+          <UniverseDiagram infra={data.infra} customers={data.customers} />
           <div>
             {data.tiers.map((t, i) => (
               <div class="tier" key={i}>

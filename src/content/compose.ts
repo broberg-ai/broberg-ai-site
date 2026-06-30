@@ -89,18 +89,16 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
   const casePosts = postsInCategory("cases");
   const insightPosts = postsInCategory("indsigter");
 
-  // Infra nodes = the support engines, EXCLUDING the core (cardmem) so it is not
-  // repeated as both centre and an orbiting node. Each links to its platform.
-  const coreName = (str(globals.universeCore) || "cardmem").toLowerCase();
-  const infra: DiagramNode[] = platforms
-    .filter((p) => str(dataOf(p).name).toLowerCase() !== coreName)
-    .map((p) => {
-      const d = dataOf(p);
-      const slug = String(p.slug ?? str(d.name)).toLowerCase();
-      // Link to the INTERNAL flagship detail page (cms builds these out; they
-      // get richer as those pages are finished) — not the external site.
-      return { label: str(d.name), href: `/flagskibe/${slug}` };
-    });
+  // Infra nodes = every platform as a blue building block, cardmem INCLUDED. The
+  // brand mark ("b.") is the centre of the universe; cardmem is the core but
+  // Christian wants it shown as a node too — "broberg.ai universet" has the brand
+  // at the centre and every platform (cardmem included) orbiting it. Each links
+  // to its INTERNAL flagship detail page (not the external site).
+  const infra: DiagramNode[] = platforms.map((p) => {
+    const d = dataOf(p);
+    const slug = String(p.slug ?? str(d.name)).toLowerCase();
+    return { label: str(d.name), href: `/flagskibe/${slug}` };
+  });
   // Customer nodes are their OWN list (globals.universeCustomers) — separate from
   // the About wall of brand clients (globals.clients), cms #68. They scroll to Cases.
   const customers: DiagramNode[] = arr<{ name?: string }>(globals.universeCustomers).map((c) => ({

@@ -18,15 +18,24 @@ const CENTER = 220;
 const INFRA_DUR = "104s";
 const CUST_DUR = "64s";
 
-// Fixed start positions (≈ a ring around the centre). dot = (cx,cy); the label
-// sits at (tx,ty), offset onto the dot's local frame as (tx-cx, ty-cy).
+// broberg.ai brand mark — the "b." sits in the core. Real DM Sans (weight 600)
+// glyph outlines so it renders identically everywhere and is font-independent;
+// the lockup is geometrically centred on its ink bounding box (no optical drift).
+const B_PATH =
+  "M355.104736328125 -12Q315.00146484375 -12 283.1912841796875 -1.1552734375Q251.381103515625 9.689453125 227.4501953125 27.9996337890625Q203.519287109375 46.309814453125 186.519287109375 70.58544921875L174.553466796875 0H67.51708984375V720H187.519287109375V430.10400390625Q211.519287109375 466.62109375 252.5880126953125 491.310546875Q293.65673828125 516 354.277099609375 516Q424.794189453125 516 479.5872802734375 481.5Q534.38037109375 447 565.7080078125 387.5Q597.03564453125 328 597.03564453125 252Q597.03564453125 176.413818359375 565.9149169921875 116.2069091796875Q534.794189453125 56 480.2080078125 22.0Q425.621826171875 -12 355.104736328125 -12ZM329.79345703125 92.4501953125Q371.758544921875 92.4501953125 404.37890625 112.725830078125Q436.999267578125 133.00146484375 455.6025390625 168.466552734375Q474.205810546875 203.931640625 474.205810546875 251.586181640625Q474.205810546875 298.654541015625 455.6025390625 334.61962890625Q436.999267578125 370.584716796875 404.37890625 391.0672607421875Q371.758544921875 411.5498046875 329.79345703125 411.5498046875Q286.828369140625 411.5498046875 254.2080078125 391.0672607421875Q221.587646484375 370.584716796875 203.484375 334.8265380859375Q185.381103515625 299.068359375 185.381103515625 252Q185.381103515625 204.345458984375 203.484375 168.6734619140625Q221.587646484375 133.00146484375 254.2080078125 112.725830078125Q286.828369140625 92.4501953125 329.79345703125 92.4501953125Z";
+const DOT_PATH =
+  "M119.03564453125 -5Q85.345458984375 -5 64.0865478515625 15.8450927734375Q42.82763671875 36.690185546875 42.82763671875 66.483642578125Q42.82763671875 97.104736328125 64.0865478515625 117.9498291015625Q85.345458984375 138.794921875 119.03564453125 138.794921875Q152.31201171875 138.794921875 173.27783203125 117.9498291015625Q194.24365234375 97.104736328125 194.24365234375 66.483642578125Q194.24365234375 36.690185546875 173.27783203125 15.8450927734375Q152.31201171875 -5 119.03564453125 -5Z";
+
+// Fixed start positions — 7 evenly-spaced points (≈ a ring around the centre).
+// dot = (cx,cy); the label sits at (tx,ty), offset onto the dot's local frame.
 const INFRA_SLOTS = [
-  { cx: 220, cy: 88, tx: 220, ty: 72 },
-  { cx: 340, cy: 160, tx: 340, ty: 143 },
-  { cx: 340, cy: 280, tx: 340, ty: 299 },
-  { cx: 220, cy: 352, tx: 220, ty: 370 },
-  { cx: 100, cy: 280, tx: 100, ty: 299 },
-  { cx: 100, cy: 160, tx: 100, ty: 143 },
+  { cx: 220, cy: 88, tx: 220, ty: 71 },
+  { cx: 323, cy: 138, tx: 323, ty: 121 },
+  { cx: 349, cy: 249, tx: 349, ty: 267 },
+  { cx: 277, cy: 339, tx: 277, ty: 357 },
+  { cx: 163, cy: 339, tx: 163, ty: 357 },
+  { cx: 91, cy: 249, tx: 91, ty: 267 },
+  { cx: 117, cy: 138, tx: 117, ty: 121 },
 ];
 const CUSTOMER_SLOTS = [
   { cx: 316, cy: 74, tx: 330, ty: 62 },
@@ -90,11 +99,9 @@ function Node({
 }
 
 export function UniverseDiagram({
-  core,
   infra,
   customers,
 }: {
-  core: string;
   infra: DiagramNode[];
   customers: DiagramNode[];
 }) {
@@ -141,12 +148,13 @@ export function UniverseDiagram({
           repeatCount="indefinite"
         />
         <g class="signal" stroke="color-mix(in srgb,var(--blue) 30%,transparent)" stroke-width="1.2">
-          <line x1="220" y1="180" x2="220" y2="92" />
-          <line x1="258" y1="202" x2="336" y2="163" />
-          <line x1="258" y1="238" x2="336" y2="277" />
-          <line x1="220" y1="260" x2="220" y2="348" />
-          <line x1="182" y1="238" x2="104" y2="277" />
-          <line x1="182" y1="202" x2="104" y2="163" />
+          <line x1="220" y1="180" x2="220" y2="96" />
+          <line x1="251.3" y1="195.1" x2="316.9" y2="142.7" />
+          <line x1="259" y1="228.9" x2="340.9" y2="247.6" />
+          <line x1="237.4" y1="256" x2="273.8" y2="331.7" />
+          <line x1="202.6" y1="256" x2="166.2" y2="331.7" />
+          <line x1="181" y1="228.9" x2="99.1" y2="247.6" />
+          <line x1="188.7" y1="195.1" x2="123.1" y2="142.7" />
         </g>
         {INFRA_SLOTS.map((s, i) =>
           infra[i] ? <Node key={i} node={infra[i]} slot={s} dur={INFRA_DUR} r={5} hit={16} /> : null,
@@ -168,13 +176,18 @@ export function UniverseDiagram({
         )}
       </g>
 
-      {/* Core — on top, does not orbit; clickable to its flagship page. */}
-      <a class="unode" href={`/flagskibe/${slugify(core)}`} data-testid={`universe-node-${slugify(core)}`}>
+      {/* Core — the broberg.ai brand mark ("b."), on top, does not orbit; the
+          centre of the universe is the brand itself. Clickable to the home page.
+          (cardmem orbits as one of the blue building blocks like every platform.) */}
+      <a class="unode" href="/" data-testid="universe-core-brand" aria-label="broberg.ai">
         <circle cx="220" cy="220" r="44" fill="transparent" pointer-events="all" />
         <circle class="pulse-core" cx="220" cy="220" r="40" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.5" />
-        <text x="220" y="225" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="14" font-weight="600" fill="var(--light)">
-          {core}
-        </text>
+        <g transform="translate(220 220) scale(0.04645 -0.04645) translate(-428.880 -354.000)">
+          <path d={B_PATH} fill="var(--light)" />
+          <g transform="translate(596 0)">
+            <path d={DOT_PATH} fill="#F3522C" />
+          </g>
+        </g>
       </a>
     </svg>
   );

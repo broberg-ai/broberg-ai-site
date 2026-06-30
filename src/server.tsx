@@ -98,6 +98,10 @@ if (config.isProd) {
   app.use("/fonts/*", serveStatic({ root: "./public" }));
 }
 
+// Brand assets — the broberg.ai "b." mark (SVG + 500×500 PNG) for external use
+// (GitHub org, Slack/Discord avatars). Served from public/brand.
+app.use("/brand/*", serveStatic({ root: "./public" }));
+
 // Media — same-origin raster assets (e.g. the About portrait) from public/media.
 // Served via Bun.file so the response carries a correct Content-Length + native
 // Range support (Hono serveStatic returned Content-Length: 0, which browsers
