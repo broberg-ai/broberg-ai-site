@@ -70,7 +70,7 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
     const d = dataOf(p);
     return {
       name: str(d.name),
-      logoKey: String(p.slug ?? str(d.name)).toLowerCase(),
+      logoKey: str(d.name).toLowerCase(),
       blurb: str(d.blurb) || str(d.tagline),
       status: str(d.status) || "live",
     };
@@ -96,8 +96,8 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
   // to its INTERNAL flagship detail page (not the external site).
   const infra: DiagramNode[] = platforms.map((p) => {
     const d = dataOf(p);
-    const slug = String(p.slug ?? str(d.name)).toLowerCase();
-    return { label: str(d.name), href: `/flagskibe/${slug}` };
+    const name = str(d.name).toLowerCase();
+    return { label: str(d.name), href: `/${flagshipsSegment(locale)}/${name}` };
   });
   // Customer nodes are their OWN list (globals.universeCustomers) — separate from
   // the About wall of brand clients (globals.clients), cms #68. They scroll to Cases.
@@ -184,8 +184,9 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           heading: str(d.heading) || fbP?.heading || "",
           lead: str(d.subheading) || fbP?.lead || "",
           items: ctx.platformItems.length ? ctx.platformItems : (fbP?.items ?? []),
+          pathPrefix: `/${flagshipsSegment(ctx.locale)}`,
           allLink: cta(d.ctaPrimary, d.ctaPrimaryUrl, "platforme-all-link") ??
-            fbP?.allLink ?? { label: "Se alle flagskibe", href: "/flagskibe", testid: "platforme-all-link" },
+            fbP?.allLink ?? { label: "Se alle flagskibe", href: `/${flagshipsSegment(ctx.locale)}`, testid: "platforme-all-link" },
         },
       };
     }
@@ -327,7 +328,7 @@ export async function loadPlatforms(locale: Locale): Promise<Platform[]> {
       const d = dataOf(p);
       return {
         name: str(d.name),
-        logoKey: String(p.slug ?? str(d.name)).toLowerCase(),
+        logoKey: str(d.name).toLowerCase(),
         blurb: str(d.blurb) || str(d.tagline),
         status: str(d.status) || "live",
       };

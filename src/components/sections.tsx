@@ -107,7 +107,7 @@ export function Platforms({ data }: { data: PlatformsData }) {
         <SecHead eyebrow={data.eyebrow} headingHtml={data.heading} lead={data.lead} />
         <div class="grid g4">
           {data.items.map((p) => (
-            <a class="card" href={`/flagskibe/${p.logoKey}`} key={p.name} data-testid={`flagship-card-${p.logoKey}`}>
+            <a class="card" href={`${data.pathPrefix ?? "/flagskibe"}/${p.logoKey}`} key={p.name} data-testid={`flagship-card-${p.logoKey}`}>
               <div class="plat-h">
                 <div class="logot">
                   <Logo k={p.logoKey} />

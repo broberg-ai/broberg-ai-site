@@ -63,12 +63,16 @@ export async function renderHome(locale: Locale): Promise<string> {
 export async function renderFlagships(locale: Locale): Promise<string> {
   const items = await loadPlatforms(locale);
   const seg = flagshipsSegment(locale);
+  const isEn = locale !== "da";
   const data: PlatformsData = {
-    eyebrow: "Flagskibe",
-    heading: "Motorerne bag det hele.",
-    lead: "De AI-native platforme vi selv har bygget — og som hver ny kundeløsning står på skuldrene af.",
+    eyebrow: isEn ? "Flagships" : "Flagskibe",
+    heading: isEn ? "The engines behind it all." : "Motorerne bag det hele.",
+    lead: isEn
+      ? "The AI-native platforms we built ourselves — and that every new customer solution stands on the shoulders of."
+      : "De AI-native platforme vi selv har bygget — og som hver ny kundeløsning står på skuldrene af.",
     items: items.length ? items : [],
-    allLink: { label: "Til forsiden", href: "/", testid: "flagships-home-link" },
+    pathPrefix: `/${seg}`,
+    allLink: { label: isEn ? "Back to home" : "Til forsiden", href: isEn ? "/en" : "/", testid: "flagships-home-link" },
   };
   return page(<Platforms data={data} />, {
     title: "Flagskibe — broberg.ai",

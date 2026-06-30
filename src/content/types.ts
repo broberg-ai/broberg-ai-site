@@ -66,6 +66,7 @@ export interface PlatformsData {
   lead: string;
   items: Platform[];
   allLink: Cta;
+  pathPrefix?: string;
 }
 
 export interface CaseItem {
