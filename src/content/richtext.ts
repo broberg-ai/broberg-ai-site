@@ -13,9 +13,10 @@ marked.setOptions({ gfm: true, breaks: false });
 
 const renderer = new marked.Renderer();
 const _link = renderer.link.bind(renderer);
-renderer.link = (href, title, text) => {
-  const html = _link(href, title, text);
-  if (href && /^https?:\/\//.test(href))
+// marked v18: renderer.link takes a single token object ({ href, title, tokens }).
+renderer.link = (token) => {
+  const html = _link(token);
+  if (token.href && /^https?:\/\//.test(token.href))
     return html.replace("<a ", '<a target="_blank" rel="noopener noreferrer" ');
   return html;
 };
