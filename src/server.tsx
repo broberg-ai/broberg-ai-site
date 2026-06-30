@@ -186,17 +186,23 @@ app.get("/en/:category/:slug", async (c) => {
   const r = await renderBlogPost("en", c.req.param("category"), c.req.param("slug"));
   return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
 });
-app.get("/:category/:slug", async (c) => {
-  const r = await renderBlogPost("da", c.req.param("category"), c.req.param("slug"));
-  return r ? html(r) : notFound(renderGenericPage("da", "ikke-fundet"));
-});
 
-// Single segment: a category slug → its blog index; otherwise a generic page.
+// Single segment EN: a category slug → its blog index; otherwise a generic
+// page. MUST be registered before the DA /:category/:slug route below — both
+// are 2-path-segment patterns, and "/en/ai-metode" would otherwise match the
+// DA route first (category="en", slug="ai-metode") and 404.
 app.get("/en/:slug", async (c) => {
   const seg = c.req.param("slug");
   const idx = await renderBlogIndex("en", seg);
   return html(idx ?? renderGenericPage("en", seg));
 });
+
+app.get("/:category/:slug", async (c) => {
+  const r = await renderBlogPost("da", c.req.param("category"), c.req.param("slug"));
+  return r ? html(r) : notFound(renderGenericPage("da", "ikke-fundet"));
+});
+
+// Single segment DA: a category slug → its blog index; otherwise a generic page.
 app.get("/:slug", async (c) => {
   const seg = c.req.param("slug");
   const idx = await renderBlogIndex("da", seg);
