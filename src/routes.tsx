@@ -35,10 +35,13 @@ import type { PlatformsData } from "@/content/types.ts";
 import type { StoredDoc } from "@/content/store.ts";
 import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
-function page(children: any, meta: { title: string; description: string; locale: Locale; canonical?: string }) {
+function page(
+  children: any,
+  meta: { title: string; description: string; locale: Locale; canonical?: string; altHref?: string },
+) {
   return renderPage(
     <>
-      <Nav />
+      <Nav locale={meta.locale} altHref={meta.altHref} />
       {children}
       <Footer />
     </>,
@@ -55,6 +58,7 @@ export async function renderHome(locale: Locale): Promise<string> {
     title: model.title,
     description: model.description,
     locale,
+    altHref: locale === "en" ? "/" : "/en",
   });
 }
 
@@ -75,10 +79,13 @@ export async function renderFlagships(locale: Locale): Promise<string> {
     allLink: { label: isEn ? "Back to home" : "Til forsiden", href: isEn ? "/en" : "/", testid: "flagships-home-link" },
   };
   return page(<Platforms data={data} />, {
-    title: "Flagskibe — broberg.ai",
-    description: "De AI-native platforme bag broberg.ai-universet.",
+    title: isEn ? "Flagships — broberg.ai" : "Flagskibe — broberg.ai",
+    description: isEn
+      ? "The AI-native platforms behind the broberg.ai universe."
+      : "De AI-native platforme bag broberg.ai-universet.",
     locale,
     canonical: `/${seg}`,
+    altHref: isEn ? "/flagskibe" : "/en/flagships",
   });
 }
 
@@ -88,11 +95,15 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   // Slide pages: prefer the cms-authored copy (platforms doc `data.slides`, ICD'd
   // to our store); fall back to the in-code registry when cms has none/invalid.
   const fp = (await loadFlagship(locale, slug)) ?? flagshipFromRegistry(slug);
+  // Flagship slugs are shared across locales (only the cms doc is prefixed
+  // "en-<slug>"), so the alternate URL is a straight locale-segment swap.
+  const altHref = locale === "en" ? `/flagskibe/${slug}` : `/en/flagships/${slug}`;
   if (fp) {
     return page(<FlagshipSlides page={fp} locale={locale} />, {
       title: `${fp.slug} — broberg.ai`,
       description: fp.description,
       locale,
+      altHref,
     });
   }
   const doc = await loadPlatform(locale, slug);
@@ -152,7 +163,7 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
         </div>
       </div>
     </section>,
-    { title: `${name} — broberg.ai`, description: tagline || `${name} — et broberg.ai-flagskib.`, locale },
+    { title: `${name} — broberg.ai`, description: tagline || `${name} — et broberg.ai-flagskib.`, locale, altHref },
   );
 }
 
@@ -192,7 +203,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   for (const [s, b] of resolved) if (b) blocks[s] = b;
 
   const twin = await loadPostTwin(doc);
-  const catLabel = await categoryLabel(category);
+  const catLabel = await categoryLabel(category, locale);
   const backLabel = locale === "en" ? `All ${catLabel}` : `Alle ${catLabel}`;
   const twinLabel = twin?.locale === "en" ? "Read in English" : "Læs på dansk";
 
@@ -247,6 +258,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
       description: str(d.excerpt) || `${title} — en indsigt fra broberg.ai-maskinrummet.`,
       locale,
       canonical: withLocale(locale, `/${category}/${slug}`),
+      altHref: twin ? withLocale(twin.locale, `/${twin.category}/${twin.slug}`) : undefined,
     },
   );
 }
@@ -256,7 +268,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
 export async function renderBlogIndex(locale: Locale, category: string): Promise<string | null> {
   if (!(await isCategory(category))) return null;
   const posts = await loadCategoryPosts(locale, category);
-  const { name: catLabel, description } = await categoryMeta(category);
+  const { name: catLabel, description } = await categoryMeta(category, locale);
   const str = (v: unknown) => (typeof v === "string" ? v : "");
   const empty = locale === "en" ? "Articles on the way :)" : "Artikler på vej :)";
 
@@ -264,7 +276,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
     <section id="indsigter">
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">Ressourcer</div>
+          <div class="eyebrow">{locale === "en" ? "Resources" : "Ressourcer"}</div>
           <h2>{catLabel}</h2>
           {description ? <p class="lead">{description}</p> : null}
           <div class="divider" />
@@ -295,7 +307,13 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
         )}
       </div>
     </section>,
-    { title: `${catLabel} — broberg.ai`, description: catLabel, locale, canonical: withLocale(locale, `/${category}`) },
+    {
+      title: `${catLabel} — broberg.ai`,
+      description: catLabel,
+      locale,
+      canonical: withLocale(locale, `/${category}`),
+      altHref: withLocale(locale === "en" ? "da" : "en", `/${category}`),
+    },
   );
 }
 
@@ -387,10 +405,11 @@ export async function renderTagCloud(locale: Locale): Promise<string> {
       </div>
     </section>,
     {
-      title: locale === "en" ? "Tags — broberg.ai" : "Tags — broberg.ai",
+      title: "Tags — broberg.ai",
       description: locale === "en" ? "Browse broberg.ai articles by tag." : "Find broberg.ai-artikler efter tag.",
       locale,
       canonical: withLocale(locale, "/tags"),
+      altHref: withLocale(locale === "en" ? "da" : "en", "/tags"),
     },
   );
 }
@@ -403,7 +422,9 @@ export function renderGenericPage(locale: Locale, slug: string): string {
         <div class="sec-head">
           <h2>{slug.replace(/-/g, " ")}</h2>
           <div class="divider" />
-          <p class="lead">Denne side hentes fra cms når indholdet er wired.</p>
+          <p class="lead">
+            {locale === "en" ? "This page loads from cms once the content is wired." : "Denne side hentes fra cms når indholdet er wired."}
+          </p>
         </div>
       </div>
     </section>,

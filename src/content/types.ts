@@ -100,6 +100,7 @@ export interface PostCard {
   excerpt: string;
   slug: string;
   category: string;
+  href: string;
 }
 export interface InsightsData {
   eyebrow: string;

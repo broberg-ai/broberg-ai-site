@@ -88,6 +88,18 @@
 .navtheme {
   padding: 9px 11px;
 }
+/* DA/EN switch: small pill, same affordance language as .navsearch. */
+.navlocale {
+  border: 1px solid var(--card-border);
+  border-radius: 100px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.navlocale:hover {
+  border-color: rgba(0, 178, 255, 0.4);
+}
 .theme-moon {
   display: none;
 }

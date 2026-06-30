@@ -212,7 +212,12 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           headingHtml: str(d.heading) || fbC?.headingHtml || "",
           lead: str(d.subheading) || fbC?.lead || "",
           items: items.length ? items : (fbC?.items ?? []),
-          allLink: { label: "Se alle cases", href: withLocale(ctx.locale, "/cases"), testid: "cases-all-link", ghost: true },
+          allLink: {
+            label: ctx.locale === "en" ? "See all cases" : "Se alle cases",
+            href: withLocale(ctx.locale, "/cases"),
+            testid: "cases-all-link",
+            ghost: true,
+          },
         },
       };
     }
@@ -238,12 +243,14 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
       // Cards come from `posts` in the insights category (cms #68), not fallback.
       const posts: PostCard[] = ctx.insightPosts.map((p) => {
         const pd = dataOf(p);
+        const slug = String(p.slug ?? "");
         return {
           tag: "Nyt",
-          slug: String(p.slug ?? ""),
+          slug,
           category: "indsigter",
           title: str(pd.title),
           excerpt: str(pd.excerpt),
+          href: withLocale(ctx.locale, `/indsigter/${slug}`),
         };
       });
       return {
@@ -378,11 +385,17 @@ export async function loadPostTwin(
   return { locale: locOf(twin), slug: String(twin.slug), category: str(dataOf(twin).category) };
 }
 
-// Resolve a category slug to one of its keys (slug/id/name) across locales.
-async function categoryBySlug(category: string): Promise<StoredDoc | undefined> {
-  return (await list("categories"))
-    .filter(isPub)
-    .find((c) => String(c.slug).toLowerCase() === category.toLowerCase());
+// Resolve a category slug to its cms doc. The url segment is locale-shared
+// (e.g. "indsigter" for both /indsigter and /en/indsigter); a translated EN
+// label/description lives in a separate doc keyed "en-<slug>" (same convention
+// as platforms/loadFlagship) and is preferred when present.
+async function categoryBySlug(category: string, locale: Locale = DEFAULT_LOCALE): Promise<StoredDoc | undefined> {
+  const all = (await list("categories")).filter(isPub);
+  if (locale !== DEFAULT_LOCALE) {
+    const localised = all.find((c) => String(c.slug).toLowerCase() === `${locale}-${category}`.toLowerCase());
+    if (localised) return localised;
+  }
+  return all.find((c) => String(c.slug).toLowerCase() === category.toLowerCase());
 }
 
 // True when `slug` names a real category — used by the single-segment route to
@@ -392,14 +405,17 @@ export async function isCategory(slug: string): Promise<boolean> {
 }
 
 // Display label for a category (its cms name), falling back to the slug.
-export async function categoryLabel(category: string): Promise<string> {
-  const cat = await categoryBySlug(category);
+export async function categoryLabel(category: string, locale: Locale = DEFAULT_LOCALE): Promise<string> {
+  const cat = await categoryBySlug(category, locale);
   return cat ? str(dataOf(cat).name) || category : category;
 }
 
 // Category display name + description (cms-driven) for the category index page.
-export async function categoryMeta(category: string): Promise<{ name: string; description: string }> {
-  const cat = await categoryBySlug(category);
+export async function categoryMeta(
+  category: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<{ name: string; description: string }> {
+  const cat = await categoryBySlug(category, locale);
   const d = cat ? dataOf(cat) : {};
   return { name: str(d.name) || category, description: str(d.description) };
 }

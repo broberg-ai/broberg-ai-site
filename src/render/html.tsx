@@ -16,6 +16,9 @@ export interface PageMeta {
   description: string;
   locale: Locale;
   canonical?: string;
+  /** Equivalent URL of this exact page in the other locale, for the nav DA/EN
+      switch. Falls back to that locale's homepage when omitted. */
+  altHref?: string;
 }
 
 export function renderPage(children: ComponentChildren, meta: PageMeta, assets: Assets): string {
@@ -40,6 +43,7 @@ export function renderPage(children: ComponentChildren, meta: PageMeta, assets: 
         <meta property="og:description" content={meta.description} />
         <meta property="og:type" content="website" />
         {meta.canonical && <link rel="canonical" href={meta.canonical} />}
+        {meta.altHref && <link rel="alternate" hrefLang={meta.locale === "en" ? "da" : "en"} href={meta.altHref} />}
         <link rel="stylesheet" href={assets.css} />
       </head>
       <body>

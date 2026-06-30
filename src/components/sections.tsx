@@ -208,7 +208,7 @@ export function Insights({ data }: { data: InsightsData }) {
         <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
         <div class="grid g3">
           {data.posts.map((p) => (
-            <a class="blogcard" key={p.slug} href={`/${p.category}/${p.slug}`} data-testid={`blog-${p.slug}`}>
+            <a class="blogcard" key={p.slug} href={p.href} data-testid={`blog-${p.slug}`}>
               <div class="blogthumb" />
               <div class="blogbody">
                 <span class="nyt">{p.tag}</span>
