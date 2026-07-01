@@ -34,6 +34,7 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
             id="contact-form"
             data-testid="contact-form"
             data-lang={locale}
+            data-success-redirect={isEn ? "/en/thanks" : "/tak"}
             style="max-width:560px;margin:0 auto;text-align:left"
           >
             <div class="form-field">
@@ -43,6 +44,10 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
             <div class="form-field">
               <label for="cf-email">Email</label>
               <input id="cf-email" name="email" type="email" required data-testid="contact-input-email" />
+            </div>
+            <div class="form-field">
+              <label for="cf-phone">{isEn ? "Phone" : "Telefon"}</label>
+              <input id="cf-phone" name="phone" type="tel" data-testid="contact-input-phone" />
             </div>
             <div class="form-field">
               <label for="cf-company">{isEn ? "Company" : "Virksomhed"}</label>

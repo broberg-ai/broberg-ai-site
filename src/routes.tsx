@@ -28,6 +28,7 @@ import {
   loadSolutions,
   loadSolution,
   loadLanding,
+  loadLatestNewsPerCategory,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
@@ -252,6 +253,65 @@ export async function renderHome(locale: Locale): Promise<string> {
       description: d.heroLead,
       locale,
       altHref: isEn ? "/" : "/en",
+    },
+  );
+}
+
+// "Tak" — dedicated post-submit confirmation page (F156.7). The contact form
+// redirects here on success instead of showing an inline status message.
+// "Fik du læst disse nyheder?" surfaces the latest post per category — 0..N
+// cards depending on what's actually published (no hardcoded count; a
+// category with nothing yet just doesn't get a card).
+export async function renderThanks(locale: Locale): Promise<string> {
+  const isEn = locale === "en";
+  const news = await loadLatestNewsPerCategory(locale);
+  const thanksSeg = isEn ? "thanks" : "tak";
+
+  return page(
+    <>
+      <section id="top">
+        <div class="wrap" style="padding-top:150px;text-align:center;max-width:640px">
+          <div class="eyebrow" style="justify-content:center">{isEn ? "Thank you" : "Tak"}</div>
+          <h1>{isEn ? "Thank you!" : "Tak!"}</h1>
+          <p class="lead" style="margin:18px auto 0">
+            {isEn ? "We'll get back to you as soon as possible." : "Vi vender tilbage hurtigst muligt."}
+          </p>
+          <div class="cta-row" style="justify-content:center">
+            <a class="btn btn-ghost" href={withLocale(locale, "/")} data-testid="thanks-home-link">
+              {isEn ? "Back to the homepage" : "Til forsiden"} <span class="ar">→</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {news.length ? (
+        <section style="background:var(--dark2)">
+          <div class="wrap">
+            <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto">
+              <div class="eyebrow" style="justify-content:center">{isEn ? "By the way" : "Forresten"}</div>
+              <h2>{isEn ? "Did you catch this news?" : "Fik du læst disse nyheder?"}</h2>
+            </div>
+            <div class="grid g3">
+              {news.map((n, i) => (
+                <a class="blogcard" href={n.href} key={i} data-testid={`thanks-news-${i}`}>
+                  <div class="blogthumb" />
+                  <div class="blogbody">
+                    <span class="nyt">{n.categoryLabel}</span>
+                    <h3>{n.title}</h3>
+                    <p>{n.excerpt}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+    </>,
+    {
+      title: isEn ? "Thank you — broberg.ai" : "Tak — broberg.ai",
+      description: isEn ? "Your message has been sent." : "Din besked er sendt.",
+      locale,
+      canonical: withLocale(locale, `/${thanksSeg}`),
     },
   );
 }

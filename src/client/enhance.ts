@@ -192,6 +192,14 @@ function contactForm() {
       });
       const json = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string; error?: string };
       if (res.ok && json.ok) {
+        // Success navigates to the dedicated "Tak" page instead of showing an
+        // inline message — that page has room for a proper thank-you + the
+        // "did you see these news?" strip. No form.reset() needed; we're leaving.
+        const redirect = form.dataset.successRedirect;
+        if (redirect) {
+          window.location.href = redirect;
+          return;
+        }
         status.className = "form-status show ok";
         status.textContent = json.message || (form.dataset.lang === "en" ? "Thank you!" : "Tak!");
         form.reset();

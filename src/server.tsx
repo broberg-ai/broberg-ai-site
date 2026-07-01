@@ -20,6 +20,7 @@ import {
   renderGenericPage,
   renderSolutions,
   renderSolutionDetail,
+  renderThanks,
 } from "@/routes.tsx";
 import { buildSearchIndex } from "@/content/compose.ts";
 import { flagshipsSegment } from "@/i18n.ts";
@@ -203,6 +204,11 @@ app.get("/en/solutions/:slug", async (c) => {
   const r = await renderSolutionDetail("en", c.req.param("slug"));
   return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
 });
+
+// "Tak" (F156.7) — dedicated post-submit confirmation page the contact form
+// redirects to. Same literal-before-dynamic ordering requirement as above.
+app.get("/tak", async () => html(await renderThanks("da")));
+app.get("/en/thanks", async () => html(await renderThanks("en")));
 
 // Blog: /:category/:slug (DA) and /en/:category/:slug (EN). A real post → its
 // page; an unknown slug → 404 (not a 200 stub).

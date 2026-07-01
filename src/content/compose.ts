@@ -395,6 +395,36 @@ export async function loadLanding(locale: Locale): Promise<StoredDoc | null> {
   return doc;
 }
 
+// Latest published post per category (F156 /tak "did you see these news?"
+// strip) — one per category, newest first per category, categories with zero
+// posts in this locale are simply skipped (works with 0..N categories filled,
+// no hardcoded count).
+export interface LatestNewsItem {
+  categoryLabel: string;
+  title: string;
+  excerpt: string;
+  href: string;
+}
+
+export async function loadLatestNewsPerCategory(locale: Locale): Promise<LatestNewsItem[]> {
+  const cats = forLocale(await list("categories"), DEFAULT_LOCALE);
+  const items: LatestNewsItem[] = [];
+  for (const cat of cats) {
+    const slug = String(cat.slug);
+    const posts = await loadCategoryPosts(locale, slug);
+    const latest = posts[0];
+    if (!latest) continue;
+    const pd = dataOf(latest);
+    items.push({
+      categoryLabel: await categoryLabel(slug, locale),
+      title: str(pd.title),
+      excerpt: str(pd.excerpt),
+      href: withLocale(locale, `/${slug}/${String(latest.slug)}`),
+    });
+  }
+  return items;
+}
+
 // Read a per-request snapshot of the store, then build the model from it. The
 // snapshot is a local, so concurrent requests never share mutable state.
 export async function loadHome(locale: Locale): Promise<PageModel | null> {
