@@ -600,7 +600,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
     <section id="indsigter">
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">{locale === "en" ? "Resources" : "Ressourcer"}</div>
+          <div class="eyebrow">{locale === "en" ? "Insights" : "Indsigter"}</div>
           <h2>{catLabel}</h2>
           {description ? <p class="lead">{description}</p> : null}
           <div class="divider" />
