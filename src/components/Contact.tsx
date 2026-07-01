@@ -81,6 +81,11 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
             </div>
             {/* Honeypot — hidden from real visitors, F30 spam.honeypot checks this field name. */}
             <input type="text" name="_gotcha" tabIndex={-1} autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
+            {/* Cloudflare Turnstile (F156.6) — widget mounts client-side into this
+                root (see client/turnstile.tsx); solved token lands in the hidden
+                input below, which enhance.ts submits as "turnstileToken". */}
+            <div id="contact-turnstile-root" style="margin:4px 0" />
+            <input type="hidden" name="turnstileToken" id="cf-turnstile-token" value="" />
             <button class="btn" type="submit" style="width:100%;justify-content:center;margin-top:8px" data-testid="contact-submit">
               {isEn ? "Send inquiry" : "Send forespørgsel"} <span class="ar">→</span>
             </button>

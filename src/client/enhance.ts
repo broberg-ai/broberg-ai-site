@@ -2,6 +2,7 @@
    page is fully readable without it. Ported from mockup v6's inline script plus
    the mobile nav/dropdown toggles flagged in the build brief. */
 import { mountCmdk } from "@/client/cmdk.tsx";
+import { mountTurnstile } from "@/client/turnstile.tsx";
 
 function smoothScroll() {
   document.querySelectorAll<HTMLElement>("[data-scroll]").forEach((el) => {
@@ -176,6 +177,18 @@ function contactForm() {
     // Honeypot must stay empty — a real visitor never fills it.
     if (String(data.get("_gotcha") ?? "").length > 0) return;
 
+    // Turnstile: the widget island writes its solved token into this hidden
+    // field, and stamps data-turnstile-active once a site key resolved. Only
+    // block on the token when a widget is actually active — if Turnstile is
+    // disabled server-side (no site key returned) we don't hold the form
+    // hostage to a challenge nobody was ever shown.
+    const captchaRoot = document.getElementById("contact-turnstile-root");
+    if (captchaRoot?.dataset.turnstileActive === "true" && !String(data.get("turnstileToken") ?? "")) {
+      status.className = "form-status show err";
+      status.textContent = form.dataset.lang === "en" ? "Please complete the challenge above." : "Løs venligst udfordringen ovenfor.";
+      return;
+    }
+
     submitBtn.disabled = true;
     status.className = "form-status show";
     status.textContent = form.dataset.lang === "en" ? "Sending…" : "Sender…";
@@ -206,10 +219,12 @@ function contactForm() {
       } else {
         status.className = "form-status show err";
         status.textContent = json.error || (form.dataset.lang === "en" ? "Something went wrong — try again." : "Noget gik galt — prøv igen.");
+        window.dispatchEvent(new CustomEvent("turnstile:reset"));
       }
     } catch {
       status.className = "form-status show err";
       status.textContent = form.dataset.lang === "en" ? "Could not reach the server — try again." : "Kunne ikke kontakte serveren — prøv igen.";
+      window.dispatchEvent(new CustomEvent("turnstile:reset"));
     } finally {
       submitBtn.disabled = false;
     }
@@ -233,4 +248,5 @@ safe(reducedMotion);
 safe(themeToggle);
 safe(mountCmdk);
 safe(faqAccordion);
+safe(mountTurnstile);
 safe(contactForm);
