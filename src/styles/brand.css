@@ -1390,9 +1390,9 @@ footer {
   cursor: pointer;
 }
 .form-pillrow .pill.sel {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: var(--dark);
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
 }
 .form-status {
   margin-top: 14px;
