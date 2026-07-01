@@ -1619,18 +1619,26 @@ footer {
 }
 /* Markdown tables (e.g. an article's comparison table) — same visual
    language as the flagship .ctable, wrapped in a card so it reads as a
-   deliberate component, not raw browser table defaults. display:block +
-   overflow-x:auto lets it scroll horizontally on narrow screens without
-   squeezing every column unreadable. */
-.richtext table {
+   deliberate component, not raw browser table defaults.
+   richtext.ts's marked renderer wraps every table's HTML in
+   .richtext-table-scroll — a real block-level div, so overflow-x:auto
+   reliably scrolls it on narrow screens. (CSS overflow-x on the <table>
+   element itself is unreliable once its row/cell children need table
+   display — verified this breaks in WebKit: columns silently clip instead
+   of scrolling.) */
+.richtext-table-scroll {
   overflow-x: auto;
-  width: 100%;
   margin: 20px 0;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+}
+.richtext table {
+  width: 100%;
+  min-width: 620px;
   border-collapse: collapse;
   font-size: 13.5px;
   background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
+  margin: 0;
 }
 .richtext th,
 .richtext td {
@@ -1640,9 +1648,10 @@ footer {
   vertical-align: top;
   /* Wrap at word boundaries; only break a single word if it's genuinely
      wider than the column (never split a normal word like "dokumentmængder"
-     across two lines just because table-layout:fixed squeezed the column). */
+     across two lines just because a column got squeezed). */
   overflow-wrap: break-word;
   word-break: normal;
+  white-space: normal;
 }
 .richtext tr:last-child td {
   border-bottom: none;
