@@ -16,9 +16,7 @@ import type {
 import { HeroFrequency } from "@/components/widgets/HeroFrequency.tsx";
 import { UniverseDiagram } from "@/components/widgets/UniverseDiagram.tsx";
 import { CountUp } from "@/components/widgets/CountUp.tsx";
-import { LivePill } from "@/components/widgets/LivePill.tsx";
 import { Logo } from "@/components/Logos.tsx";
-import { FALLBACK_LIVE_FEED } from "@/data/fallback.ts";
 
 function CtaButton({ cta }: { cta: Cta }) {
   const cls = cta.ghost ? "btn btn-ghost" : "btn";
@@ -61,7 +59,6 @@ export function Hero({ data }: { data: HeroData }) {
               <CtaButton key={c.testid} cta={c} />
             ))}
           </div>
-          <LivePill label={data.livePillLabel} lines={FALLBACK_LIVE_FEED} />
         </div>
         <div class="hero-art">
           <HeroFrequency />

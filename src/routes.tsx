@@ -135,11 +135,6 @@ export async function renderHome(locale: Locale): Promise<string> {
                 {isEn ? "See how we build it" : "Se hvordan vi bygger det"} <span class="ar">→</span>
               </a>
             </div>
-            <div class="feed" data-testid="live-pill">
-              <span class="livedot" />
-              <span class="lbl">Live</span>
-              <span class="txt"><b>cardmem</b> {isEn ? "delivered a feature → Live" : "leverede en feature → Live"}</span>
-            </div>
           </div>
           <div class="hero-art">
             <svg class="svg-wrap" viewBox="0 0 400 340" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Forstærker — frekvens">
