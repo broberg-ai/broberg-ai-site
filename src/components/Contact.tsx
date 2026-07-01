@@ -35,6 +35,7 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
             data-testid="contact-form"
             data-lang={locale}
             data-success-redirect={isEn ? "/en/thanks" : "/tak"}
+            novalidate
             style="max-width:560px;margin:0 auto;text-align:left"
           >
             <div class="form-field">

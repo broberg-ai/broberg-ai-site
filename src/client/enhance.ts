@@ -149,9 +149,43 @@ function contactForm() {
   const status = form.querySelector<HTMLElement>(".form-status");
   const submitBtn = form.querySelector<HTMLButtonElement>('[data-testid="contact-submit"]');
 
+  const isEn = form.dataset.lang === "en";
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Required-field validation. The form carries novalidate — the browser's
+  // own "Please fill in this field" bubble renders in the BROWSER's UI
+  // language (not the page's), so on a Danish page an English OS/browser
+  // shows English. Replaced with our own always-correctly-localized message
+  // in the same .form-status the server-side errors already use.
+  function firstInvalidField(): { el: HTMLElement; message: string } | null {
+    if (!form) return null;
+    const name = form.querySelector<HTMLInputElement>("#cf-name");
+    const email = form.querySelector<HTMLInputElement>("#cf-email");
+    const message = form.querySelector<HTMLTextAreaElement>("#cf-message");
+    if (name && !name.value.trim()) {
+      return { el: name, message: isEn ? "Please fill in your name." : "Udfyld venligst dit navn." };
+    }
+    if (email && !EMAIL_RE.test(email.value.trim())) {
+      return { el: email, message: isEn ? "Please enter a valid email address." : "Udfyld venligst en gyldig emailadresse." };
+    }
+    if (message && !message.value.trim()) {
+      return { el: message, message: isEn ? "Please write a message." : "Skriv venligst en besked." };
+    }
+    return null;
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!status || !submitBtn) return;
+
+    const invalid = firstInvalidField();
+    if (invalid) {
+      status.className = "form-status show err";
+      status.textContent = invalid.message;
+      invalid.el.focus();
+      return;
+    }
+
     const data = new FormData(form);
     // Honeypot must stay empty — a real visitor never fills it.
     if (String(data.get("_gotcha") ?? "").length > 0) return;
