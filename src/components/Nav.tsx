@@ -6,19 +6,29 @@
    uses `altHref` — the route handler's computed equivalent URL in the other
    locale (e.g. a flagship/category page swaps locale segment + keeps slug;
    a blog post resolves its translationGroup twin). Falls back to that
-   locale's homepage when the current page has no known twin. */
+   locale's homepage when the current page has no known twin.
+
+   F156.5: "Univers" dropdown (universet/flagskibe/metoden in-page anchors)
+   replaced by a single "Sådan bygger vi det" link to /universet — that
+   content moved off the homepage in F156.4, so an in-page anchor no longer
+   resolves there. New "Løsninger" dropdown added (Websites/Webshops/
+   Platforme/AI Integration → /losninger/:slug). "Om" now also points at
+   /universet#om (About lives there now, not on the new sales landing). */
 import type { Locale } from "@/config.ts";
 import { withLocale } from "@/i18n.ts";
 
 const COPY = {
   da: {
-    univers: "Univers",
-    universet: "Universet",
-    universetSub: "Sådan hænger det sammen",
-    flagskibe: "Flagskibe",
-    flagskibeSub: "Platformene bag det hele",
-    metoden: "Metoden",
-    metodenSub: "Derfor går det lynhurtigt",
+    losninger: "Løsninger",
+    websites: "Websites",
+    websitesSub: "Hjemmesider der ikke går i stå",
+    webshops: "Webshops",
+    webshopsSub: "Salg på samme AI-motor",
+    platforme: "Platforme",
+    platformeSub: "Skræddersyet — det vi selv bygger på",
+    aiIntegration: "AI Integration",
+    aiIntegrationSub: "Rådgivning + integration i det I har",
+    sadanByggerViDet: "Sådan bygger vi det",
     cases: "Cases",
     ressourcer: "Ressourcer",
     indsigter: "Indsigter",
@@ -36,13 +46,16 @@ const COPY = {
     localeLabel: "Switch to English",
   },
   en: {
-    univers: "Universe",
-    universet: "Universe",
-    universetSub: "How it all connects",
-    flagskibe: "Flagships",
-    flagskibeSub: "The platforms behind it all",
-    metoden: "Method",
-    metodenSub: "Why it's so fast",
+    losninger: "Solutions",
+    websites: "Websites",
+    websitesSub: "Websites that don't stall",
+    webshops: "Webshops",
+    webshopsSub: "Selling on the same AI engine",
+    platforme: "Platforms",
+    platformeSub: "Custom-built — what we run on ourselves",
+    aiIntegration: "AI Integration",
+    aiIntegrationSub: "Advisory + integration into what you have",
+    sadanByggerViDet: "How we build it",
     cases: "Cases",
     ressourcer: "Resources",
     indsigter: "Insights",
@@ -61,10 +74,14 @@ const COPY = {
   },
 } as const;
 
+const SOLUTIONS_SEGMENT: Record<Locale, string> = { da: "losninger", en: "solutions" };
+
 export function Nav({ locale, altHref }: { locale: Locale; altHref?: string }) {
   const t = COPY[locale];
   const otherLocale: Locale = locale === "en" ? "da" : "en";
   const switchHref = altHref ?? withLocale(otherLocale, "/");
+  const universetHref = locale === "en" ? "/en/universe" : "/universet";
+  const solutionsSeg = SOLUTIONS_SEGMENT[locale];
 
   return (
     <header>
@@ -77,24 +94,31 @@ export function Nav({ locale, altHref }: { locale: Locale; altHref?: string }) {
         </button>
         <nav class="navlinks" data-testid="nav-links">
           <div class="navitem">
-            <button class="navlink dropdown-toggle" data-testid="nav-univers" aria-haspopup="true" aria-expanded="false">
-              {t.univers} <span class="car">▾</span>
+            <button class="navlink dropdown-toggle" data-testid="nav-losninger" aria-haspopup="true" aria-expanded="false">
+              {t.losninger} <span class="car">▾</span>
             </button>
             <div class="dd">
-              <a href={`${withLocale(locale, "/")}#universet`} data-scroll="universet" data-testid="dd-universet">
-                <b>{t.universet}</b>
-                <span>{t.universetSub}</span>
+              <a href={`/${solutionsSeg}/websites`} data-testid="dd-websites">
+                <b>{t.websites}</b>
+                <span>{t.websitesSub}</span>
               </a>
-              <a href={`${withLocale(locale, "/")}#platforme`} data-scroll="platforme" data-testid="dd-platforme">
-                <b>{t.flagskibe}</b>
-                <span>{t.flagskibeSub}</span>
+              <a href={`/${solutionsSeg}/webshops`} data-testid="dd-webshops">
+                <b>{t.webshops}</b>
+                <span>{t.webshopsSub}</span>
               </a>
-              <a href={`${withLocale(locale, "/")}#metoden`} data-scroll="metoden" data-testid="dd-metoden">
-                <b>{t.metoden}</b>
-                <span>{t.metodenSub}</span>
+              <a href={`/${solutionsSeg}/platforme`} data-testid="dd-platforme-solution">
+                <b>{t.platforme}</b>
+                <span>{t.platformeSub}</span>
+              </a>
+              <a href={`/${solutionsSeg}/ai-integration`} data-testid="dd-ai-integration">
+                <b>{t.aiIntegration}</b>
+                <span>{t.aiIntegrationSub}</span>
               </a>
             </div>
           </div>
+          <a class="navlink simple" href={universetHref} data-testid="nav-universet">
+            {t.sadanByggerViDet}
+          </a>
           <a class="navlink simple" href={`${withLocale(locale, "/")}#cases`} data-scroll="cases" data-testid="nav-cases">
             {t.cases}
           </a>
@@ -121,7 +145,7 @@ export function Nav({ locale, altHref }: { locale: Locale; altHref?: string }) {
               </a>
             </div>
           </div>
-          <a class="navlink simple" href={`${withLocale(locale, "/")}#om`} data-scroll="om" data-testid="nav-om">
+          <a class="navlink simple" href={`${universetHref}#om`} data-testid="nav-om">
             {t.om}
           </a>
           <button class="navlink navsearch" data-testid="cmdk-trigger" aria-label={t.search} title={t.search}>

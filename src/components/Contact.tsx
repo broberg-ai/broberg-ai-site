@@ -49,11 +49,11 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
               <input id="cf-company" name="company" data-testid="contact-input-company" />
             </div>
             <div class="form-field">
-              <label>{isEn ? "What do you need?" : "Hvad har du brug for?"}</label>
+              <label>{isEn ? "What do you need? (pick as many as you like)" : "Hvad har du brug for? (vælg gerne flere)"}</label>
               <div class="form-pillrow" data-testid="contact-solution-pills">
-                {SOLUTION_TYPES.map((t, i) => (
+                {SOLUTION_TYPES.map((t) => (
                   <span
-                    class={`pill${i === 0 ? " sel" : ""}`}
+                    class="pill"
                     data-value={t.value}
                     key={t.value}
                     data-testid={`contact-pill-${t.value}`}
@@ -62,7 +62,7 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
                   </span>
                 ))}
               </div>
-              <input type="hidden" name="solutionType" id="cf-solution-type" value={SOLUTION_TYPES[0].value} />
+              <input type="hidden" name="solutionType" id="cf-solution-type" value="" />
             </div>
             <div class="form-field">
               <label for="cf-message">{isEn ? "Message" : "Besked"}</label>

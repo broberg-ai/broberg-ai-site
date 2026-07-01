@@ -149,13 +149,20 @@ function contactForm() {
   const form = document.querySelector<HTMLFormElement>("#contact-form");
   if (!form) return;
 
+  // Multi-select: each pill toggles independently (a customer may be
+  // interested in more than one solution) — the hidden input collects every
+  // selected pill's value as a comma-joined list.
   const pillrow = form.querySelector<HTMLElement>(".form-pillrow");
   const hidden = form.querySelector<HTMLInputElement>("#cf-solution-type");
+  const syncHidden = () => {
+    if (!hidden || !pillrow) return;
+    const selected = Array.from(pillrow.querySelectorAll<HTMLElement>(".pill.sel")).map((p) => p.dataset.value ?? "");
+    hidden.value = selected.join(",");
+  };
   pillrow?.querySelectorAll<HTMLElement>(".pill").forEach((pill) => {
     pill.addEventListener("click", () => {
-      pillrow.querySelectorAll(".pill").forEach((p) => p.classList.remove("sel"));
-      pill.classList.add("sel");
-      if (hidden) hidden.value = pill.dataset.value ?? "";
+      pill.classList.toggle("sel");
+      syncHidden();
     });
   });
 
