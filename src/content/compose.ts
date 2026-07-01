@@ -342,6 +342,45 @@ export async function loadPlatforms(locale: Locale): Promise<Platform[]> {
     });
 }
 
+// ── Solutions (Løsninger, F156) ─────────────────────────────────────────────
+// Same locale-prefixed-slug convention as platforms/loadFlagship: EN docs are
+// stored as "en-<slug>" so they coexist with the DA doc without overwriting it.
+
+export interface SolutionSummary {
+  name: string;
+  slug: string;
+  blurb: string;
+}
+
+function stripLocalePrefix(slug: string, locale: Locale): string {
+  const prefix = `${locale}-`;
+  return locale !== DEFAULT_LOCALE && slug.startsWith(prefix) ? slug.slice(prefix.length) : slug;
+}
+
+// All published solutions for the /losninger index, in order.
+export async function loadSolutions(locale: Locale): Promise<SolutionSummary[]> {
+  return forLocale(await list("solutions"), locale)
+    .sort((a, b) => num(dataOf(a).order) - num(dataOf(b).order))
+    .map((p) => ({
+      name: str(dataOf(p).name),
+      slug: stripLocalePrefix(String(p.slug ?? ""), locale),
+      blurb: str(dataOf(p).blurb),
+    }));
+}
+
+// A single solution's full page data (data.headingHtml/steps/features/proof/...)
+// for /losninger/:slug. Null when missing/unpublished/wrong-locale.
+export async function loadSolution(locale: Locale, slug: string): Promise<StoredDoc | null> {
+  if (locale !== DEFAULT_LOCALE) {
+    const localised = await get("solutions", `${locale}-${slug}`);
+    if (localised && localised.status === "published") return localised;
+  }
+  const doc = await get("solutions", slug);
+  if (!doc || doc.status !== "published") return null;
+  if (doc.locale && locOf(doc) !== locale) return null;
+  return doc;
+}
+
 // Read a per-request snapshot of the store, then build the model from it. The
 // snapshot is a local, so concurrent requests never share mutable state.
 export async function loadHome(locale: Locale): Promise<PageModel | null> {

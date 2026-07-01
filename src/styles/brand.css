@@ -1212,6 +1212,96 @@ footer {
   color: var(--muted);
   line-height: 1.6;
 }
+/* Horizontal 3-step pattern (F156 Løsninger pages) — a single number per step,
+   connector line stops at the circles and never runs through the paragraph text
+   (that duplicate-number/line-through-text bug is exactly what this replaces). */
+.steps3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.steps3::before {
+  content: "";
+  position: absolute;
+  top: 17px;
+  left: 60px;
+  right: 60px;
+  height: 1px;
+  background: var(--card-border);
+  z-index: 0;
+}
+.step3 {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+.step3-num {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--dark);
+  border: 1px solid rgba(0, 178, 255, 0.3);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin: 0 auto 18px;
+}
+.step3 .workstep-title {
+  font-size: 16px;
+}
+.step3 p {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  .steps3 {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .steps3::before {
+    display: none;
+  }
+}
+/* Colour-coded type pill on a case card (F156) — opposite the title, same pill
+   shape as .badge, distinct colour per solution type. */
+.case-h-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+.type-pill {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.type-pill.website {
+  color: var(--blue);
+  background: var(--blue-glow);
+  border: 1px solid rgba(0, 178, 255, 0.32);
+}
+.type-pill.webshop {
+  color: var(--orange-text);
+  background: var(--orange-soft);
+  border: 1px solid rgba(243, 82, 44, 0.32);
+}
+.type-pill.platform {
+  color: #c4b0fb;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.32);
+}
 
 /* N-slide flagship colour journey: each <section.fslide> carries --t (0=blue →
    1=orange, computed i/(n-1)); the accent + background tint interpolate so the

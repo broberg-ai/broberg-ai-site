@@ -25,15 +25,20 @@ import {
   slugifyTag,
   loadPostsByTag,
   buildTagCloud,
+  loadSolutions,
+  loadSolution,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
+import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
 import type { PlatformsData } from "@/content/types.ts";
 import type { StoredDoc } from "@/content/store.ts";
 import { flagshipsSegment, withLocale } from "@/i18n.ts";
+
+const SOLUTIONS_SEGMENT: Record<Locale, string> = { da: "losninger", en: "solutions" };
 
 function page(
   children: any,
@@ -165,6 +170,76 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
     </section>,
     { title: `${name} — broberg.ai`, description: tagline || `${name} — et broberg.ai-flagskib.`, locale, altHref },
   );
+}
+
+// Løsninger index — a dedicated page for ALL 4 solutions (F156.2), same pattern
+// as renderFlagships (card grid → detail pages) but without the logo/status
+// concepts platforms have — solutions render a plain name/blurb card.
+export async function renderSolutions(locale: Locale): Promise<string> {
+  const items = await loadSolutions(locale);
+  const seg = SOLUTIONS_SEGMENT[locale];
+  const isEn = locale === "en";
+  return page(
+    <section>
+      <div class="wrap reveal">
+        <div class="sec-head">
+          <div class="eyebrow">{isEn ? "Solutions" : "Løsninger"}</div>
+          <h2>{isEn ? "What can we build for you?" : "Hvad kan vi bygge til dig?"}</h2>
+          <div class="divider" />
+          <p class="lead">
+            {isEn
+              ? "Four ways in — pick the one that matches where you are today."
+              : "Fire veje ind — vælg den der matcher hvor I er i dag."}
+          </p>
+        </div>
+        <div class="grid g4">
+          {items.map((s) => (
+            <a class="card" href={`/${seg}/${s.slug}`} key={s.slug} data-testid={`solution-card-${s.slug}`}>
+              <div class="plat-h">
+                <div class="nm">{s.name}</div>
+              </div>
+              <p>{s.blurb}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>,
+    {
+      title: isEn ? "Solutions — broberg.ai" : "Løsninger — broberg.ai",
+      description: isEn
+        ? "Websites, webshops, custom platforms and AI integration — built on the broberg.ai engine."
+        : "Websites, webshops, skræddersyede platforme og AI-integration — bygget på broberg.ai-motoren.",
+      locale,
+      canonical: `/${seg}`,
+      altHref: `/${SOLUTIONS_SEGMENT[isEn ? "da" : "en"]}`,
+    },
+  );
+}
+
+// Løsning detail — renders the cms solution doc (F156.2). 404 (null) when the
+// slug isn't a known, published solution.
+const SOLUTION_SECONDARY_CTA: Record<string, { da: { label: string; href: string }; en: { label: string; href: string } }> = {
+  websites: { da: { label: "Se broberg.ai som eksempel", href: "#bevis" }, en: { label: "See broberg.ai as the example", href: "#bevis" } },
+  webshops: { da: { label: "Se Sanne Andersens webshop", href: "#bevis" }, en: { label: "See Sanne Andersen's webshop", href: "#bevis" } },
+  platforme: { da: { label: "Se hvordan vi bygger det", href: "/universet" }, en: { label: "See how we build it", href: "/en/universe" } },
+  "ai-integration": { da: { label: "Se hele universet", href: "/universet" }, en: { label: "See the whole universe", href: "/en/universe" } },
+};
+
+export async function renderSolutionDetail(locale: Locale, slug: string): Promise<string | null> {
+  const doc = await loadSolution(locale, slug);
+  if (!doc) return null;
+  const data = doc.data as unknown as SolutionData;
+  const seg = SOLUTIONS_SEGMENT[locale];
+  const altSeg = SOLUTIONS_SEGMENT[locale === "en" ? "da" : "en"];
+  const secondaryCta = SOLUTION_SECONDARY_CTA[slug]?.[locale] ?? { label: locale === "en" ? "Book a meeting" : "Book et møde", href: "#kontakt" };
+
+  return page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} />, {
+    title: `${data.name} — broberg.ai`,
+    description: data.lead,
+    locale,
+    canonical: `/${seg}/${slug}`,
+    altHref: `/${altSeg}/${slug}`,
+  });
 }
 
 // Title with the cms `titleHighlight` word rendered as the <em> accent (mirrors

@@ -17,6 +17,8 @@ import {
   renderTagPage,
   renderTagCloud,
   renderGenericPage,
+  renderSolutions,
+  renderSolutionDetail,
 } from "@/routes.tsx";
 import { buildSearchIndex } from "@/content/compose.ts";
 import { flagshipsSegment } from "@/i18n.ts";
@@ -177,6 +179,21 @@ app.get("/tags/:tag", async (c) => {
 });
 app.get("/en/tags/:tag", async (c) => {
   const r = await renderTagPage("en", c.req.param("tag"));
+  return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
+});
+
+// Løsninger (F156.2) — /losninger + /losninger/:slug (DA), /en/solutions +
+// /en/solutions/:slug (EN). Registered BEFORE the blog/page catch-alls below —
+// same routing-order requirement as tags: a literal-prefixed 2/3-segment path
+// must win over the dynamic /:category/:slug and /en/:category/:slug routes.
+app.get("/losninger", async () => html(await renderSolutions("da")));
+app.get("/losninger/:slug", async (c) => {
+  const r = await renderSolutionDetail("da", c.req.param("slug"));
+  return r ? html(r) : notFound(renderGenericPage("da", "ikke-fundet"));
+});
+app.get("/en/solutions", async () => html(await renderSolutions("en")));
+app.get("/en/solutions/:slug", async (c) => {
+  const r = await renderSolutionDetail("en", c.req.param("slug"));
   return r ? html(r) : notFound(renderGenericPage("en", "not-found"));
 });
 
