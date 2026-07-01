@@ -666,13 +666,12 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
   );
 }
 
-// Tag page — every post carrying a tag, across categories. null → unknown tag (404).
+// Tag page — every post AND flagship carrying a tag. null → unknown tag (404).
 export async function renderTagPage(locale: Locale, tagSlug: string): Promise<string | null> {
-  const { posts, label } = await loadPostsByTag(locale, tagSlug);
-  if (!posts.length) return null;
-  const str = (v: unknown) => (typeof v === "string" ? v : "");
-  const n = posts.length;
-  const count = locale === "en" ? `${n} ${n === 1 ? "article" : "articles"}` : `${n} ${n === 1 ? "artikel" : "artikler"}`;
+  const { hits, label } = await loadPostsByTag(locale, tagSlug);
+  if (!hits.length) return null;
+  const n = hits.length;
+  const count = locale === "en" ? `${n} ${n === 1 ? "page" : "pages"}` : `${n} ${n === 1 ? "side" : "sider"}`;
 
   return await page(
     <section id="tag">
@@ -684,27 +683,16 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
           <div class="divider" />
         </div>
         <div class="grid g3">
-          {posts.map((p) => {
-            const pd = (p.data ?? {}) as Record<string, unknown>;
-            const cat = str(pd.category) || "indsigter";
-            return (
-              <a
-                class="blogcard"
-                key={String(p.slug)}
-                href={withLocale(locale, `/${cat}/${String(p.slug)}`)}
-                data-testid={`tagpost-${String(p.slug)}`}
-              >
-                <div class="blogthumb">
-                  {cat !== "cases" ? <Illustration k={pickNewsIllustration(String(p.slug))} /> : null}
-                </div>
-                <div class="blogbody">
-                  <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
-                  <h3>{str(pd.title)}</h3>
-                  <p>{str(pd.excerpt)}</p>
-                </div>
-              </a>
-            );
-          })}
+          {hits.map((h) => (
+            <a class="blogcard" key={h.href} href={h.href} data-testid={`tagpost-${h.slug}`}>
+              <div class="blogthumb">{h.illustrationKey ? <Illustration k={h.illustrationKey} /> : null}</div>
+              <div class="blogbody">
+                <span class="nyt">{h.meta}</span>
+                <h3>{h.title}</h3>
+                <p>{h.excerpt}</p>
+              </div>
+            </a>
+          ))}
         </div>
         <div class="cta-row" style="margin-top:32px">
           <a class="btn btn-ghost" href={withLocale(locale, "/tags")} data-testid="tags-all-link">

@@ -11,6 +11,7 @@ import type { Locale } from "@/config.ts";
 import { DEFAULT_LOCALE } from "@/config.ts";
 import { list, get, type StoredDoc } from "@/content/store.ts";
 import { validateFlagshipPage, type FlagshipPage } from "@/components/FlagshipSlides.tsx";
+import { pickNewsIllustration, hasIllustration } from "@/components/Illustrations.tsx";
 import type {
   PageModel,
   SectionData,
@@ -25,7 +26,7 @@ import type {
 } from "@/content/types.ts";
 import { homeFallback } from "@/data/fallback.ts";
 import { richtextInline } from "@/content/richtext.ts";
-import { flagshipsSegment, withLocale } from "@/i18n.ts";
+import { flagshipsSegment, withLocale, slugifyTag } from "@/i18n.ts";
 
 type Data = Record<string, unknown>;
 const isPub = (d: StoredDoc) => d.status === "published";
@@ -568,6 +569,7 @@ const FOOTER_FALLBACK: Record<Locale, FooterData> = {
           { label: "Tanker", href: "/indsigter" },
           { label: "AI & Metode", href: "/ai-metode" },
           { label: "Bag om", href: "/bag-om" },
+          { label: "Tags", href: "/tags" },
         ],
       },
       {
@@ -603,6 +605,7 @@ const FOOTER_FALLBACK: Record<Locale, FooterData> = {
           { label: "Thoughts", href: "/en/indsigter" },
           { label: "AI & Method", href: "/en/ai-metode" },
           { label: "Behind the scenes", href: "/en/bag-om" },
+          { label: "Tags", href: "/en/tags" },
         ],
       },
       {
@@ -691,37 +694,75 @@ export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
 
 // ── Tags (clickable → /tags/<slug>, cloud at /tags) ───────────────────────────
 
-// URL slug for a tag: lowercase, spaces/punctuation → dashes. Keeps æøå (real
-// Danish, no transliteration) consistent with post slugs.
-export function slugifyTag(tag: string): string {
-  return tag
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9æøå]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+// slugifyTag now lives in i18n.ts (a leaf module) so components/FlagshipSlides.tsx
+// can also import it without a circular dependency back through this file.
+// Re-exported here (imported above) so existing `from "@/content/compose.ts"`
+// imports keep working.
+export { slugifyTag };
+
+// A tag-page result, normalized across the two taggable collections (posts +
+// flagship platforms) so the renderer doesn't need to branch on shape.
+export interface TagHit {
+  title: string;
+  excerpt: string;
+  href: string;
+  meta: string;
+  slug: string;
+  illustrationKey: string | null;
 }
 
-// All published posts (for the locale) carrying a tag whose slug matches, newest
-// first, plus the tag's display label (original case). Empty posts → unknown tag.
+// All published posts + flagship platforms (for the locale) carrying a tag
+// whose slug matches, newest-first for posts then flagships, plus the tag's
+// display label (original case). Empty → unknown tag (404).
 export async function loadPostsByTag(
   locale: Locale,
   tagSlug: string,
-): Promise<{ posts: StoredDoc[]; label: string }> {
+): Promise<{ hits: TagHit[]; label: string }> {
   let label = tagSlug;
-  const posts = forLocale(await list("posts"), locale)
-    .filter((p) => {
-      const hit = arr<string>(dataOf(p).tags).find((t) => slugifyTag(t) === tagSlug);
-      if (hit) {
-        label = hit;
-        return true;
-      }
-      return false;
-    })
-    .sort((a, b) => String(dataOf(b).date).localeCompare(String(dataOf(a).date)));
-  return { posts, label };
+  const matchTag = (tags: unknown): boolean => {
+    const hit = arr<string>(tags).find((t) => slugifyTag(t) === tagSlug);
+    if (hit) label = hit;
+    return !!hit;
+  };
+
+  const postHits: TagHit[] = forLocale(await list("posts"), locale)
+    .filter((p) => matchTag(dataOf(p).tags))
+    .sort((a, b) => String(dataOf(b).date).localeCompare(String(dataOf(a).date)))
+    .map((p) => {
+      const pd = dataOf(p);
+      const cat = str(pd.category) || "indsigter";
+      const slug = String(p.slug);
+      return {
+        title: str(pd.title),
+        excerpt: str(pd.excerpt),
+        href: withLocale(locale, `/${cat}/${slug}`),
+        meta: str(pd.readTime) || (locale === "en" ? "Article" : "Artikel"),
+        slug,
+        illustrationKey: cat !== "cases" ? pickNewsIllustration(slug) : null,
+      };
+    });
+
+  const flagshipHits: TagHit[] = forLocale(await list("platforms"), locale)
+    .filter((p) => matchTag(dataOf(p).tags))
+    .sort((a, b) => num(dataOf(a).order) - num(dataOf(b).order))
+    .map((p) => {
+      const pd = dataOf(p);
+      const slug = String(p.slug);
+      return {
+        title: str(pd.name),
+        excerpt: str(pd.blurb),
+        href: withLocale(locale, `/${flagshipsSegment(locale)}/${slug}`),
+        meta: locale === "en" ? "Flagship" : "Flagskib",
+        slug,
+        illustrationKey: hasIllustration(slug) ? slug : null,
+      };
+    });
+
+  return { hits: [...postHits, ...flagshipHits], label };
 }
 
-// Every distinct tag across the locale's posts, with usage counts (most-used first).
+// Every distinct tag across the locale's posts + flagship platforms, with
+// usage counts (most-used first).
 export interface TagCount {
   tag: string;
   slug: string;
@@ -729,14 +770,16 @@ export interface TagCount {
 }
 export async function buildTagCloud(locale: Locale): Promise<TagCount[]> {
   const map = new Map<string, TagCount>();
-  for (const p of forLocale(await list("posts"), locale)) {
-    for (const t of arr<string>(dataOf(p).tags)) {
+  const tally = (tags: unknown) => {
+    for (const t of arr<string>(tags)) {
       const slug = slugifyTag(t);
       if (!slug) continue;
       const e = map.get(slug);
       if (e) e.count++;
       else map.set(slug, { tag: t, slug, count: 1 });
     }
-  }
+  };
+  for (const p of forLocale(await list("posts"), locale)) tally(dataOf(p).tags);
+  for (const p of forLocale(await list("platforms"), locale)) tally(dataOf(p).tags);
   return [...map.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }

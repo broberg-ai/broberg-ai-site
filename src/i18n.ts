@@ -29,3 +29,14 @@ export function withLocale(locale: Locale, path: string): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
   return locale === "en" ? `/en${clean === "/" ? "" : clean}` : clean;
 }
+
+// URL-safe tag slug (kept lowercase Danish, no transliteration) — a leaf
+// utility so both content/compose.ts and components (FlagshipSlides.tsx)
+// can import it without a circular dependency between the two.
+export function slugifyTag(tag: string): string {
+  return tag
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9æøå]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

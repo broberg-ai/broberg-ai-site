@@ -9,6 +9,7 @@ import type { JSX } from "preact";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import { Icon } from "@/components/Icons.tsx";
+import { slugifyTag, withLocale } from "@/i18n.ts";
 
 type Step = [string, string]; // [title, desc?] — desc may be ""
 type Stat = [string, string]; // [value, caption]
@@ -53,6 +54,7 @@ export interface FlagshipPage {
   description: string;
   slides: Slide[];
   cta?: Link[]; // external links appended to the last slide's CTA row
+  tags?: string[]; // shown at the bottom, linking to /tags/<slug> (shared with posts)
 }
 
 const H = ({ s }: { s: { heading: string; headingHtml?: string } }) =>
@@ -1427,15 +1429,35 @@ export function validateFlagshipPage(slug: string, data: unknown): FlagshipPage 
     description: typeof d.description === "string" ? d.description : "",
     cta: Array.isArray(d.cta) ? (d.cta as Link[]) : undefined,
     slides: slides as Slide[],
+    tags: Array.isArray(d.tags) ? (d.tags as unknown[]).filter((t): t is string => typeof t === "string") : undefined,
   };
 }
 
 export function FlagshipSlides({ page, locale }: { page: FlagshipPage; locale?: string }): JSX.Element {
+  const loc = locale === "en" ? "en" : "da";
   return (
     <>
       {page.slides.map((slide, i) => (
         <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} locale={locale} />
       ))}
+      {page.tags?.length ? (
+        <section>
+          <div class="wrap">
+            <div class="post-tags">
+              {page.tags.map((t) => (
+                <a
+                  class="pill taglink"
+                  key={t}
+                  href={withLocale(loc, `/tags/${slugifyTag(t)}`)}
+                  data-testid={`flagship-tag-${slugifyTag(t)}`}
+                >
+                  {t}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }
