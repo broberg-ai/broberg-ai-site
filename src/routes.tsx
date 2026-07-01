@@ -528,29 +528,38 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   const backLabel = locale === "en" ? `All ${catLabel}` : `Alle ${catLabel}`;
   const twinLabel = twin?.locale === "en" ? "Read in English" : "Læs på dansk";
 
+  const showIllu = category !== "cases";
+
   return page(
     <article class="post">
       <div class="wrap reveal">
-        <div class="sec-head">
-          <div class="eyebrow">{catLabel}</div>
-          <h1 class="post-title">{titleWithAccent(title, str(d.titleHighlight))}</h1>
-          {meta ? <p class="post-meta">{meta}</p> : null}
-          {tags.length ? (
-            <div class="post-tags">
-              {tags.map((t) => (
-                <a
-                  class="pill taglink"
-                  key={t}
-                  href={withLocale(locale, `/tags/${slugifyTag(t)}`)}
-                  data-testid={`tag-${slugifyTag(t)}`}
-                >
-                  {t}
-                </a>
-              ))}
+        <div class={showIllu ? "plat-detail-head" : "plat-detail-head one-col"}>
+          <div class="plat-detail-text sec-head">
+            <div class="eyebrow">{catLabel}</div>
+            <h1 class="post-title">{titleWithAccent(title, str(d.titleHighlight))}</h1>
+            {meta ? <p class="post-meta">{meta}</p> : null}
+            {tags.length ? (
+              <div class="post-tags">
+                {tags.map((t) => (
+                  <a
+                    class="pill taglink"
+                    key={t}
+                    href={withLocale(locale, `/tags/${slugifyTag(t)}`)}
+                    data-testid={`tag-${slugifyTag(t)}`}
+                  >
+                    {t}
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          {showIllu ? (
+            <div class="plat-illu">
+              <Illustration k={pickNewsIllustration(slug)} />
             </div>
           ) : null}
-          <div class="divider" />
         </div>
+        <div class="divider" />
         <div class="post-body">
           <PostBody content={content} blocks={blocks} />
         </div>

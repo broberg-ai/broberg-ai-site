@@ -479,15 +479,24 @@ export function Illustration({ k }: { k: string }): JSX.Element | null {
   return REGISTRY[k.toLowerCase()] ?? null;
 }
 
-const NEWS_KEYS = Object.keys(REGISTRY);
+// Fixed on purpose — NOT Object.keys(REGISTRY). The staffage pool is only
+// the 12 flagship illustrations; a bespoke illustration added later for one
+// specific article (see .claude/skills/news-illustration.md) must never
+// get hash-picked as filler for some OTHER, unrelated post.
+const FLAGSHIP_STAFFAGE_KEYS = [
+  "components", "cardmem", "buddy", "trail", "cms", "ai-sdk",
+  "upmetrics", "contracts", "pitch-vault", "hosting", "consulting", "docs",
+];
 
-/** Deterministically pick one of the 12 flagship illustrations as decorative
- *  "staffage" for a news post thumbnail — same slug always gets the same
- *  one, spread across the set instead of everyone getting #1. Christian:
- *  reuse the flagship illustrations as decoration on news cards rather than
- *  a blank gradient box. */
+/** Pick an illustration key for a news post thumbnail. A post whose OWN slug
+ *  has a bespoke entry in REGISTRY (see .claude/skills/news-illustration.md)
+ *  always wins. Otherwise falls back to deterministically reusing one of the
+ *  12 flagship illustrations as decorative "staffage" — same slug always
+ *  gets the same one, spread across the set instead of everyone getting #1. */
 export function pickNewsIllustration(slug: string): string {
+  const key = slug.toLowerCase();
+  if (key in REGISTRY) return key;
   let hash = 0;
   for (let i = 0; i < slug.length; i++) hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
-  return NEWS_KEYS[hash % NEWS_KEYS.length]!;
+  return FLAGSHIP_STAFFAGE_KEYS[hash % FLAGSHIP_STAFFAGE_KEYS.length]!;
 }
