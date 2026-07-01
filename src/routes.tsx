@@ -29,6 +29,7 @@ import {
   loadSolution,
   loadLanding,
   loadLatestNewsPerCategory,
+  loadRandomNews,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
@@ -36,7 +37,7 @@ import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
-import { Cases } from "@/components/sections.tsx";
+import { Cases, Insights } from "@/components/sections.tsx";
 import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
 import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
@@ -92,6 +93,7 @@ export async function renderHome(locale: Locale): Promise<string> {
   const universetHref = isEn ? "/en/universe" : "/universet";
 
   const solutions = await loadSolutions(locale);
+  const randomNews = await loadRandomNews(locale, 3);
   const casePosts = await loadCategoryPosts(locale, "cases");
   const caseItems: CaseItem[] = casePosts.map((p) => {
     const pd = (p.data ?? {}) as Record<string, unknown>;
@@ -240,6 +242,19 @@ export async function renderHome(locale: Locale): Promise<string> {
       </section>
 
       <Faq items={d.faq as [string, string][]} locale={locale} />
+
+      {randomNews.length ? (
+        <Insights
+          data={{
+            eyebrow: isEn ? "Thoughts" : "Tanker",
+            headingHtml: isEn ? `Thoughts from the <em class="o">engine room</em>.` : `Tanker fra <em class="o">maskinrummet</em>.`,
+            lead: isEn
+              ? "Weekly notes on AI-native development and automation — for builders, product managers and the curious."
+              : "Ugentlige nedslag om AI-native udvikling og automatisering — for builders, product managers og nysgerrige.",
+            posts: randomNews,
+          }}
+        />
+      ) : null}
 
       <Contact data={{ ctaHeadingHtml: d.ctaHeadingHtml, ctaLead: d.ctaLead }} locale={locale} />
     </>,

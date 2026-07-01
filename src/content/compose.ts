@@ -520,6 +520,32 @@ export async function loadCategoryPosts(locale: Locale, category: string): Promi
     .sort((a, b) => String(dataOf(b).date).localeCompare(String(dataOf(a).date)));
 }
 
+// Random news for the sales-landing homepage's "Tanker" teaser (cms request:
+// re-shuffled on every reload — this is SSR'd fresh per request already, so
+// a plain Math.random() pick at render time is enough, no client JS needed).
+// Excludes "cases" — those are real named customers, not "nyheder".
+export async function loadRandomNews(locale: Locale, count: number): Promise<PostCard[]> {
+  const posts = forLocale(await list("posts"), locale).filter((p) => dataOf(p).category !== "cases");
+  const shuffled = [...posts];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+  }
+  return shuffled.slice(0, count).map((p) => {
+    const pd = dataOf(p);
+    const category = str(pd.category) || "indsigter";
+    const slug = String(p.slug);
+    return {
+      tag: str(pd.readTime) || (locale === "en" ? "Article" : "Artikel"),
+      slug,
+      category,
+      title: str(pd.title),
+      excerpt: str(pd.excerpt),
+      href: withLocale(locale, `/${category}/${slug}`),
+    };
+  });
+}
+
 // ── Search index (⌘K) ─────────────────────────────────────────────────────────
 
 // One CmdItem-shaped entry per searchable surface. Mirrors the cmdk-palette
