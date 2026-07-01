@@ -27,6 +27,7 @@ import {
   buildTagCloud,
   loadSolutions,
   loadSolution,
+  loadLanding,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
@@ -34,7 +35,10 @@ import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
-import type { PlatformsData } from "@/content/types.ts";
+import { Cases } from "@/components/sections.tsx";
+import { Faq } from "@/components/Faq.tsx";
+import { Contact } from "@/components/Contact.tsx";
+import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
 import type { StoredDoc } from "@/content/store.ts";
 import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
@@ -72,6 +76,184 @@ export async function renderUniverset(locale: Locale): Promise<string> {
     altHref: locale === "en" ? "/universet" : "/en/universe",
     canonical: locale === "en" ? "/en/universe" : "/universet",
   });
+}
+
+// New sales landing (F156.3) — Hero → Problem → Løsninger grid → Sådan
+// foregår det → Cases (real, reused verbatim) → Hvorfor os → FAQ → Kontakt.
+// Falls back to renderUniverset's content if the `landing` cms doc isn't
+// there yet (no naked cutover — never a blank homepage).
+export async function renderHome(locale: Locale): Promise<string> {
+  const landing = await loadLanding(locale);
+  if (!landing) return renderUniverset(locale);
+  const d = landing.data as Record<string, any>;
+  const isEn = locale === "en";
+  const seg = SOLUTIONS_SEGMENT[locale];
+  const universetHref = isEn ? "/en/universe" : "/universet";
+
+  const solutions = await loadSolutions(locale);
+  const casePosts = await loadCategoryPosts(locale, "cases");
+  const caseItems: CaseItem[] = casePosts.map((p) => {
+    const pd = (p.data ?? {}) as Record<string, unknown>;
+    const str = (v: unknown) => (typeof v === "string" ? v : "");
+    const slug = String(p.slug);
+    return {
+      kicker: str(pd.client) || "Case",
+      title: str(pd.title),
+      body: str(pd.excerpt),
+      quote: str(pd.quote) || undefined,
+      attr: str(pd.quote) ? str(pd.client) || str(pd.author) : undefined,
+      slug,
+      href: withLocale(locale, `/cases/${slug}`),
+    };
+  });
+  const casesData: CasesData = {
+    eyebrow: "Cases",
+    headingHtml: isEn
+      ? `Built <em class="o">fast</em>. Built right.`
+      : `Bygget <em class="o">lynhurtigt</em>. Bygget rigtigt.`,
+    lead: isEn
+      ? "Real customers got real results — delivered in a fraction of the normal time, because the foundation was already in place."
+      : "Rigtige kunder fik rigtige resultater — leveret på en brøkdel af den normale tid, fordi fundamentet allerede lå klar.",
+    items: caseItems,
+    allLink: { label: isEn ? "See all cases" : "Se alle cases", href: withLocale(locale, "/cases"), testid: "landing-cases-all-link", ghost: true },
+  };
+
+  return page(
+    <>
+      <section class="hero" id="top">
+        <div class="wrap hero-grid">
+          <div>
+            <div class="eyebrow">{d.heroEyebrow}</div>
+            <h1 dangerouslySetInnerHTML={{ __html: d.heroHeadingHtml }} />
+            <p class="lead">{d.heroLead}</p>
+            <div class="cta-row">
+              <a class="btn" href="#kontakt" data-testid="landing-cta-primary">
+                {isEn ? "Book a meeting" : "Book et møde"} <span class="ar">→</span>
+              </a>
+              <a class="btn btn-ghost" href={universetHref} data-testid="landing-cta-secondary">
+                {isEn ? "See how we build it" : "Se hvordan vi bygger det"} <span class="ar">→</span>
+              </a>
+            </div>
+            <div class="feed" data-testid="live-pill">
+              <span class="livedot" />
+              <span class="lbl">Live</span>
+              <span class="txt"><b>cardmem</b> {isEn ? "delivered a feature → Live" : "leverede en feature → Live"}</span>
+            </div>
+          </div>
+          <div class="hero-art">
+            <svg class="svg-wrap" viewBox="0 0 400 340" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Forstærker — frekvens">
+              <defs>
+                <radialGradient id="hg2" cx="50%" cy="50%" r="60%">
+                  <stop offset="0%" stop-color="#00b2ff" stop-opacity=".22" />
+                  <stop offset="100%" stop-color="#00b2ff" stop-opacity="0" />
+                </radialGradient>
+                <linearGradient id="hl2" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#00b2ff" />
+                  <stop offset="100%" stop-color="#40c8ff" />
+                </linearGradient>
+                <clipPath id="cin2">
+                  <rect x="8" y="120" width="96" height="100" />
+                </clipPath>
+              </defs>
+              <circle class="sphere" cx="200" cy="170" r="150" fill="url(#hg2)" />
+              <g clip-path="url(#cin2)">
+                <path class="wIn" d="M-32 170 q10 -9 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="#F3522C" stroke-width="2.5" fill="none" />
+              </g>
+              <path d="M110 110 L110 230 L240 170 Z" fill="none" stroke="url(#hl2)" stroke-width="2" />
+              <circle cx="158" cy="170" r="4" fill="#00b2ff" />
+              <g>
+                <path class="wOut" d="M236 170 q10 -42 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="url(#hl2)" stroke-width="3" fill="none" />
+                <path class="wOut o2" d="M236 170 q10 -26 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="#00b2ff" stroke-width="2" fill="none" opacity=".5" />
+                <path class="wOut o3" d="M236 170 q10 -58 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="#00b2ff" stroke-width="1.4" fill="none" opacity=".25" />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section style="background:var(--dark2)">
+        <div class="wrap" style="max-width:720px">
+          <h2 style="font-size:clamp(26px,3.4vw,38px)">{d.problemHeading}</h2>
+          <div class="divider" />
+          {(d.problemP as string[]).map((p, i) => (
+            <p class="lead" key={i} style={`max-width:none;${i < d.problemP.length - 1 ? "margin-bottom:16px" : ""}`}>
+              {p}
+            </p>
+          ))}
+          {d.problemCallout ? (
+            <div class="card callout" style="margin-top:24px">
+              <p style="color:var(--light);font-weight:600;font-size:15px">{d.problemCallout}</p>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section id="losninger">
+        <div class="wrap">
+          <div class="sec-head">
+            <div class="eyebrow">{isEn ? "Solutions" : "Løsninger"}</div>
+            <h2>{isEn ? "What can we build for you?" : "Hvad kan vi bygge til dig?"}</h2>
+            <p class="lead">
+              {isEn
+                ? "Four ways in — pick the one that matches where you are today. Each solution has its own page with more detail."
+                : "Fire veje ind — vælg den der matcher hvor I er i dag. Hver løsning har sin egen side med dybere detaljer."}
+            </p>
+          </div>
+          <div class="grid g4">
+            {solutions.map((s) => (
+              <a class="card" href={`/${seg}/${s.slug}`} key={s.slug} data-testid={`landing-solution-card-${s.slug}`}>
+                <div class="plat-h">
+                  <div class="nm">{s.name}</div>
+                </div>
+                <p>{s.blurb}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style="background:var(--dark2)">
+        <div class="wrap">
+          <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto">
+            <div class="eyebrow" style="justify-content:center">{isEn ? "How it works" : "Sådan foregår det"}</div>
+            <h2>{d.stepsHeading}</h2>
+          </div>
+          <div class="steps3">
+            {(d.steps as [string, string][]).map(([title, desc], i) => (
+              <div class="step3" key={title}>
+                <div class="step3-num">{i + 1}</div>
+                <div class="workstep-title">{title}</div>
+                <p>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Cases data={casesData} />
+
+      <section>
+        <div class="wrap" style="max-width:680px;text-align:center">
+          <div class="eyebrow" style="justify-content:center">{isEn ? "Why us" : "Hvorfor os"}</div>
+          <h2>{d.whyUsHeading}</h2>
+          <p class="lead" style="max-width:none;margin:18px auto 30px">{d.whyUsBody}</p>
+          <a class="btn btn-ghost" href={universetHref} data-testid="landing-whyus-cta">
+            {isEn ? "See the whole machine" : "Se hele maskinen"} <span class="ar">→</span>
+          </a>
+        </div>
+      </section>
+
+      <Faq items={d.faq as [string, string][]} locale={locale} />
+
+      <Contact data={{ ctaHeadingHtml: d.ctaHeadingHtml, ctaLead: d.ctaLead }} locale={locale} />
+    </>,
+    {
+      title: isEn ? "broberg.ai — AI-native websites, webshops & platforms" : "broberg.ai — AI-native websites, webshops & platforme",
+      description: d.heroLead,
+      locale,
+      altHref: isEn ? "/" : "/en",
+    },
+  );
 }
 
 // Flagships index — a dedicated page for ALL platforms (Christian: "en

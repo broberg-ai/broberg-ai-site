@@ -133,6 +133,74 @@ function themeToggle() {
   });
 }
 
+// FAQ accordion (F156.3) — click a question, toggle its .open state.
+function faqAccordion() {
+  document.querySelectorAll<HTMLElement>(".faq-q").forEach((q) => {
+    q.addEventListener("click", () => {
+      q.closest(".faq-item")?.classList.toggle("open");
+    });
+  });
+}
+
+// Contact form (F156.3/F156.6) — custom pill selector synced to a hidden
+// input (never a native <select>), submitted via fetch to the F30 Form
+// Engine's public endpoint. No page reload; inline success/error status.
+function contactForm() {
+  const form = document.querySelector<HTMLFormElement>("#contact-form");
+  if (!form) return;
+
+  const pillrow = form.querySelector<HTMLElement>(".form-pillrow");
+  const hidden = form.querySelector<HTMLInputElement>("#cf-solution-type");
+  pillrow?.querySelectorAll<HTMLElement>(".pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      pillrow.querySelectorAll(".pill").forEach((p) => p.classList.remove("sel"));
+      pill.classList.add("sel");
+      if (hidden) hidden.value = pill.dataset.value ?? "";
+    });
+  });
+
+  const status = form.querySelector<HTMLElement>(".form-status");
+  const submitBtn = form.querySelector<HTMLButtonElement>('[data-testid="contact-submit"]');
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!status || !submitBtn) return;
+    const data = new FormData(form);
+    // Honeypot must stay empty — a real visitor never fills it.
+    if (String(data.get("_gotcha") ?? "").length > 0) return;
+
+    submitBtn.disabled = true;
+    status.className = "form-status show";
+    status.textContent = form.dataset.lang === "en" ? "Sending…" : "Sender…";
+
+    try {
+      const payload: Record<string, string> = {};
+      data.forEach((v, k) => {
+        if (k !== "_gotcha") payload[k] = String(v);
+      });
+      const res = await fetch("https://webhouse.app/api/forms/contact?site=broberg-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string; error?: string };
+      if (res.ok && json.ok) {
+        status.className = "form-status show ok";
+        status.textContent = json.message || (form.dataset.lang === "en" ? "Thank you!" : "Tak!");
+        form.reset();
+      } else {
+        status.className = "form-status show err";
+        status.textContent = json.error || (form.dataset.lang === "en" ? "Something went wrong — try again." : "Noget gik galt — prøv igen.");
+      }
+    } catch {
+      status.className = "form-status show err";
+      status.textContent = form.dataset.lang === "en" ? "Could not reach the server — try again." : "Kunne ikke kontakte serveren — prøv igen.";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+}
+
 // Run each feature independently so a page-specific element missing on a subpage
 // can never abort the shared nav/dropdown wiring (cms #116). Nav goes first.
 function safe(fn: () => void) {
@@ -149,3 +217,5 @@ safe(liveFeed);
 safe(reducedMotion);
 safe(themeToggle);
 safe(mountCmdk);
+safe(faqAccordion);
+safe(contactForm);

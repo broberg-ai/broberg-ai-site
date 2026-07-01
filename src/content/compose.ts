@@ -381,6 +381,20 @@ export async function loadSolution(locale: Locale, slug: string): Promise<Stored
   return doc;
 }
 
+// The sales landing's own copy (hero/problem/steps/why-us/faq/cta) — a
+// singleton doc, same locale-prefix convention ("en-landing") as the other
+// F156 collections.
+export async function loadLanding(locale: Locale): Promise<StoredDoc | null> {
+  if (locale !== DEFAULT_LOCALE) {
+    const localised = await get("landing", `${locale}-landing`);
+    if (localised && localised.status === "published") return localised;
+  }
+  const doc = await get("landing", "landing");
+  if (!doc || doc.status !== "published") return null;
+  if (doc.locale && locOf(doc) !== locale) return null;
+  return doc;
+}
+
 // Read a per-request snapshot of the store, then build the model from it. The
 // snapshot is a local, so concurrent requests never share mutable state.
 export async function loadHome(locale: Locale): Promise<PageModel | null> {

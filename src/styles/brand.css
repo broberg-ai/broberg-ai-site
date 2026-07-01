@@ -1302,6 +1302,112 @@ footer {
   background: rgba(167, 139, 250, 0.12);
   border: 1px solid rgba(167, 139, 250, 0.32);
 }
+/* FAQ accordion (F156.3 — new on the sales landing, no prior equivalent). */
+.faq-item {
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  background: var(--card);
+}
+.faq-q {
+  width: 100%;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--light);
+  background: none;
+  border: none;
+  font-family: var(--fb);
+  text-align: left;
+}
+.faq-a {
+  padding: 0 24px 20px;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 640px;
+  display: none;
+}
+.faq-item.open .faq-a {
+  display: block;
+}
+.faq-item.open .faq-q {
+  color: var(--blue);
+}
+.faq-chev {
+  flex-shrink: 0;
+  font-size: 13px;
+  opacity: 0.6;
+  transition: transform 0.2s;
+}
+.faq-item.open .faq-chev {
+  transform: rotate(180deg);
+}
+/* Contact form (F156.3/F156.6) — new, replaces the single mailto CTA on the
+   sales landing. Reuses .card-style surface tokens, not a new visual system. */
+.form-field {
+  margin-bottom: 16px;
+  text-align: left;
+}
+.form-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 7px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  background: var(--dark2);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--light);
+  font-family: var(--fb);
+  font-size: 14px;
+}
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: rgba(0, 178, 255, 0.5);
+}
+.form-pillrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.form-pillrow .pill {
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+}
+.form-pillrow .pill.sel {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--dark);
+}
+.form-status {
+  margin-top: 14px;
+  font-size: 13.5px;
+  display: none;
+}
+.form-status.show {
+  display: block;
+}
+.form-status.ok {
+  color: #2ecc71;
+}
+.form-status.err {
+  color: var(--orange-text);
+}
 
 /* N-slide flagship colour journey: each <section.fslide> carries --t (0=blue →
    1=orange, computed i/(n-1)); the accent + background tint interpolate so the
