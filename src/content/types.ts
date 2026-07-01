@@ -136,8 +136,6 @@ export interface FooterColumn {
 }
 export interface FooterData {
   tagline: string;
-  poweredByLabel: string;
-  poweredByHref: string;
   columns: FooterColumn[];
 }
 

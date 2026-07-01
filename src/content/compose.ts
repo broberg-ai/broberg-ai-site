@@ -552,8 +552,6 @@ export async function loadRandomNews(locale: Locale, count: number): Promise<Pos
 const FOOTER_FALLBACK: Record<Locale, FooterData> = {
   da: {
     tagline: "Bygget siden 1995. AI-native websites, webshops og platforme.",
-    poweredByLabel: "Drevet af @webhouse/cms",
-    poweredByHref: "https://webhouse.app",
     columns: [
       {
         heading: "Navigation",
@@ -573,26 +571,22 @@ const FOOTER_FALLBACK: Record<Locale, FooterData> = {
         ],
       },
       {
-        heading: "Produkter",
+        heading: "Løsninger",
         links: [
-          { label: "@webhouse/cms", href: "https://webhouse.app" },
-          { label: "Trail", href: "https://trailmem.com" },
-          { label: "Cardmem", href: "https://cardmem.com" },
+          { label: "Websites", href: "/losninger/websites" },
+          { label: "Webshops", href: "/losninger/webshops" },
+          { label: "Platforme", href: "/losninger/platforme" },
+          { label: "AI Integration", href: "/losninger/ai-integration" },
         ],
       },
       {
         heading: "Kontakt",
-        links: [
-          { label: "Kontakt os", href: "/#kontakt" },
-          { label: "christian@broberg.ai", href: "mailto:christian@broberg.ai" },
-        ],
+        links: [{ label: "Kontakt os", href: "/#kontakt" }],
       },
     ],
   },
   en: {
     tagline: "Building since 1995. AI-native websites, webshops and platforms.",
-    poweredByLabel: "Powered by @webhouse/cms",
-    poweredByHref: "https://webhouse.app",
     columns: [
       {
         heading: "Navigation",
@@ -612,19 +606,17 @@ const FOOTER_FALLBACK: Record<Locale, FooterData> = {
         ],
       },
       {
-        heading: "Products",
+        heading: "Solutions",
         links: [
-          { label: "@webhouse/cms", href: "https://webhouse.app" },
-          { label: "Trail", href: "https://trailmem.com" },
-          { label: "Cardmem", href: "https://cardmem.com" },
+          { label: "Websites", href: "/en/solutions/websites" },
+          { label: "Webshops", href: "/en/solutions/webshops" },
+          { label: "Platforms", href: "/en/solutions/platforme" },
+          { label: "AI Integration", href: "/en/solutions/ai-integration" },
         ],
       },
       {
         heading: "Get in touch",
-        links: [
-          { label: "Contact us", href: "/en#kontakt" },
-          { label: "christian@broberg.ai", href: "mailto:christian@broberg.ai" },
-        ],
+        links: [{ label: "Contact us", href: "/en#kontakt" }],
       },
     ],
   },
@@ -636,8 +628,6 @@ export async function loadFooter(locale: Locale): Promise<FooterData> {
   const columns = arr<{ heading?: string; links?: { label?: string; href?: string }[] }>(g.footerColumns);
   return {
     tagline: str(g.footerTagline) || fb.tagline,
-    poweredByLabel: str(g.footerPoweredByLabel) || fb.poweredByLabel,
-    poweredByHref: str(g.footerPoweredByHref) || fb.poweredByHref,
     columns: columns.length
       ? columns.map((c) => ({
           heading: str(c.heading),

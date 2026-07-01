@@ -9,9 +9,6 @@ export function Footer({ data }: { data: FooterData }) {
             broberg<span class="ai">.ai</span>
           </div>
           <p>{data.tagline}</p>
-          <a class="foot-powered" href={data.poweredByHref} target="_blank" rel="noopener">
-            {data.poweredByLabel}
-          </a>
         </div>
         {data.columns.map((col) => (
           <div class="foot-col" key={col.heading}>
