@@ -79,19 +79,32 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
                 data-testid="contact-input-message"
               />
             </div>
-            <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:16px">
+            {/* "Task completed" micro-interaction, recolored to brand (see
+                .nl-check in brand.css) — circle fills + spring-settles,
+                checkmark draws, confetti pops. No strikethrough/collapse:
+                this is an opt-IN, those would read as "cancelled". */}
+            <label class="nl-check">
               <input
                 type="checkbox"
                 name="newsletter"
                 id="cf-newsletter"
                 value="true"
+                class="nl-check-input"
                 data-testid="contact-input-newsletter"
-                style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--orange-text)"
               />
-              <label for="cf-newsletter" style="font-size:13px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:normal">
-                {isEn ? "Yes, send me the newsletter" : "Ja tak, send mig nyhedsbrevet"}
-              </label>
-            </div>
+              <span class="circle" aria-hidden="true">
+                <svg viewBox="0 0 16 16">
+                  <path d="M3 8.5 L6.5 12 L13 4.5" />
+                </svg>
+              </span>
+              <span class="nl-label">{isEn ? "Yes, send me the newsletter" : "Ja tak, send mig nyhedsbrevet"}</span>
+              <span class="nl-confetti c1" aria-hidden="true" />
+              <span class="nl-confetti c2" aria-hidden="true" />
+              <span class="nl-confetti c3" aria-hidden="true" />
+              <span class="nl-confetti c4" aria-hidden="true" />
+              <span class="nl-confetti c5" aria-hidden="true" />
+              <span class="nl-confetti c6" aria-hidden="true" />
+            </label>
             {/* Honeypot — hidden from real visitors, F30 spam.honeypot checks this field name. */}
             <input type="text" name="_gotcha" tabIndex={-1} autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
             {/* Cloudflare Turnstile (F156.6) — widget mounts client-side into this

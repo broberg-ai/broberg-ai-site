@@ -70,7 +70,9 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
     const d = dataOf(p);
     return {
       name: str(d.name),
-      logoKey: str(d.name).toLowerCase(),
+      // Keyed by the stable slug, NOT the editable display name — a name
+      // edit (e.g. "hosting" -> "drift") must never break the glyph lookup.
+      logoKey: String(p.slug).toLowerCase(),
       blurb: str(d.blurb) || str(d.tagline),
       status: str(d.status) || "live",
     };
@@ -96,8 +98,9 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
   // to its INTERNAL flagship detail page (not the external site).
   const infra: DiagramNode[] = platforms.map((p) => {
     const d = dataOf(p);
-    const name = str(d.name).toLowerCase();
-    return { label: str(d.name), href: `/${flagshipsSegment(locale)}/${name}` };
+    // href keyed by the stable slug, not the editable display name — a name
+    // edit (e.g. "hosting" -> "drift") must never turn this into a dead link.
+    return { label: str(d.name), href: `/${flagshipsSegment(locale)}/${String(p.slug).toLowerCase()}` };
   });
   // Customer nodes are their OWN list (globals.universeCustomers) — separate from
   // the About wall of brand clients (globals.clients), cms #68. They scroll to Cases.
