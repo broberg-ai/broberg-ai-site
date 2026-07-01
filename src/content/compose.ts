@@ -21,6 +21,7 @@ import type {
   DiagramNode,
   Stat,
   PostCard,
+  FooterData,
 } from "@/content/types.ts";
 import { homeFallback } from "@/data/fallback.ts";
 import { richtextInline } from "@/content/richtext.ts";
@@ -544,6 +545,106 @@ export async function loadRandomNews(locale: Locale, count: number): Promise<Pos
       href: withLocale(locale, `/${category}/${slug}`),
     };
   });
+}
+
+// Footer — 100% cms-editable (globals.footer*), with a real fallback so the
+// footer never renders empty before the doc is populated. cms #131.
+const FOOTER_FALLBACK: Record<Locale, FooterData> = {
+  da: {
+    tagline: "Bygget siden 1995. AI-native websites, webshops og platforme.",
+    poweredByLabel: "Drevet af @webhouse/cms",
+    poweredByHref: "https://webhouse.app",
+    columns: [
+      {
+        heading: "Navigation",
+        links: [
+          { label: "Løsninger", href: "/losninger" },
+          { label: "Sådan bygger vi det", href: "/universet" },
+          { label: "Cases", href: "/cases" },
+          { label: "Om", href: "/universet#om" },
+        ],
+      },
+      {
+        heading: "Artikler",
+        links: [
+          { label: "Tanker", href: "/indsigter" },
+          { label: "AI & Metode", href: "/ai-metode" },
+          { label: "Bag om", href: "/bag-om" },
+        ],
+      },
+      {
+        heading: "Produkter",
+        links: [
+          { label: "@webhouse/cms", href: "https://webhouse.app" },
+          { label: "Trail", href: "https://trailmem.com" },
+          { label: "Cardmem", href: "https://cardmem.com" },
+        ],
+      },
+      {
+        heading: "Kontakt",
+        links: [
+          { label: "Kontakt os", href: "/#kontakt" },
+          { label: "christian@broberg.ai", href: "mailto:christian@broberg.ai" },
+        ],
+      },
+    ],
+  },
+  en: {
+    tagline: "Building since 1995. AI-native websites, webshops and platforms.",
+    poweredByLabel: "Powered by @webhouse/cms",
+    poweredByHref: "https://webhouse.app",
+    columns: [
+      {
+        heading: "Navigation",
+        links: [
+          { label: "Solutions", href: "/en/solutions" },
+          { label: "How we build it", href: "/en/universe" },
+          { label: "Cases", href: "/en/cases" },
+          { label: "About", href: "/en/universe#om" },
+        ],
+      },
+      {
+        heading: "Articles",
+        links: [
+          { label: "Thoughts", href: "/en/indsigter" },
+          { label: "AI & Method", href: "/en/ai-metode" },
+          { label: "Behind the scenes", href: "/en/bag-om" },
+        ],
+      },
+      {
+        heading: "Products",
+        links: [
+          { label: "@webhouse/cms", href: "https://webhouse.app" },
+          { label: "Trail", href: "https://trailmem.com" },
+          { label: "Cardmem", href: "https://cardmem.com" },
+        ],
+      },
+      {
+        heading: "Get in touch",
+        links: [
+          { label: "Contact us", href: "/en#kontakt" },
+          { label: "christian@broberg.ai", href: "mailto:christian@broberg.ai" },
+        ],
+      },
+    ],
+  },
+};
+
+export async function loadFooter(locale: Locale): Promise<FooterData> {
+  const g = dataOf(forLocale(await list("globals"), locale)[0] ?? ({} as StoredDoc));
+  const fb = FOOTER_FALLBACK[locale];
+  const columns = arr<{ heading?: string; links?: { label?: string; href?: string }[] }>(g.footerColumns);
+  return {
+    tagline: str(g.footerTagline) || fb.tagline,
+    poweredByLabel: str(g.footerPoweredByLabel) || fb.poweredByLabel,
+    poweredByHref: str(g.footerPoweredByHref) || fb.poweredByHref,
+    columns: columns.length
+      ? columns.map((c) => ({
+          heading: str(c.heading),
+          links: (c.links ?? []).map((l) => ({ label: str(l.label), href: str(l.href) })).filter((l) => l.label && l.href),
+        }))
+      : fb.columns,
+  };
 }
 
 // ── Search index (⌘K) ─────────────────────────────────────────────────────────

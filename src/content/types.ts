@@ -126,6 +126,21 @@ export interface ContactData {
   email: string;
 }
 
+export interface FooterLink {
+  label: string;
+  href: string;
+}
+export interface FooterColumn {
+  heading: string;
+  links: FooterLink[];
+}
+export interface FooterData {
+  tagline: string;
+  poweredByLabel: string;
+  poweredByHref: string;
+  columns: FooterColumn[];
+}
+
 export type SectionData =
   | { kind: "hero"; data: HeroData }
   | { kind: "universe"; data: UniverseData }

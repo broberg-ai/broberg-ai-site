@@ -30,6 +30,7 @@ import {
   loadLanding,
   loadLatestNewsPerCategory,
   loadRandomNews,
+  loadFooter,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
@@ -46,15 +47,16 @@ import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
 const SOLUTIONS_SEGMENT: Record<Locale, string> = { da: "losninger", en: "solutions" };
 
-function page(
+async function page(
   children: any,
   meta: { title: string; description: string; locale: Locale; canonical?: string; altHref?: string },
 ) {
+  const footerData = await loadFooter(meta.locale);
   return renderPage(
     <>
       <Nav locale={meta.locale} altHref={meta.altHref} />
       {children}
-      <Footer />
+      <Footer data={footerData} />
     </>,
     meta,
     resolveAssets(),
@@ -71,7 +73,7 @@ export async function renderUniverset(locale: Locale): Promise<string> {
   // Prefer live cms content from the local store; fall back to mockup-v6 copy
   // until the first ICD pushes / backfill land.
   const model = (await loadHome(locale)) ?? homeFallback;
-  return page(<RenderSections sections={model.sections} />, {
+  return await page(<RenderSections sections={model.sections} />, {
     title: model.title,
     description: model.description,
     locale,
@@ -121,7 +123,7 @@ export async function renderHome(locale: Locale): Promise<string> {
     allLink: { label: isEn ? "See all cases" : "Se alle cases", href: withLocale(locale, "/cases"), testid: "landing-cases-all-link", ghost: true },
   };
 
-  return page(
+  return await page(
     <>
       <section class="hero" id="top">
         <div class="wrap hero-grid">
@@ -277,7 +279,7 @@ export async function renderThanks(locale: Locale): Promise<string> {
   const news = await loadLatestNewsPerCategory(locale);
   const thanksSeg = isEn ? "thanks" : "tak";
 
-  return page(
+  return await page(
     <>
       <section id="top">
         <div class="wrap" style="padding-top:150px;text-align:center;max-width:640px">
@@ -344,7 +346,7 @@ export async function renderFlagships(locale: Locale): Promise<string> {
     pathPrefix: `/${seg}`,
     allLink: { label: isEn ? "Back to home" : "Til forsiden", href: isEn ? "/en" : "/", testid: "flagships-home-link" },
   };
-  return page(<Platforms data={data} />, {
+  return await page(<Platforms data={data} />, {
     title: isEn ? "Flagships — broberg.ai" : "Flagskibe — broberg.ai",
     description: isEn
       ? "The AI-native platforms behind the broberg.ai universe."
@@ -365,7 +367,7 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   // "en-<slug>"), so the alternate URL is a straight locale-segment swap.
   const altHref = locale === "en" ? `/flagskibe/${slug}` : `/en/flagships/${slug}`;
   if (fp) {
-    return page(<FlagshipSlides page={fp} locale={locale} />, {
+    return await page(<FlagshipSlides page={fp} locale={locale} />, {
       title: `${fp.slug} — broberg.ai`,
       description: fp.description,
       locale,
@@ -383,7 +385,7 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   const features = Array.isArray(d.features) ? (d.features as string[]) : [];
   const links = Array.isArray(d.links) ? (d.links as { label: string; url: string }[]) : [];
 
-  return page(
+  return await page(
     <section id="top">
       <div class="wrap reveal">
         <div class={hasIllustration(slug) ? "plat-detail-head" : "plat-detail-head one-col"}>
@@ -440,7 +442,7 @@ export async function renderSolutions(locale: Locale): Promise<string> {
   const items = await loadSolutions(locale);
   const seg = SOLUTIONS_SEGMENT[locale];
   const isEn = locale === "en";
-  return page(
+  return await page(
     <section>
       <div class="wrap reveal">
         <div class="sec-head">
@@ -494,7 +496,7 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
   const altSeg = SOLUTIONS_SEGMENT[locale === "en" ? "da" : "en"];
   const secondaryCta = SOLUTION_SECONDARY_CTA[slug]?.[locale] ?? { label: locale === "en" ? "Book a meeting" : "Book et møde", href: "#kontakt" };
 
-  return page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} />, {
+  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} />, {
     title: `${data.name} — broberg.ai`,
     description: data.lead,
     locale,
@@ -545,7 +547,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
 
   const showIllu = category !== "cases";
 
-  return page(
+  return await page(
     <article class="post">
       <div class="wrap reveal">
         <div class={showIllu ? "plat-detail-head" : "plat-detail-head one-col"}>
@@ -617,7 +619,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
   const str = (v: unknown) => (typeof v === "string" ? v : "");
   const empty = locale === "en" ? "Articles on the way :)" : "Artikler på vej :)";
 
-  return page(
+  return await page(
     <section id="indsigter">
       <div class="wrap reveal">
         <div class="sec-head">
@@ -672,7 +674,7 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
   const n = posts.length;
   const count = locale === "en" ? `${n} ${n === 1 ? "article" : "articles"}` : `${n} ${n === 1 ? "artikel" : "artikler"}`;
 
-  return page(
+  return await page(
     <section id="tag">
       <div class="wrap reveal">
         <div class="sec-head">
@@ -727,7 +729,7 @@ export async function renderTagCloud(locale: Locale): Promise<string> {
   const heading = locale === "en" ? "Browse by tag" : "Find efter tag";
   const empty = locale === "en" ? "No tags yet." : "Ingen tags endnu.";
 
-  return page(
+  return await page(
     <section id="tags">
       <div class="wrap reveal">
         <div class="sec-head">
@@ -764,8 +766,8 @@ export async function renderTagCloud(locale: Locale): Promise<string> {
 }
 
 // Generic page — placeholder until cms `pages` are wired.
-export function renderGenericPage(locale: Locale, slug: string): string {
-  return page(
+export async function renderGenericPage(locale: Locale, slug: string): Promise<string> {
+  return await page(
     <section>
       <div class="wrap reveal">
         <div class="sec-head">
