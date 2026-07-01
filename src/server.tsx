@@ -9,7 +9,7 @@ import { handleIcd } from "@/content/icd.ts";
 import { ensureRoot } from "@/content/store.ts";
 import { runBackfill, storeIsEmpty } from "@/content/backfill.ts";
 import {
-  renderHome,
+  renderUniverset,
   renderFlagships,
   renderFlagshipDetail,
   renderBlogPost,
@@ -154,8 +154,15 @@ app.all("/uploads/*", (c) => c.text("Not found", 404));
 app.get("/favicon.svg", serveStatic({ path: "./public/favicon.svg" }));
 
 // ── Pages ───────────────────────────────────────────────────────────────────
-app.get("/", async () => html(await renderHome("da")));
-app.get("/en", async () => html(await renderHome("en")));
+// F156.4: the ORIGINAL homepage (universe diagram, flagship grid, SDLC
+// method, About) moved to /universet + /en/universe. `/` and `/en` still
+// serve it too for now — F156.3 swaps them to the new sales landing without
+// touching this pair, so /universet stays the permanent, unchanged home for
+// that content either way.
+app.get("/", async () => html(await renderUniverset("da")));
+app.get("/en", async () => html(await renderUniverset("en")));
+app.get("/universet", async () => html(await renderUniverset("da")));
+app.get("/en/universe", async () => html(await renderUniverset("en")));
 
 // Flagships — locale-specific path segment (flagskibe ↔ flagships).
 app.get(`/${flagshipsSegment("da")}`, async () => html(await renderFlagships("da")));

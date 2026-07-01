@@ -55,7 +55,13 @@ function page(
   );
 }
 
-export async function renderHome(locale: Locale): Promise<string> {
+// "Sådan bygger vi det" (F156.4) — the ORIGINAL homepage content (universe
+// diagram, all 12 flagship cards, SDLC method, full About bio), relocated
+// unchanged from `/` to `/universet` (DA) / `/en/universe` (EN) when the new
+// sales landing (renderHome below) took over the root routes. Content and
+// rendering logic are byte-for-byte the same as before the move — only the
+// URL + this function's name changed.
+export async function renderUniverset(locale: Locale): Promise<string> {
   // Prefer live cms content from the local store; fall back to mockup-v6 copy
   // until the first ICD pushes / backfill land.
   const model = (await loadHome(locale)) ?? homeFallback;
@@ -63,7 +69,8 @@ export async function renderHome(locale: Locale): Promise<string> {
     title: model.title,
     description: model.description,
     locale,
-    altHref: locale === "en" ? "/" : "/en",
+    altHref: locale === "en" ? "/universet" : "/en/universe",
+    canonical: locale === "en" ? "/en/universe" : "/universet",
   });
 }
 
