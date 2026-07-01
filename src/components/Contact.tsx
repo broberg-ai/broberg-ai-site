@@ -79,6 +79,19 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
                 data-testid="contact-input-message"
               />
             </div>
+            <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:16px">
+              <input
+                type="checkbox"
+                name="newsletter"
+                id="cf-newsletter"
+                value="true"
+                data-testid="contact-input-newsletter"
+                style="width:16px;height:16px;flex-shrink:0;margin-top:3px;accent-color:var(--orange-text)"
+              />
+              <label for="cf-newsletter" style="font-size:13px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:normal">
+                {isEn ? "Yes, send me the newsletter" : "Ja tak, send mig nyhedsbrevet"}
+              </label>
+            </div>
             {/* Honeypot — hidden from real visitors, F30 spam.honeypot checks this field name. */}
             <input type="text" name="_gotcha" tabIndex={-1} autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
             {/* Cloudflare Turnstile (F156.6) — widget mounts client-side into this
