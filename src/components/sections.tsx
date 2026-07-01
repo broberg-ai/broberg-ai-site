@@ -17,6 +17,7 @@ import { HeroFrequency } from "@/components/widgets/HeroFrequency.tsx";
 import { UniverseDiagram } from "@/components/widgets/UniverseDiagram.tsx";
 import { CountUp } from "@/components/widgets/CountUp.tsx";
 import { Logo } from "@/components/Logos.tsx";
+import { Illustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
 
 function CtaButton({ cta }: { cta: Cta }) {
   const cls = cta.ghost ? "btn btn-ghost" : "btn";
@@ -206,7 +207,9 @@ export function Insights({ data }: { data: InsightsData }) {
         <div class="grid g3">
           {data.posts.map((p) => (
             <a class="blogcard" key={p.slug} href={p.href} data-testid={`blog-${p.slug}`}>
-              <div class="blogthumb" />
+              <div class="blogthumb">
+                <Illustration k={pickNewsIllustration(p.slug)} />
+              </div>
               <div class="blogbody">
                 <span class="nyt">{p.tag}</span>
                 <h3>{p.title}</h3>

@@ -814,8 +814,17 @@ section {
   transform: translateY(-2px);
 }
 .blogthumb {
-  height: 120px;
+  height: 150px;
   background: linear-gradient(135deg, rgba(0, 178, 255, 0.14), rgba(243, 82, 44, 0.1));
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.blogthumb .svg-wrap {
+  width: 90%;
+  height: 90%;
 }
 .blogbody {
   padding: 20px 22px;

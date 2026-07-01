@@ -404,6 +404,8 @@ export async function loadLanding(locale: Locale): Promise<StoredDoc | null> {
 // no hardcoded count).
 export interface LatestNewsItem {
   categoryLabel: string;
+  category: string;
+  slug: string;
   title: string;
   excerpt: string;
   href: string;
@@ -420,6 +422,8 @@ export async function loadLatestNewsPerCategory(locale: Locale): Promise<LatestN
     const pd = dataOf(latest);
     items.push({
       categoryLabel: await categoryLabel(slug, locale),
+      category: slug,
+      slug: String(latest.slug),
       title: str(pd.title),
       excerpt: str(pd.excerpt),
       href: withLocale(locale, `/${slug}/${String(latest.slug)}`),

@@ -33,7 +33,7 @@ import {
 import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
 import { Logo } from "@/components/Logos.tsx";
-import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
+import { Illustration, hasIllustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
 import { Cases } from "@/components/sections.tsx";
@@ -289,7 +289,9 @@ export async function renderThanks(locale: Locale): Promise<string> {
             <div class="grid g3">
               {news.map((n, i) => (
                 <a class="blogcard" href={n.href} key={i} data-testid={`thanks-news-${i}`}>
-                  <div class="blogthumb" />
+                  <div class="blogthumb">
+                    {n.category !== "cases" ? <Illustration k={pickNewsIllustration(n.slug)} /> : null}
+                  </div>
                   <div class="blogbody">
                     <span class="nyt">{n.categoryLabel}</span>
                     <h3>{n.title}</h3>
@@ -611,7 +613,9 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
                   href={withLocale(locale, `/${category}/${String(p.slug)}`)}
                   data-testid={`insight-card-${String(p.slug)}`}
                 >
-                  <div class="blogthumb" />
+                  <div class="blogthumb">
+                    {category !== "cases" ? <Illustration k={pickNewsIllustration(String(p.slug))} /> : null}
+                  </div>
                   <div class="blogbody">
                     <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
                     <h3>{str(pd.title)}</h3>
@@ -664,7 +668,9 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
                 href={withLocale(locale, `/${cat}/${String(p.slug)}`)}
                 data-testid={`tagpost-${String(p.slug)}`}
               >
-                <div class="blogthumb" />
+                <div class="blogthumb">
+                  {cat !== "cases" ? <Illustration k={pickNewsIllustration(String(p.slug))} /> : null}
+                </div>
                 <div class="blogbody">
                   <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
                   <h3>{str(pd.title)}</h3>

@@ -478,3 +478,16 @@ export function hasIllustration(k: string): boolean {
 export function Illustration({ k }: { k: string }): JSX.Element | null {
   return REGISTRY[k.toLowerCase()] ?? null;
 }
+
+const NEWS_KEYS = Object.keys(REGISTRY);
+
+/** Deterministically pick one of the 12 flagship illustrations as decorative
+ *  "staffage" for a news post thumbnail — same slug always gets the same
+ *  one, spread across the set instead of everyone getting #1. Christian:
+ *  reuse the flagship illustrations as decoration on news cards rather than
+ *  a blank gradient box. */
+export function pickNewsIllustration(slug: string): string {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
+  return NEWS_KEYS[hash % NEWS_KEYS.length]!;
+}
