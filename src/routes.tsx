@@ -354,7 +354,7 @@ export async function renderThanks(locale: Locale): Promise<string> {
               {news.map((n, i) => (
                 <a class="blogcard" href={n.href} key={i} data-testid={`thanks-news-${i}`}>
                   <div class="blogthumb">
-                    {n.category !== "cases" ? <Illustration k={pickNewsIllustration(n.slug)} /> : null}
+                    <Illustration k={pickNewsIllustration(n.slug)} />
                   </div>
                   <div class="blogbody">
                     <span class="nyt">{n.categoryLabel}</span>
@@ -592,12 +592,10 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   const backLabel = locale === "en" ? `All ${catLabel}` : `Alle ${catLabel}`;
   const twinLabel = twin?.locale === "en" ? "Read in English" : "Læs på dansk";
 
-  const showIllu = category !== "cases";
-
   return await page(
     <article class="post">
       <div class="wrap reveal">
-        <div class={showIllu ? "plat-detail-head" : "plat-detail-head one-col"}>
+        <div class="plat-detail-head">
           <div class="plat-detail-text sec-head">
             <div class="eyebrow">{catLabel}</div>
             <h1 class="post-title">{titleWithAccent(title, str(d.titleHighlight))}</h1>
@@ -617,11 +615,9 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
               </div>
             ) : null}
           </div>
-          {showIllu ? (
-            <div class="plat-illu">
-              <Illustration k={pickNewsIllustration(slug)} />
-            </div>
-          ) : null}
+          <div class="plat-illu">
+            <Illustration k={pickNewsIllustration(slug)} />
+          </div>
         </div>
         <div class="divider" />
         <div class="post-body">
@@ -687,7 +683,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
                   data-testid={`insight-card-${String(p.slug)}`}
                 >
                   <div class="blogthumb">
-                    {category !== "cases" ? <Illustration k={pickNewsIllustration(String(p.slug))} /> : null}
+                    <Illustration k={pickNewsIllustration(String(p.slug))} />
                   </div>
                   <div class="blogbody">
                     <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
