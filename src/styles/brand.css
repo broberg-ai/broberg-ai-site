@@ -1010,6 +1010,10 @@ footer {
   white-space: nowrap;
   animation: foot-ticker-scroll 70s linear infinite;
 }
+.foot-ticker-set {
+  display: flex;
+  flex-shrink: 0;
+}
 .foot-ticker-item {
   display: inline-flex;
   align-items: center;
@@ -1020,10 +1024,32 @@ footer {
   letter-spacing: 0.02em;
   color: var(--muted);
   opacity: 0.65;
+  text-decoration: none;
 }
 .foot-ticker-dot {
   color: var(--blue);
   opacity: 0.5;
+}
+/* Tags actually in use on the site light up + link to their /tags page. */
+.foot-ticker-tag {
+  color: var(--blue);
+  opacity: 0.9;
+  cursor: pointer;
+  transition: opacity 0.2s, text-shadow 0.2s;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--blue) 55%, transparent);
+}
+.foot-ticker-tag:hover,
+.foot-ticker-tag:focus-visible {
+  opacity: 1;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--blue) 85%, transparent), 0 0 28px color-mix(in srgb, var(--blue) 40%, transparent);
+}
+.foot-ticker-tag:focus-visible {
+  outline: 1px solid var(--blue);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.foot-ticker-tag:active {
+  opacity: 0.75;
 }
 @keyframes foot-ticker-scroll {
   0% {

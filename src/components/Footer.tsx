@@ -23,13 +23,32 @@ export function Footer({ data }: { data: FooterData }) {
       </div>
       <div class="wrap foot-legal">© 2026 broberg.ai · Aalborg · Blokhus · Copenhagen · Build &amp; Powered by the broberg.ai universe.</div>
       {data.techTicker.length ? (
-        <div class="foot-ticker" aria-hidden="true">
+        <div class="foot-ticker">
           <div class="foot-ticker-track">
-            {[...data.techTicker, ...data.techTicker].map((t, i) => (
-              <span class="foot-ticker-item" key={i}>
-                {t}
-                <span class="foot-ticker-dot">·</span>
-              </span>
+            {/* Real, focusable copy first; a second aria-hidden copy completes the
+                seamless -50% loop without doubling every link in the tab order. */}
+            {[false, true].map((hidden) => (
+              <div class="foot-ticker-set" aria-hidden={hidden ? "true" : undefined} key={String(hidden)}>
+                {data.techTicker.map((t, i) =>
+                  t.href ? (
+                    <a
+                      class="foot-ticker-item foot-ticker-tag"
+                      href={t.href}
+                      key={i}
+                      tabIndex={hidden ? -1 : undefined}
+                      data-testid={hidden ? undefined : `foot-ticker-tag-${i}`}
+                    >
+                      {t.label}
+                      <span class="foot-ticker-dot">·</span>
+                    </a>
+                  ) : (
+                    <span class="foot-ticker-item" key={i}>
+                      {t.label}
+                      <span class="foot-ticker-dot">·</span>
+                    </span>
+                  ),
+                )}
+              </div>
             ))}
           </div>
         </div>

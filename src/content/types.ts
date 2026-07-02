@@ -136,10 +136,15 @@ export interface FooterColumn {
   heading: string;
   links: FooterLink[];
 }
+export interface TechTickerItem {
+  label: string;
+  href?: string; // set when the word matches a real site tag — links to /tags/:slug
+}
+
 export interface FooterData {
   tagline: string;
   columns: FooterColumn[];
-  techTicker: string[];
+  techTicker: TechTickerItem[];
 }
 
 export type SectionData =

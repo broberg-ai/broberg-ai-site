@@ -23,6 +23,7 @@ import type {
   Stat,
   PostCard,
   FooterData,
+  TechTickerItem,
 } from "@/content/types.ts";
 import { homeFallback } from "@/data/fallback.ts";
 import { richtextInline } from "@/content/richtext.ts";
@@ -554,7 +555,7 @@ export async function loadRandomNews(locale: Locale, count: number): Promise<Pos
 
 // Footer — 100% cms-editable (globals.footer*), with a real fallback so the
 // footer never renders empty before the doc is populated. cms #131.
-const FOOTER_FALLBACK: Record<Locale, FooterData> = {
+const FOOTER_FALLBACK: Record<Locale, Omit<FooterData, "techTicker"> & { techTicker: string[] }> = {
   da: {
     tagline: "Bygget siden 1995. AI-native websites, webshops og platforme.",
     columns: [
@@ -647,9 +648,17 @@ export async function loadFooter(locale: Locale): Promise<FooterData> {
   // hyphenates + silently drops post-slugify duplicates — wrong for display
   // text like "Tailwind CSS v4" or "@broberg/ai-sdk"). Empty entries filtered
   // defensively either way.
-  const techTicker = arr<{ label?: string }>(g.techTicker)
+  const tickerWords = arr<{ label?: string }>(g.techTicker)
     .map((t) => str(t.label))
     .filter(Boolean);
+  const words = tickerWords.length ? tickerWords : fb.techTicker;
+  // Any ticker word that matches a real site tag (post/platform) lights up
+  // and links to its /tags/:slug page — same tag system, one more entry point.
+  const tagSlugs = new Set((await buildTagCloud(locale)).map((t) => t.slug));
+  const techTicker: TechTickerItem[] = words.map((label) => {
+    const slug = slugifyTag(label);
+    return tagSlugs.has(slug) ? { label, href: withLocale(locale, `/tags/${slug}`) } : { label };
+  });
   return {
     tagline: str(g.footerTagline) || fb.tagline,
     columns: columns.length
@@ -658,7 +667,7 @@ export async function loadFooter(locale: Locale): Promise<FooterData> {
           links: (c.links ?? []).map((l) => ({ label: str(l.label), href: str(l.href) })).filter((l) => l.label && l.href),
         }))
       : fb.columns,
-    techTicker: techTicker.length ? techTicker : fb.techTicker,
+    techTicker,
   };
 }
 
