@@ -12,12 +12,27 @@ import type {
   AboutData,
   ContactData,
   Cta,
+  CmsRef,
 } from "@/content/types.ts";
 import { HeroFrequency } from "@/components/widgets/HeroFrequency.tsx";
 import { UniverseDiagram } from "@/components/widgets/UniverseDiagram.tsx";
 import { CountUp } from "@/components/widgets/CountUp.tsx";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
+
+// F157 Phase 1 — marks a plain-text element as inline-editable. `field` MUST
+// be the raw cms field name (e.g. "eyebrow"/"subheading"), not the view-model
+// property it was mapped to — that's the key @webhouse/cms-inline-edit PATCHes.
+// Only rendered when cmsRef is present (i.e. the section came from a real cms
+// doc, not the fallback copy) — never guess a doc reference.
+function cmsAttrs(cmsRef: CmsRef | undefined, field: string): Record<string, string> {
+  if (!cmsRef) return {};
+  return {
+    "data-cms-collection": cmsRef.collection,
+    "data-cms-slug": cmsRef.slug,
+    "data-cms-field": field,
+  };
+}
 
 function CtaButton({ cta }: { cta: Cta }) {
   const cls = cta.ghost ? "btn btn-ghost" : "btn";
@@ -47,12 +62,12 @@ function SecHead({ eyebrow, headingHtml, lead }: { eyebrow: string; headingHtml:
   );
 }
 
-export function Hero({ data }: { data: HeroData }) {
+export function Hero({ data, cmsRef }: { data: HeroData; cmsRef?: CmsRef }) {
   return (
     <section class="hero" id="top">
       <div class="wrap hero-grid">
         <div>
-          <div class="eyebrow">{data.eyebrow}</div>
+          <div class="eyebrow" {...cmsAttrs(cmsRef, "eyebrow")}>{data.eyebrow}</div>
           <h1 dangerouslySetInnerHTML={{ __html: data.titleHtml }} />
           <p class="lead" dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
           <div class="cta-row">
@@ -223,7 +238,7 @@ export function Insights({ data }: { data: InsightsData }) {
   );
 }
 
-export function About({ data }: { data: AboutData }) {
+export function About({ data, cmsRef }: { data: AboutData; cmsRef?: CmsRef }) {
   return (
     <section id="om" style="background:var(--dark2)">
       <div class="wrap reveal">
@@ -241,7 +256,7 @@ export function About({ data }: { data: AboutData }) {
             )}
           </div>
           <div>
-            <div class="eyebrow">{data.eyebrow}</div>
+            <div class="eyebrow" {...cmsAttrs(cmsRef, "eyebrow")}>{data.eyebrow}</div>
             <h2 style="margin-bottom:12px" dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
             <p class="lead" dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
             <div style="margin-top:16px">
@@ -252,7 +267,7 @@ export function About({ data }: { data: AboutData }) {
               ))}
             </div>
             <div class="clients">
-              <span class="lbl">{data.clientsLabel}</span>
+              <span class="lbl" {...cmsAttrs(cmsRef, "subheading")}>{data.clientsLabel}</span>
               {data.clients.map((c) => (
                 <span class="c" key={c}>
                   {c}
@@ -266,16 +281,16 @@ export function About({ data }: { data: AboutData }) {
   );
 }
 
-export function Contact({ data }: { data: ContactData }) {
+export function Contact({ data, cmsRef }: { data: ContactData; cmsRef?: CmsRef }) {
   return (
     <section id="kontakt">
       <div class="wrap reveal">
         <div class="cta-final">
-          <div class="eyebrow" style="display:inline-flex">
+          <div class="eyebrow" style="display:inline-flex" {...cmsAttrs(cmsRef, "eyebrow")}>
             {data.eyebrow}
           </div>
           <h2 dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
-          <p class="lead" style="margin:18px auto 30px">
+          <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "subheading")}>
             {data.lead}
           </p>
           <a href={data.formHref} class="btn" data-testid="kontakt-cta-mail">

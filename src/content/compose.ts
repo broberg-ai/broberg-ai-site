@@ -113,7 +113,7 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
   }));
 
   const built = sections
-    .map((sec) => mapSection(dataOf(sec), { locale, globals, platformItems, casePosts, insightPosts, infra, customers }))
+    .map((sec) => mapSection(dataOf(sec), { locale, globals, platformItems, casePosts, insightPosts, infra, customers }, String(sec.slug)))
     .filter((s): s is SectionData => s !== null);
 
   return {
@@ -139,9 +139,11 @@ function fallbackFor(kind: string): SectionData | undefined {
   return homeFallback.sections.find((s) => s.kind === kind);
 }
 
-function mapSection(d: Data, ctx: Ctx): SectionData | null {
+function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
   const kind = str(d.kind);
   const fb = fallbackFor(kind);
+  // F157 Phase 1 — inline-edit doc reference, only for enabled section kinds.
+  const cmsRef = { collection: "sections", slug, locale: ctx.locale };
 
   switch (kind) {
     case "hero": {
@@ -158,7 +160,7 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
         stats: cmsStats.length ? cmsStats : (fbHero?.stats ?? []),
         livePillLabel: str(ctx.globals.heroPillLabel) || fbHero?.livePillLabel || "Live",
       };
-      return { kind: "hero", data: hero };
+      return { kind: "hero", data: hero, cmsRef };
     }
     case "universe": {
       const fbU = fb?.kind === "universe" ? fb.data : undefined;
@@ -284,6 +286,7 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           clientsLabel: str(d.subheading) || fbA?.clientsLabel || "",
           clients: clients.length ? clients : (fbA?.clients ?? []),
         },
+        cmsRef,
       };
     }
     case "contact": {
@@ -301,6 +304,7 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           formHref: withLocale(ctx.locale, "/") + "#kontakt",
           ctaLabel: ctx.locale === "en" ? "Get in touch" : "Skriv til os",
         },
+        cmsRef,
       };
     }
     default:

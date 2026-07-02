@@ -288,7 +288,7 @@ export async function renderHome(locale: Locale): Promise<string> {
         </div>
       </section>
 
-      {about && about.kind === "about" ? <About data={about.data} /> : null}
+      {about && about.kind === "about" ? <About data={about.data} cmsRef={about.cmsRef} /> : null}
 
       <Faq items={d.faq as [string, string][]} locale={locale} />
 

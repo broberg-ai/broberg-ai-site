@@ -147,15 +147,25 @@ export interface FooterData {
   techTicker: TechTickerItem[];
 }
 
+// F157 — identifies the cms document a section's plain-text fields came from,
+// for the inline-edit package's data-cms-collection/data-cms-slug attributes.
+// Only threaded for section kinds enabled for inline editing (Phase 1: hero,
+// about, contact) — undefined elsewhere, no behavior change.
+export interface CmsRef {
+  collection: string;
+  slug: string;
+  locale: string;
+}
+
 export type SectionData =
-  | { kind: "hero"; data: HeroData }
+  | { kind: "hero"; data: HeroData; cmsRef?: CmsRef }
   | { kind: "universe"; data: UniverseData }
   | { kind: "platforms"; data: PlatformsData }
   | { kind: "cases"; data: CasesData }
   | { kind: "method"; data: MethodData }
   | { kind: "insights"; data: InsightsData }
-  | { kind: "about"; data: AboutData }
-  | { kind: "contact"; data: ContactData };
+  | { kind: "about"; data: AboutData; cmsRef?: CmsRef }
+  | { kind: "contact"; data: ContactData; cmsRef?: CmsRef };
 
 export interface PageModel {
   title: string;

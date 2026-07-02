@@ -7,7 +7,7 @@ import { Hero, Universe, Platforms, Cases, Method, Insights, About, Contact } fr
 export function RenderSection({ section }: { section: SectionData }) {
   switch (section.kind) {
     case "hero":
-      return <Hero data={section.data} />;
+      return <Hero data={section.data} cmsRef={section.cmsRef} />;
     case "universe":
       return <Universe data={section.data} />;
     case "platforms":
@@ -19,9 +19,9 @@ export function RenderSection({ section }: { section: SectionData }) {
     case "insights":
       return <Insights data={section.data} />;
     case "about":
-      return <About data={section.data} />;
+      return <About data={section.data} cmsRef={section.cmsRef} />;
     case "contact":
-      return <Contact data={section.data} />;
+      return <Contact data={section.data} cmsRef={section.cmsRef} />;
     default:
       return null;
   }

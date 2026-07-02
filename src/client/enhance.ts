@@ -4,6 +4,17 @@
 import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
 
+// F157.3 — TODO once @webhouse/cms-inline-edit is published to npm (blocked
+// on a one-time npmjs.com trusted-publisher setup, see
+// docs/features/F157-inline-editing.md): add the dependency, then
+//   import { initInlineEdit } from "@webhouse/cms-inline-edit";
+//   function inlineEdit() {
+//     initInlineEdit({ cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" });
+//   }
+//   safe(inlineEdit);
+// The data-cms-collection/data-cms-slug/data-cms-field attributes are already
+// live on Hero/About/Contact (inert until this activates).
+
 function smoothScroll() {
   document.querySelectorAll<HTMLElement>("[data-scroll]").forEach((el) => {
     el.addEventListener("click", (e) => {
