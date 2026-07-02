@@ -26,6 +26,11 @@ export interface Stat {
   suf?: string;
 }
 
+export interface HeroSlide {
+  titleHtml: string;
+  leadHtml: string;
+}
+
 export interface HeroData {
   eyebrow: string;
   titleHtml: string; // allows the <em> accent from the mockup
@@ -33,6 +38,11 @@ export interface HeroData {
   ctas: Cta[];
   stats: Stat[];
   livePillLabel: string;
+  // Rotating headline/subhead pairs for the hero slideshow (cms hero.blocks,
+  // _block:"heroSlide"). Always non-empty — falls back to [{titleHtml,leadHtml}]
+  // above when cms has no slides authored yet.
+  slides: HeroSlide[];
+  slidesLabel: string; // locale-correct a11y group label for the dot nav
 }
 
 export interface Tier {

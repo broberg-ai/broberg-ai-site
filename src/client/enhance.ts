@@ -85,6 +85,51 @@ function mobileNav() {
   });
 }
 
+// Hero slideshow: crossfades between the pre-rendered slide texts (real HTML
+// already in the DOM — no client-side templating) on a timer, and via the dot
+// nav. The visible slide + rotation order are decided server-side per request
+// (compose.ts shuffles), so this only ever walks forward through what SSR sent.
+const HERO_ROTATE_MS = 6500;
+function heroSlides() {
+  const root = document.querySelector<HTMLElement>('[data-testid="hero-slideshow"]');
+  const slides = Array.from(root?.querySelectorAll<HTMLElement>(".hero-slide") ?? []);
+  const dots = Array.from(document.querySelectorAll<HTMLButtonElement>(".hero-dot"));
+  if (slides.length < 2) return;
+
+  let current = 0;
+  let timer: ReturnType<typeof setInterval> | null = null;
+
+  const goTo = (i: number) => {
+    slides[current]?.classList.remove("active");
+    dots[current]?.classList.remove("active");
+    dots[current]?.setAttribute("aria-selected", "false");
+    current = i;
+    slides[current]?.classList.add("active");
+    dots[current]?.classList.add("active");
+    dots[current]?.setAttribute("aria-selected", "true");
+  };
+
+  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const start = () => {
+    if (reduced) return;
+    timer = setInterval(() => goTo((current + 1) % slides.length), HERO_ROTATE_MS);
+  };
+  const restart = () => {
+    if (timer) clearInterval(timer);
+    start();
+  };
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener("click", () => {
+      if (i === current) return;
+      goTo(i);
+      restart();
+    });
+  });
+
+  start();
+}
+
 // Respect prefers-reduced-motion: pause the SVG SMIL orbit animations.
 function reducedMotion() {
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -256,6 +301,7 @@ function safe(fn: () => void) {
 safe(mobileNav);
 safe(smoothScroll);
 safe(countUps);
+safe(heroSlides);
 safe(reducedMotion);
 safe(themeToggle);
 safe(mountCmdk);
