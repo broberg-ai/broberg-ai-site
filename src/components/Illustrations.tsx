@@ -566,6 +566,42 @@ const fysioDkAalborg = wrap(
   </g>,
 );
 
+// Scattered club life — a spreadsheet, an inbox, a shared folder, each tilted
+// and adrift — converging into one clean phone-shaped app with five feature
+// dots lit inside (møder, billedarkiv, sangbog, beskeder, regnskab). Nails:
+// fra spredte værktøjer til hele klublivet i lommen.
+const xrtPlatform = wrap(
+  <g>
+    {/* scattered "before" fragments, each tilted */}
+    <g transform="translate(58 66) rotate(-12)" opacity=".7">
+      <rect x="-19" y="-15" width="38" height="30" rx="4" fill="color-mix(in srgb,var(--blue) 8%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
+      {[-8, 2, -8, 2].map((x, i) => (
+        <line key={i} x1={i < 2 ? -12 : x} y1={-6 + (i % 2) * 12} x2={i < 2 ? 12 : x} y2={-6 + (i % 2) * 12} stroke="color-mix(in srgb,var(--blue) 40%,transparent)" stroke-width="1" />
+      ))}
+      <line x1="-6" y1="-15" x2="-6" y2="15" stroke="color-mix(in srgb,var(--blue) 40%,transparent)" stroke-width="1" />
+      <line x1="6" y1="-15" x2="6" y2="15" stroke="color-mix(in srgb,var(--blue) 40%,transparent)" stroke-width="1" />
+    </g>
+    <g transform="translate(50 150) rotate(8)" opacity=".7">
+      <rect x="-20" y="-14" width="40" height="28" rx="4" fill="color-mix(in srgb,var(--blue) 8%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
+      <path d="M-20 -14 L0 2 L20 -14" fill="none" stroke="var(--blue)" stroke-width="1.4" stroke-linejoin="round" />
+    </g>
+    <g transform="translate(78 214) rotate(-6)" opacity=".7">
+      <path d="M-18 -10 H-4 l5 6 H18 V12 H-18 Z" fill="color-mix(in srgb,var(--blue) 8%,transparent)" stroke="var(--blue)" stroke-width="1.4" stroke-linejoin="round" />
+    </g>
+    {/* convergence flow */}
+    <path class="illu-flow" d="M104 140 Q150 140 168 140" stroke="#F3522C" stroke-width="1.8" stroke-dasharray="3 5" fill="none" />
+    {/* one app — five features lit inside */}
+    <rect x="176" y="70" width="118" height="140" rx="18" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" stroke-width="1.8" />
+    <line x1="176" y1="94" x2="294" y2="94" stroke="color-mix(in srgb,var(--blue) 30%,transparent)" stroke-width="1.2" />
+    {[0, 1, 2, 3, 4].map((i) => (
+      <g key={i} transform={`translate(196 ${112 + i * 20})`}>
+        <circle class="node" cx="0" cy="0" r="4.5" fill={i === 2 ? "#F3522C" : "var(--blue)"} style={`animation-delay:${i * 0.4}s`} />
+        <rect x="12" y="-2.5" width={60 - i * 4} height="5" rx="2.5" fill="var(--muted)" />
+      </g>
+    ))}
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -581,6 +617,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   docs,
   "fysio-dk-sport": fysioDkSport,
   "fysio-dk-aalborg": fysioDkAalborg,
+  "x-rt-platform": xrtPlatform,
 };
 
 export function hasIllustration(k: string): boolean {
