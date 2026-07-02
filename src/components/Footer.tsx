@@ -22,6 +22,18 @@ export function Footer({ data }: { data: FooterData }) {
         ))}
       </div>
       <div class="wrap foot-legal">© 2026 broberg.ai · Aalborg · Blokhus · Copenhagen · Build &amp; Powered by the broberg.ai universe.</div>
+      {data.techTicker.length ? (
+        <div class="foot-ticker" aria-hidden="true">
+          <div class="foot-ticker-track">
+            {[...data.techTicker, ...data.techTicker].map((t, i) => (
+              <span class="foot-ticker-item" key={i}>
+                {t}
+                <span class="foot-ticker-dot">·</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </footer>
   );
 }

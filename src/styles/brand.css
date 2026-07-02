@@ -996,6 +996,48 @@ footer {
   padding-bottom: 32px;
   font-size: 12px;
 }
+.foot-ticker {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-top: 1px solid var(--card-border);
+  padding: 14px 0;
+  background: color-mix(in srgb, var(--blue) 3%, transparent);
+}
+.foot-ticker-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: foot-ticker-scroll 34s linear infinite;
+}
+.foot-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 18px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  opacity: 0.65;
+}
+.foot-ticker-dot {
+  color: var(--blue);
+  opacity: 0.5;
+}
+@keyframes foot-ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .foot-ticker-track {
+    animation: none;
+  }
+}
 @media (max-width: 760px) {
   .foot-grid {
     grid-template-columns: 1fr 1fr;

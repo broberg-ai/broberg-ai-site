@@ -590,6 +590,11 @@ const FOOTER_FALLBACK: Record<Locale, FooterData> = {
         links: [{ label: "Kontakt os", href: "/#kontakt" }],
       },
     ],
+    techTicker: [
+      "Bun", "Hono", "Preact", "TypeScript", "Vite", "Tailwind CSS v4",
+      "Claude Code", "Fly.io", "MCP integrations", "cardmem", "Trail", "buddy",
+      "@broberg/ai-sdk", "Mistral EU", "CMS", "Lens", "Upmetrics", "Open Source",
+    ],
   },
   en: {
     tagline: "Building since 1995. AI-native websites, webshops and platforms.",
@@ -626,6 +631,11 @@ const FOOTER_FALLBACK: Record<Locale, FooterData> = {
         links: [{ label: "Contact us", href: "/en#kontakt" }],
       },
     ],
+    techTicker: [
+      "Bun", "Hono", "Preact", "TypeScript", "Vite", "Tailwind CSS v4",
+      "Claude Code", "Fly.io", "MCP integrations", "cardmem", "Trail", "buddy",
+      "@broberg/ai-sdk", "Mistral EU", "CMS", "Lens", "Upmetrics", "Open Source",
+    ],
   },
 };
 
@@ -633,6 +643,13 @@ export async function loadFooter(locale: Locale): Promise<FooterData> {
   const g = dataOf(forLocale(await list("globals"), locale)[0] ?? ({} as StoredDoc));
   const fb = FOOTER_FALLBACK[locale];
   const columns = arr<{ heading?: string; links?: { label?: string; href?: string }[] }>(g.footerColumns);
+  // Plain array-of-{label} field (not cms's "tags" type, which lowercases +
+  // hyphenates + silently drops post-slugify duplicates — wrong for display
+  // text like "Tailwind CSS v4" or "@broberg/ai-sdk"). Empty entries filtered
+  // defensively either way.
+  const techTicker = arr<{ label?: string }>(g.techTicker)
+    .map((t) => str(t.label))
+    .filter(Boolean);
   return {
     tagline: str(g.footerTagline) || fb.tagline,
     columns: columns.length
@@ -641,6 +658,7 @@ export async function loadFooter(locale: Locale): Promise<FooterData> {
           links: (c.links ?? []).map((l) => ({ label: str(l.label), href: str(l.href) })).filter((l) => l.label && l.href),
         }))
       : fb.columns,
+    techTicker: techTicker.length ? techTicker : fb.techTicker,
   };
 }
 

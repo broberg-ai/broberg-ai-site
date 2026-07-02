@@ -139,6 +139,7 @@ export interface FooterColumn {
 export interface FooterData {
   tagline: string;
   columns: FooterColumn[];
+  techTicker: string[];
 }
 
 export type SectionData =
