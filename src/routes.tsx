@@ -31,6 +31,7 @@ import {
   loadLatestNewsPerCategory,
   loadRandomNews,
   loadFooter,
+  loadGlobals,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
@@ -119,6 +120,10 @@ export async function renderHome(locale: Locale): Promise<string> {
   const isEn = locale === "en";
   const seg = SOLUTIONS_SEGMENT[locale];
   const universetHref = isEn ? "/en/universe" : "/universet";
+  const globalsDoc = await loadGlobals(locale);
+  const globalsRef: CmsRef | undefined = globalsDoc ? { collection: "globals", slug: String(globalsDoc.slug), locale } : undefined;
+  const globalsData = (globalsDoc?.data ?? {}) as Record<string, unknown>;
+  const bookLabel = (typeof globalsData.bookingCtaLabel === "string" && globalsData.bookingCtaLabel) || (isEn ? "Book a meeting" : "Book et møde");
 
   const solutions = await loadSolutions(locale);
   const randomNews = await loadRandomNews(locale, 3);
@@ -196,7 +201,7 @@ export async function renderHome(locale: Locale): Promise<string> {
             )}
             <div class="cta-row">
               <a class="btn" href="#kontakt" data-testid="landing-cta-primary">
-                {isEn ? "Book a meeting" : "Book et møde"} <span class="ar">→</span>
+                <span {...cmsAttrs(globalsRef, "bookingCtaLabel")}>{bookLabel}</span> <span class="ar">→</span>
               </a>
               <a class="btn btn-ghost" href={universetHref} data-testid="landing-cta-secondary">
                 {isEn ? "See how we build it" : "Se hvordan vi bygger det"} <span class="ar">→</span>
@@ -563,8 +568,12 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
   const altSeg = SOLUTIONS_SEGMENT[locale === "en" ? "da" : "en"];
   const secondaryCta = SOLUTION_SECONDARY_CTA[slug]?.[locale] ?? { label: locale === "en" ? "Book a meeting" : "Book et møde", href: "#kontakt" };
   const solutionRef: CmsRef = { collection: "solutions", slug: String(doc.slug), locale };
+  const globalsDoc = await loadGlobals(locale);
+  const globalsRef: CmsRef | undefined = globalsDoc ? { collection: "globals", slug: String(globalsDoc.slug), locale } : undefined;
+  const globalsData = (globalsDoc?.data ?? {}) as Record<string, unknown>;
+  const bookLabel = (typeof globalsData.bookingCtaLabel === "string" && globalsData.bookingCtaLabel) || (locale === "en" ? "Book a meeting" : "Book et møde");
 
-  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} />, {
+  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} bookLabel={bookLabel} globalsRef={globalsRef} />, {
     title: `${data.name} — broberg.ai`,
     description: data.lead,
     locale,

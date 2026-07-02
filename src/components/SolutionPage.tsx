@@ -68,13 +68,16 @@ export function SolutionPage({
   locale,
   secondaryCta,
   cmsRef,
+  bookLabel,
+  globalsRef,
 }: {
   data: SolutionData;
   locale: Locale;
   secondaryCta: { label: string; href: string };
   cmsRef?: CmsRef;
+  bookLabel: string;
+  globalsRef?: CmsRef;
 }) {
-  const bookLabel = locale === "en" ? "Book a meeting" : "Book et møde";
   // Contact lives on the homepage, not on this page — link there, not to a
   // local #kontakt anchor that doesn't exist here.
   const kontaktHref = `${locale === "en" ? "/en" : "/"}#kontakt`;
@@ -90,13 +93,13 @@ export function SolutionPage({
         <div class="wrap plat-detail-head" style="padding-top:150px">
           <div>
             <div class="eyebrow">
-              {locale === "en" ? "Solutions" : "Løsninger"} · {data.name}
+              {locale === "en" ? "Solutions" : "Løsninger"} · <span {...cmsAttrs(cmsRef, "name")}>{data.name}</span>
             </div>
             <h2 style="margin-bottom:16px" dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
             <p class="lead" {...cmsAttrs(cmsRef, "lead")}>{data.lead}</p>
             <div class="cta-row">
               <a class="btn" href={kontaktHref} data-testid="solution-cta-primary">
-                {bookLabel} <span class="ar">→</span>
+                <span {...cmsAttrs(globalsRef, "bookingCtaLabel")}>{bookLabel}</span> <span class="ar">→</span>
               </a>
               <a class="btn btn-ghost" href={secondaryCta.href} data-testid="solution-cta-secondary">
                 {secondaryCta.label} <span class="ar">→</span>

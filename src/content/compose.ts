@@ -420,6 +420,14 @@ export async function loadLanding(locale: Locale): Promise<StoredDoc | null> {
   return doc;
 }
 
+// The site-wide globals doc (footer/nav/about/reused CTA labels) — used
+// wherever a page needs a CmsRef for a globals-backed field (e.g. F157
+// inline-edit on the repeated "Book et møde" button), not just loadFooter's
+// own internal read.
+export async function loadGlobals(locale: Locale): Promise<StoredDoc | null> {
+  return forLocale(await list("globals"), locale)[0] ?? null;
+}
+
 // Latest published post per category (F156 /tak "did you see these news?"
 // strip) — one per category, newest first per category, categories with zero
 // posts in this locale are simply skipped (works with 0..N categories filled,
