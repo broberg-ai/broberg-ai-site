@@ -89,7 +89,7 @@ function mobileNav() {
 // already in the DOM — no client-side templating) on a timer, and via the dot
 // nav. The visible slide + rotation order are decided server-side per request
 // (compose.ts shuffles), so this only ever walks forward through what SSR sent.
-const HERO_ROTATE_MS = 6500;
+const HERO_ROTATE_MS = 8000;
 function heroSlides() {
   const root = document.querySelector<HTMLElement>('[data-testid="hero-slideshow"]');
   const slides = Array.from(root?.querySelectorAll<HTMLElement>(".hero-slide") ?? []);
