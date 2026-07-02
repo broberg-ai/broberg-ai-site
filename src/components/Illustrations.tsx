@@ -602,6 +602,56 @@ const xrtPlatform = wrap(
   </g>,
 );
 
+// Four businesses (klinik, uddannelse, webshop, Qi Gong) ringed around one
+// unified platform core — and Eir, the AI chat assistant, reading from that
+// SAME core on its own orange line. Nails: fire forretninger, én platform,
+// og en AI-assistent grundet i det hele.
+const sanneAndersen = wrap(
+  <g>
+    {/* ring links from the four businesses to the core */}
+    <g stroke="color-mix(in srgb,var(--blue) 26%,transparent)" stroke-width="1.4">
+      <line x1="180" y1="150" x2="180" y2="78" />
+      <line x1="180" y1="150" x2="256" y2="150" />
+      <line x1="180" y1="150" x2="180" y2="222" />
+      <line x1="180" y1="150" x2="104" y2="150" />
+    </g>
+    {/* klinik — cross in a circle */}
+    <g transform="translate(180 62)">
+      <circle class="node" r="16" fill="rgba(52,211,153,.14)" stroke="#34d399" stroke-width="1.6" />
+      <path d="M0 -7 V7 M-7 0 H7" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+    </g>
+    {/* webshop — bag */}
+    <g transform="translate(272 150)">
+      <circle class="node" r="16" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.6" style="animation-delay:.4s" />
+      <path d="M-7 -3 h14 l2 11 a2 2 0 0 1 -2 2 h-14 a2 2 0 0 1 -2 -2 Z" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linejoin="round" />
+      <path d="M-4 -3 a4 4 0 0 1 8 0" fill="none" stroke="var(--blue)" stroke-width="1.4" />
+    </g>
+    {/* Qi Gong — flowing circular motion */}
+    <g transform="translate(180 238)">
+      <circle class="node" r="16" fill="rgba(167,139,250,.14)" stroke="#a78bfa" stroke-width="1.6" style="animation-delay:.8s" />
+      <path d="M-7 2 a7 7 0 1 1 5 5" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" />
+      <path d="M-4 9 l-3 -2 l1 -4" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+    {/* uddannelse — book */}
+    <g transform="translate(88 150)">
+      <circle class="node" r="16" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.6" style="animation-delay:1.2s" />
+      <path d="M0 -6 V8 M0 -6 q-9 -4 -9 2 v8 q9 -4 9 2 q0 -6 9 -2 v-8 q0 -6 -9 -2" fill="none" stroke="var(--blue)" stroke-width="1.3" stroke-linejoin="round" />
+    </g>
+    {/* platform core */}
+    <circle class="pulse-core" cx="180" cy="150" r="26" fill="color-mix(in srgb,var(--blue) 16%,transparent)" stroke="var(--blue)" stroke-width="1.8" />
+    <circle cx="180" cy="150" r="4.5" fill="var(--blue-light)" />
+    {/* Eir — AI assistant reading from the same core */}
+    <path class="illu-flow" d="M204 130 Q234 110 246 92" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" fill="none" />
+    <g transform="translate(260 76)">
+      <rect x="-22" y="-15" width="44" height="30" rx="10" fill="rgba(243,82,44,.12)" stroke="#F3522C" stroke-width="1.6" />
+      <path d="M-10 15 v10 l10 -10 Z" fill="rgba(243,82,44,.12)" stroke="#F3522C" stroke-width="1.6" />
+      <circle cx="-8" cy="0" r="2.4" fill="#F3522C" />
+      <circle cx="0" cy="0" r="2.4" fill="#F3522C" />
+      <circle cx="8" cy="0" r="2.4" fill="#F3522C" />
+    </g>
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -618,6 +668,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   "fysio-dk-sport": fysioDkSport,
   "fysio-dk-aalborg": fysioDkAalborg,
   "x-rt-platform": xrtPlatform,
+  "sanne-andersen": sanneAndersen,
 };
 
 export function hasIllustration(k: string): boolean {
