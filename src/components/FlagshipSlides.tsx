@@ -677,7 +677,7 @@ const cms: FlagshipPage = {
   description:
     "Motoren bag hvert site i broberg.ai-universet — AI-native, framework-agnostisk, statisk-først, med 64 integrerede værktøjer du kan styre med din stemme.",
   cta: [
-    { label: "Besøg webhouse.app", href: "https://webhouse.app" },
+    { label: "Udforsk CMS", href: "https://webhouse.app" },
     { label: "Læs docs", href: "https://docs.webhouse.app" },
   ],
   slides: [
@@ -693,7 +693,7 @@ const cms: FlagshipPage = {
         {
           k: "table",
           label: "Ikke som et gammelt CMS",
-          cols: ["Egenskab", "WordPress", { full: "@webhouse/cms", short: "cms" }],
+          cols: ["Egenskab", "WordPress", "CMS"],
           rows: [
             ["Loadtid (mobil)", "3–6 sek", "0,4–0,8 sek"],
             ["Lighthouse", "55–70", "95–100"],
@@ -709,7 +709,7 @@ const cms: FlagshipPage = {
       ],
     },
     {
-      eyebrow: "@webhouse/cms · chat platform",
+      eyebrow: "CMS · chat platform",
       heading: "64 værktøjer. Ét sprog: dit eget.",
       blocks: [
         {
