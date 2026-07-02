@@ -1008,7 +1008,7 @@ footer {
   display: flex;
   width: max-content;
   white-space: nowrap;
-  animation: foot-ticker-scroll 34s linear infinite;
+  animation: foot-ticker-scroll 70s linear infinite;
 }
 .foot-ticker-item {
   display: inline-flex;
