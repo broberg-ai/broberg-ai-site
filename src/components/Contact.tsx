@@ -3,6 +3,8 @@
    Solution-type is a custom pill selector (never a native <select>), synced
    to a hidden input the browser actually submits. */
 import type { Locale } from "@/config.ts";
+import type { CmsRef } from "@/content/types.ts";
+import { cmsAttrs } from "@/components/sections.tsx";
 
 export interface ContactCopy {
   ctaHeadingHtml: string;
@@ -17,7 +19,7 @@ const SOLUTION_TYPES: { value: string; da: string; en: string }[] = [
   { value: "unsure", da: "Ved ikke endnu", en: "Not sure yet" },
 ];
 
-export function Contact({ data, locale }: { data: ContactCopy; locale: Locale }) {
+export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: Locale; cmsRef?: CmsRef }) {
   const isEn = locale === "en";
   return (
     <section id="kontakt">
@@ -27,7 +29,7 @@ export function Contact({ data, locale }: { data: ContactCopy; locale: Locale })
             {isEn ? "Contact" : "Kontakt"}
           </div>
           <h2 dangerouslySetInnerHTML={{ __html: data.ctaHeadingHtml }} />
-          <p class="lead" style="margin:18px auto 30px">
+          <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "ctaLead")}>
             {data.ctaLead}
           </p>
           <form

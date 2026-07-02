@@ -59,6 +59,7 @@ export interface Platform {
   logoKey: string;
   blurb: string;
   status: string;
+  cmsRef?: CmsRef;
 }
 export interface PlatformsData {
   eyebrow: string;
@@ -101,6 +102,7 @@ export interface PostCard {
   slug: string;
   category: string;
   href: string;
+  cmsRef?: CmsRef;
 }
 export interface InsightsData {
   eyebrow: string;
@@ -159,11 +161,11 @@ export interface CmsRef {
 
 export type SectionData =
   | { kind: "hero"; data: HeroData; cmsRef?: CmsRef }
-  | { kind: "universe"; data: UniverseData }
-  | { kind: "platforms"; data: PlatformsData }
-  | { kind: "cases"; data: CasesData }
-  | { kind: "method"; data: MethodData }
-  | { kind: "insights"; data: InsightsData }
+  | { kind: "universe"; data: UniverseData; cmsRef?: CmsRef }
+  | { kind: "platforms"; data: PlatformsData; cmsRef?: CmsRef }
+  | { kind: "cases"; data: CasesData; cmsRef?: CmsRef }
+  | { kind: "method"; data: MethodData; cmsRef?: CmsRef }
+  | { kind: "insights"; data: InsightsData; cmsRef?: CmsRef }
   | { kind: "about"; data: AboutData; cmsRef?: CmsRef }
   | { kind: "contact"; data: ContactData; cmsRef?: CmsRef };
 

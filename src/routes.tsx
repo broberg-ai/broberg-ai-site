@@ -39,7 +39,8 @@ import { Illustration, hasIllustration, pickNewsIllustration } from "@/component
 import { Icon } from "@/components/Icons.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
-import { Cases, Insights, About } from "@/components/sections.tsx";
+import { Cases, Insights, About, cmsAttrs } from "@/components/sections.tsx";
+import type { CmsRef } from "@/content/types.ts";
 import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
 import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
@@ -114,6 +115,7 @@ export async function renderHome(locale: Locale): Promise<string> {
   const landing = await loadLanding(locale);
   if (!landing) return renderUniverset(locale);
   const d = landing.data as Record<string, any>;
+  const landingRef: CmsRef = { collection: "landing", slug: String(landing.slug), locale };
   const isEn = locale === "en";
   const seg = SOLUTIONS_SEGMENT[locale];
   const universetHref = isEn ? "/en/universe" : "/universet";
@@ -167,7 +169,7 @@ export async function renderHome(locale: Locale): Promise<string> {
       <section class="hero" id="top">
         <div class="wrap hero-grid">
           <div>
-            <div class="eyebrow">{d.heroEyebrow}</div>
+            <div class="eyebrow" {...cmsAttrs(landingRef, "heroEyebrow")}>{d.heroEyebrow}</div>
             <div class="hero-slide-stack" data-testid="hero-slideshow">
               {heroSlides.map((s, i) => (
                 <div class={`hero-slide${i === 0 ? " active" : ""}`} data-testid={`hero-slide-${i}`} key={i}>
@@ -234,7 +236,7 @@ export async function renderHome(locale: Locale): Promise<string> {
 
       <section style="background:var(--dark2)">
         <div class="wrap" style="max-width:720px">
-          <h2 style="font-size:clamp(26px,3.4vw,38px)">{d.problemHeading}</h2>
+          <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsAttrs(landingRef, "problemHeading")}>{d.problemHeading}</h2>
           <div class="divider" />
           {(d.problemP as string[]).map((p, i) => (
             <p class="lead" key={i} style={`max-width:none;${i < d.problemP.length - 1 ? "margin-bottom:16px" : ""}`}>
@@ -243,7 +245,7 @@ export async function renderHome(locale: Locale): Promise<string> {
           ))}
           {d.problemCallout ? (
             <div class="card callout" style="margin-top:24px">
-              <p style="color:var(--light);font-weight:600;font-size:15px">{d.problemCallout}</p>
+              <p style="color:var(--light);font-weight:600;font-size:15px" {...cmsAttrs(landingRef, "problemCallout")}>{d.problemCallout}</p>
             </div>
           ) : null}
         </div>
@@ -278,7 +280,7 @@ export async function renderHome(locale: Locale): Promise<string> {
         <div class="wrap">
           <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto">
             <div class="eyebrow" style="justify-content:center">{isEn ? "How it works" : "Sådan foregår det"}</div>
-            <h2>{d.stepsHeading}</h2>
+            <h2 {...cmsAttrs(landingRef, "stepsHeading")}>{d.stepsHeading}</h2>
           </div>
           <div class="steps3">
             {(d.steps as [string, string][]).map(([title, desc], i) => (
@@ -297,8 +299,8 @@ export async function renderHome(locale: Locale): Promise<string> {
       <section>
         <div class="wrap" style="max-width:680px;text-align:center">
           <div class="eyebrow" style="justify-content:center">{isEn ? "Why us" : "Hvorfor os"}</div>
-          <h2>{d.whyUsHeading}</h2>
-          <p class="lead" style="max-width:none;margin:18px auto 30px">{d.whyUsBody}</p>
+          <h2 {...cmsAttrs(landingRef, "whyUsHeading")}>{d.whyUsHeading}</h2>
+          <p class="lead" style="max-width:none;margin:18px auto 30px" {...cmsAttrs(landingRef, "whyUsBody")}>{d.whyUsBody}</p>
           <a class="btn btn-ghost" href={universetHref} data-testid="landing-whyus-cta">
             {isEn ? "See the whole machine" : "Se hele maskinen"} <span class="ar">→</span>
           </a>
@@ -322,7 +324,7 @@ export async function renderHome(locale: Locale): Promise<string> {
         />
       ) : null}
 
-      <Contact data={{ ctaHeadingHtml: d.ctaHeadingHtml, ctaLead: d.ctaLead }} locale={locale} />
+      <Contact data={{ ctaHeadingHtml: d.ctaHeadingHtml, ctaLead: d.ctaLead }} locale={locale} cmsRef={landingRef} />
     </>,
     {
       title: isEn ? "broberg.ai — AI-native websites, webshops & platforms" : "broberg.ai — AI-native websites, webshops & platforme",
@@ -445,6 +447,7 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   const name = str(d.name) || slug;
   const status = str(d.status) || "live";
   const tagline = str(d.tagline);
+  const platformRef: CmsRef = { collection: "platforms", slug: String(doc.slug), locale };
   const bodyHtml = richtextBlock(str(d.body));
   const features = Array.isArray(d.features) ? (d.features as string[]) : [];
   const links = Array.isArray(d.links) ? (d.links as { label: string; url: string }[]) : [];
@@ -458,8 +461,8 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
               <Logo k={slug.toLowerCase()} />
             </div>
             <div class="eyebrow">Flagskib · {status}</div>
-            <h2>{name}</h2>
-            {tagline ? <p class="lead">{tagline}</p> : null}
+            <h2 {...cmsAttrs(platformRef, "name")}>{name}</h2>
+            {tagline ? <p class="lead" {...cmsAttrs(platformRef, "tagline")}>{tagline}</p> : null}
           </div>
           {hasIllustration(slug) ? (
             <div class="plat-illu">
@@ -523,9 +526,9 @@ export async function renderSolutions(locale: Locale): Promise<string> {
           {items.map((s) => (
             <a class="card" href={`/${seg}/${s.slug}`} key={s.slug} data-testid={`solution-card-${s.slug}`}>
               <div class="plat-h">
-                <div class="nm">{s.name}</div>
+                <div class="nm" {...cmsAttrs(s.cmsRef, "name")}>{s.name}</div>
               </div>
-              <p>{s.blurb}</p>
+              <p {...cmsAttrs(s.cmsRef, "blurb")}>{s.blurb}</p>
             </a>
           ))}
         </div>
@@ -559,8 +562,9 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
   const seg = SOLUTIONS_SEGMENT[locale];
   const altSeg = SOLUTIONS_SEGMENT[locale === "en" ? "da" : "en"];
   const secondaryCta = SOLUTION_SECONDARY_CTA[slug]?.[locale] ?? { label: locale === "en" ? "Book a meeting" : "Book et møde", href: "#kontakt" };
+  const solutionRef: CmsRef = { collection: "solutions", slug: String(doc.slug), locale };
 
-  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} />, {
+  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} />, {
     title: `${data.name} — broberg.ai`,
     description: data.lead,
     locale,
@@ -692,6 +696,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
           <div class="grid g3">
             {posts.map((p) => {
               const pd = (p.data ?? {}) as Record<string, unknown>;
+              const postRef: CmsRef = { collection: "posts", slug: String(p.slug), locale };
               return (
                 <a
                   class="blogcard"
@@ -704,8 +709,8 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
                   </div>
                   <div class="blogbody">
                     <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
-                    <h3>{str(pd.title)}</h3>
-                    <p>{str(pd.excerpt)}</p>
+                    <h3 {...cmsAttrs(postRef, "title")}>{str(pd.title)}</h3>
+                    <p {...cmsAttrs(postRef, "excerpt")}>{str(pd.excerpt)}</p>
                   </div>
                 </a>
               );
@@ -748,8 +753,8 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
               <div class="blogthumb">{h.illustrationKey ? <Illustration k={h.illustrationKey} /> : null}</div>
               <div class="blogbody">
                 <span class="nyt">{h.meta}</span>
-                <h3>{h.title}</h3>
-                <p>{h.excerpt}</p>
+                <h3 {...cmsAttrs(h.cmsRef, h.titleField)}>{h.title}</h3>
+                <p {...cmsAttrs(h.cmsRef, h.excerptField)}>{h.excerpt}</p>
               </div>
             </a>
           ))}

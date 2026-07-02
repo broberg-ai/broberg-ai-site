@@ -25,7 +25,7 @@ import { Illustration, pickNewsIllustration } from "@/components/Illustrations.t
 // property it was mapped to — that's the key @broberg/cms-inline-edit PATCHes.
 // Only rendered when cmsRef is present (i.e. the section came from a real cms
 // doc, not the fallback copy) — never guess a doc reference.
-function cmsAttrs(cmsRef: CmsRef | undefined, field: string): Record<string, string> {
+export function cmsAttrs(cmsRef: CmsRef | undefined, field: string): Record<string, string> {
   if (!cmsRef) return {};
   return {
     "data-cms-collection": cmsRef.collection,
@@ -51,13 +51,13 @@ function CtaButton({ cta }: { cta: Cta }) {
   );
 }
 
-function SecHead({ eyebrow, headingHtml, lead }: { eyebrow: string; headingHtml: string; lead: string }) {
+function SecHead({ eyebrow, headingHtml, lead, cmsRef }: { eyebrow: string; headingHtml: string; lead: string; cmsRef?: CmsRef }) {
   return (
     <div class="sec-head">
-      <div class="eyebrow">{eyebrow}</div>
+      <div class="eyebrow" {...cmsAttrs(cmsRef, "eyebrow")}>{eyebrow}</div>
       <h2 dangerouslySetInnerHTML={{ __html: headingHtml }} />
       <div class="divider" />
-      <p class="lead">{lead}</p>
+      <p class="lead" {...cmsAttrs(cmsRef, "subheading")}>{lead}</p>
     </div>
   );
 }
@@ -91,11 +91,11 @@ export function Hero({ data, cmsRef }: { data: HeroData; cmsRef?: CmsRef }) {
   );
 }
 
-export function Universe({ data }: { data: UniverseData }) {
+export function Universe({ data, cmsRef }: { data: UniverseData; cmsRef?: CmsRef }) {
   return (
     <section id="universet">
       <div class="wrap reveal">
-        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} />
         <div class="universe-grid">
           <UniverseDiagram infra={data.infra} customers={data.customers} />
           <div>
@@ -113,11 +113,11 @@ export function Universe({ data }: { data: UniverseData }) {
   );
 }
 
-export function Platforms({ data }: { data: PlatformsData }) {
+export function Platforms({ data, cmsRef }: { data: PlatformsData; cmsRef?: CmsRef }) {
   return (
     <section id="platforme" style="background:var(--dark2)">
       <div class="wrap reveal">
-        <SecHead eyebrow={data.eyebrow} headingHtml={data.heading} lead={data.lead} />
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.heading} lead={data.lead} cmsRef={cmsRef} />
         <div class="grid g4">
           {data.items.map((p) => (
             <a class="card" href={`${data.pathPrefix ?? "/flagskibe"}/${p.logoKey}`} key={p.name} data-testid={`flagship-card-${p.logoKey}`}>
@@ -125,7 +125,7 @@ export function Platforms({ data }: { data: PlatformsData }) {
                 <div class="logot">
                   <Logo k={p.logoKey} />
                 </div>
-                <div class="nm">{p.name}</div>
+                <div class="nm" {...cmsAttrs(p.cmsRef, "name")}>{p.name}</div>
                 {/* status="live" → green LIVE; anything else (e.g. ideation) → a
                     discreet grey "Snart" so a not-yet-live node makes no false claim. */}
                 {p.status === "live" ? (
@@ -134,7 +134,7 @@ export function Platforms({ data }: { data: PlatformsData }) {
                   <span class="badge badge-soon">Snart</span>
                 )}
               </div>
-              <p>{p.blurb}</p>
+              <p {...cmsAttrs(p.cmsRef, "blurb")}>{p.blurb}</p>
             </a>
           ))}
         </div>
@@ -146,11 +146,11 @@ export function Platforms({ data }: { data: PlatformsData }) {
   );
 }
 
-export function Cases({ data }: { data: CasesData }) {
+export function Cases({ data, cmsRef }: { data: CasesData; cmsRef?: CmsRef }) {
   return (
     <section id="cases">
       <div class="wrap reveal">
-        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} />
         <div class="grid g2">
           {data.items.map((c) => {
             const inner = (
@@ -189,11 +189,11 @@ export function Cases({ data }: { data: CasesData }) {
   );
 }
 
-export function Method({ data }: { data: MethodData }) {
+export function Method({ data, cmsRef }: { data: MethodData; cmsRef?: CmsRef }) {
   return (
     <section id="metoden" style="background:var(--dark2)">
       <div class="wrap reveal">
-        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} />
         <div class="flow">
           {data.steps.map((s, i) => (
             <>
@@ -214,11 +214,11 @@ export function Method({ data }: { data: MethodData }) {
   );
 }
 
-export function Insights({ data }: { data: InsightsData }) {
+export function Insights({ data, cmsRef }: { data: InsightsData; cmsRef?: CmsRef }) {
   return (
     <section id="indsigter">
       <div class="wrap reveal">
-        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} />
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} />
         <div class="grid g3">
           {data.posts.map((p) => (
             <a class="blogcard" key={p.slug} href={p.href} data-testid={`blog-${p.slug}`}>
@@ -227,8 +227,8 @@ export function Insights({ data }: { data: InsightsData }) {
               </div>
               <div class="blogbody">
                 <span class="nyt">{p.tag}</span>
-                <h3>{p.title}</h3>
-                <p>{p.excerpt}</p>
+                <h3 {...cmsAttrs(p.cmsRef, "title")}>{p.title}</h3>
+                <p {...cmsAttrs(p.cmsRef, "excerpt")}>{p.excerpt}</p>
               </div>
             </a>
           ))}

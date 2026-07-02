@@ -24,6 +24,7 @@ import type {
   PostCard,
   FooterData,
   TechTickerItem,
+  CmsRef,
 } from "@/content/types.ts";
 import { homeFallback } from "@/data/fallback.ts";
 import { richtextInline } from "@/content/richtext.ts";
@@ -78,6 +79,7 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
       logoKey: String(p.slug).toLowerCase(),
       blurb: str(d.blurb) || str(d.tagline),
       status: str(d.status) || "live",
+      cmsRef: { collection: "platforms", slug: String(p.slug), locale },
     };
   });
 
@@ -181,6 +183,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           customers: ctx.customers.length ? ctx.customers : (fbU?.customers ?? []),
           tiers: tiers.length ? tiers : (fbU?.tiers ?? []),
         },
+        cmsRef,
       };
     }
     case "platforms": {
@@ -196,6 +199,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           allLink: cta(d.ctaPrimary, d.ctaPrimaryUrl, "platforme-all-link") ??
             fbP?.allLink ?? { label: "Se alle flagskibe", href: `/${flagshipsSegment(ctx.locale)}`, testid: "platforme-all-link" },
         },
+        cmsRef,
       };
     }
     case "cases": {
@@ -227,6 +231,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
             ghost: true,
           },
         },
+        cmsRef,
       };
     }
     case "method": {
@@ -244,6 +249,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           steps: steps.length ? steps : (fbM?.steps ?? []),
           cards: cards.length ? cards : (fbM?.cards ?? []),
         },
+        cmsRef,
       };
     }
     case "insights": {
@@ -259,6 +265,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           title: str(pd.title),
           excerpt: str(pd.excerpt),
           href: withLocale(ctx.locale, `/indsigter/${slug}`),
+          cmsRef: { collection: "posts", slug, locale: ctx.locale },
         };
       });
       return {
@@ -269,6 +276,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           lead: str(d.subheading) || fbI?.lead || "",
           posts: posts.length ? posts : (fbI?.posts ?? []),
         },
+        cmsRef,
       };
     }
     case "about": {
@@ -352,6 +360,7 @@ export async function loadPlatforms(locale: Locale): Promise<Platform[]> {
         logoKey: str(d.name).toLowerCase(),
         blurb: str(d.blurb) || str(d.tagline),
         status: str(d.status) || "live",
+        cmsRef: { collection: "platforms", slug: String(p.slug), locale },
       };
     });
 }
@@ -364,6 +373,7 @@ export interface SolutionSummary {
   name: string;
   slug: string;
   blurb: string;
+  cmsRef?: CmsRef;
 }
 
 function stripLocalePrefix(slug: string, locale: Locale): string {
@@ -379,6 +389,7 @@ export async function loadSolutions(locale: Locale): Promise<SolutionSummary[]> 
       name: str(dataOf(p).name),
       slug: stripLocalePrefix(String(p.slug ?? ""), locale),
       blurb: str(dataOf(p).blurb),
+      cmsRef: { collection: "solutions", slug: String(p.slug ?? ""), locale },
     }));
 }
 
@@ -553,6 +564,7 @@ export async function loadRandomNews(locale: Locale, count: number): Promise<Pos
       title: str(pd.title),
       excerpt: str(pd.excerpt),
       href: withLocale(locale, `/${category}/${slug}`),
+      cmsRef: { collection: "posts", slug, locale },
     };
   });
 }
@@ -750,6 +762,12 @@ export interface TagHit {
   meta: string;
   slug: string;
   illustrationKey: string | null;
+  cmsRef?: CmsRef;
+  // Posts vs. platforms map "title"/"excerpt" to different raw cms field
+  // names ("name"/"blurb" for platforms) — carried explicitly so the shared
+  // card JSX can PATCH the right field regardless of hit type.
+  titleField: string;
+  excerptField: string;
 }
 
 // All published posts + flagship platforms (for the locale) carrying a tag
@@ -780,6 +798,9 @@ export async function loadPostsByTag(
         meta: str(pd.readTime) || (locale === "en" ? "Article" : "Artikel"),
         slug,
         illustrationKey: cat !== "cases" ? pickNewsIllustration(slug) : null,
+        cmsRef: { collection: "posts", slug, locale },
+        titleField: "title",
+        excerptField: "excerpt",
       };
     });
 
@@ -796,6 +817,9 @@ export async function loadPostsByTag(
         meta: locale === "en" ? "Flagship" : "Flagskib",
         slug,
         illustrationKey: hasIllustration(slug) ? slug : null,
+        cmsRef: { collection: "platforms", slug, locale },
+        titleField: "name",
+        excerptField: "blurb",
       };
     });
 

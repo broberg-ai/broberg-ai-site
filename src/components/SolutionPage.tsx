@@ -5,6 +5,8 @@
    component existed before this page type). */
 import { Icon } from "@/components/Icons.tsx";
 import type { Locale } from "@/config.ts";
+import type { CmsRef } from "@/content/types.ts";
+import { cmsAttrs } from "@/components/sections.tsx";
 
 export type ProofType = "website" | "webshop" | "platform";
 
@@ -65,10 +67,12 @@ export function SolutionPage({
   data,
   locale,
   secondaryCta,
+  cmsRef,
 }: {
   data: SolutionData;
   locale: Locale;
   secondaryCta: { label: string; href: string };
+  cmsRef?: CmsRef;
 }) {
   const bookLabel = locale === "en" ? "Book a meeting" : "Book et møde";
   // Contact lives on the homepage, not on this page — link there, not to a
@@ -89,7 +93,7 @@ export function SolutionPage({
               {locale === "en" ? "Solutions" : "Løsninger"} · {data.name}
             </div>
             <h2 style="margin-bottom:16px" dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
-            <p class="lead">{data.lead}</p>
+            <p class="lead" {...cmsAttrs(cmsRef, "lead")}>{data.lead}</p>
             <div class="cta-row">
               <a class="btn" href={kontaktHref} data-testid="solution-cta-primary">
                 {bookLabel} <span class="ar">→</span>
@@ -104,7 +108,7 @@ export function SolutionPage({
 
       <section style="background:var(--dark2)">
         <div class="wrap" style="max-width:720px">
-          <h2 style="font-size:clamp(26px,3.4vw,38px)">{data.problemHeading}</h2>
+          <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsAttrs(cmsRef, "problemHeading")}>{data.problemHeading}</h2>
           <div class="divider" />
           {data.problemP.map((p, i) => (
             <p class="lead" key={i} style={`max-width:none;${i < data.problemP.length - 1 ? "margin-bottom:16px" : ""}`}>
@@ -156,7 +160,7 @@ export function SolutionPage({
         <div class="wrap" style={data.proof.length > 1 ? "" : "max-width:760px"}>
           <div class="sec-head">
             <div class="eyebrow">{proofEyebrow}</div>
-            <h2>{data.proofHeading}</h2>
+            <h2 {...cmsAttrs(cmsRef, "proofHeading")}>{data.proofHeading}</h2>
           </div>
           <div class={data.proof.length > 1 ? "grid g2" : ""}>
             {data.proof.map((item) => (
@@ -174,11 +178,11 @@ export function SolutionPage({
       <section style="background:var(--dark2)">
         <div class="wrap">
           <div class="cta-final">
-            <div class="eyebrow" style="display:inline-flex">
+            <div class="eyebrow" style="display:inline-flex" {...cmsAttrs(cmsRef, "name")}>
               {data.name}
             </div>
             <h2 dangerouslySetInnerHTML={{ __html: data.ctaHeadingHtml }} />
-            <p class="lead" style="margin:18px auto 30px">
+            <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "ctaLead")}>
               {data.ctaLead || ctaSub}
             </p>
             <a class="btn" href={kontaktHref} data-testid="solution-cta-final">

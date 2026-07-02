@@ -9,15 +9,15 @@ export function RenderSection({ section }: { section: SectionData }) {
     case "hero":
       return <Hero data={section.data} cmsRef={section.cmsRef} />;
     case "universe":
-      return <Universe data={section.data} />;
+      return <Universe data={section.data} cmsRef={section.cmsRef} />;
     case "platforms":
-      return <Platforms data={section.data} />;
+      return <Platforms data={section.data} cmsRef={section.cmsRef} />;
     case "cases":
-      return <Cases data={section.data} />;
+      return <Cases data={section.data} cmsRef={section.cmsRef} />;
     case "method":
-      return <Method data={section.data} />;
+      return <Method data={section.data} cmsRef={section.cmsRef} />;
     case "insights":
-      return <Insights data={section.data} />;
+      return <Insights data={section.data} cmsRef={section.cmsRef} />;
     case "about":
       return <About data={section.data} cmsRef={section.cmsRef} />;
     case "contact":
