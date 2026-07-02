@@ -456,6 +456,67 @@ const docs = wrap(
   </g>,
 );
 
+// One codebase, four surfaces, updated in the same instant: a central core
+// (the shared engine) with four distinct device icons — desktop, PWA/browser,
+// iOS, Android — radiating out on dashed links that all pulse together (no
+// stagger, deliberately — the point is "at once", not "one after another").
+// Nails: én kodebase, fire flader, samme øjeblik.
+const FDS_SURFACES = [
+  { cx: 180, cy: 46, kind: "desktop" as const },
+  { cx: 292, cy: 140, kind: "pwa" as const },
+  { cx: 180, cy: 234, kind: "ios" as const },
+  { cx: 68, cy: 140, kind: "android" as const },
+];
+const fysioDkSport = wrap(
+  <g>
+    {/* hub → surface links, all pulsing in sync (same dur, no delay offset) */}
+    <g class="illu-flow" stroke="color-mix(in srgb,var(--blue) 40%,transparent)" stroke-width="1.6" stroke-dasharray="4 7" fill="none">
+      {FDS_SURFACES.map((s, i) => (
+        <line key={i} x1="180" y1="140" x2={s.cx} y2={s.cy} />
+      ))}
+    </g>
+    {/* four device icons */}
+    {FDS_SURFACES.map((s, i) => {
+      if (s.kind === "desktop") {
+        return (
+          <g key={i}>
+            <rect class="node" x={s.cx - 17} y={s.cy - 12} width="34" height="22" rx="3" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+            <line x1={s.cx} y1={s.cy + 10} x2={s.cx} y2={s.cy + 17} stroke="var(--blue)" stroke-width="1.6" />
+            <line x1={s.cx - 10} y1={s.cy + 17} x2={s.cx + 10} y2={s.cy + 17} stroke="var(--blue)" stroke-width="1.6" stroke-linecap="round" />
+          </g>
+        );
+      }
+      if (s.kind === "pwa") {
+        return (
+          <g key={i}>
+            <rect class="node" x={s.cx - 19} y={s.cy - 16} width="38" height="32" rx="6" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+            <line x1={s.cx - 19} y1={s.cy - 6} x2={s.cx + 19} y2={s.cy - 6} stroke="var(--blue)" stroke-width="1.2" />
+            <circle cx={s.cx - 13} cy={s.cy - 11} r="1.6" fill="#F3522C" />
+          </g>
+        );
+      }
+      if (s.kind === "ios") {
+        return (
+          <g key={i}>
+            <rect class="node" x={s.cx - 14} y={s.cy - 19} width="28" height="38" rx="8" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+            <line x1={s.cx - 8} y1={s.cy + 12} x2={s.cx + 8} y2={s.cy + 12} stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round" />
+          </g>
+        );
+      }
+      return (
+        <g key={i}>
+          <rect class="node" x={s.cx - 14} y={s.cy - 17} width="28" height="34" rx="7" fill="rgba(52,211,153,.14)" stroke="#34d399" stroke-width="1.6" />
+          <line x1={s.cx - 7} y1={s.cy - 22} x2={s.cx - 10} y2={s.cy - 27} stroke="#34d399" stroke-width="1.4" stroke-linecap="round" />
+          <line x1={s.cx + 7} y1={s.cy - 22} x2={s.cx + 10} y2={s.cy - 27} stroke="#34d399" stroke-width="1.4" stroke-linecap="round" />
+        </g>
+      );
+    })}
+    {/* shared core — one codebase */}
+    <circle class="pulse-core" cx="180" cy="140" r="28" fill="color-mix(in srgb,var(--blue) 14%,transparent)" stroke="var(--blue)" stroke-width="1.8" />
+    <path d="M172 132 l-7 8 l7 8 M188 132 l7 8 l-7 8" stroke="var(--blue-light)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -469,6 +530,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   hosting,
   consulting,
   docs,
+  "fysio-dk-sport": fysioDkSport,
 };
 
 export function hasIllustration(k: string): boolean {
