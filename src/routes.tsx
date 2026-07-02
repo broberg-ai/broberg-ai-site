@@ -44,7 +44,7 @@ import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
 import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
 import type { StoredDoc } from "@/content/store.ts";
-import { flagshipsSegment, withLocale } from "@/i18n.ts";
+import { flagshipsSegment, withLocale, formatDate } from "@/i18n.ts";
 
 const SOLUTIONS_SEGMENT: Record<Locale, string> = { da: "losninger", en: "solutions" };
 const SOLUTION_ICONS: Record<string, string> = {
@@ -579,7 +579,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   const title = str(d.title) || slug.replace(/-/g, " ");
   const content = str(d.content);
   const tags = arr(d.tags);
-  const meta = [str(d.author), str(d.date), str(d.readTime)].filter(Boolean).join(" · ");
+  const meta = [str(d.author), d.date ? formatDate(str(d.date), locale) : "", str(d.readTime)].filter(Boolean).join(" · ");
 
   // Resolve only the block-docs this post actually embeds.
   const slugs = extractBlockSlugs(content);

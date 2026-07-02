@@ -33,6 +33,18 @@ export function withLocale(locale: Locale, path: string): string {
 // URL-safe tag slug (kept lowercase Danish, no transliteration) — a leaf
 // utility so both content/compose.ts and components (FlagshipSlides.tsx)
 // can import it without a circular dependency between the two.
+// Full written date for article bylines, e.g. "2. juli 2026" / "July 2, 2026".
+// Falls back to the raw string if it isn't a parseable ISO date.
+export function formatDate(dateStr: string, locale: Locale): string {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "da-DK", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
 export function slugifyTag(tag: string): string {
   return tag
     .toLowerCase()
