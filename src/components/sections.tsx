@@ -22,7 +22,7 @@ import { Illustration, pickNewsIllustration } from "@/components/Illustrations.t
 
 // F157 Phase 1 — marks a plain-text element as inline-editable. `field` MUST
 // be the raw cms field name (e.g. "eyebrow"/"subheading"), not the view-model
-// property it was mapped to — that's the key @webhouse/cms-inline-edit PATCHes.
+// property it was mapped to — that's the key @broberg/cms-inline-edit PATCHes.
 // Only rendered when cmsRef is present (i.e. the section came from a real cms
 // doc, not the fallback copy) — never guess a doc reference.
 function cmsAttrs(cmsRef: CmsRef | undefined, field: string): Record<string, string> {

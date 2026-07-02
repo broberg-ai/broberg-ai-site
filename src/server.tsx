@@ -21,6 +21,7 @@ import {
   renderSolutions,
   renderSolutionDetail,
   renderThanks,
+  renderAdmin,
 } from "@/routes.tsx";
 import { buildSearchIndex } from "@/content/compose.ts";
 import { flagshipsSegment } from "@/i18n.ts";
@@ -213,6 +214,10 @@ app.get("/en/solutions/:slug", async (c) => {
 // redirects to. Same literal-before-dynamic ordering requirement as above.
 app.get("/tak", async () => html(await renderThanks("da")));
 app.get("/en/thanks", async () => html(await renderThanks("en")));
+
+// F157 — internal admin tools (Inline Editing toggle, more later). Not
+// locale-prefixed — a single internal tool page, not public content.
+app.get("/admin", async () => html(await renderAdmin()));
 
 // Blog: /:category/:slug (DA) and /en/:category/:slug (EN). A real post → its
 // page; an unknown slug → 404 (not a 200 stub).

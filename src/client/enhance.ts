@@ -3,12 +3,117 @@
    the mobile nav/dropdown toggles flagged in the build brief. */
 import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
-import { initInlineEdit } from "@broberg/cms-inline-edit";
+import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
-// F157.3 — no-op unless a ?cms_edit= token was minted from cms-admin's
-// "Redigér live" button. See docs/features/F157-inline-editing.md.
+// F157 — cms-admin connection shared by inline-edit + the /admin panel.
+const CMS = { cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" };
+
+// F157.3 — no-op unless the site's Site Settings toggle is on AND this
+// browser is connected. See docs/features/F157-inline-editing.md.
 function inlineEdit() {
-  initInlineEdit({ cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" });
+  initInlineEdit(CMS);
+}
+
+// F157 — /admin: the same connected session inline-edit uses, but rendered
+// as a real page instead of a floating badge. Not connected yet → bounce to
+// cms-admin's connect flow (same "log ind via webhouse.app" flow every
+// broberg.ai admin tool shares); connected → render the tool panel.
+function adminPanel() {
+  const root = document.getElementById("admin-root");
+  if (!root) return;
+
+  const token = getConnectedToken(CMS);
+  if (!token) {
+    window.location.href = buildConnectUrl(CMS, window.location.href);
+    return;
+  }
+
+  const claims = decodeJwtPayload(token);
+  const name = (claims?.name as string) || (claims?.email as string) || "ukendt";
+
+  root.innerHTML = "";
+  root.style.cssText = "min-height:100vh;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;padding:48px 24px;";
+
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "max-width:480px;margin:0 auto;";
+
+  const heading = document.createElement("div");
+  heading.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;";
+  heading.innerHTML = `<h1 style="font-size:20px;margin:0;">broberg.ai — Admin</h1>`;
+  const logout = document.createElement("button");
+  logout.type = "button";
+  logout.textContent = "Log ud";
+  logout.style.cssText = "background:none;border:1px solid #2a2a2a;color:#8a8a8a;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;";
+  logout.addEventListener("click", () => {
+    disconnect(CMS);
+    window.location.reload();
+  });
+  heading.appendChild(logout);
+  wrap.appendChild(heading);
+
+  const who = document.createElement("p");
+  who.textContent = `Logget ind som ${name}`;
+  who.style.cssText = "color:#8a8a8a;font-size:13px;margin:0 0 24px;";
+  wrap.appendChild(who);
+
+  const card = document.createElement("div");
+  card.style.cssText = "background:#161616;border:1px solid #2a2a2a;border-radius:10px;padding:20px;";
+
+  const row = document.createElement("div");
+  row.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:16px;";
+  const label = document.createElement("div");
+  label.innerHTML = `<p style="font-size:14px;font-weight:500;margin:0;">Inline editing</p><p style="font-size:12px;color:#8a8a8a;margin:4px 0 0;">Klik-til-redigér direkte på sitet.</p>`;
+  row.appendChild(label);
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.setAttribute("data-testid", "admin-inline-edit-toggle");
+  toggle.style.cssText = "flex-shrink:0;width:40px;height:22px;border-radius:11px;border:none;position:relative;cursor:pointer;transition:background 150ms;";
+  const knob = document.createElement("div");
+  knob.style.cssText = "position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 150ms;box-shadow:0 1px 3px rgba(0,0,0,.3);";
+  toggle.appendChild(knob);
+  row.appendChild(toggle);
+  card.appendChild(row);
+  wrap.appendChild(card);
+  root.appendChild(wrap);
+
+  function paintToggle(enabled: boolean) {
+    toggle.style.background = enabled ? "#00b2ff" : "#2a2a2a";
+    knob.style.left = enabled ? "21px" : "3px";
+  }
+
+  fetch(`${CMS.cmsBaseUrl}/api/inline-edit/status?site=${CMS.siteId}`)
+    .then((r) => r.json())
+    .then((body: { enabled?: boolean }) => paintToggle(body.enabled === true))
+    .catch(() => paintToggle(false));
+
+  toggle.addEventListener("click", async () => {
+    const next = knob.style.left !== "21px";
+    toggle.disabled = true;
+    try {
+      const res = await fetch(`${CMS.cmsBaseUrl}/api/inline-edit/toggle`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: next }),
+      });
+      if (res.ok) {
+        const body = (await res.json()) as { enabled: boolean };
+        paintToggle(body.enabled);
+      }
+    } finally {
+      toggle.disabled = false;
+    }
+  });
+}
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+  } catch {
+    return null;
+  }
 }
 
 function smoothScroll() {
@@ -316,3 +421,4 @@ safe(faqAccordion);
 safe(mountTurnstile);
 safe(contactForm);
 safe(inlineEdit);
+safe(adminPanel);

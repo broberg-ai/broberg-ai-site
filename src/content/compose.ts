@@ -592,7 +592,10 @@ const FOOTER_FALLBACK: Record<Locale, Omit<FooterData, "techTicker"> & { techTic
       },
       {
         heading: "Kontakt",
-        links: [{ label: "Kontakt os", href: "/#kontakt" }],
+        links: [
+          { label: "Kontakt os", href: "/#kontakt" },
+          { label: "Admin", href: "/admin" },
+        ],
       },
     ],
     techTicker: [
@@ -633,7 +636,10 @@ const FOOTER_FALLBACK: Record<Locale, Omit<FooterData, "techTicker"> & { techTic
       },
       {
         heading: "Get in touch",
-        links: [{ label: "Contact us", href: "/en#kontakt" }],
+        links: [
+          { label: "Contact us", href: "/en#kontakt" },
+          { label: "Admin", href: "/admin" },
+        ],
       },
     ],
     techTicker: [

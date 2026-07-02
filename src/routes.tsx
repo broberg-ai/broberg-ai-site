@@ -70,6 +70,23 @@ async function page(
   );
 }
 
+// F157 — internal admin tools (Inline Editing toggle today, more later —
+// same login bounce as sanneandersen.dk's own /admin). No Nav/Footer chrome;
+// enhance.ts's adminPanel() takes over #admin-root client-side: redirects to
+// the cms-admin connect flow if not yet connected, else renders the panel.
+export async function renderAdmin(): Promise<string> {
+  return renderPage(
+    <div
+      id="admin-root"
+      style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;"
+    >
+      <p style="color:#8a8a8a;font-size:14px;">Indlæser…</p>
+    </div>,
+    { title: "Admin — broberg.ai", description: "", locale: "da" },
+    resolveAssets(),
+  );
+}
+
 // "Sådan bygger vi det" (F156.4) — the ORIGINAL homepage content (universe
 // diagram, all 12 flagship cards, SDLC method), relocated unchanged from `/`
 // to `/universet` (DA) / `/en/universe` (EN) when the new sales landing
