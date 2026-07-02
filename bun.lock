@@ -5,6 +5,7 @@
     "": {
       "name": "broberg-ai-site",
       "dependencies": {
+        "@broberg/cms-inline-edit": "^0.4.1",
         "@broberg/forms-turnstile": "^0.1.0",
         "hono": "^4.6.14",
         "marked": "^18.0.5",
@@ -21,6 +22,8 @@
     },
   },
   "packages": {
+    "@broberg/cms-inline-edit": ["@broberg/cms-inline-edit@0.4.1", "", {}, "sha512-TdwURlksbOXmvG9+bDEOC+hAfV+g/99QFHKTpv1LybpC/gnWScFOzjXxx2jDBh9LJhyx5nTiAOixrs2C2OSoFg=="],
+
     "@broberg/forms-turnstile": ["@broberg/forms-turnstile@0.1.0", "", { "peerDependencies": { "hono": ">=4", "preact": ">=10.0.0" }, "optionalPeers": ["hono", "preact"] }, "sha512-6E3kS6MzGE+Q0ry8LWr6ZYeCAUyiGJjrBv3xpHrP6abHldc0uZdVJf31t7W95aO51S3PP6d6DStRXonLmS5ZJg=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.12", "", { "os": "aix", "cpu": "ppc64" }, "sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA=="],

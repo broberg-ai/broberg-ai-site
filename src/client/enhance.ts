@@ -3,17 +3,13 @@
    the mobile nav/dropdown toggles flagged in the build brief. */
 import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
+import { initInlineEdit } from "@broberg/cms-inline-edit";
 
-// F157.3 — TODO once @webhouse/cms-inline-edit is published to npm (blocked
-// on a one-time npmjs.com trusted-publisher setup, see
-// docs/features/F157-inline-editing.md): add the dependency, then
-//   import { initInlineEdit } from "@webhouse/cms-inline-edit";
-//   function inlineEdit() {
-//     initInlineEdit({ cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" });
-//   }
-//   safe(inlineEdit);
-// The data-cms-collection/data-cms-slug/data-cms-field attributes are already
-// live on Hero/About/Contact (inert until this activates).
+// F157.3 — no-op unless a ?cms_edit= token was minted from cms-admin's
+// "Redigér live" button. See docs/features/F157-inline-editing.md.
+function inlineEdit() {
+  initInlineEdit({ cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" });
+}
 
 function smoothScroll() {
   document.querySelectorAll<HTMLElement>("[data-scroll]").forEach((el) => {
@@ -319,3 +315,4 @@ safe(mountCmdk);
 safe(faqAccordion);
 safe(mountTurnstile);
 safe(contactForm);
+safe(inlineEdit);
