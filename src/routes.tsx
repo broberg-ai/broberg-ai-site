@@ -123,14 +123,49 @@ export async function renderHome(locale: Locale): Promise<string> {
     allLink: { label: isEn ? "See all cases" : "Se alle cases", href: withLocale(locale, "/cases"), testid: "landing-cases-all-link", ghost: true },
   };
 
+  // Rotating hero messages (landing.heroSlides array field). None authored
+  // yet -> single slide from heroHeadingHtml/heroLead, so nothing breaks
+  // pre-seed. Shuffled per request (loadRandomNews pattern) so reload = new order.
+  const heroSlidesRaw: Array<{ heading?: string; subheading?: string }> = Array.isArray(d.heroSlides) ? d.heroSlides : [];
+  const heroSlides = heroSlidesRaw.length
+    ? heroSlidesRaw.map((s) => ({ titleHtml: String(s.heading ?? ""), leadHtml: String(s.subheading ?? "") }))
+    : [{ titleHtml: String(d.heroHeadingHtml ?? ""), leadHtml: String(d.heroLead ?? "") }];
+  for (let i = heroSlides.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [heroSlides[i], heroSlides[j]] = [heroSlides[j]!, heroSlides[i]!];
+  }
+  const heroSlidesLabel = isEn ? "Messages" : "Budskaber";
+
   return await page(
     <>
       <section class="hero" id="top">
         <div class="wrap hero-grid">
           <div>
             <div class="eyebrow">{d.heroEyebrow}</div>
-            <h1 dangerouslySetInnerHTML={{ __html: d.heroHeadingHtml }} />
-            <p class="lead">{d.heroLead}</p>
+            <div class="hero-slide-stack" data-testid="hero-slideshow">
+              {heroSlides.map((s, i) => (
+                <div class={`hero-slide${i === 0 ? " active" : ""}`} data-testid={`hero-slide-${i}`} key={i}>
+                  <h1 dangerouslySetInnerHTML={{ __html: s.titleHtml }} />
+                  <p class="lead" dangerouslySetInnerHTML={{ __html: s.leadHtml }} />
+                </div>
+              ))}
+            </div>
+            {heroSlides.length > 1 && (
+              <div class="hero-dots" data-testid="hero-dots" role="tablist" aria-label={heroSlidesLabel}>
+                {heroSlides.map((_, i) => (
+                  <button
+                    type="button"
+                    class={`hero-dot${i === 0 ? " active" : ""}`}
+                    data-testid={`hero-dot-${i}`}
+                    data-index={i}
+                    role="tab"
+                    aria-selected={i === 0 ? "true" : "false"}
+                    aria-label={String(i + 1)}
+                    key={i}
+                  />
+                ))}
+              </div>
+            )}
             <div class="cta-row">
               <a class="btn" href="#kontakt" data-testid="landing-cta-primary">
                 {isEn ? "Book a meeting" : "Book et møde"} <span class="ar">→</span>

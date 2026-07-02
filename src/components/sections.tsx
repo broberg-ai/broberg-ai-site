@@ -48,36 +48,13 @@ function SecHead({ eyebrow, headingHtml, lead }: { eyebrow: string; headingHtml:
 }
 
 export function Hero({ data }: { data: HeroData }) {
-  const slides = data.slides.length ? data.slides : [{ titleHtml: data.titleHtml, leadHtml: data.leadHtml }];
   return (
     <section class="hero" id="top">
       <div class="wrap hero-grid">
         <div>
           <div class="eyebrow">{data.eyebrow}</div>
-          <div class="hero-slide-stack" data-testid="hero-slideshow">
-            {slides.map((s, i) => (
-              <div class={`hero-slide${i === 0 ? " active" : ""}`} data-testid={`hero-slide-${i}`} key={i}>
-                <h1 dangerouslySetInnerHTML={{ __html: s.titleHtml }} />
-                <p class="lead" dangerouslySetInnerHTML={{ __html: s.leadHtml }} />
-              </div>
-            ))}
-          </div>
-          {slides.length > 1 && (
-            <div class="hero-dots" data-testid="hero-dots" role="tablist" aria-label={data.slidesLabel}>
-              {slides.map((_, i) => (
-                <button
-                  type="button"
-                  class={`hero-dot${i === 0 ? " active" : ""}`}
-                  data-testid={`hero-dot-${i}`}
-                  data-index={i}
-                  role="tab"
-                  aria-selected={i === 0 ? "true" : "false"}
-                  aria-label={String(i + 1)}
-                  key={i}
-                />
-              ))}
-            </div>
-          )}
+          <h1 dangerouslySetInnerHTML={{ __html: data.titleHtml }} />
+          <p class="lead" dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
           <div class="cta-row">
             {data.ctas.map((c) => (
               <CtaButton key={c.testid} cta={c} />

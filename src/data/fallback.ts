@@ -18,8 +18,6 @@ export const homeFallback: PageModel = {
         ctas: [],
         stats: [],
         livePillLabel: "Live",
-        slides: [{ titleHtml: 'broberg<em class="o">.ai</em>', leadHtml: "Indholdet hentes fra cms." }],
-        slidesLabel: "Budskaber",
       },
     },
   ],

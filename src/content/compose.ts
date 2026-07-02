@@ -149,29 +149,13 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
       // Stat labels/targets/pre/suf authored in cms (section field or globals);
       // the live numbers come from our fleet aggregation at render time.
       const cmsStats = arr<Stat>(d.stats).length ? arr<Stat>(d.stats) : arr<Stat>(ctx.globals.stats);
-      const titleHtml = str(d.heading) || fbHero?.titleHtml || "";
-      const leadHtml = str(d.subheading) || fbHero?.leadHtml || "";
-      // Rotating messages (cms field heroSlides, array type) give the slideshow
-      // its headline/subhead pairs. None authored yet -> single slide built
-      // from the fields above, so nothing breaks pre-seed. Shuffled per request
-      // (same fresh-SSR pattern as loadRandomNews) so reload = new order.
-      const heroSlides = arr<Data>(d.heroSlides).map((b) => ({
-        titleHtml: str(b.heading),
-        leadHtml: str(b.subheading),
-      }));
-      for (let i = heroSlides.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [heroSlides[i], heroSlides[j]] = [heroSlides[j]!, heroSlides[i]!];
-      }
       const hero: HeroData = {
         eyebrow: str(d.eyebrow) || fbHero?.eyebrow || "",
-        titleHtml,
-        leadHtml,
+        titleHtml: str(d.heading) || fbHero?.titleHtml || "",
+        leadHtml: str(d.subheading) || fbHero?.leadHtml || "",
         ctas: ctas.length ? ctas : (fbHero?.ctas ?? []),
         stats: cmsStats.length ? cmsStats : (fbHero?.stats ?? []),
         livePillLabel: str(ctx.globals.heroPillLabel) || fbHero?.livePillLabel || "Live",
-        slides: heroSlides.length ? heroSlides : (fbHero?.slides ?? [{ titleHtml, leadHtml }]),
-        slidesLabel: ctx.locale === "en" ? "Messages" : "Budskaber",
       };
       return { kind: "hero", data: hero };
     }
