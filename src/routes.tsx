@@ -36,9 +36,10 @@ import { richtextBlock, richtextInline } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
+import { Icon } from "@/components/Icons.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
-import { Cases, Insights } from "@/components/sections.tsx";
+import { Cases, Insights, About } from "@/components/sections.tsx";
 import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
 import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
@@ -46,6 +47,12 @@ import type { StoredDoc } from "@/content/store.ts";
 import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
 const SOLUTIONS_SEGMENT: Record<Locale, string> = { da: "losninger", en: "solutions" };
+const SOLUTION_ICONS: Record<string, string> = {
+  websites: "Globe",
+  webshops: "ShoppingCart",
+  platforme: "Layers",
+  "ai-integration": "Sparkles",
+};
 
 async function page(
   children: any,
@@ -64,16 +71,16 @@ async function page(
 }
 
 // "Sådan bygger vi det" (F156.4) — the ORIGINAL homepage content (universe
-// diagram, all 12 flagship cards, SDLC method, full About bio), relocated
-// unchanged from `/` to `/universet` (DA) / `/en/universe` (EN) when the new
-// sales landing (renderHome below) took over the root routes. Content and
-// rendering logic are byte-for-byte the same as before the move — only the
-// URL + this function's name changed.
+// diagram, all 12 flagship cards, SDLC method), relocated unchanged from `/`
+// to `/universet` (DA) / `/en/universe` (EN) when the new sales landing
+// (renderHome below) took over the root routes. The About/"om" section moved
+// on again from here to the homepage — excluded so it isn't shown twice.
 export async function renderUniverset(locale: Locale): Promise<string> {
   // Prefer live cms content from the local store; fall back to mockup-v6 copy
   // until the first ICD pushes / backfill land.
   const model = (await loadHome(locale)) ?? homeFallback;
-  return await page(<RenderSections sections={model.sections} />, {
+  const sections = model.sections.filter((s) => s.kind !== "about");
+  return await page(<RenderSections sections={sections} />, {
     title: model.title,
     description: model.description,
     locale,
@@ -83,9 +90,9 @@ export async function renderUniverset(locale: Locale): Promise<string> {
 }
 
 // New sales landing (F156.3) — Hero → Problem → Løsninger grid → Sådan
-// foregår det → Cases (real, reused verbatim) → Hvorfor os → FAQ → Kontakt.
-// Falls back to renderUniverset's content if the `landing` cms doc isn't
-// there yet (no naked cutover — never a blank homepage).
+// foregår det → Cases (real, reused verbatim) → Hvorfor os → Om → FAQ →
+// Kontakt. Falls back to renderUniverset's content if the `landing` cms doc
+// isn't there yet (no naked cutover — never a blank homepage).
 export async function renderHome(locale: Locale): Promise<string> {
   const landing = await loadLanding(locale);
   if (!landing) return renderUniverset(locale);
@@ -97,6 +104,8 @@ export async function renderHome(locale: Locale): Promise<string> {
   const solutions = await loadSolutions(locale);
   const randomNews = await loadRandomNews(locale, 3);
   const casePosts = await loadCategoryPosts(locale, "cases");
+  const homeModel = await loadHome(locale);
+  const about = homeModel?.sections.find((s) => s.kind === "about");
   const caseItems: CaseItem[] = casePosts.map((p) => {
     const pd = (p.data ?? {}) as Record<string, unknown>;
     const str = (v: unknown) => (typeof v === "string" ? v : "");
@@ -236,7 +245,8 @@ export async function renderHome(locale: Locale): Promise<string> {
           </div>
           <div class="grid g4">
             {solutions.map((s) => (
-              <a class="card" href={`/${seg}/${s.slug}`} key={s.slug} data-testid={`landing-solution-card-${s.slug}`}>
+              <a class="card card-glow" href={`/${seg}/${s.slug}`} key={s.slug} data-testid={`landing-solution-card-${s.slug}`}>
+                <Icon name={SOLUTION_ICONS[s.slug] ?? "Sparkles"} />
                 <div class="plat-h">
                   <div class="nm">{s.name}</div>
                 </div>
@@ -277,6 +287,8 @@ export async function renderHome(locale: Locale): Promise<string> {
           </a>
         </div>
       </section>
+
+      {about && about.kind === "about" ? <About data={about.data} /> : null}
 
       <Faq items={d.faq as [string, string][]} locale={locale} />
 

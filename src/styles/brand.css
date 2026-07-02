@@ -1613,6 +1613,14 @@ footer {
   border-color: rgba(0, 178, 255, 0.5);
   box-shadow: 0 0 16px rgba(0, 178, 255, 0.25), 0 0 2px rgba(0, 178, 255, 0.5), inset 0 0 20px rgba(0, 178, 255, 0.06);
 }
+.card-glow {
+  border-color: rgba(0, 178, 255, 0.5);
+  box-shadow: 0 0 16px rgba(0, 178, 255, 0.25), 0 0 2px rgba(0, 178, 255, 0.5), inset 0 0 20px rgba(0, 178, 255, 0.06);
+}
+.card-glow:hover {
+  border-color: rgba(0, 178, 255, 0.8);
+  box-shadow: 0 0 22px rgba(0, 178, 255, 0.35), 0 0 3px rgba(0, 178, 255, 0.6), inset 0 0 22px rgba(0, 178, 255, 0.08);
+}
 .stat-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2097,14 +2105,13 @@ a.pill.taglink:active {
 .tagcloud {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 8px;
-  margin-top: 6px;
-  max-width: 760px;
+  gap: 14px 12px;
+  margin-top: 40px;
 }
 .tagcloud .pill {
   margin: 0;
   font-size: 14px;
-  padding: 7px 15px;
+  padding: 10px 18px;
 }
 .tagcount {
   margin-left: 6px;

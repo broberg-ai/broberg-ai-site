@@ -295,6 +295,10 @@ function mapSection(d: Data, ctx: Ctx): SectionData | null {
           headingHtml: str(d.heading) || fbCo?.headingHtml || "",
           lead: str(d.subheading) || fbCo?.lead || "",
           email: str(g.contactEmail) || fbCo?.email || "hej@broberg.ai",
+          // Never surface the raw address as a mailto link — route to the real
+          // contact form on the sales landing instead (same rule as the footer).
+          formHref: withLocale(ctx.locale, "/") + "#kontakt",
+          ctaLabel: ctx.locale === "en" ? "Get in touch" : "Skriv til os",
         },
       };
     }
@@ -560,7 +564,7 @@ const FOOTER_FALLBACK: Record<Locale, FooterData> = {
           { label: "Løsninger", href: "/losninger" },
           { label: "Sådan bygger vi det", href: "/universet" },
           { label: "Cases", href: "/cases" },
-          { label: "Om", href: "/universet#om" },
+          { label: "Om", href: "/#om" },
         ],
       },
       {
@@ -596,7 +600,7 @@ const FOOTER_FALLBACK: Record<Locale, FooterData> = {
           { label: "Solutions", href: "/en/solutions" },
           { label: "How we build it", href: "/en/universe" },
           { label: "Cases", href: "/en/cases" },
-          { label: "About", href: "/en/universe#om" },
+          { label: "About", href: "/en#om" },
         ],
       },
       {

@@ -12,8 +12,8 @@
    replaced by a single "Sådan bygger vi det" link to /universet — that
    content moved off the homepage in F156.4, so an in-page anchor no longer
    resolves there. New "Løsninger" dropdown added (Websites/Webshops/
-   Platforme/AI Integration → /losninger/:slug). "Om" now also points at
-   /universet#om (About lives there now, not on the new sales landing). */
+   Platforme/AI Integration → /losninger/:slug). "Om" points at the
+   homepage's own #om section (About moved there off /universet). */
 import type { Locale } from "@/config.ts";
 import { withLocale } from "@/i18n.ts";
 
@@ -145,7 +145,7 @@ export function Nav({ locale, altHref }: { locale: Locale; altHref?: string }) {
               </a>
             </div>
           </div>
-          <a class="navlink simple" href={`${universetHref}#om`} data-testid="nav-om">
+          <a class="navlink simple" href={`${withLocale(locale, "/")}#om`} data-testid="nav-om">
             {t.om}
           </a>
           <button class="navlink navsearch" data-testid="cmdk-trigger" aria-label={t.search} title={t.search}>

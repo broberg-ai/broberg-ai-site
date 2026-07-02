@@ -278,8 +278,8 @@ export function Contact({ data }: { data: ContactData }) {
           <p class="lead" style="margin:18px auto 30px">
             {data.lead}
           </p>
-          <a href={`mailto:${data.email}`} class="btn" data-testid="kontakt-cta-mail">
-            {data.email} <span class="ar">→</span>
+          <a href={data.formHref} class="btn" data-testid="kontakt-cta-mail">
+            {data.ctaLabel} <span class="ar">→</span>
           </a>
         </div>
       </div>

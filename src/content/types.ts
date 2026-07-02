@@ -124,6 +124,8 @@ export interface ContactData {
   headingHtml: string;
   lead: string;
   email: string;
+  formHref: string;
+  ctaLabel: string;
 }
 
 export interface FooterLink {
