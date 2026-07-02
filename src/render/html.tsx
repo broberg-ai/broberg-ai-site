@@ -42,6 +42,11 @@ export function renderPage(children: ComponentChildren, meta: PageMeta, assets: 
         <meta property="og:title" content={meta.title} />
         <meta property="og:description" content={meta.description} />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://broberg.ai/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://broberg.ai/og-image.png" />
         {meta.canonical && <link rel="canonical" href={meta.canonical} />}
         {meta.altHref && <link rel="alternate" hrefLang={meta.locale === "en" ? "da" : "en"} href={meta.altHref} />}
         <link rel="stylesheet" href={assets.css} />

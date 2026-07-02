@@ -155,6 +155,10 @@ app.all("/uploads/*", (c) => c.text("Not found", 404));
 // Favicon — ".ai" wordmark mark, served from public/ in dev + prod.
 app.get("/favicon.svg", serveStatic({ path: "./public/favicon.svg" }));
 
+// Social preview image (og:image/twitter:image) — the "b." mark, not a
+// scraped page photo. Served from public/ in dev + prod.
+app.get("/og-image.png", serveStatic({ path: "./public/og-image.png" }));
+
 // ── Pages ───────────────────────────────────────────────────────────────────
 // F156.3/F156.4: `/` and `/en` now serve the new sales landing (renderHome).
 // The ORIGINAL homepage (universe diagram, flagship grid, SDLC method, About)
