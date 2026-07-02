@@ -517,6 +517,55 @@ const fysioDkSport = wrap(
   </g>,
 );
 
+// A described symptom → routed instantly to the right specialist: a voice/
+// chat bubble (with a pulsing "symptom" dot) flows into a fan of five
+// treatment areas — one lights up orange with a check, the rest stay calm
+// blue. Nails: AI-symptomassistent matcher patient → rette behandler, blandt
+// fem ydelsesområder (fysio/kiro/massage/træning/ernæring).
+const FDA_SPECIALISTS = [
+  { cx: 258, cy: 56 },
+  { cx: 306, cy: 104 },
+  { cx: 318, cy: 140, matched: true },
+  { cx: 306, cy: 176 },
+  { cx: 258, cy: 224 },
+];
+const fysioDkAalborg = wrap(
+  <g>
+    {/* voice / chat bubble — the described symptom */}
+    <g>
+      <rect x="26" y="100" width="88" height="56" rx="14" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+      <path d="M46 156 v16 l16 -16 Z" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+      <circle class="pulse-core" cx="70" cy="128" r="10" fill="rgba(243,82,44,.18)" stroke="#F3522C" stroke-width="1.6" />
+      <circle cx="70" cy="128" r="3" fill="#F3522C" />
+    </g>
+    {/* flow to the branch point */}
+    <path class="illu-flow" d="M118 128 H150" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" />
+    <circle cx="160" cy="128" r="5" fill="var(--blue)" />
+    {/* fan-out links to the five treatment areas */}
+    <g stroke-width="1.4" fill="none">
+      {FDA_SPECIALISTS.map((s, i) => (
+        <path
+          key={i}
+          class={s.matched ? "illu-flow" : undefined}
+          d={`M160 128 Q210 ${(128 + s.cy) / 2} ${s.cx} ${s.cy}`}
+          stroke={s.matched ? "#F3522C" : "color-mix(in srgb,var(--blue) 24%,transparent)"}
+          stroke-dasharray={s.matched ? "3 5" : undefined}
+        />
+      ))}
+    </g>
+    {FDA_SPECIALISTS.map((s, i) =>
+      s.matched ? (
+        <g key={i}>
+          <circle class="pulse-core" cx={s.cx} cy={s.cy} r="15" fill="rgba(243,82,44,.16)" stroke="#F3522C" stroke-width="1.8" />
+          <path d={`M${s.cx - 6} ${s.cy} l5 6 l9 -11`} stroke="#F3522C" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
+      ) : (
+        <circle class="node" key={i} cx={s.cx} cy={s.cy} r="8" fill="color-mix(in srgb,var(--blue) 14%,transparent)" stroke="var(--blue)" stroke-width="1.6" style={`animation-delay:${i * 0.4}s`} />
+      ),
+    )}
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -531,6 +580,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   consulting,
   docs,
   "fysio-dk-sport": fysioDkSport,
+  "fysio-dk-aalborg": fysioDkAalborg,
 };
 
 export function hasIllustration(k: string): boolean {
