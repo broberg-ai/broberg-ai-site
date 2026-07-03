@@ -536,7 +536,6 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   const tagline = str(d.tagline);
   const platformRef: CmsRef = { collection: "platforms", slug: String(doc.slug), locale };
   const bodyHtml = richtextBlock(str(d.body));
-  const features = Array.isArray(d.features) ? (d.features as string[]) : [];
   const links = Array.isArray(d.links) ? (d.links as { label: string; url: string }[]) : [];
 
   return await page(
@@ -559,15 +558,6 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
         </div>
         <div class="divider" />
         {bodyHtml ? <div class="richtext" {...cmsRichAttrs(platformRef, "body")} dangerouslySetInnerHTML={{ __html: bodyHtml }} /> : null}
-        {features.length ? (
-          <div style="margin-top:22px">
-            {features.map((f) => (
-              <span class="pill" key={f}>
-                {f}
-              </span>
-            ))}
-          </div>
-        ) : null}
         {links.length ? (
           <div class="cta-row" style="margin-top:22px">
             {links.map((l) => (
