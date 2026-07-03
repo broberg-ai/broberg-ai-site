@@ -15,8 +15,9 @@ function inlineEdit() {
   const isEn = document.documentElement.lang === "en";
   initInlineEdit({
     ...CMS,
-    connectLabel: isEn ? "✏️ Edit" : "✏️ Rediger",
-    editingAsLabel: isEn ? "✏️ Editing as {name}" : "✏️ Redigerer som {name}",
+    // No emoji anywhere on this site — the package prepends a square-pen icon.
+    connectLabel: isEn ? "Edit" : "Rediger",
+    editingAsLabel: isEn ? "Editing as {name}" : "Redigerer som {name}",
     disconnectLabel: isEn ? "Sign out" : "Log ud",
   });
 }
