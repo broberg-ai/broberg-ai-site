@@ -17,9 +17,8 @@ function inlineEdit() {
     ...CMS,
     // No emoji anywhere on this site — the package prepends a square-pen icon.
     connectLabel: isEn ? "Edit" : "Rediger",
-    editingAsLabel: isEn ? "Editing as {name}" : "Redigerer som {name}",
-    // "Afslut redigering" — not "Log ud": clicking it leaves edit mode (clears
-    // the edit token); it is not a global sign-out. Re-enter via "Rediger".
+    // Connected badge is just the exit action (no "Editing as {name}"): clicking
+    // it leaves edit mode (clears the edit token), it is not a global sign-out.
     disconnectLabel: isEn ? "Finish editing" : "Afslut redigering",
   });
 }
