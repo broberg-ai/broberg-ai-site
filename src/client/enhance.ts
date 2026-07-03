@@ -18,9 +18,9 @@ function inlineEdit() {
     // No emoji anywhere on this site — the package prepends a square-pen icon.
     connectLabel: isEn ? "Edit" : "Rediger",
     editingAsLabel: isEn ? "Editing as {name}" : "Redigerer som {name}",
-    // "Stop editing" — not "Log ud": clicking it leaves edit mode (clears the
-    // edit token); it is not a global sign-out. Re-enter via "Rediger".
-    disconnectLabel: isEn ? "Stop editing" : "Stop redigering",
+    // "Afslut redigering" — not "Log ud": clicking it leaves edit mode (clears
+    // the edit token); it is not a global sign-out. Re-enter via "Rediger".
+    disconnectLabel: isEn ? "Finish editing" : "Afslut redigering",
   });
 }
 
