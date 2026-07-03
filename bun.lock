@@ -5,7 +5,7 @@
     "": {
       "name": "broberg-ai-site",
       "dependencies": {
-        "@broberg/cms-inline-edit": "^0.4.7",
+        "@broberg/cms-inline-edit": "^0.4.9",
         "@broberg/forms-turnstile": "^0.1.0",
         "hono": "^4.6.14",
         "marked": "^18.0.5",
@@ -22,7 +22,7 @@
     },
   },
   "packages": {
-    "@broberg/cms-inline-edit": ["@broberg/cms-inline-edit@0.4.7", "", {}, "sha512-BuFMplZ0ngabLtYiiaB5vPRtGNBFbZjOPt39QbiKiTyIXTo37tDN8vRFXemuGYCum/6neaRMCKtxaFl5pZb2Ig=="],
+    "@broberg/cms-inline-edit": ["@broberg/cms-inline-edit@0.4.9", "", {}, "sha512-HcSWbADgvRyQ5wC7iBQ0vRHfrNpiaukKn13FRP3POt65RkZdZL3RDTCrLfkYp5VvD7Zf7emWnnPF6gHB/2RLEA=="],
 
     "@broberg/forms-turnstile": ["@broberg/forms-turnstile@0.1.0", "", { "peerDependencies": { "hono": ">=4", "preact": ">=10.0.0" }, "optionalPeers": ["hono", "preact"] }, "sha512-6E3kS6MzGE+Q0ry8LWr6ZYeCAUyiGJjrBv3xpHrP6abHldc0uZdVJf31t7W95aO51S3PP6d6DStRXonLmS5ZJg=="],
 

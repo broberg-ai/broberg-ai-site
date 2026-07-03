@@ -12,11 +12,12 @@ const CMS = { cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" };
 // browser is connected. See docs/features/F157-inline-editing.md.
 function inlineEdit() {
   // Locale-aware edit pill (login is implicit — clicking bounces to sign-in).
-  // editingAsLabel/disconnectLabel land once we're on @broberg/cms-inline-edit 0.4.8+.
   const isEn = document.documentElement.lang === "en";
   initInlineEdit({
     ...CMS,
     connectLabel: isEn ? "✏️ Edit" : "✏️ Rediger",
+    editingAsLabel: isEn ? "✏️ Editing as {name}" : "✏️ Redigerer som {name}",
+    disconnectLabel: isEn ? "Sign out" : "Log ud",
   });
 }
 
