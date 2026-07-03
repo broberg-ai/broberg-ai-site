@@ -40,20 +40,22 @@ const TYPE_LABEL: Record<ProofType, { da: string; en: string }> = {
   platform: { da: "Platform", en: "Platform" },
 };
 
-const ProofCard = ({ item, locale }: { item: ProofItem; locale: Locale }) => {
+const ProofCard = ({ item, locale, cmsRef, i }: { item: ProofItem; locale: Locale; cmsRef?: CmsRef; i: number }) => {
   const inner = (
     <>
-      <div class="kicker">{item.kicker}</div>
+      <div class="kicker" {...cmsAttrs(cmsRef, `proof.${i}.kicker`)}>{item.kicker}</div>
       <div class="case-h-row">
-        <div class="case-h">{item.title}</div>
+        <div class="case-h" {...cmsAttrs(cmsRef, `proof.${i}.title`)}>{item.title}</div>
         {item.type ? <span class={`type-pill ${item.type}`}>{TYPE_LABEL[item.type][locale]}</span> : null}
       </div>
-      <p>{item.body}</p>
+      <p {...cmsAttrs(cmsRef, `proof.${i}.body`)}>{item.body}</p>
       {item.note ? (
-        <p style="margin-top:10px;font-style:italic;color:var(--muted)">{item.note}</p>
+        <p style="margin-top:10px;font-style:italic;color:var(--muted)" {...cmsAttrs(cmsRef, `proof.${i}.note`)}>{item.note}</p>
       ) : null}
     </>
   );
+  // Clickable proof cards: the click-to-edit handler in @broberg/cms-inline-edit
+  // stops the field's click from bubbling into this <a>, so editing wins over nav.
   return item.href ? (
     <a class="card" href={item.href}>
       {inner}
@@ -114,7 +116,7 @@ export function SolutionPage({
           <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsAttrs(cmsRef, "problemHeading")}>{data.problemHeading}</h2>
           <div class="divider" />
           {data.problemP.map((p, i) => (
-            <p class="lead" key={i} style={`max-width:none;${i < data.problemP.length - 1 ? "margin-bottom:16px" : ""}`}>
+            <p class="lead" key={i} style={`max-width:none;${i < data.problemP.length - 1 ? "margin-bottom:16px" : ""}`} {...cmsAttrs(cmsRef, `problemP.${i}`)}>
               {p}
             </p>
           ))}
@@ -131,10 +133,10 @@ export function SolutionPage({
           </div>
           <div class="steps3">
             {data.steps.map(([title, desc], i) => (
-              <div class="step3" key={title}>
+              <div class="step3" key={i}>
                 <div class="step3-num">{i + 1}</div>
-                <div class="workstep-title">{title}</div>
-                <p>{desc}</p>
+                <div class="workstep-title" {...cmsAttrs(cmsRef, `steps.${i}.0`)}>{title}</div>
+                <p {...cmsAttrs(cmsRef, `steps.${i}.1`)}>{desc}</p>
               </div>
             ))}
           </div>
@@ -148,11 +150,11 @@ export function SolutionPage({
             <h2>{featuresHeading}</h2>
           </div>
           <div class="grid g3">
-            {data.features.map(([title, desc, icon]) => (
-              <div class="card" key={title}>
+            {data.features.map(([title, desc, icon], i) => (
+              <div class="card" key={i}>
                 <Icon name={icon} />
-                <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;color:var(--light)">{title}</h3>
-                <p>{desc}</p>
+                <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;color:var(--light)" {...cmsAttrs(cmsRef, `features.${i}.0`)}>{title}</h3>
+                <p {...cmsAttrs(cmsRef, `features.${i}.1`)}>{desc}</p>
               </div>
             ))}
           </div>
@@ -166,12 +168,12 @@ export function SolutionPage({
             <h2 {...cmsAttrs(cmsRef, "proofHeading")}>{data.proofHeading}</h2>
           </div>
           <div class={data.proof.length > 1 ? "grid g2" : ""}>
-            {data.proof.map((item) => (
-              <ProofCard item={item} locale={locale} key={item.title} />
+            {data.proof.map((item, i) => (
+              <ProofCard item={item} locale={locale} cmsRef={cmsRef} i={i} key={i} />
             ))}
           </div>
           {data.proofNote ? (
-            <p style="max-width:760px;margin:18px auto 0;font-size:13px;color:var(--muted);font-style:italic;text-align:center">
+            <p style="max-width:760px;margin:18px auto 0;font-size:13px;color:var(--muted);font-style:italic;text-align:center" {...cmsAttrs(cmsRef, "proofNote")}>
               {data.proofNote}
             </p>
           ) : null}

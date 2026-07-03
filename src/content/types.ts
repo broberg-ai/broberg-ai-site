@@ -38,6 +38,9 @@ export interface HeroData {
 export interface Tier {
   title: string;
   body: string;
+  // Raw index into the universe section's `blocks` array (the view filters to
+  // `_block:"tier"`, so the view index ≠ raw index) — for inline-edit paths.
+  cmsIndex?: number;
 }
 export interface DiagramNode {
   label: string;
@@ -78,6 +81,9 @@ export interface CaseItem {
   attr?: string;
   slug?: string;
   href?: string;
+  // Each case maps to a `posts` doc (client/title/excerpt/quote), NOT the cases
+  // section — so inline-edit targets the post, like insights cards do.
+  cmsRef?: CmsRef;
 }
 export interface CasesData {
   eyebrow: string;

@@ -101,8 +101,10 @@ export function Universe({ data, cmsRef }: { data: UniverseData; cmsRef?: CmsRef
           <div>
             {data.tiers.map((t, i) => (
               <div class="tier" key={i}>
-                <b>{t.title}</b>
+                <b {...cmsAttrs(cmsRef, `blocks.${t.cmsIndex}.heading`)}>{t.title}</b>
                 <br />
+                {/* body is richtext (rendered HTML) — needs the rich-edit path,
+                    not plain field editing; left un-wired for now. */}
                 <span dangerouslySetInnerHTML={{ __html: t.body }} />
               </div>
             ))}
@@ -153,14 +155,16 @@ export function Cases({ data, cmsRef }: { data: CasesData; cmsRef?: CmsRef }) {
         <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} />
         <div class="grid g2">
           {data.items.map((c) => {
+            // Case fields live on the underlying `posts` doc (c.cmsRef), NOT the
+            // cases section: kicker→client, title→title, body→excerpt, quote→quote.
             const inner = (
               <>
-                <div class="kicker">{c.kicker}</div>
-                <div class="case-h">{c.title}</div>
-                <p>{c.body}</p>
+                <div class="kicker" {...cmsAttrs(c.cmsRef, "client")}>{c.kicker}</div>
+                <div class="case-h" {...cmsAttrs(c.cmsRef, "title")}>{c.title}</div>
+                <p {...cmsAttrs(c.cmsRef, "excerpt")}>{c.body}</p>
                 {c.quote && (
                   <div class="quote">
-                    {c.quote}
+                    <span {...cmsAttrs(c.cmsRef, "quote")}>{c.quote}</span>
                     {c.attr && <div class="attr">— {c.attr}</div>}
                   </div>
                 )}

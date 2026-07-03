@@ -169,8 +169,9 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
       // The 3 tiers come from the universe section's `blocks` as custom `tier`
       // blocks {_block:"tier", heading, body} (cms #63).
       const tiers = arr<Data>(d.blocks)
-        .filter((b) => str(b._block) === "tier")
-        .map((b) => ({ title: str(b.heading), body: richtextInline(str(b.body)) }));
+        .map((b, rawIndex) => ({ b, rawIndex }))
+        .filter(({ b }) => str(b._block) === "tier")
+        .map(({ b, rawIndex }) => ({ title: str(b.heading), body: richtextInline(str(b.body)), cmsIndex: rawIndex }));
       return {
         kind: "universe",
         data: {
@@ -215,6 +216,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           attr: str(pd.quote) ? str(pd.client) || str(pd.author) : undefined,
           slug,
           href: withLocale(ctx.locale, `/cases/${slug}`),
+          cmsRef: { collection: "posts", slug, locale: ctx.locale },
         };
       });
       return {

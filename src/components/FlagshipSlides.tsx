@@ -13,17 +13,25 @@ import { slugifyTag, withLocale } from "@/i18n.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
 import type { CmsRef } from "@/content/types.ts";
 
-// F157 — dot-path field addressing (slides.<i>.eyebrow, slides.<i>.blocks.<j>.text)
-// needs @broberg/cms-inline-edit >=0.4.5. Only scalar text-bearing spots are wired
-// here (eyebrow, plain heading, and lead/prose/quote/callout block text) — tuple-
-// array blocks (steps/cards/stats/table/chat) are deliberately NOT wired yet: their
-// items are positional tuples ([title, desc]), and a rushed path scheme there risks
-// silently writing into the wrong tuple slot. Follow-up, not tonight.
+// F157 — dot-path field addressing (slides.<i>.eyebrow,
+// slides.<i>.blocks.<j>.items.<n>.0) needs @broberg/cms-inline-edit >=0.4.5,
+// whose setDeepField walks numeric segments into arrays — so a tuple slot like
+// a step's [title, desc] is addressed EXPLICITLY (items.<n>.0 / .1), never a
+// guessed index. Every scalar text spot across every block kind is wired below.
 function slidePath(idx: number, leaf: string): string {
   return `slides.${idx}.${leaf}`;
 }
 function blockPath(slideIdx: number, blockIdx: number, leaf: string): string {
   return `slides.${slideIdx}.blocks.${blockIdx}.${leaf}`;
+}
+// The `slides.<i>.blocks.<j>` prefix a block's inner fields hang off of.
+function blockBase(slideIdx: number, blockIdx: number): string {
+  return `slides.${slideIdx}.blocks.${blockIdx}`;
+}
+// cmsAttrs for a path built from a base + segments; no-op without cmsRef/base.
+function seg(cmsRef: CmsRef | undefined, base: string | undefined, ...parts: (string | number)[]): Record<string, string> {
+  if (!cmsRef || !base) return {};
+  return cmsAttrs(cmsRef, [base, ...parts].join("."));
 }
 
 type Step = [string, string]; // [title, desc?] — desc may be ""
@@ -88,12 +96,12 @@ const Lead = ({ b, cmsRef, path }: { b: Extract<Block, { k: "lead" }>; cmsRef?: 
     <p class="lead" {...cmsAttrs(cmsRef, path)}>{b.text}</p>
   );
 
-const WorkSteps = ({ steps }: { steps: Step[] }) => (
+const WorkSteps = ({ steps, cmsRef, base }: { steps: Step[]; cmsRef?: CmsRef; base?: string }) => (
   <ol class="worksteps">
-    {steps.map(([t, d]) => (
-      <li key={t}>
-        <div class="workstep-title">{t}</div>
-        {d ? <p>{d}</p> : null}
+    {steps.map(([t, d], i) => (
+      <li key={i}>
+        <div class="workstep-title" {...seg(cmsRef, base, "items", i, 0)}>{t}</div>
+        {d ? <p {...seg(cmsRef, base, "items", i, 1)}>{d}</p> : null}
       </li>
     ))}
   </ol>
@@ -102,32 +110,32 @@ const WorkSteps = ({ steps }: { steps: Step[] }) => (
 // A header that is wider than its narrow mobile column renders a short phone-only
 // label (display-toggled in CSS) so it never breaks mid-word; plain headers and
 // the desktop full label render as-is.
-const ColTh = ({ c }: { c: ColHead }) =>
+const ColTh = ({ c, cmsRef, base, i }: { c: ColHead; cmsRef?: CmsRef; base?: string; i: number }) =>
   typeof c === "string" ? (
-    <th>{c}</th>
+    <th {...seg(cmsRef, base, "cols", i)}>{c}</th>
   ) : (
     <th>
-      <span class="ct-full">{c.full}</span>
-      <span class="ct-short">{c.short}</span>
+      <span class="ct-full" {...seg(cmsRef, base, "cols", i, "full")}>{c.full}</span>
+      <span class="ct-short" {...seg(cmsRef, base, "cols", i, "short")}>{c.short}</span>
     </th>
   );
 
-const CTable = ({ label, cols, rows }: { label: string; cols: ColHead[]; rows: string[][] }) => (
+const CTable = ({ label, cols, rows, cmsRef, base }: { label: string; cols: ColHead[]; rows: string[][]; cmsRef?: CmsRef; base?: string }) => (
   <div class="card" style="min-width:0">
-    <div class="eyebrow">{label}</div>
+    <div class="eyebrow" {...seg(cmsRef, base, "label")}>{label}</div>
     <table class="ctable">
       <thead>
         <tr>
-          {cols.map((c) => (
-            <ColTh key={typeof c === "string" ? c : c.full} c={c} />
+          {cols.map((c, ci) => (
+            <ColTh key={ci} c={c} cmsRef={cmsRef} base={base} i={ci} />
           ))}
         </tr>
       </thead>
       <tbody>
-        {rows.map((row) => (
-          <tr key={row[0]}>
+        {rows.map((row, ri) => (
+          <tr key={ri}>
             {row.map((cell, ci) => (
-              <td key={ci} class={ci === row.length - 1 ? "ctable-win" : undefined}>
+              <td key={ci} class={ci === row.length - 1 ? "ctable-win" : undefined} {...seg(cmsRef, base, "rows", ri, ci)}>
                 {cell}
               </td>
             ))}
@@ -138,11 +146,11 @@ const CTable = ({ label, cols, rows }: { label: string; cols: ColHead[]; rows: s
   </div>
 );
 
-const Chips = ({ items }: { items: string[] }) => (
+const Chips = ({ items, cmsRef, base }: { items: string[]; cmsRef?: CmsRef; base?: string }) => (
   <div class="flowchips" style="margin-top:26px">
     {items.map((c, i) => (
       <>
-        <span class="flowchip" key={c}>
+        <span class="flowchip" key={i} {...seg(cmsRef, base, "items", i)}>
           {c}
         </span>
         {i < items.length - 1 ? <span class="flowchip-arrow">·</span> : null}
@@ -151,39 +159,39 @@ const Chips = ({ items }: { items: string[] }) => (
   </div>
 );
 
-const Cards = ({ items }: { items: Card[] }) => (
+const Cards = ({ items, cmsRef, base }: { items: Card[]; cmsRef?: CmsRef; base?: string }) => (
   <div class="grid g3" style="margin-top:20px">
-    {items.map(([t, desc, icon]) => (
-      <div class="card" key={t}>
+    {items.map(([t, desc, icon], i) => (
+      <div class="card" key={i}>
         {icon ? <Icon name={icon} /> : null}
-        <div class="case-h">{t}</div>
-        <p>{desc}</p>
+        <div class="case-h" {...seg(cmsRef, base, "items", i, 0)}>{t}</div>
+        <p {...seg(cmsRef, base, "items", i, 1)}>{desc}</p>
       </div>
     ))}
   </div>
 );
 
-const Stats = ({ items }: { items: Stat[] }) => (
+const Stats = ({ items, cmsRef, base }: { items: Stat[]; cmsRef?: CmsRef; base?: string }) => (
   <div class="stat-row">
-    {items.map((s) => {
+    {items.map((s, i) => {
       // Word/phrase values (e.g. "Sekunder", "Anden sky") don't fit the big
       // number size on one line — render them smaller + no-wrap; short numeric
       // tokens ("95+", "24/7") keep the punchy size.
       const word = s[0].length > 5 || /\s/.test(s[0]);
       return (
-        <div class="card stat-card" key={s[1]}>
-          <div class={word ? "stat-num stat-num-word" : "stat-num"}>{s[0]}</div>
-          <div class="stat-cap">{s[1]}</div>
+        <div class="card stat-card" key={i}>
+          <div class={word ? "stat-num stat-num-word" : "stat-num"} {...seg(cmsRef, base, "items", i, 0)}>{s[0]}</div>
+          <div class="stat-cap" {...seg(cmsRef, base, "items", i, 1)}>{s[1]}</div>
         </div>
       );
     })}
   </div>
 );
 
-const Chat = ({ turns }: { turns: ChatTurn[] }) => (
+const Chat = ({ turns, cmsRef, base }: { turns: ChatTurn[]; cmsRef?: CmsRef; base?: string }) => (
   <div class="chatdemo">
     {turns.map(([text, role], i) => (
-      <div class={`chatbubble ${role}`} key={i}>
+      <div class={`chatbubble ${role}`} key={i} {...seg(cmsRef, base, "turns", i, 0)}>
         {text}
       </div>
     ))}
@@ -201,11 +209,11 @@ const BlockView = ({ b, cmsRef, slideIdx, blockIdx }: { b: Block; cmsRef?: CmsRe
         </p>
       );
     case "chips":
-      return <Chips items={b.items} />;
+      return <Chips items={b.items} cmsRef={cmsRef} base={blockBase(slideIdx, blockIdx)} />;
     case "steps":
-      return <WorkSteps steps={b.items} />;
+      return <WorkSteps steps={b.items} cmsRef={cmsRef} base={blockBase(slideIdx, blockIdx)} />;
     case "table":
-      return <CTable label={b.label} cols={b.cols} rows={b.rows} />;
+      return <CTable label={b.label} cols={b.cols} rows={b.rows} cmsRef={cmsRef} base={blockBase(slideIdx, blockIdx)} />;
     case "quote":
       return (
         <div class="quote" style="margin-top:22px;max-width:620px" {...cmsAttrs(cmsRef, blockPath(slideIdx, blockIdx, "text"))}>
@@ -213,11 +221,11 @@ const BlockView = ({ b, cmsRef, slideIdx, blockIdx }: { b: Block; cmsRef?: CmsRe
         </div>
       );
     case "cards":
-      return <Cards items={b.items} />;
+      return <Cards items={b.items} cmsRef={cmsRef} base={blockBase(slideIdx, blockIdx)} />;
     case "stats":
-      return <Stats items={b.items} />;
+      return <Stats items={b.items} cmsRef={cmsRef} base={blockBase(slideIdx, blockIdx)} />;
     case "chat":
-      return <Chat turns={b.turns} />;
+      return <Chat turns={b.turns} cmsRef={cmsRef} base={blockBase(slideIdx, blockIdx)} />;
     case "callout":
       return (
         <div class="card callout">
@@ -238,12 +246,13 @@ function renderBlocks(items: { b: Block; i: number }[], cmsRef: CmsRef | undefin
   const out: JSX.Element[] = [];
   for (let k = 0; k < items.length; k++) {
     const { b, i } = items[k];
-    const next = items[k + 1]?.b;
+    const nextItem = items[k + 1];
+    const next = nextItem?.b;
     if (b.k === "steps" && next && next.k === "table") {
       out.push(
         <div class="trail-grid" key={`grid-${i}`}>
-          <WorkSteps steps={b.items} />
-          <CTable label={next.label} cols={next.cols} rows={next.rows} />
+          <WorkSteps steps={b.items} cmsRef={cmsRef} base={blockBase(slideIdx, i)} />
+          <CTable label={next.label} cols={next.cols} rows={next.rows} cmsRef={cmsRef} base={blockBase(slideIdx, nextItem!.i)} />
         </div>,
       );
       k++; // consume the paired table
