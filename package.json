@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@broberg/cms-inline-edit": "^0.4.6",
+    "@broberg/cms-inline-edit": "^0.4.7",
     "@broberg/forms-turnstile": "^0.1.0",
     "hono": "^4.6.14",
     "marked": "^18.0.5",

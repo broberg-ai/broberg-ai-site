@@ -2,8 +2,10 @@
    the site. Toggled client-side in enhance.ts (faqAccordion), not inline
    onclick — matches the site's progressive-enhancement convention. */
 import type { Locale } from "@/config.ts";
+import type { CmsRef } from "@/content/types.ts";
+import { cmsAttrs } from "@/components/sections.tsx";
 
-export function Faq({ items, locale }: { items: [string, string][]; locale: Locale }) {
+export function Faq({ items, locale, cmsRef }: { items: [string, string][]; locale: Locale; cmsRef?: CmsRef }) {
   return (
     <section id="faq" style="background:var(--dark2)">
       <div class="wrap" style="max-width:700px">
@@ -12,11 +14,11 @@ export function Faq({ items, locale }: { items: [string, string][]; locale: Loca
           <h2>{locale === "en" ? "Frequently asked questions" : "Ofte stillede spørgsmål"}</h2>
         </div>
         {items.map(([q, a], i) => (
-          <div class={`faq-item${i === 0 ? " open" : ""}`} key={q} data-testid={`faq-item-${i}`}>
+          <div class={`faq-item${i === 0 ? " open" : ""}`} key={i} data-testid={`faq-item-${i}`}>
             <button class="faq-q" data-testid={`faq-question-${i}`}>
-              {q} <span class="faq-chev">▾</span>
+              <span {...cmsAttrs(cmsRef, `faq.${i}.0`)}>{q}</span> <span class="faq-chev">▾</span>
             </button>
-            <div class="faq-a">{a}</div>
+            <div class="faq-a" {...cmsAttrs(cmsRef, `faq.${i}.1`)}>{a}</div>
           </div>
         ))}
       </div>

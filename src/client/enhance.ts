@@ -222,12 +222,17 @@ function heroSlides() {
   };
 
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  let paused = false;
   const start = () => {
-    if (reduced) return;
+    if (reduced || paused) return;
     timer = setInterval(() => goTo((current + 1) % slides.length), HERO_ROTATE_MS);
   };
-  const restart = () => {
+  const stop = () => {
     if (timer) clearInterval(timer);
+    timer = null;
+  };
+  const restart = () => {
+    stop();
     start();
   };
 
@@ -237,6 +242,24 @@ function heroSlides() {
       goTo(i);
       restart();
     });
+  });
+
+  // F157 — freeze the carousel while a hero slide is being inline-edited, so
+  // the slide can't rotate away mid-edit; resume when the edit ends. The
+  // package emits these on any inline-edit region, so only pause when the
+  // edited element is actually inside this hero.
+  document.addEventListener("cms-inline-edit:activate", (e) => {
+    const el = (e as CustomEvent).detail?.el as HTMLElement | undefined;
+    if (el && root?.contains(el)) {
+      paused = true;
+      stop();
+    }
+  });
+  document.addEventListener("cms-inline-edit:deactivate", () => {
+    if (paused) {
+      paused = false;
+      restart();
+    }
   });
 
   start();

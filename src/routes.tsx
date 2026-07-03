@@ -40,7 +40,7 @@ import { Illustration, hasIllustration, pickNewsIllustration } from "@/component
 import { Icon } from "@/components/Icons.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
-import { Cases, Insights, About, cmsAttrs } from "@/components/sections.tsx";
+import { Cases, Insights, About, cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
 import type { CmsRef } from "@/content/types.ts";
 import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
@@ -142,6 +142,7 @@ export async function renderHome(locale: Locale): Promise<string> {
       attr: str(pd.quote) ? str(pd.client) || str(pd.author) : undefined,
       slug,
       href: withLocale(locale, `/cases/${slug}`),
+      cmsRef: { collection: "posts", slug, locale },
     };
   });
   const casesData: CasesData = {
@@ -160,9 +161,16 @@ export async function renderHome(locale: Locale): Promise<string> {
   // yet -> single slide from heroHeadingHtml/heroLead, so nothing breaks
   // pre-seed. Shuffled per request (loadRandomNews pattern) so reload = new order.
   const heroSlidesRaw: Array<{ heading?: string; subheading?: string }> = Array.isArray(d.heroSlides) ? d.heroSlides : [];
+  // Carry each slide's ORIGINAL cms field path so a per-request shuffle (below)
+  // never mis-targets a save — the rendered order ≠ the stored order.
   const heroSlides = heroSlidesRaw.length
-    ? heroSlidesRaw.map((s) => ({ titleHtml: String(s.heading ?? ""), leadHtml: String(s.subheading ?? "") }))
-    : [{ titleHtml: String(d.heroHeadingHtml ?? ""), leadHtml: String(d.heroLead ?? "") }];
+    ? heroSlidesRaw.map((s, i) => ({
+        titleHtml: String(s.heading ?? ""),
+        leadHtml: String(s.subheading ?? ""),
+        headingPath: `heroSlides.${i}.heading`,
+        leadPath: `heroSlides.${i}.subheading`,
+      }))
+    : [{ titleHtml: String(d.heroHeadingHtml ?? ""), leadHtml: String(d.heroLead ?? ""), headingPath: "heroHeadingHtml", leadPath: "heroLead" }];
   for (let i = heroSlides.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [heroSlides[i], heroSlides[j]] = [heroSlides[j]!, heroSlides[i]!];
@@ -178,8 +186,8 @@ export async function renderHome(locale: Locale): Promise<string> {
             <div class="hero-slide-stack" data-testid="hero-slideshow">
               {heroSlides.map((s, i) => (
                 <div class={`hero-slide${i === 0 ? " active" : ""}`} data-testid={`hero-slide-${i}`} key={i}>
-                  <h1 dangerouslySetInnerHTML={{ __html: s.titleHtml }} />
-                  <p class="lead" dangerouslySetInnerHTML={{ __html: s.leadHtml }} />
+                  <h1 {...cmsHtmlAttrs(landingRef, s.headingPath)} dangerouslySetInnerHTML={{ __html: s.titleHtml }} />
+                  <p class="lead" {...cmsHtmlAttrs(landingRef, s.leadPath)} dangerouslySetInnerHTML={{ __html: s.leadHtml }} />
                 </div>
               ))}
             </div>
@@ -244,7 +252,7 @@ export async function renderHome(locale: Locale): Promise<string> {
           <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsAttrs(landingRef, "problemHeading")}>{d.problemHeading}</h2>
           <div class="divider" />
           {(d.problemP as string[]).map((p, i) => (
-            <p class="lead" key={i} style={`max-width:none;${i < d.problemP.length - 1 ? "margin-bottom:16px" : ""}`}>
+            <p class="lead" key={i} style={`max-width:none;${i < d.problemP.length - 1 ? "margin-bottom:16px" : ""}`} {...cmsAttrs(landingRef, `problemP.${i}`)}>
               {p}
             </p>
           ))}
@@ -272,9 +280,9 @@ export async function renderHome(locale: Locale): Promise<string> {
               <a class="card card-glow" href={`/${seg}/${s.slug}`} key={s.slug} data-testid={`landing-solution-card-${s.slug}`}>
                 <Icon name={SOLUTION_ICONS[s.slug] ?? "Sparkles"} />
                 <div class="plat-h">
-                  <div class="nm">{s.name}</div>
+                  <div class="nm" {...cmsAttrs(s.cmsRef, "name")}>{s.name}</div>
                 </div>
-                <p>{s.blurb}</p>
+                <p {...cmsAttrs(s.cmsRef, "blurb")}>{s.blurb}</p>
               </a>
             ))}
           </div>
@@ -289,10 +297,10 @@ export async function renderHome(locale: Locale): Promise<string> {
           </div>
           <div class="steps3">
             {(d.steps as [string, string][]).map(([title, desc], i) => (
-              <div class="step3" key={title}>
+              <div class="step3" key={i}>
                 <div class="step3-num">{i + 1}</div>
-                <div class="workstep-title">{title}</div>
-                <p>{desc}</p>
+                <div class="workstep-title" {...cmsAttrs(landingRef, `steps.${i}.0`)}>{title}</div>
+                <p {...cmsAttrs(landingRef, `steps.${i}.1`)}>{desc}</p>
               </div>
             ))}
           </div>
@@ -314,7 +322,7 @@ export async function renderHome(locale: Locale): Promise<string> {
 
       {about && about.kind === "about" ? <About data={about.data} cmsRef={about.cmsRef} /> : null}
 
-      <Faq items={d.faq as [string, string][]} locale={locale} />
+      <Faq items={d.faq as [string, string][]} locale={locale} cmsRef={landingRef} />
 
       {randomNews.length ? (
         <Insights

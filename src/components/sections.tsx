@@ -34,6 +34,20 @@ export function cmsAttrs(cmsRef: CmsRef | undefined, field: string): Record<stri
   };
 }
 
+// Same, but for INTENTIONAL-HTML fields (headings/bios/hero with a branded
+// <em class="o"> accent stored as raw HTML, rendered via dangerouslySetInnerHTML).
+// data-cms-html tells @broberg/cms-inline-edit to save innerHTML verbatim rather
+// than convert to Markdown (which would strip the accent).
+export function cmsHtmlAttrs(cmsRef: CmsRef | undefined, field: string): Record<string, string> {
+  if (!cmsRef) return {};
+  return {
+    "data-cms-collection": cmsRef.collection,
+    "data-cms-slug": cmsRef.slug,
+    "data-cms-field": field,
+    "data-cms-html": "true",
+  };
+}
+
 function CtaButton({ cta }: { cta: Cta }) {
   const cls = cta.ghost ? "btn btn-ghost" : "btn";
   const scroll = cta.scroll ? { "data-scroll": cta.scroll } : {};
