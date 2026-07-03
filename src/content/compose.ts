@@ -43,18 +43,21 @@ function forLocale(docs: StoredDoc[], locale: Locale): StoredDoc[] {
 }
 
 // A cms cta becomes either an in-page scroll (#id) or an href.
-function cta(label: unknown, url: unknown, testid: string, ghost = false): Cta | null {
+function cta(label: unknown, url: unknown, testid: string, ghost = false, cmsRef?: CmsRef, field?: string): Cta | null {
   const l = str(label);
   if (!l) return null;
   const u = str(url);
-  if (u.startsWith("#")) return { label: l, scroll: u.slice(1), testid, ghost };
-  return { label: l, href: u || undefined, testid, ghost };
+  // F157 — when cmsRef+field are given, the button LABEL becomes inline-editable
+  // (saves to the section doc's cta field). Undefined → plain label (no change).
+  const wire = cmsRef && field ? { cmsRef, labelField: field } : {};
+  if (u.startsWith("#")) return { label: l, scroll: u.slice(1), testid, ghost, ...wire };
+  return { label: l, href: u || undefined, testid, ghost, ...wire };
 }
 
-function frameCtas(d: Data): Cta[] {
+function frameCtas(d: Data, cmsRef?: CmsRef): Cta[] {
   return [
-    cta(d.ctaPrimary, d.ctaPrimaryUrl, "section-cta-primary"),
-    cta(d.ctaSecondary, d.ctaSecondaryUrl, "section-cta-secondary", true),
+    cta(d.ctaPrimary, d.ctaPrimaryUrl, "section-cta-primary", false, cmsRef, "ctaPrimary"),
+    cta(d.ctaSecondary, d.ctaSecondaryUrl, "section-cta-secondary", true, cmsRef, "ctaSecondary"),
   ].filter((c): c is Cta => c !== null);
 }
 
@@ -150,7 +153,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
   switch (kind) {
     case "hero": {
       const fbHero = fb?.kind === "hero" ? fb.data : undefined;
-      const ctas = frameCtas(d);
+      const ctas = frameCtas(d, cmsRef);
       // Stat labels/targets/pre/suf authored in cms (section field or globals);
       // the live numbers come from our fleet aggregation at render time.
       const cmsStats = arr<Stat>(d.stats).length ? arr<Stat>(d.stats) : arr<Stat>(ctx.globals.stats);
@@ -197,7 +200,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           lead: str(d.subheading) || fbP?.lead || "",
           items: ctx.platformItems.length ? ctx.platformItems : (fbP?.items ?? []),
           pathPrefix: `/${flagshipsSegment(ctx.locale)}`,
-          allLink: cta(d.ctaPrimary, d.ctaPrimaryUrl, "platforme-all-link") ??
+          allLink: cta(d.ctaPrimary, d.ctaPrimaryUrl, "platforme-all-link", false, cmsRef, "ctaPrimary") ??
             fbP?.allLink ?? { label: "Se alle flagskibe", href: `/${flagshipsSegment(ctx.locale)}`, testid: "platforme-all-link" },
         },
         cmsRef,
@@ -226,7 +229,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           headingHtml: str(d.heading) || fbC?.headingHtml || "",
           lead: str(d.subheading) || fbC?.lead || "",
           items: items.length ? items : (fbC?.items ?? []),
-          allLink: {
+          allLink: cta(d.ctaPrimary, withLocale(ctx.locale, "/cases"), "cases-all-link", true, cmsRef, "ctaPrimary") ?? {
             label: ctx.locale === "en" ? "See all cases" : "Se alle cases",
             href: withLocale(ctx.locale, "/cases"),
             testid: "cases-all-link",
@@ -312,7 +315,7 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           // Never surface the raw address as a mailto link — route to the real
           // contact form on the sales landing instead (same rule as the footer).
           formHref: withLocale(ctx.locale, "/") + "#kontakt",
-          ctaLabel: ctx.locale === "en" ? "Get in touch" : "Skriv til os",
+          ctaLabel: str(d.ctaPrimary) || fbCo?.ctaLabel || (ctx.locale === "en" ? "Get in touch" : "Skriv til os"),
         },
         cmsRef,
       };

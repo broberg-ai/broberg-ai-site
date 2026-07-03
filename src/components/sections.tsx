@@ -359,7 +359,7 @@ export function Contact({ data, cmsRef }: { data: ContactData; cmsRef?: CmsRef }
             {data.lead}
           </p>
           <a href={data.formHref} class="btn" data-testid="kontakt-cta-mail">
-            {data.ctaLabel} <span class="ar">→</span>
+            <span {...cmsAttrs(cmsRef, "ctaPrimary")}>{data.ctaLabel}</span> <span class="ar">→</span>
           </a>
         </div>
       </div>
