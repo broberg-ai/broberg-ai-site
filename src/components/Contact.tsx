@@ -4,11 +4,12 @@
    to a hidden input the browser actually submits. */
 import type { Locale } from "@/config.ts";
 import type { CmsRef } from "@/content/types.ts";
-import { cmsAttrs } from "@/components/sections.tsx";
+import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
 
 export interface ContactCopy {
   ctaHeadingHtml: string;
   ctaLead: string;
+  eyebrow?: string;
 }
 
 const SOLUTION_TYPES: { value: string; da: string; en: string }[] = [
@@ -25,10 +26,10 @@ export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: L
     <section id="kontakt">
       <div class="wrap">
         <div class="cta-final">
-          <div class="eyebrow" style="display:inline-flex">
-            {isEn ? "Contact" : "Kontakt"}
+          <div class="eyebrow" style="display:inline-flex" {...cmsAttrs(cmsRef, "contactEyebrow")}>
+            {data.eyebrow ?? (isEn ? "Contact" : "Kontakt")}
           </div>
-          <h2 dangerouslySetInnerHTML={{ __html: data.ctaHeadingHtml }} />
+          <h2 {...cmsHtmlAttrs(cmsRef, "ctaHeadingHtml")} dangerouslySetInnerHTML={{ __html: data.ctaHeadingHtml }} />
           <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "ctaLead")}>
             {data.ctaLead}
           </p>

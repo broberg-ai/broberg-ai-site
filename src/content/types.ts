@@ -17,6 +17,12 @@ export interface Cta {
   scroll?: string;
   testid: string;
   ghost?: boolean;
+  // F157 — make the button LABEL inline-editable. When both are set, CtaButton
+  // wraps {label} in an editable span targeting cmsRef's `labelField` (the
+  // inline-edit package preventDefaults the click so the surrounding <a> won't
+  // navigate). Undefined elsewhere → plain, non-editable label (no change).
+  cmsRef?: CmsRef;
+  labelField?: string;
 }
 
 export interface Stat {

@@ -61,11 +61,15 @@ async function page(
   meta: { title: string; description: string; locale: Locale; canonical?: string; altHref?: string },
 ) {
   const footerData = await loadFooter(meta.locale);
+  const globalsDoc = await loadGlobals(meta.locale);
+  const globalsRef: CmsRef | undefined = globalsDoc
+    ? { collection: "globals", slug: String(globalsDoc.slug), locale: meta.locale }
+    : undefined;
   return renderPage(
     <>
       <Nav locale={meta.locale} altHref={meta.altHref} />
       {children}
-      <Footer data={footerData} />
+      <Footer data={footerData} cmsRef={globalsRef} />
     </>,
     meta,
     resolveAssets(),
@@ -124,6 +128,12 @@ export async function renderHome(locale: Locale): Promise<string> {
   const globalsRef: CmsRef | undefined = globalsDoc ? { collection: "globals", slug: String(globalsDoc.slug), locale } : undefined;
   const globalsData = (globalsDoc?.data ?? {}) as Record<string, unknown>;
   const bookLabel = (typeof globalsData.bookingCtaLabel === "string" && globalsData.bookingCtaLabel) || (isEn ? "Book a meeting" : "Book et møde");
+  // F157 Phase 2 — structural homepage labels now live on the landing doc (seeded)
+  // so they're inline-editable. `t` reads the doc value with a locale fallback:
+  // defensive only (docs are seeded), keeping the "no naked cutover" guarantee
+  // without duplicating the fallback string at every call site.
+  const t = (field: string, da: string, en: string): string =>
+    (typeof d[field] === "string" && d[field]) || (isEn ? en : da);
 
   const solutions = await loadSolutions(locale);
   const randomNews = await loadRandomNews(locale, 3);
@@ -146,15 +156,26 @@ export async function renderHome(locale: Locale): Promise<string> {
     };
   });
   const casesData: CasesData = {
-    eyebrow: "Cases",
-    headingHtml: isEn
-      ? `Built <em class="o">fast</em>. Built right.`
-      : `Bygget <em class="o">lynhurtigt</em>. Bygget rigtigt.`,
-    lead: isEn
-      ? "Real customers got real results — delivered in a fraction of the normal time, because the foundation was already in place."
-      : "Rigtige kunder fik rigtige resultater — leveret på en brøkdel af den normale tid, fordi fundamentet allerede lå klar.",
+    eyebrow: t("casesEyebrow", "Cases", "Cases"),
+    headingHtml: t(
+      "casesHeadingHtml",
+      `Bygget <em class="o">lynhurtigt</em>. Bygget rigtigt.`,
+      `Built <em class="o">fast</em>. Built right.`,
+    ),
+    lead: t(
+      "casesLead",
+      "Rigtige kunder fik rigtige resultater — leveret på en brøkdel af den normale tid, fordi fundamentet allerede lå klar.",
+      "Real customers got real results — delivered in a fraction of the normal time, because the foundation was already in place.",
+    ),
     items: caseItems,
-    allLink: { label: isEn ? "See all cases" : "Se alle cases", href: withLocale(locale, "/cases"), testid: "landing-cases-all-link", ghost: true },
+    allLink: {
+      label: t("casesAllLabel", "Se alle cases", "See all cases"),
+      href: withLocale(locale, "/cases"),
+      testid: "landing-cases-all-link",
+      ghost: true,
+      cmsRef: landingRef,
+      labelField: "casesAllLabel",
+    },
   };
 
   // Rotating hero messages (landing.heroSlides array field). None authored
@@ -212,7 +233,7 @@ export async function renderHome(locale: Locale): Promise<string> {
                 <span {...cmsAttrs(globalsRef, "bookingCtaLabel")}>{bookLabel}</span> <span class="ar">→</span>
               </a>
               <a class="btn btn-ghost" href={universetHref} data-testid="landing-cta-secondary">
-                {isEn ? "See how we build it" : "Se hvordan vi bygger det"} <span class="ar">→</span>
+                <span {...cmsAttrs(landingRef, "secondaryCtaLabel")}>{t("secondaryCtaLabel", "Se hvordan vi bygger det", "See how we build it")}</span> <span class="ar">→</span>
               </a>
             </div>
           </div>
@@ -267,12 +288,14 @@ export async function renderHome(locale: Locale): Promise<string> {
       <section id="losninger">
         <div class="wrap">
           <div class="sec-head">
-            <div class="eyebrow">{isEn ? "Solutions" : "Løsninger"}</div>
-            <h2>{isEn ? "What can we build for you?" : "Hvad kan vi bygge til dig?"}</h2>
-            <p class="lead">
-              {isEn
-                ? "Four ways in — pick the one that matches where you are today. Each solution has its own page with more detail."
-                : "Fire veje ind — vælg den der matcher hvor I er i dag. Hver løsning har sin egen side med dybere detaljer."}
+            <div class="eyebrow" {...cmsAttrs(landingRef, "solutionsEyebrow")}>{t("solutionsEyebrow", "Løsninger", "Solutions")}</div>
+            <h2 {...cmsAttrs(landingRef, "solutionsHeading")}>{t("solutionsHeading", "Hvad kan vi bygge til dig?", "What can we build for you?")}</h2>
+            <p class="lead" {...cmsAttrs(landingRef, "solutionsLead")}>
+              {t(
+                "solutionsLead",
+                "Fire veje ind — vælg den der matcher hvor I er i dag. Hver løsning har sin egen side med dybere detaljer.",
+                "Four ways in — pick the one that matches where you are today. Each solution has its own page with more detail.",
+              )}
             </p>
           </div>
           <div class="grid g4">
@@ -292,7 +315,7 @@ export async function renderHome(locale: Locale): Promise<string> {
       <section style="background:var(--dark2)">
         <div class="wrap">
           <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto">
-            <div class="eyebrow" style="justify-content:center">{isEn ? "How it works" : "Sådan foregår det"}</div>
+            <div class="eyebrow" style="justify-content:center" {...cmsAttrs(landingRef, "stepsEyebrow")}>{t("stepsEyebrow", "Sådan foregår det", "How it works")}</div>
             <h2 {...cmsAttrs(landingRef, "stepsHeading")}>{d.stepsHeading}</h2>
           </div>
           <div class="steps3">
@@ -307,37 +330,49 @@ export async function renderHome(locale: Locale): Promise<string> {
         </div>
       </section>
 
-      <Cases data={casesData} />
+      <Cases data={casesData} cmsRef={landingRef} fields={{ eyebrow: "casesEyebrow", heading: "casesHeadingHtml", lead: "casesLead" }} />
 
       <section>
         <div class="wrap" style="max-width:680px;text-align:center">
-          <div class="eyebrow" style="justify-content:center">{isEn ? "Why us" : "Hvorfor os"}</div>
+          <div class="eyebrow" style="justify-content:center" {...cmsAttrs(landingRef, "whyUsEyebrow")}>{t("whyUsEyebrow", "Hvorfor os", "Why us")}</div>
           <h2 {...cmsAttrs(landingRef, "whyUsHeading")}>{d.whyUsHeading}</h2>
           <p class="lead" style="max-width:none;margin:18px auto 30px" {...cmsAttrs(landingRef, "whyUsBody")}>{d.whyUsBody}</p>
           <a class="btn btn-ghost" href={universetHref} data-testid="landing-whyus-cta">
-            {isEn ? "See the whole machine" : "Se hele maskinen"} <span class="ar">→</span>
+            <span {...cmsAttrs(landingRef, "whyUsCtaLabel")}>{t("whyUsCtaLabel", "Se hele maskinen", "See the whole machine")}</span> <span class="ar">→</span>
           </a>
         </div>
       </section>
 
-      {about && about.kind === "about" ? <About data={about.data} cmsRef={about.cmsRef} /> : null}
+      {about && about.kind === "about" ? <About data={about.data} cmsRef={about.cmsRef} globalsRef={globalsRef} /> : null}
 
       <Faq items={d.faq as [string, string][]} locale={locale} cmsRef={landingRef} />
 
       {randomNews.length ? (
         <Insights
           data={{
-            eyebrow: isEn ? "Thoughts" : "Tanker",
-            headingHtml: isEn ? `Thoughts from the <em class="o">engine room</em>.` : `Tanker fra <em class="o">maskinrummet</em>.`,
-            lead: isEn
-              ? "Weekly notes on AI-native development and automation — for builders, product managers and the curious."
-              : "Ugentlige nedslag om AI-native udvikling og automatisering — for builders, product managers og nysgerrige.",
+            eyebrow: t("insightsEyebrow", "Tanker", "Thoughts"),
+            headingHtml: t(
+              "insightsHeadingHtml",
+              `Tanker fra <em class="o">maskinrummet</em>.`,
+              `Thoughts from the <em class="o">engine room</em>.`,
+            ),
+            lead: t(
+              "insightsLead",
+              "Ugentlige nedslag om AI-native udvikling og automatisering — for builders, product managers og nysgerrige.",
+              "Weekly notes on AI-native development and automation — for builders, product managers and the curious.",
+            ),
             posts: randomNews,
           }}
+          cmsRef={landingRef}
+          fields={{ eyebrow: "insightsEyebrow", heading: "insightsHeadingHtml", lead: "insightsLead" }}
         />
       ) : null}
 
-      <Contact data={{ ctaHeadingHtml: d.ctaHeadingHtml, ctaLead: d.ctaLead }} locale={locale} cmsRef={landingRef} />
+      <Contact
+        data={{ ctaHeadingHtml: d.ctaHeadingHtml, ctaLead: d.ctaLead, eyebrow: t("contactEyebrow", "Kontakt", "Contact") }}
+        locale={locale}
+        cmsRef={landingRef}
+      />
     </>,
     {
       title: isEn ? "broberg.ai — AI-native websites, webshops & platforms" : "broberg.ai — AI-native websites, webshops & platforme",

@@ -48,30 +48,74 @@ export function cmsHtmlAttrs(cmsRef: CmsRef | undefined, field: string): Record<
   };
 }
 
+// For MARKDOWN richtext fields (cms `richtext` contract — stored as Markdown,
+// rendered via marked). data-cms-richtext tells @broberg/cms-inline-edit to
+// convert the edited innerHTML back to Markdown on save (not verbatim HTML).
+export function cmsRichAttrs(cmsRef: CmsRef | undefined, field: string): Record<string, string> {
+  if (!cmsRef) return {};
+  return {
+    "data-cms-collection": cmsRef.collection,
+    "data-cms-slug": cmsRef.slug,
+    "data-cms-field": field,
+    "data-cms-richtext": "true",
+  };
+}
+
 function CtaButton({ cta }: { cta: Cta }) {
   const cls = cta.ghost ? "btn btn-ghost" : "btn";
   const scroll = cta.scroll ? { "data-scroll": cta.scroll } : {};
+  // Label is inline-editable when the cta carries a cms target. Wrapping only
+  // the text (not the whole button) keeps the arrow out of the saved value.
+  const label =
+    cta.cmsRef && cta.labelField ? (
+      <span {...cmsAttrs(cta.cmsRef, cta.labelField)}>{cta.label}</span>
+    ) : (
+      cta.label
+    );
   if (cta.href) {
     return (
       <a class={cls} href={cta.href} data-testid={cta.testid} {...scroll}>
-        {cta.label} <span class="ar">→</span>
+        {label} <span class="ar">→</span>
       </a>
     );
   }
   return (
     <button class={cls} data-testid={cta.testid} {...scroll}>
-      {cta.label} <span class="ar">→</span>
+      {label} <span class="ar">→</span>
     </button>
   );
 }
 
-function SecHead({ eyebrow, headingHtml, lead, cmsRef }: { eyebrow: string; headingHtml: string; lead: string; cmsRef?: CmsRef }) {
+// `fields` lets a caller override which cms field each part saves to. Default
+// (eyebrow → "eyebrow", lead → "subheading", heading unwired) matches a
+// `sections` doc — used by the block renderer. The homepage passes landing-doc
+// field names (casesEyebrow/casesHeadingHtml/casesLead …) instead, and a
+// `heading` field opts the h2 into inline-edit as HTML (branded <em> accent).
+function SecHead({
+  eyebrow,
+  headingHtml,
+  lead,
+  cmsRef,
+  fields,
+}: {
+  eyebrow: string;
+  headingHtml: string;
+  lead: string;
+  cmsRef?: CmsRef;
+  fields?: { eyebrow?: string; heading?: string; lead?: string };
+}) {
+  const fEyebrow = fields?.eyebrow ?? "eyebrow";
+  const fLead = fields?.lead ?? "subheading";
   return (
     <div class="sec-head">
-      <div class="eyebrow" {...cmsAttrs(cmsRef, "eyebrow")}>{eyebrow}</div>
-      <h2 dangerouslySetInnerHTML={{ __html: headingHtml }} />
+      <div class="eyebrow" {...cmsAttrs(cmsRef, fEyebrow)}>{eyebrow}</div>
+      {fields?.heading ? (
+        <h2 {...cmsHtmlAttrs(cmsRef, fields.heading)} dangerouslySetInnerHTML={{ __html: headingHtml }} />
+      ) : (
+        <h2 dangerouslySetInnerHTML={{ __html: headingHtml }} />
+      )}
       <div class="divider" />
-      <p class="lead" {...cmsAttrs(cmsRef, "subheading")}>{lead}</p>
+      <p class="lead" {...cmsAttrs(cmsRef, fLead)}>{lead}</p>
     </div>
   );
 }
@@ -162,11 +206,11 @@ export function Platforms({ data, cmsRef }: { data: PlatformsData; cmsRef?: CmsR
   );
 }
 
-export function Cases({ data, cmsRef }: { data: CasesData; cmsRef?: CmsRef }) {
+export function Cases({ data, cmsRef, fields }: { data: CasesData; cmsRef?: CmsRef; fields?: { eyebrow?: string; heading?: string; lead?: string } }) {
   return (
     <section id="cases">
       <div class="wrap reveal">
-        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} />
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} fields={fields} />
         <div class="grid g2">
           {data.items.map((c) => {
             // Case fields live on the underlying `posts` doc (c.cmsRef), NOT the
@@ -232,11 +276,11 @@ export function Method({ data, cmsRef }: { data: MethodData; cmsRef?: CmsRef }) 
   );
 }
 
-export function Insights({ data, cmsRef }: { data: InsightsData; cmsRef?: CmsRef }) {
+export function Insights({ data, cmsRef, fields }: { data: InsightsData; cmsRef?: CmsRef; fields?: { eyebrow?: string; heading?: string; lead?: string } }) {
   return (
     <section id="indsigter">
       <div class="wrap reveal">
-        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} />
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.headingHtml} lead={data.lead} cmsRef={cmsRef} fields={fields} />
         <div class="grid g3">
           {data.posts.map((p) => (
             <a class="blogcard" key={p.slug} href={p.href} data-testid={`blog-${p.slug}`}>
@@ -256,7 +300,11 @@ export function Insights({ data, cmsRef }: { data: InsightsData; cmsRef?: CmsRef
   );
 }
 
-export function About({ data, cmsRef }: { data: AboutData; cmsRef?: CmsRef }) {
+// `globalsRef` targets the globals doc, where the bio (aboutBio, Markdown) and
+// client names (clients[].name) actually live — cross-doc from the section's
+// own eyebrow/heading/clientsLabel. Undefined on the /universe block path (About
+// only renders on the homepage), so those stay unwired there.
+export function About({ data, cmsRef, globalsRef }: { data: AboutData; cmsRef?: CmsRef; globalsRef?: CmsRef }) {
   return (
     <section id="om" style="background:var(--dark2)">
       <div class="wrap reveal">
@@ -275,8 +323,8 @@ export function About({ data, cmsRef }: { data: AboutData; cmsRef?: CmsRef }) {
           </div>
           <div>
             <div class="eyebrow" {...cmsAttrs(cmsRef, "eyebrow")}>{data.eyebrow}</div>
-            <h2 style="margin-bottom:12px" dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
-            <p class="lead" dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
+            <h2 style="margin-bottom:12px" {...cmsHtmlAttrs(cmsRef, "heading")} dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
+            <p class="lead" {...cmsRichAttrs(globalsRef, "aboutBio")} dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
             <div style="margin-top:16px">
               {data.pills.map((p) => (
                 <span class="pill" key={p}>
@@ -286,8 +334,8 @@ export function About({ data, cmsRef }: { data: AboutData; cmsRef?: CmsRef }) {
             </div>
             <div class="clients">
               <span class="lbl" {...cmsAttrs(cmsRef, "subheading")}>{data.clientsLabel}</span>
-              {data.clients.map((c) => (
-                <span class="c" key={c}>
+              {data.clients.map((c, i) => (
+                <span class="c" key={c} {...cmsAttrs(globalsRef, `clients.${i}.name`)}>
                   {c}
                 </span>
               ))}
@@ -307,7 +355,7 @@ export function Contact({ data, cmsRef }: { data: ContactData; cmsRef?: CmsRef }
           <div class="eyebrow" style="display:inline-flex" {...cmsAttrs(cmsRef, "eyebrow")}>
             {data.eyebrow}
           </div>
-          <h2 dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
+          <h2 {...cmsHtmlAttrs(cmsRef, "heading")} dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
           <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "subheading")}>
             {data.lead}
           </p>
