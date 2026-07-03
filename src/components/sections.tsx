@@ -161,9 +161,8 @@ export function Universe({ data, cmsRef }: { data: UniverseData; cmsRef?: CmsRef
               <div class="tier" key={i}>
                 <b {...cmsAttrs(cmsRef, `blocks.${t.cmsIndex}.heading`)}>{t.title}</b>
                 <br />
-                {/* body is richtext (rendered HTML) — needs the rich-edit path,
-                    not plain field editing; left un-wired for now. */}
-                <span dangerouslySetInnerHTML={{ __html: t.body }} />
+                {/* body is Markdown (richtextInline) → rich-edit path saves it back as Markdown. */}
+                <span {...cmsRichAttrs(cmsRef, `blocks.${t.cmsIndex}.body`)} dangerouslySetInnerHTML={{ __html: t.body }} />
               </div>
             ))}
           </div>
@@ -326,8 +325,8 @@ export function About({ data, cmsRef, globalsRef }: { data: AboutData; cmsRef?: 
             <h2 style="margin-bottom:12px" {...cmsHtmlAttrs(cmsRef, "heading")} dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
             <p class="lead" {...cmsRichAttrs(globalsRef, "aboutBio")} dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
             <div style="margin-top:16px">
-              {data.pills.map((p) => (
-                <span class="pill" key={p}>
+              {data.pills.map((p, i) => (
+                <span class="pill" key={p} {...cmsAttrs(globalsRef, `skills.${i}`)}>
                   {p}
                 </span>
               ))}

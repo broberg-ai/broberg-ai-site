@@ -26,7 +26,7 @@ export function Footer({ data, cmsRef }: { data: FooterData; cmsRef?: CmsRef }) 
           </div>
         ))}
       </div>
-      <div class="wrap foot-legal">© 2026 broberg.ai · Aalborg · Blokhus · Copenhagen · Build &amp; Powered by the broberg.ai universe.</div>
+      <div class="wrap foot-legal" {...cmsAttrs(cmsRef, "footerLegal")}>{data.legal}</div>
       {data.techTicker.length ? (
         <div class="foot-ticker">
           <div class="foot-ticker-track">

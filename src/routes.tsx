@@ -26,6 +26,7 @@ import {
   loadPostsByTag,
   buildTagCloud,
   loadSolutions,
+  loadCategories,
   loadSolution,
   loadLanding,
   loadLatestNewsPerCategory,
@@ -62,12 +63,16 @@ async function page(
 ) {
   const footerData = await loadFooter(meta.locale);
   const globalsDoc = await loadGlobals(meta.locale);
+  const globalsData = (globalsDoc?.data ?? {}) as Record<string, unknown>;
   const globalsRef: CmsRef | undefined = globalsDoc
     ? { collection: "globals", slug: String(globalsDoc.slug), locale: meta.locale }
     : undefined;
+  const navLabels = (globalsData.nav && typeof globalsData.nav === "object" ? globalsData.nav : undefined) as
+    | Record<string, string>
+    | undefined;
   return renderPage(
     <>
-      <Nav locale={meta.locale} altHref={meta.altHref} />
+      <Nav locale={meta.locale} altHref={meta.altHref} nav={navLabels} globalsRef={globalsRef} />
       {children}
       <Footer data={footerData} cmsRef={globalsRef} />
     </>,
@@ -357,7 +362,13 @@ export async function renderHome(locale: Locale): Promise<string> {
 
       {about && about.kind === "about" ? <About data={about.data} cmsRef={about.cmsRef} globalsRef={globalsRef} /> : null}
 
-      <Faq items={d.faq as [string, string][]} locale={locale} cmsRef={landingRef} />
+      <Faq
+        items={d.faq as [string, string][]}
+        locale={locale}
+        cmsRef={landingRef}
+        eyebrow={t("faqEyebrow", "FAQ", "FAQ")}
+        heading={t("faqHeading", "Ofte stillede spørgsmål", "Frequently asked questions")}
+      />
 
       {randomNews.length ? (
         <Insights
@@ -637,8 +648,18 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
   const globalsRef: CmsRef | undefined = globalsDoc ? { collection: "globals", slug: String(globalsDoc.slug), locale } : undefined;
   const globalsData = (globalsDoc?.data ?? {}) as Record<string, unknown>;
   const bookLabel = (typeof globalsData.bookingCtaLabel === "string" && globalsData.bookingCtaLabel) || (locale === "en" ? "Book a meeting" : "Book et møde");
+  const gv = (field: string, fallback: string): string => (typeof globalsData[field] === "string" && (globalsData[field] as string)) || fallback;
+  const isEnSol = locale === "en";
+  const labels = {
+    losningerPrefix: gv("solLosningerPrefix", isEnSol ? "Solutions" : "Løsninger"),
+    howEyebrow: gv("solHowEyebrow", isEnSol ? "How it works" : "Sådan virker det"),
+    howHeading: gv("solHowHeading", isEnSol ? "From meeting to live" : "Fra møde til live"),
+    featuresEyebrow: gv("solFeaturesEyebrow", isEnSol ? "Core features" : "Kernefunktioner"),
+    featuresHeading: gv("solFeaturesHeading", isEnSol ? "Built into the platform." : "Bygget ind i platformen."),
+    proofEyebrow: gv("solProofEyebrow", isEnSol ? "The proof" : "Beviset"),
+  };
 
-  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} bookLabel={bookLabel} globalsRef={globalsRef} />, {
+  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} bookLabel={bookLabel} globalsRef={globalsRef} labels={labels} />, {
     title: `${data.name} — broberg.ai`,
     description: data.lead,
     locale,
@@ -893,6 +914,85 @@ export async function renderTagCloud(locale: Locale): Promise<string> {
       locale,
       canonical: withLocale(locale, "/tags"),
       altHref: withLocale(locale === "en" ? "da" : "en", "/tags"),
+    },
+  );
+}
+
+// Site index (Indeks) — one page linking to EVERY page on the site: main pages,
+// all solutions, all flagships, every blog category + its articles, tags. Doubles
+// as a human sitemap and a traversal aid. Linked from the footer's Navigation column.
+export async function renderSiteIndex(locale: Locale): Promise<string> {
+  const isEn = locale === "en";
+  const seg = SOLUTIONS_SEGMENT[locale];
+  const fseg = flagshipsSegment(locale);
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+  const [solutions, platforms, categories] = await Promise.all([
+    loadSolutions(locale),
+    loadPlatforms(locale),
+    loadCategories(locale),
+  ]);
+  const catPosts = await Promise.all(
+    categories.map(async (c) => ({ ...c, posts: await loadCategoryPosts(locale, c.slug) })),
+  );
+
+  const mainPages: { label: string; href: string }[] = [
+    { label: isEn ? "Home" : "Forsiden", href: withLocale(locale, "/") },
+    { label: isEn ? "How we build it" : "Sådan bygger vi det", href: isEn ? "/en/universe" : "/universet" },
+    { label: isEn ? "Solutions" : "Løsninger", href: `/${seg}` },
+    { label: isEn ? "Flagships" : "Flagskibe", href: `/${fseg}` },
+    { label: "Tags", href: withLocale(locale, "/tags") },
+    { label: isEn ? "Thank you" : "Tak", href: withLocale(locale, isEn ? "/thanks" : "/tak") },
+  ];
+
+  const Group = ({ title, links }: { title: string; links: { label: string; href: string }[] }) =>
+    links.length ? (
+      <div style="margin-bottom:26px">
+        <h3 style="font-size:15px;font-weight:600;color:var(--light);margin-bottom:10px">{title}</h3>
+        <div class="grid g3" style="gap:6px 24px">
+          {links.map((l) => (
+            <a class="siteindex-link" key={l.href} href={l.href} style="display:block;padding:3px 0;color:var(--muted)" data-testid={`siteindex-${l.href}`}>
+              {l.label} <span class="ar">→</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ) : null;
+
+  return await page(
+    <section id="indeks">
+      <div class="wrap reveal" style="max-width:900px">
+        <div class="sec-head">
+          <div class="eyebrow" {...cmsAttrs(globalsRef, "siteIndexEyebrow")}>{g("siteIndexEyebrow", isEn ? "Site index" : "Indeks")}</div>
+          <h2 {...cmsAttrs(globalsRef, "siteIndexHeading")}>{g("siteIndexHeading", isEn ? "Every page on the site" : "Alle sider på sitet")}</h2>
+          <div class="divider" />
+        </div>
+        <Group title={isEn ? "Main pages" : "Hovedsider"} links={mainPages} />
+        <Group title={isEn ? "Solutions" : "Løsninger"} links={solutions.map((s) => ({ label: s.name, href: `/${seg}/${s.slug}` }))} />
+        <Group
+          title={isEn ? "Flagships" : "Flagskibe"}
+          links={platforms.map((p) => ({ label: p.name, href: withLocale(locale, `/${fseg}/${p.logoKey}`) }))}
+        />
+        {catPosts.map((c) => (
+          <Group
+            key={c.slug}
+            title={c.name}
+            links={[
+              { label: isEn ? `All ${c.name}` : `Alle ${c.name}`, href: withLocale(locale, `/${c.slug}`) },
+              ...c.posts.map((p) => {
+                const pt = (p.data as Record<string, unknown>)?.title;
+                return { label: (typeof pt === "string" && pt) || String(p.slug), href: withLocale(locale, `/${c.slug}/${String(p.slug)}`) };
+              }),
+            ]}
+          />
+        ))}
+      </div>
+    </section>,
+    {
+      title: isEn ? "Site index — broberg.ai" : "Indeks — broberg.ai",
+      description: isEn ? "Every page on broberg.ai in one place." : "Alle sider på broberg.ai ét sted.",
+      locale,
+      canonical: withLocale(locale, isEn ? "/index" : "/indeks"),
+      altHref: withLocale(isEn ? "da" : "en", isEn ? "/indeks" : "/index"),
     },
   );
 }

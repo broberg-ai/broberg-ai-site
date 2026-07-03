@@ -6,7 +6,16 @@
 import { Icon } from "@/components/Icons.tsx";
 import type { Locale } from "@/config.ts";
 import type { CmsRef } from "@/content/types.ts";
-import { cmsAttrs } from "@/components/sections.tsx";
+import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
+
+export interface SolutionLabels {
+  losningerPrefix: string;
+  howEyebrow: string;
+  howHeading: string;
+  featuresEyebrow: string;
+  featuresHeading: string;
+  proofEyebrow: string;
+}
 
 export type ProofType = "website" | "webshop" | "platform";
 
@@ -72,6 +81,7 @@ export function SolutionPage({
   cmsRef,
   bookLabel,
   globalsRef,
+  labels,
 }: {
   data: SolutionData;
   locale: Locale;
@@ -79,14 +89,11 @@ export function SolutionPage({
   cmsRef?: CmsRef;
   bookLabel: string;
   globalsRef?: CmsRef;
+  labels: SolutionLabels;
 }) {
   // Contact lives on the homepage, not on this page — link there, not to a
   // local #kontakt anchor that doesn't exist here.
   const kontaktHref = `${locale === "en" ? "/en" : "/"}#kontakt`;
-  const howEyebrow = locale === "en" ? "How it works" : "Sådan virker det";
-  const featuresEyebrow = locale === "en" ? "Core features" : "Kernefunktioner";
-  const featuresHeading = locale === "en" ? "Built into the platform." : "Bygget ind i platformen.";
-  const proofEyebrow = locale === "en" ? "The proof" : "Beviset";
   const ctaSub = locale === "en" ? "15 minutes, no obligation." : "15 minutter, ingen forpligtelse.";
 
   return (
@@ -95,9 +102,9 @@ export function SolutionPage({
         <div class="wrap plat-detail-head" style="padding-top:150px">
           <div>
             <div class="eyebrow">
-              {locale === "en" ? "Solutions" : "Løsninger"} · <span {...cmsAttrs(cmsRef, "name")}>{data.name}</span>
+              <span {...cmsAttrs(globalsRef, "solLosningerPrefix")}>{labels.losningerPrefix}</span> · <span {...cmsAttrs(cmsRef, "name")}>{data.name}</span>
             </div>
-            <h2 style="margin-bottom:16px" dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
+            <h2 style="margin-bottom:16px" {...cmsHtmlAttrs(cmsRef, "headingHtml")} dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
             <p class="lead" {...cmsAttrs(cmsRef, "lead")}>{data.lead}</p>
             <div class="cta-row">
               <a class="btn" href={kontaktHref} data-testid="solution-cta-primary">
@@ -126,10 +133,10 @@ export function SolutionPage({
       <section>
         <div class="wrap">
           <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto">
-            <div class="eyebrow" style="justify-content:center">
-              {howEyebrow}
+            <div class="eyebrow" style="justify-content:center" {...cmsAttrs(globalsRef, "solHowEyebrow")}>
+              {labels.howEyebrow}
             </div>
-            <h2>{locale === "en" ? "From meeting to live" : "Fra møde til live"}</h2>
+            <h2 {...cmsAttrs(globalsRef, "solHowHeading")}>{labels.howHeading}</h2>
           </div>
           <div class="steps3">
             {data.steps.map(([title, desc], i) => (
@@ -146,8 +153,8 @@ export function SolutionPage({
       <section style="background:var(--dark2)">
         <div class="wrap">
           <div class="sec-head">
-            <div class="eyebrow">{featuresEyebrow}</div>
-            <h2>{featuresHeading}</h2>
+            <div class="eyebrow" {...cmsAttrs(globalsRef, "solFeaturesEyebrow")}>{labels.featuresEyebrow}</div>
+            <h2 {...cmsAttrs(globalsRef, "solFeaturesHeading")}>{labels.featuresHeading}</h2>
           </div>
           <div class="grid g3">
             {data.features.map(([title, desc, icon], i) => (
@@ -164,7 +171,7 @@ export function SolutionPage({
       <section id="bevis">
         <div class="wrap" style={data.proof.length > 1 ? "" : "max-width:760px"}>
           <div class="sec-head">
-            <div class="eyebrow">{proofEyebrow}</div>
+            <div class="eyebrow" {...cmsAttrs(globalsRef, "solProofEyebrow")}>{labels.proofEyebrow}</div>
             <h2 {...cmsAttrs(cmsRef, "proofHeading")}>{data.proofHeading}</h2>
           </div>
           <div class={data.proof.length > 1 ? "grid g2" : ""}>
@@ -186,7 +193,7 @@ export function SolutionPage({
             <div class="eyebrow" style="display:inline-flex" {...cmsAttrs(cmsRef, "name")}>
               {data.name}
             </div>
-            <h2 dangerouslySetInnerHTML={{ __html: data.ctaHeadingHtml }} />
+            <h2 {...cmsHtmlAttrs(cmsRef, "ctaHeadingHtml")} dangerouslySetInnerHTML={{ __html: data.ctaHeadingHtml }} />
             <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "ctaLead")}>
               {data.ctaLead || ctaSub}
             </p>

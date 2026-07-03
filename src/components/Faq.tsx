@@ -5,13 +5,25 @@ import type { Locale } from "@/config.ts";
 import type { CmsRef } from "@/content/types.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
 
-export function Faq({ items, locale, cmsRef }: { items: [string, string][]; locale: Locale; cmsRef?: CmsRef }) {
+export function Faq({
+  items,
+  locale,
+  cmsRef,
+  eyebrow,
+  heading,
+}: {
+  items: [string, string][];
+  locale: Locale;
+  cmsRef?: CmsRef;
+  eyebrow?: string;
+  heading?: string;
+}) {
   return (
     <section id="faq" style="background:var(--dark2)">
       <div class="wrap" style="max-width:700px">
         <div class="sec-head">
-          <div class="eyebrow">FAQ</div>
-          <h2>{locale === "en" ? "Frequently asked questions" : "Ofte stillede spørgsmål"}</h2>
+          <div class="eyebrow" {...cmsAttrs(cmsRef, "faqEyebrow")}>{eyebrow ?? "FAQ"}</div>
+          <h2 {...cmsAttrs(cmsRef, "faqHeading")}>{heading ?? (locale === "en" ? "Frequently asked questions" : "Ofte stillede spørgsmål")}</h2>
         </div>
         {items.map(([q, a], i) => (
           <div class={`faq-item${i === 0 ? " open" : ""}`} key={i} data-testid={`faq-item-${i}`}>

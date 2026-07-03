@@ -159,6 +159,7 @@ export interface FooterData {
   tagline: string;
   columns: FooterColumn[];
   techTicker: TechTickerItem[];
+  legal: string;
 }
 
 // F157 — identifies the cms document a section's plain-text fields came from,

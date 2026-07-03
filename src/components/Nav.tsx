@@ -15,7 +15,9 @@
    Platforme/AI Integration → /losninger/:slug). "Om" points at the
    homepage's own #om section (About moved there off /universet). */
 import type { Locale } from "@/config.ts";
+import type { CmsRef } from "@/content/types.ts";
 import { withLocale } from "@/i18n.ts";
+import { cmsAttrs } from "@/components/sections.tsx";
 
 const COPY = {
   da: {
@@ -76,8 +78,21 @@ const COPY = {
 
 const SOLUTIONS_SEGMENT: Record<Locale, string> = { da: "losninger", en: "solutions" };
 
-export function Nav({ locale, altHref }: { locale: Locale; altHref?: string }) {
-  const t = COPY[locale];
+export function Nav({
+  locale,
+  altHref,
+  nav,
+  globalsRef,
+}: {
+  locale: Locale;
+  altHref?: string;
+  nav?: Record<string, string>;
+  globalsRef?: CmsRef;
+}) {
+  // Seeded globals.nav labels override the in-code COPY fallback (no naked
+  // cutover). `g(key)` marks a nav label inline-editable → globals nav.<key>.
+  const t = { ...COPY[locale], ...(nav ?? {}) };
+  const g = (key: string) => cmsAttrs(globalsRef, `nav.${key}`);
   const otherLocale: Locale = locale === "en" ? "da" : "en";
   const switchHref = altHref ?? withLocale(otherLocale, "/");
   const universetHref = locale === "en" ? "/en/universe" : "/universet";
@@ -95,58 +110,58 @@ export function Nav({ locale, altHref }: { locale: Locale; altHref?: string }) {
         <nav class="navlinks" data-testid="nav-links">
           <div class="navitem">
             <button class="navlink dropdown-toggle" data-testid="nav-losninger" aria-haspopup="true" aria-expanded="false">
-              {t.losninger} <span class="car">▾</span>
+              <span {...g("losninger")}>{t.losninger}</span> <span class="car">▾</span>
             </button>
             <div class="dd">
               <a href={`/${solutionsSeg}/websites`} data-testid="dd-websites">
-                <b>{t.websites}</b>
-                <span>{t.websitesSub}</span>
+                <b {...g("websites")}>{t.websites}</b>
+                <span {...g("websitesSub")}>{t.websitesSub}</span>
               </a>
               <a href={`/${solutionsSeg}/webshops`} data-testid="dd-webshops">
-                <b>{t.webshops}</b>
-                <span>{t.webshopsSub}</span>
+                <b {...g("webshops")}>{t.webshops}</b>
+                <span {...g("webshopsSub")}>{t.webshopsSub}</span>
               </a>
               <a href={`/${solutionsSeg}/platforme`} data-testid="dd-platforme-solution">
-                <b>{t.platforme}</b>
-                <span>{t.platformeSub}</span>
+                <b {...g("platforme")}>{t.platforme}</b>
+                <span {...g("platformeSub")}>{t.platformeSub}</span>
               </a>
               <a href={`/${solutionsSeg}/ai-integration`} data-testid="dd-ai-integration">
-                <b>{t.aiIntegration}</b>
-                <span>{t.aiIntegrationSub}</span>
+                <b {...g("aiIntegration")}>{t.aiIntegration}</b>
+                <span {...g("aiIntegrationSub")}>{t.aiIntegrationSub}</span>
               </a>
             </div>
           </div>
           <a class="navlink simple" href={universetHref} data-testid="nav-universet">
-            {t.sadanByggerViDet}
+            <span {...g("sadanByggerViDet")}>{t.sadanByggerViDet}</span>
           </a>
           <a class="navlink simple" href={`${withLocale(locale, "/")}#cases`} data-scroll="cases" data-testid="nav-cases">
-            {t.cases}
+            <span {...g("cases")}>{t.cases}</span>
           </a>
           <div class="navitem">
             <button class="navlink dropdown-toggle" data-testid="nav-ressourcer" aria-haspopup="true" aria-expanded="false">
-              {t.ressourcer} <span class="car">▾</span>
+              <span {...g("ressourcer")}>{t.ressourcer}</span> <span class="car">▾</span>
             </button>
             <div class="dd">
               <a href={withLocale(locale, "/indsigter")} data-testid="dd-indsigter">
-                <b>{t.indsigter}</b>
-                <span>{t.indsigterSub}</span>
+                <b {...g("indsigter")}>{t.indsigter}</b>
+                <span {...g("indsigterSub")}>{t.indsigterSub}</span>
               </a>
               <a href={withLocale(locale, "/ai-metode")} data-testid="dd-ai-metode">
-                <b>{t.aiMetode}</b>
-                <span>{t.aiMetodeSub}</span>
+                <b {...g("aiMetode")}>{t.aiMetode}</b>
+                <span {...g("aiMetodeSub")}>{t.aiMetodeSub}</span>
               </a>
               <a href={withLocale(locale, "/bag-om")} data-testid="dd-bag-om">
-                <b>{t.bagOm}</b>
-                <span>{t.bagOmSub}</span>
+                <b {...g("bagOm")}>{t.bagOm}</b>
+                <span {...g("bagOmSub")}>{t.bagOmSub}</span>
               </a>
               <a href={withLocale(locale, "/cases")} data-testid="dd-cases">
-                <b>{t.cases}</b>
-                <span>{t.casesSub}</span>
+                <b {...g("cases")}>{t.cases}</b>
+                <span {...g("casesSub")}>{t.casesSub}</span>
               </a>
             </div>
           </div>
           <a class="navlink simple" href={`${withLocale(locale, "/")}#om`} data-testid="nav-om">
-            {t.om}
+            <span {...g("om")}>{t.om}</span>
           </a>
           <button class="navlink navsearch" data-testid="cmdk-trigger" aria-label={t.search} title={t.search}>
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -175,7 +190,7 @@ export function Nav({ locale, altHref }: { locale: Locale; altHref?: string }) {
             </svg>
           </button>
           <a class="btn" href={`${withLocale(locale, "/")}#kontakt`} data-scroll="kontakt" data-testid="nav-cta-kontakt">
-            {t.cta}
+            <span {...g("cta")}>{t.cta}</span>
           </a>
         </nav>
       </div>

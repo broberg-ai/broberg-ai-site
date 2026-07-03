@@ -395,6 +395,14 @@ export async function loadSolutions(locale: Locale): Promise<SolutionSummary[]> 
     }));
 }
 
+// Every category (blog section) in this locale — {name, slug} for the site index.
+export async function loadCategories(locale: Locale): Promise<{ name: string; slug: string }[]> {
+  return forLocale(await list("categories"), locale)
+    .sort((a, b) => num(dataOf(a).order) - num(dataOf(b).order))
+    .map((c) => ({ name: str(dataOf(c).name), slug: stripLocalePrefix(String(c.slug ?? ""), locale) }))
+    .filter((c) => c.name && c.slug);
+}
+
 // A single solution's full page data (data.headingHtml/steps/features/proof/...)
 // for /losninger/:slug. Null when missing/unpublished/wrong-locale.
 export async function loadSolution(locale: Locale, slug: string): Promise<StoredDoc | null> {
@@ -583,7 +591,8 @@ export async function loadRandomNews(locale: Locale, count: number): Promise<Pos
 
 // Footer — 100% cms-editable (globals.footer*), with a real fallback so the
 // footer never renders empty before the doc is populated. cms #131.
-const FOOTER_FALLBACK: Record<Locale, Omit<FooterData, "techTicker"> & { techTicker: string[] }> = {
+const FOOTER_LEGAL_FALLBACK = "© 2026 broberg.ai · Aalborg · Blokhus · Copenhagen · Build & Powered by the broberg.ai universe.";
+const FOOTER_FALLBACK: Record<Locale, Omit<FooterData, "techTicker" | "legal"> & { techTicker: string[] }> = {
   da: {
     tagline: "Bygget siden 1995. AI-native websites, webshops og platforme.",
     columns: [
@@ -702,6 +711,7 @@ export async function loadFooter(locale: Locale): Promise<FooterData> {
         }))
       : fb.columns,
     techTicker,
+    legal: str(g.footerLegal) || FOOTER_LEGAL_FALLBACK,
   };
 }
 
