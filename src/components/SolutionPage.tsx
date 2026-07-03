@@ -111,7 +111,7 @@ export function SolutionPage({
                 <span {...cmsAttrs(globalsRef, "bookingCtaLabel")}>{bookLabel}</span> <span class="ar">→</span>
               </a>
               <a class="btn btn-ghost" href={secondaryCta.href} data-testid="solution-cta-secondary">
-                {secondaryCta.label} <span class="ar">→</span>
+                <span {...cmsAttrs(cmsRef, "secondaryCtaLabel")}>{secondaryCta.label}</span> <span class="ar">→</span>
               </a>
             </div>
           </div>
@@ -198,7 +198,7 @@ export function SolutionPage({
               {data.ctaLead || ctaSub}
             </p>
             <a class="btn" href={kontaktHref} data-testid="solution-cta-final">
-              {bookLabel} <span class="ar">→</span>
+              <span {...cmsAttrs(globalsRef, "bookingCtaLabel")}>{bookLabel}</span> <span class="ar">→</span>
             </a>
           </div>
         </div>

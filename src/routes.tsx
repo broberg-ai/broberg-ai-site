@@ -647,7 +647,11 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
   const data = doc.data as unknown as SolutionData;
   const seg = SOLUTIONS_SEGMENT[locale];
   const altSeg = SOLUTIONS_SEGMENT[locale === "en" ? "da" : "en"];
-  const secondaryCta = SOLUTION_SECONDARY_CTA[slug]?.[locale] ?? { label: locale === "en" ? "Book a meeting" : "Book et møde", href: "#kontakt" };
+  const mapCta = SOLUTION_SECONDARY_CTA[slug]?.[locale] ?? { label: locale === "en" ? "Book a meeting" : "Book et møde", href: "#kontakt" };
+  // Label is inline-editable via solutions.secondaryCtaLabel (seeded); the href
+  // stays code-owned (it's an in-page anchor / cross-page link, not content).
+  const seededSecondaryLabel = (doc.data as Record<string, unknown>)?.secondaryCtaLabel;
+  const secondaryCta = { label: (typeof seededSecondaryLabel === "string" && seededSecondaryLabel) || mapCta.label, href: mapCta.href };
   const solutionRef: CmsRef = { collection: "solutions", slug: String(doc.slug), locale };
   const globalsDoc = await loadGlobals(locale);
   const globalsRef: CmsRef | undefined = globalsDoc ? { collection: "globals", slug: String(globalsDoc.slug), locale } : undefined;
