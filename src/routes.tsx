@@ -392,7 +392,12 @@ export async function renderHome(locale: Locale): Promise<string> {
       ) : null}
 
       <Contact
-        data={{ ctaHeadingHtml: d.ctaHeadingHtml, ctaLead: d.ctaLead, eyebrow: t("contactEyebrow", "Kontakt", "Contact") }}
+        data={{
+          ctaHeadingHtml: d.ctaHeadingHtml,
+          ctaLead: d.ctaLead,
+          eyebrow: t("contactEyebrow", "Kontakt", "Contact"),
+          form: (d.contactForm ?? undefined) as Record<string, string> | undefined,
+        }}
         locale={locale}
         cmsRef={landingRef}
       />

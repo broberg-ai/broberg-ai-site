@@ -10,6 +10,7 @@ export interface ContactCopy {
   ctaHeadingHtml: string;
   ctaLead: string;
   eyebrow?: string;
+  form?: Record<string, string>;
 }
 
 const SOLUTION_TYPES: { value: string; da: string; en: string }[] = [
@@ -22,6 +23,9 @@ const SOLUTION_TYPES: { value: string; da: string; en: string }[] = [
 
 export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: Locale; cmsRef?: CmsRef }) {
   const isEn = locale === "en";
+  // Contact-form labels are inline-editable via landing.contactForm.<key>.
+  const f = (key: string, fallback: string): string => data.form?.[key] ?? fallback;
+  const fa = (key: string) => cmsAttrs(cmsRef, `contactForm.${key}`);
   return (
     <section id="kontakt">
       <div class="wrap">
@@ -42,23 +46,23 @@ export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: L
             style="max-width:560px;margin:0 auto;text-align:left"
           >
             <div class="form-field">
-              <label for="cf-name">{isEn ? "Name" : "Navn"}</label>
+              <label for="cf-name"><span {...fa("name")}>{f("name", isEn ? "Name" : "Navn")}</span></label>
               <input id="cf-name" name="name" required data-testid="contact-input-name" />
             </div>
             <div class="form-field">
-              <label for="cf-email">Email</label>
+              <label for="cf-email"><span {...fa("email")}>{f("email", "Email")}</span></label>
               <input id="cf-email" name="email" type="email" required data-testid="contact-input-email" />
             </div>
             <div class="form-field">
-              <label for="cf-phone">{isEn ? "Phone" : "Telefon"}</label>
+              <label for="cf-phone"><span {...fa("phone")}>{f("phone", isEn ? "Phone" : "Telefon")}</span></label>
               <input id="cf-phone" name="phone" type="tel" data-testid="contact-input-phone" />
             </div>
             <div class="form-field">
-              <label for="cf-company">{isEn ? "Company" : "Virksomhed"}</label>
+              <label for="cf-company"><span {...fa("company")}>{f("company", isEn ? "Company" : "Virksomhed")}</span></label>
               <input id="cf-company" name="company" data-testid="contact-input-company" />
             </div>
             <div class="form-field">
-              <label>{isEn ? "What do you need? (pick as many as you like)" : "Hvad har du brug for? (vælg gerne flere)"}</label>
+              <label><span {...fa("needLabel")}>{f("needLabel", isEn ? "What do you need? (pick as many as you like)" : "Hvad har du brug for? (vælg gerne flere)")}</span></label>
               <div class="form-pillrow" data-testid="contact-solution-pills">
                 {SOLUTION_TYPES.map((t) => (
                   <span
@@ -67,14 +71,14 @@ export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: L
                     key={t.value}
                     data-testid={`contact-pill-${t.value}`}
                   >
-                    {isEn ? t.en : t.da}
+                    <span {...fa(`sol_${t.value}`)}>{f(`sol_${t.value}`, isEn ? t.en : t.da)}</span>
                   </span>
                 ))}
               </div>
               <input type="hidden" name="solutionType" id="cf-solution-type" value="" />
             </div>
             <div class="form-field">
-              <label for="cf-message">{isEn ? "Message" : "Besked"}</label>
+              <label for="cf-message"><span {...fa("message")}>{f("message", isEn ? "Message" : "Besked")}</span></label>
               <textarea
                 id="cf-message"
                 name="message"
@@ -101,7 +105,7 @@ export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: L
                   <path d="M3 8.5 L6.5 12 L13 4.5" />
                 </svg>
               </span>
-              <span class="nl-label">{isEn ? "Yes, send me the newsletter" : "Ja tak, send mig nyhedsbrevet"}</span>
+              <span class="nl-label" {...fa("newsletter")}>{f("newsletter", isEn ? "Yes, send me the newsletter" : "Ja tak, send mig nyhedsbrevet")}</span>
               <span class="nl-confetti c1" aria-hidden="true" />
               <span class="nl-confetti c2" aria-hidden="true" />
               <span class="nl-confetti c3" aria-hidden="true" />
@@ -117,7 +121,7 @@ export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: L
             <div id="contact-turnstile-root" style="margin:4px 0" />
             <input type="hidden" name="turnstileToken" id="cf-turnstile-token" value="" />
             <button class="btn" type="submit" style="width:100%;justify-content:center;margin-top:8px" data-testid="contact-submit">
-              {isEn ? "Send inquiry" : "Send forespørgsel"} <span class="ar">→</span>
+              <span {...fa("submit")}>{f("submit", isEn ? "Send inquiry" : "Send forespørgsel")}</span> <span class="ar">→</span>
             </button>
             <p class="form-status" data-testid="contact-status"></p>
           </form>
