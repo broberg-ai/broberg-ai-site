@@ -949,19 +949,39 @@ export async function renderSiteIndex(locale: Locale): Promise<string> {
     { label: isEn ? "Thank you" : "Tak", href: withLocale(locale, isEn ? "/thanks" : "/tak") },
   ];
 
-  const Group = ({ title, links }: { title: string; links: { label: string; href: string }[] }) =>
-    links.length ? (
-      <div style="margin-bottom:26px">
-        <h3 style="font-size:15px;font-weight:600;color:var(--light);margin-bottom:10px">{title}</h3>
-        <div class="grid g3" style="gap:6px 24px">
-          {links.map((l) => (
-            <a class="siteindex-link" key={l.href} href={l.href} style="display:block;padding:3px 0;color:var(--muted)" data-testid={`siteindex-${l.href}`}>
-              {l.label} <span class="ar">→</span>
-            </a>
-          ))}
-        </div>
-      </div>
-    ) : null;
+  // Every group of pages, in reading order. Rendered as one striped table so
+  // it's easy to scan (Christian: "lækker tabel med farveskift").
+  const groups: { title: string; links: { label: string; href: string }[] }[] = [
+    { title: isEn ? "Main pages" : "Hovedsider", links: mainPages },
+    { title: isEn ? "Solutions" : "Løsninger", links: solutions.map((s) => ({ label: s.name, href: `/${seg}/${s.slug}` })) },
+    { title: isEn ? "Flagships" : "Flagskibe", links: platforms.map((p) => ({ label: p.name, href: withLocale(locale, `/${fseg}/${p.logoKey}`) })) },
+    ...catPosts.map((c) => ({
+      title: c.name,
+      links: [
+        { label: isEn ? `All ${c.name}` : `Alle ${c.name}`, href: withLocale(locale, `/${c.slug}`) },
+        ...c.posts.map((p) => {
+          const pt = (p.data as Record<string, unknown>)?.title;
+          return { label: (typeof pt === "string" && pt) || String(p.slug), href: withLocale(locale, `/${c.slug}/${String(p.slug)}`) };
+        }),
+      ],
+    })),
+  ].filter((gr) => gr.links.length);
+
+  // color-mix on var(--light) → a stripe that reads on BOTH the dark and light
+  // themes (near-white foreground on dark, near-black on light) without a
+  // per-theme override.
+  const styles = `
+    .si-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+    .si-table td{padding:10px 16px;border-bottom:1px solid var(--card-border);vertical-align:baseline}
+    .si-group td{background:color-mix(in srgb, var(--light) 9%, transparent);font-weight:600;color:var(--light);text-transform:uppercase;letter-spacing:.05em;font-size:11.5px;padding-top:13px;padding-bottom:13px}
+    .si-row.odd td{background:color-mix(in srgb, var(--light) 4%, transparent)}
+    .si-row td{transition:background .12s ease}
+    .si-row:hover td{background:color-mix(in srgb, var(--light) 12%, transparent)}
+    .si-row a{color:var(--light);font-weight:500;text-decoration:none}
+    .si-row a:hover{color:#F3522C}
+    .si-row .si-path{color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;white-space:nowrap}
+    @media(max-width:640px){.si-path{display:none}.si-table td{padding:9px 12px}}
+  `;
 
   return await page(
     <section id="indeks">
@@ -971,25 +991,26 @@ export async function renderSiteIndex(locale: Locale): Promise<string> {
           <h2 {...cmsAttrs(globalsRef, "siteIndexHeading")}>{g("siteIndexHeading", isEn ? "Every page on the site" : "Alle sider på sitet")}</h2>
           <div class="divider" />
         </div>
-        <Group title={isEn ? "Main pages" : "Hovedsider"} links={mainPages} />
-        <Group title={isEn ? "Solutions" : "Løsninger"} links={solutions.map((s) => ({ label: s.name, href: `/${seg}/${s.slug}` }))} />
-        <Group
-          title={isEn ? "Flagships" : "Flagskibe"}
-          links={platforms.map((p) => ({ label: p.name, href: withLocale(locale, `/${fseg}/${p.logoKey}`) }))}
-        />
-        {catPosts.map((c) => (
-          <Group
-            key={c.slug}
-            title={c.name}
-            links={[
-              { label: isEn ? `All ${c.name}` : `Alle ${c.name}`, href: withLocale(locale, `/${c.slug}`) },
-              ...c.posts.map((p) => {
-                const pt = (p.data as Record<string, unknown>)?.title;
-                return { label: (typeof pt === "string" && pt) || String(p.slug), href: withLocale(locale, `/${c.slug}/${String(p.slug)}`) };
-              }),
-            ]}
-          />
-        ))}
+        <style dangerouslySetInnerHTML={{ __html: styles }} />
+        <table class="si-table" data-testid="site-index-table">
+          <tbody>
+            {groups.map((group) => (
+              <>
+                <tr class="si-group" key={`g-${group.title}`}>
+                  <td colspan={2}>{group.title}</td>
+                </tr>
+                {group.links.map((l, i) => (
+                  <tr class={`si-row${i % 2 ? " odd" : ""}`} key={l.href} data-testid={`siteindex-row-${l.href}`}>
+                    <td>
+                      <a href={l.href}>{l.label}</a>
+                    </td>
+                    <td class="si-path">{l.href}</td>
+                  </tr>
+                ))}
+              </>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>,
     {
