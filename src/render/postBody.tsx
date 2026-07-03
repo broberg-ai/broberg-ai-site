@@ -45,13 +45,39 @@ export function extractBlockSlugs(content: string): string[] {
   return [...new Set(slugs)];
 }
 
-export function PostBody({ content, blocks }: { content: string; blocks: Record<string, StoredDoc> }) {
+export function PostBody({
+  content,
+  blocks,
+  editable,
+}: {
+  content: string;
+  blocks: Record<string, StoredDoc>;
+  // F157 — when set, the body is offered for inline rich-text editing, but ONLY
+  // when it's a SINGLE markdown segment (no [block:] embeds interleaving it).
+  // A multi-segment body can't be saved back as one `content` field write, so
+  // the attributes are withheld there (title/scalar fields stay editable).
+  editable?: { collection: string; slug: string };
+}) {
+  const parts = splitContent(content);
+  const singleMd = editable && parts.length === 1 && "md" in parts[0];
   return (
     <>
-      {splitContent(content).map((p, i) =>
+      {parts.map((p, i) =>
         "md" in p ? (
           p.md.trim() ? (
-            <div class="richtext" key={i} dangerouslySetInnerHTML={{ __html: richtextBlock(p.md) }} />
+            <div
+              class="richtext"
+              key={i}
+              {...(singleMd
+                ? {
+                    "data-cms-collection": editable!.collection,
+                    "data-cms-slug": editable!.slug,
+                    "data-cms-field": "content",
+                    "data-cms-richtext": "true",
+                  }
+                : {})}
+              dangerouslySetInnerHTML={{ __html: richtextBlock(p.md) }}
+            />
           ) : null
         ) : blocks[p.block] ? (
           <PostBlock key={i} doc={blocks[p.block]} />

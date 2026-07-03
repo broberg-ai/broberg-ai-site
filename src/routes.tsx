@@ -616,6 +616,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   const content = str(d.content);
   const tags = arr(d.tags);
   const meta = [str(d.author), d.date ? formatDate(str(d.date), locale) : "", str(d.readTime)].filter(Boolean).join(" · ");
+  const postRef: CmsRef = { collection: "posts", slug: String(doc.slug), locale };
 
   // Resolve only the block-docs this post actually embeds.
   const slugs = extractBlockSlugs(content);
@@ -634,7 +635,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
         <div class="plat-detail-head">
           <div class="plat-detail-text sec-head">
             <div class="eyebrow">{catLabel}</div>
-            <h1 class="post-title">{titleWithAccent(title, str(d.titleHighlight))}</h1>
+            <h1 class="post-title" {...cmsAttrs(postRef, "title")}>{titleWithAccent(title, str(d.titleHighlight))}</h1>
             {meta ? <p class="post-meta">{meta}</p> : null}
             {tags.length ? (
               <div class="post-tags">
@@ -657,7 +658,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
         </div>
         <div class="divider" />
         <div class="post-body">
-          <PostBody content={content} blocks={blocks} />
+          <PostBody content={content} blocks={blocks} editable={{ collection: "posts", slug: String(doc.slug) }} />
         </div>
         {str(d.attribution) ? (
           <p class="post-attr" dangerouslySetInnerHTML={{ __html: richtextInline(str(d.attribution)) }} />
