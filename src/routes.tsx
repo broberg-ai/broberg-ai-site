@@ -108,7 +108,7 @@ export async function renderAdmin(): Promise<string> {
         <p style="color:#8a8a8a;font-size:14px;">Indlæser…</p>
       </div>
     </>,
-    { title: "Admin — broberg.ai", description: "", locale: "da" },
+    { title: "Admin — broberg.ai", description: "", locale: "da", forceTheme: "dark" },
     resolveAssets(),
   );
 }

@@ -19,9 +19,16 @@ export interface PageMeta {
   /** Equivalent URL of this exact page in the other locale, for the nav DA/EN
       switch. Falls back to that locale's homepage when omitted. */
   altHref?: string;
+  /** Pin the page to a theme regardless of the saved choice / prefers-color-scheme
+      — used by /admin, whose panel is a fixed dark back-office surface, so the
+      shared header can't render light over it. */
+  forceTheme?: "dark" | "light";
 }
 
 export function renderPage(children: ComponentChildren, meta: PageMeta, assets: Assets): string {
+  const themeScript = meta.forceTheme
+    ? `document.documentElement.dataset.theme='${meta.forceTheme}';`
+    : "(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){}})()";
   const body = renderToString(
     <html lang={meta.locale}>
       <head>
@@ -29,12 +36,7 @@ export function renderPage(children: ComponentChildren, meta: PageMeta, assets: 
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         {/* Theme before first paint — sets [data-theme] on <html> from the saved
             choice or prefers-color-scheme, so light mode never flashes dark (FOUC). */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=t;}catch(e){}})()",
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="theme-color" content="#1c2027" />
         <title>{meta.title}</title>
