@@ -433,12 +433,18 @@ export async function renderFlagships(locale: Locale): Promise<string> {
 export async function renderFlagshipDetail(locale: Locale, slug: string): Promise<string | null> {
   // Slide pages: prefer the cms-authored copy (platforms doc `data.slides`, ICD'd
   // to our store); fall back to the in-code registry when cms has none/invalid.
-  const fp = (await loadFlagship(locale, slug)) ?? flagshipFromRegistry(slug);
+  const fromCms = await loadFlagship(locale, slug);
+  const fp = fromCms ?? flagshipFromRegistry(slug);
   // Flagship slugs are shared across locales (only the cms doc is prefixed
   // "en-<slug>"), so the alternate URL is a straight locale-segment swap.
   const altHref = locale === "en" ? `/flagskibe/${slug}` : `/en/flagships/${slug}`;
   if (fp) {
-    return await page(<FlagshipSlides page={fp} locale={locale} />, {
+    // Only wire inline-edit when the page actually came from a cms doc — the
+    // code-fallback registry (flagshipFromRegistry) has nothing to PATCH.
+    const flagshipRef: CmsRef | undefined = fromCms
+      ? { collection: "platforms", slug: locale === "en" ? `en-${slug}` : slug, locale }
+      : undefined;
+    return await page(<FlagshipSlides page={fp} locale={locale} cmsRef={flagshipRef} />, {
       title: `${fp.slug} — broberg.ai`,
       description: fp.description,
       locale,

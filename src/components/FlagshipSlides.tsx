@@ -10,6 +10,21 @@ import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import { Icon } from "@/components/Icons.tsx";
 import { slugifyTag, withLocale } from "@/i18n.ts";
+import { cmsAttrs } from "@/components/sections.tsx";
+import type { CmsRef } from "@/content/types.ts";
+
+// F157 — dot-path field addressing (slides.<i>.eyebrow, slides.<i>.blocks.<j>.text)
+// needs @broberg/cms-inline-edit >=0.4.5. Only scalar text-bearing spots are wired
+// here (eyebrow, plain heading, and lead/prose/quote/callout block text) — tuple-
+// array blocks (steps/cards/stats/table/chat) are deliberately NOT wired yet: their
+// items are positional tuples ([title, desc]), and a rushed path scheme there risks
+// silently writing into the wrong tuple slot. Follow-up, not tonight.
+function slidePath(idx: number, leaf: string): string {
+  return `slides.${idx}.${leaf}`;
+}
+function blockPath(slideIdx: number, blockIdx: number, leaf: string): string {
+  return `slides.${slideIdx}.blocks.${blockIdx}.${leaf}`;
+}
 
 type Step = [string, string]; // [title, desc?] — desc may be ""
 type Stat = [string, string]; // [value, caption]
@@ -42,9 +57,9 @@ interface Slide {
   blocks: Block[];
 }
 
-const Eyebrow = ({ slide }: { slide: Slide }) => (
+const Eyebrow = ({ slide, cmsRef, idx }: { slide: Slide; cmsRef?: CmsRef; idx: number }) => (
   <div class="eyebrow">
-    {slide.eyebrow}
+    <span {...cmsAttrs(cmsRef, slidePath(idx, "eyebrow"))}>{slide.eyebrow}</span>
     {slide.badge ? <span class="eyebrow-badge">{slide.badge}</span> : null}
   </div>
 );
@@ -57,13 +72,21 @@ export interface FlagshipPage {
   tags?: string[]; // shown at the bottom, linking to /tags/<slug> (shared with posts)
 }
 
-const H = ({ s }: { s: { heading: string; headingHtml?: string } }) =>
-  s.headingHtml ? <h2 dangerouslySetInnerHTML={{ __html: s.headingHtml }} /> : <h2>{s.heading}</h2>;
+const H = ({ s, cmsRef, idx }: { s: { heading: string; headingHtml?: string }; cmsRef?: CmsRef; idx: number }) =>
+  s.headingHtml ? (
+    <h2 dangerouslySetInnerHTML={{ __html: s.headingHtml }} />
+  ) : (
+    <h2 {...cmsAttrs(cmsRef, slidePath(idx, "heading"))}>{s.heading}</h2>
+  );
 
 /* ---- block views ---- */
 
-const Lead = ({ b }: { b: Extract<Block, { k: "lead" }> }) =>
-  b.html ? <p class="lead" dangerouslySetInnerHTML={{ __html: b.html }} /> : <p class="lead">{b.text}</p>;
+const Lead = ({ b, cmsRef, path }: { b: Extract<Block, { k: "lead" }>; cmsRef?: CmsRef; path: string }) =>
+  b.html ? (
+    <p class="lead" dangerouslySetInnerHTML={{ __html: b.html }} />
+  ) : (
+    <p class="lead" {...cmsAttrs(cmsRef, path)}>{b.text}</p>
+  );
 
 const WorkSteps = ({ steps }: { steps: Step[] }) => (
   <ol class="worksteps">
@@ -167,13 +190,13 @@ const Chat = ({ turns }: { turns: ChatTurn[] }) => (
   </div>
 );
 
-const BlockView = ({ b }: { b: Block }) => {
+const BlockView = ({ b, cmsRef, slideIdx, blockIdx }: { b: Block; cmsRef?: CmsRef; slideIdx: number; blockIdx: number }) => {
   switch (b.k) {
     case "lead":
-      return <Lead b={b} />;
+      return <Lead b={b} cmsRef={cmsRef} path={blockPath(slideIdx, blockIdx, "text")} />;
     case "prose":
       return (
-        <p class="lead" style="margin-top:12px">
+        <p class="lead" style="margin-top:12px" {...cmsAttrs(cmsRef, blockPath(slideIdx, blockIdx, "text"))}>
           {b.text}
         </p>
       );
@@ -185,7 +208,7 @@ const BlockView = ({ b }: { b: Block }) => {
       return <CTable label={b.label} cols={b.cols} rows={b.rows} />;
     case "quote":
       return (
-        <div class="quote" style="margin-top:22px;max-width:620px">
+        <div class="quote" style="margin-top:22px;max-width:620px" {...cmsAttrs(cmsRef, blockPath(slideIdx, blockIdx, "text"))}>
           {b.text}
         </div>
       );
@@ -198,21 +221,24 @@ const BlockView = ({ b }: { b: Block }) => {
     case "callout":
       return (
         <div class="card callout">
-          <div class="case-h">{b.title}</div>
-          <p>{b.text}</p>
+          <div class="case-h" {...cmsAttrs(cmsRef, blockPath(slideIdx, blockIdx, "title"))}>{b.title}</div>
+          <p {...cmsAttrs(cmsRef, blockPath(slideIdx, blockIdx, "text"))}>{b.text}</p>
         </div>
       );
   }
 };
 
-// Render a slide's blocks. A `steps` block immediately followed by a `table` is
-// laid out side-by-side in the `.trail-grid` (the proven worksteps + comparison
-// layout); every other block renders linearly.
-function renderBlocks(blocks: Block[]): JSX.Element[] {
+// Render a slide's blocks. `items` carries each block's ORIGINAL index in
+// slide.blocks (not its position in this possibly-filtered subset — the hero
+// layout splits blocks into head/body, so a local index would produce the
+// wrong slides.<i>.blocks.<j> save path). A `steps` block immediately
+// followed by a `table` is laid out side-by-side in the `.trail-grid` (the
+// proven worksteps + comparison layout); every other block renders linearly.
+function renderBlocks(items: { b: Block; i: number }[], cmsRef: CmsRef | undefined, slideIdx: number): JSX.Element[] {
   const out: JSX.Element[] = [];
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i];
-    const next = blocks[i + 1];
+  for (let k = 0; k < items.length; k++) {
+    const { b, i } = items[k];
+    const next = items[k + 1]?.b;
     if (b.k === "steps" && next && next.k === "table") {
       out.push(
         <div class="trail-grid" key={`grid-${i}`}>
@@ -220,10 +246,10 @@ function renderBlocks(blocks: Block[]): JSX.Element[] {
           <CTable label={next.label} cols={next.cols} rows={next.rows} />
         </div>,
       );
-      i++; // consume the paired table
+      k++; // consume the paired table
       continue;
     }
-    out.push(<BlockView b={b} key={i} />);
+    out.push(<BlockView b={b} key={i} cmsRef={cmsRef} slideIdx={slideIdx} blockIdx={i} />);
   }
   return out;
 }
@@ -251,15 +277,30 @@ const CtaRow = ({ cta, locale }: { cta?: Link[]; locale?: string }) => {
   );
 };
 
-function SlideView({ page, slide, idx, total, locale }: { page: FlagshipPage; slide: Slide; idx: number; total: number; locale?: string }) {
+function SlideView({
+  page,
+  slide,
+  idx,
+  total,
+  locale,
+  cmsRef,
+}: {
+  page: FlagshipPage;
+  slide: Slide;
+  idx: number;
+  total: number;
+  locale?: string;
+  cmsRef?: CmsRef;
+}) {
   const t = total > 1 ? idx / (total - 1) : 0;
   const last = idx === total - 1;
   const ctaRow = last ? <CtaRow cta={page.cta} locale={locale} /> : null;
+  const indexed = slide.blocks.map((b, i) => ({ b, i }));
 
   if (slide.hero) {
     const illu = hasIllustration(page.slug);
-    const head = slide.blocks.filter((b) => b.k === "lead" || b.k === "prose");
-    const body = slide.blocks.filter((b) => b.k !== "lead" && b.k !== "prose");
+    const head = indexed.filter((x) => x.b.k === "lead" || x.b.k === "prose");
+    const body = indexed.filter((x) => x.b.k !== "lead" && x.b.k !== "prose");
     return (
       <section class="fslide" id="top" style={`--t:${t}`}>
         <div class="wrap reveal">
@@ -268,10 +309,10 @@ function SlideView({ page, slide, idx, total, locale }: { page: FlagshipPage; sl
               <div class="logot logot-lg">
                 <Logo k={page.slug} />
               </div>
-              <Eyebrow slide={slide} />
-              <H s={slide} />
-              {head.map((b, i) => (
-                <BlockView b={b} key={i} />
+              <Eyebrow slide={slide} cmsRef={cmsRef} idx={idx} />
+              <H s={slide} cmsRef={cmsRef} idx={idx} />
+              {head.map(({ b, i }) => (
+                <BlockView b={b} key={i} cmsRef={cmsRef} slideIdx={idx} blockIdx={i} />
               ))}
             </div>
             {illu ? (
@@ -280,7 +321,7 @@ function SlideView({ page, slide, idx, total, locale }: { page: FlagshipPage; sl
               </div>
             ) : null}
           </div>
-          {renderBlocks(body)}
+          {renderBlocks(body, cmsRef, idx)}
           {ctaRow}
         </div>
       </section>
@@ -291,11 +332,11 @@ function SlideView({ page, slide, idx, total, locale }: { page: FlagshipPage; sl
     <section class="fslide" style={`--t:${t}`}>
       <div class="wrap reveal">
         <div class="sec-head">
-          <Eyebrow slide={slide} />
-          <H s={slide} />
+          <Eyebrow slide={slide} cmsRef={cmsRef} idx={idx} />
+          <H s={slide} cmsRef={cmsRef} idx={idx} />
           <div class="divider" />
         </div>
-        {renderBlocks(slide.blocks)}
+        {renderBlocks(indexed, cmsRef, idx)}
         {ctaRow}
       </div>
     </section>
@@ -1433,12 +1474,12 @@ export function validateFlagshipPage(slug: string, data: unknown): FlagshipPage 
   };
 }
 
-export function FlagshipSlides({ page, locale }: { page: FlagshipPage; locale?: string }): JSX.Element {
+export function FlagshipSlides({ page, locale, cmsRef }: { page: FlagshipPage; locale?: string; cmsRef?: CmsRef }): JSX.Element {
   const loc = locale === "en" ? "en" : "da";
   return (
     <>
       {page.slides.map((slide, i) => (
-        <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} locale={locale} />
+        <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} locale={locale} cmsRef={cmsRef} />
       ))}
       {page.tags?.length ? (
         <section>
