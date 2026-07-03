@@ -536,10 +536,12 @@ export async function categoryLabel(category: string, locale: Locale = DEFAULT_L
 export async function categoryMeta(
   category: string,
   locale: Locale = DEFAULT_LOCALE,
-): Promise<{ name: string; description: string }> {
+): Promise<{ name: string; description: string; slug?: string }> {
   const cat = await categoryBySlug(category, locale);
   const d = cat ? dataOf(cat) : {};
-  return { name: str(d.name) || category, description: str(d.description) };
+  // slug = the actual category doc slug (per-locale, e.g. "en-indsigter") so the
+  // blog index can wire its heading/description back to the categories doc.
+  return { name: str(d.name) || category, description: str(d.description), slug: cat ? String(cat.slug) : undefined };
 }
 
 // All published posts in a category for the given locale, newest first.

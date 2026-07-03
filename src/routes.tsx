@@ -40,7 +40,7 @@ import { Illustration, hasIllustration, pickNewsIllustration } from "@/component
 import { Icon } from "@/components/Icons.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
 import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
-import { Cases, Insights, About, cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
+import { Cases, Insights, About, cmsAttrs, cmsHtmlAttrs, cmsRichAttrs } from "@/components/sections.tsx";
 import type { CmsRef } from "@/content/types.ts";
 import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
@@ -74,6 +74,18 @@ async function page(
     meta,
     resolveAssets(),
   );
+}
+
+// F157 — index/utility pages keep their section chrome (eyebrows/headings/leads)
+// on the globals doc so it's inline-editable. Returns the globals doc ref plus a
+// locale-fallback reader `g(field, fallback)` (defensive: docs are seeded, so
+// the fallback only guards a pre-seed state — the "no naked cutover" rule).
+async function globalsChrome(locale: Locale): Promise<{ ref: CmsRef | undefined; g: (field: string, fallback: string) => string }> {
+  const doc = await loadGlobals(locale);
+  const data = (doc?.data ?? {}) as Record<string, unknown>;
+  const ref: CmsRef | undefined = doc ? { collection: "globals", slug: String(doc.slug), locale } : undefined;
+  const g = (field: string, fallback: string): string => (typeof data[field] === "string" && data[field]) || fallback;
+  return { ref, g };
 }
 
 // F157 — internal admin tools (Inline Editing toggle today, more later —
@@ -392,15 +404,16 @@ export async function renderThanks(locale: Locale): Promise<string> {
   const isEn = locale === "en";
   const news = await loadLatestNewsPerCategory(locale);
   const thanksSeg = isEn ? "thanks" : "tak";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
 
   return await page(
     <>
       <section id="top">
         <div class="wrap" style="padding-top:150px;text-align:center;max-width:640px">
-          <div class="eyebrow" style="justify-content:center">{isEn ? "Thank you" : "Tak"}</div>
-          <h1>{isEn ? "Thank you!" : "Tak!"}</h1>
-          <p class="lead" style="margin:18px auto 0">
-            {isEn ? "We'll get back to you as soon as possible." : "Vi vender tilbage hurtigst muligt."}
+          <div class="eyebrow" style="justify-content:center" {...cmsAttrs(globalsRef, "thanksEyebrow")}>{g("thanksEyebrow", isEn ? "Thank you" : "Tak")}</div>
+          <h1 {...cmsAttrs(globalsRef, "thanksHeading")}>{g("thanksHeading", isEn ? "Thank you!" : "Tak!")}</h1>
+          <p class="lead" style="margin:18px auto 0" {...cmsAttrs(globalsRef, "thanksLead")}>
+            {g("thanksLead", isEn ? "We'll get back to you as soon as possible." : "Vi vender tilbage hurtigst muligt.")}
           </p>
           <div class="cta-row" style="justify-content:center">
             <a class="btn btn-ghost" href={withLocale(locale, "/")} data-testid="thanks-home-link">
@@ -414,8 +427,8 @@ export async function renderThanks(locale: Locale): Promise<string> {
         <section style="background:var(--dark2)">
           <div class="wrap">
             <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto">
-              <div class="eyebrow" style="justify-content:center">{isEn ? "By the way" : "Forresten"}</div>
-              <h2>{isEn ? "Did you catch this news?" : "Fik du læst disse nyheder?"}</h2>
+              <div class="eyebrow" style="justify-content:center" {...cmsAttrs(globalsRef, "thanksNewsEyebrow")}>{g("thanksNewsEyebrow", isEn ? "By the way" : "Forresten")}</div>
+              <h2 {...cmsAttrs(globalsRef, "thanksNewsHeading")}>{g("thanksNewsHeading", isEn ? "Did you catch this news?" : "Fik du læst disse nyheder?")}</h2>
             </div>
             <div class="grid g3">
               {news.map((n, i) => (
@@ -450,17 +463,21 @@ export async function renderFlagships(locale: Locale): Promise<string> {
   const items = await loadPlatforms(locale);
   const seg = flagshipsSegment(locale);
   const isEn = locale !== "da";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
   const data: PlatformsData = {
-    eyebrow: isEn ? "Flagships" : "Flagskibe",
-    heading: isEn ? "The engines behind it all." : "Motorerne bag det hele.",
-    lead: isEn
-      ? "The AI-native platforms we built ourselves — and that every new customer solution stands on the shoulders of."
-      : "De AI-native platforme vi selv har bygget — og som hver ny kundeløsning står på skuldrene af.",
+    eyebrow: g("flagshipsEyebrow", isEn ? "Flagships" : "Flagskibe"),
+    heading: g("flagshipsHeading", isEn ? "The engines behind it all." : "Motorerne bag det hele."),
+    lead: g(
+      "flagshipsLead",
+      isEn
+        ? "The AI-native platforms we built ourselves — and that every new customer solution stands on the shoulders of."
+        : "De AI-native platforme vi selv har bygget — og som hver ny kundeløsning står på skuldrene af.",
+    ),
     items: items.length ? items : [],
     pathPrefix: `/${seg}`,
     allLink: { label: isEn ? "Back to home" : "Til forsiden", href: isEn ? "/en" : "/", testid: "flagships-home-link" },
   };
-  return await page(<Platforms data={data} />, {
+  return await page(<Platforms data={data} cmsRef={globalsRef} fields={{ eyebrow: "flagshipsEyebrow", heading: "flagshipsHeading", lead: "flagshipsLead" }} />, {
     title: isEn ? "Flagships — broberg.ai" : "Flagskibe — broberg.ai",
     description: isEn
       ? "The AI-native platforms behind the broberg.ai universe."
@@ -525,7 +542,7 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
           ) : null}
         </div>
         <div class="divider" />
-        {bodyHtml ? <div class="richtext" dangerouslySetInnerHTML={{ __html: bodyHtml }} /> : null}
+        {bodyHtml ? <div class="richtext" {...cmsRichAttrs(platformRef, "body")} dangerouslySetInnerHTML={{ __html: bodyHtml }} /> : null}
         {features.length ? (
           <div style="margin-top:22px">
             {features.map((f) => (
@@ -563,17 +580,16 @@ export async function renderSolutions(locale: Locale): Promise<string> {
   const items = await loadSolutions(locale);
   const seg = SOLUTIONS_SEGMENT[locale];
   const isEn = locale === "en";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
   return await page(
     <section>
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">{isEn ? "Solutions" : "Løsninger"}</div>
-          <h2>{isEn ? "What can we build for you?" : "Hvad kan vi bygge til dig?"}</h2>
+          <div class="eyebrow" {...cmsAttrs(globalsRef, "solutionsPageEyebrow")}>{g("solutionsPageEyebrow", isEn ? "Solutions" : "Løsninger")}</div>
+          <h2 {...cmsAttrs(globalsRef, "solutionsPageHeading")}>{g("solutionsPageHeading", isEn ? "What can we build for you?" : "Hvad kan vi bygge til dig?")}</h2>
           <div class="divider" />
-          <p class="lead">
-            {isEn
-              ? "Four ways in — pick the one that matches where you are today."
-              : "Fire veje ind — vælg den der matcher hvor I er i dag."}
+          <p class="lead" {...cmsAttrs(globalsRef, "solutionsPageLead")}>
+            {g("solutionsPageLead", isEn ? "Four ways in — pick the one that matches where you are today." : "Fire veje ind — vælg den der matcher hvor I er i dag.")}
           </p>
         </div>
         <div class="grid g4">
@@ -704,7 +720,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
           <PostBody content={content} blocks={blocks} editable={{ collection: "posts", slug: String(doc.slug) }} />
         </div>
         {str(d.attribution) ? (
-          <p class="post-attr" dangerouslySetInnerHTML={{ __html: richtextInline(str(d.attribution)) }} />
+          <p class="post-attr" {...cmsRichAttrs(postRef, "attribution")} dangerouslySetInnerHTML={{ __html: richtextInline(str(d.attribution)) }} />
         ) : null}
         <div class="cta-row" style="margin-top:36px">
           {twin ? (
@@ -738,7 +754,9 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
 export async function renderBlogIndex(locale: Locale, category: string): Promise<string | null> {
   if (!(await isCategory(category))) return null;
   const posts = await loadCategoryPosts(locale, category);
-  const { name: catLabel, description } = await categoryMeta(category, locale);
+  const { name: catLabel, description, slug: catSlug } = await categoryMeta(category, locale);
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+  const categoryRef: CmsRef | undefined = catSlug ? { collection: "categories", slug: catSlug, locale } : undefined;
   const str = (v: unknown) => (typeof v === "string" ? v : "");
   const empty = locale === "en" ? "Articles on the way :)" : "Artikler på vej :)";
 
@@ -746,9 +764,9 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
     <section id="indsigter">
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">{locale === "en" ? "Insights" : "Indsigter"}</div>
-          <h2>{catLabel}</h2>
-          {description ? <p class="lead">{description}</p> : null}
+          <div class="eyebrow" {...cmsAttrs(globalsRef, "blogIndexEyebrow")}>{g("blogIndexEyebrow", locale === "en" ? "Insights" : "Indsigter")}</div>
+          <h2 {...cmsAttrs(categoryRef, "name")}>{catLabel}</h2>
+          {description ? <p class="lead" {...cmsAttrs(categoryRef, "description")}>{description}</p> : null}
           <div class="divider" />
         </div>
         {posts.length ? (
@@ -796,12 +814,13 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
   if (!hits.length) return null;
   const n = hits.length;
   const count = locale === "en" ? `${n} ${n === 1 ? "page" : "pages"}` : `${n} ${n === 1 ? "side" : "sider"}`;
+  const { ref: globalsRef, g } = await globalsChrome(locale);
 
   return await page(
     <section id="tag">
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">Tag</div>
+          <div class="eyebrow" {...cmsAttrs(globalsRef, "tagPageEyebrow")}>{g("tagPageEyebrow", "Tag")}</div>
           <h2>#{label}</h2>
           <p class="lead">{count}</p>
           <div class="divider" />
@@ -838,15 +857,16 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
 // Tag cloud — every distinct tag, sized nothing fancy, linking to its tag page.
 export async function renderTagCloud(locale: Locale): Promise<string> {
   const tags = await buildTagCloud(locale);
-  const heading = locale === "en" ? "Browse by tag" : "Find efter tag";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+  const heading = g("tagCloudHeading", locale === "en" ? "Browse by tag" : "Find efter tag");
   const empty = locale === "en" ? "No tags yet." : "Ingen tags endnu.";
 
   return await page(
     <section id="tags">
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">Tags</div>
-          <h2>{heading}</h2>
+          <div class="eyebrow" {...cmsAttrs(globalsRef, "tagCloudEyebrow")}>{g("tagCloudEyebrow", "Tags")}</div>
+          <h2 {...cmsAttrs(globalsRef, "tagCloudHeading")}>{heading}</h2>
           <div class="divider" />
         </div>
         {tags.length ? (

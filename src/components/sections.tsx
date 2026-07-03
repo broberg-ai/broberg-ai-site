@@ -106,14 +106,14 @@ function SecHead({
 }) {
   const fEyebrow = fields?.eyebrow ?? "eyebrow";
   const fLead = fields?.lead ?? "subheading";
+  // Heading defaults to the section doc's own "heading" field (HTML — every
+  // section heading carries the branded <em class="o"> accent). A caller on a
+  // different doc (homepage Cases/Insights → landing) overrides via fields.heading.
+  const fHeading = fields?.heading ?? "heading";
   return (
     <div class="sec-head">
       <div class="eyebrow" {...cmsAttrs(cmsRef, fEyebrow)}>{eyebrow}</div>
-      {fields?.heading ? (
-        <h2 {...cmsHtmlAttrs(cmsRef, fields.heading)} dangerouslySetInnerHTML={{ __html: headingHtml }} />
-      ) : (
-        <h2 dangerouslySetInnerHTML={{ __html: headingHtml }} />
-      )}
+      <h2 {...cmsHtmlAttrs(cmsRef, fHeading)} dangerouslySetInnerHTML={{ __html: headingHtml }} />
       <div class="divider" />
       <p class="lead" {...cmsAttrs(cmsRef, fLead)}>{lead}</p>
     </div>
@@ -126,8 +126,8 @@ export function Hero({ data, cmsRef }: { data: HeroData; cmsRef?: CmsRef }) {
       <div class="wrap hero-grid">
         <div>
           <div class="eyebrow" {...cmsAttrs(cmsRef, "eyebrow")}>{data.eyebrow}</div>
-          <h1 dangerouslySetInnerHTML={{ __html: data.titleHtml }} />
-          <p class="lead" dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
+          <h1 {...cmsHtmlAttrs(cmsRef, "heading")} dangerouslySetInnerHTML={{ __html: data.titleHtml }} />
+          <p class="lead" {...cmsHtmlAttrs(cmsRef, "subheading")} dangerouslySetInnerHTML={{ __html: data.leadHtml }} />
           <div class="cta-row">
             {data.ctas.map((c) => (
               <CtaButton key={c.testid} cta={c} />
@@ -173,11 +173,11 @@ export function Universe({ data, cmsRef }: { data: UniverseData; cmsRef?: CmsRef
   );
 }
 
-export function Platforms({ data, cmsRef }: { data: PlatformsData; cmsRef?: CmsRef }) {
+export function Platforms({ data, cmsRef, fields }: { data: PlatformsData; cmsRef?: CmsRef; fields?: { eyebrow?: string; heading?: string; lead?: string } }) {
   return (
     <section id="platforme" style="background:var(--dark2)">
       <div class="wrap reveal">
-        <SecHead eyebrow={data.eyebrow} headingHtml={data.heading} lead={data.lead} cmsRef={cmsRef} />
+        <SecHead eyebrow={data.eyebrow} headingHtml={data.heading} lead={data.lead} cmsRef={cmsRef} fields={fields} />
         <div class="grid g4">
           {data.items.map((p) => (
             <a class="card" href={`${data.pathPrefix ?? "/flagskibe"}/${p.logoKey}`} key={p.name} data-testid={`flagship-card-${p.logoKey}`}>
