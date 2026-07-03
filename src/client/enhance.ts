@@ -40,32 +40,35 @@ function adminPanel() {
   const name = (claims?.name as string) || (claims?.email as string) || "ukendt";
 
   root.innerHTML = "";
-  root.style.cssText = "min-height:100vh;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;padding:48px 24px;";
+  // padding-top clears the fixed 64px AdminNav header.
+  root.style.cssText = "min-height:100vh;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;padding:96px 24px 48px;";
 
   const wrap = document.createElement("div");
   wrap.style.cssText = "max-width:480px;margin:0 auto;";
 
-  const heading = document.createElement("div");
-  heading.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;";
-  heading.innerHTML = `<h1 style="font-size:20px;margin:0;">broberg.ai — Admin</h1>`;
+  // Branding + Exit now live in the AdminNav header; the panel just shows who's
+  // signed in (with a Log ud / disconnect affordance) and the tool cards.
+  const who = document.createElement("div");
+  who.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 24px;";
+  const whoText = document.createElement("p");
+  whoText.textContent = `Logget ind som ${name}`;
+  whoText.style.cssText = "color:#8a8a8a;font-size:13px;margin:0;";
+  who.appendChild(whoText);
   const logout = document.createElement("button");
   logout.type = "button";
   logout.textContent = "Log ud";
-  logout.style.cssText = "background:none;border:1px solid #2a2a2a;color:#8a8a8a;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;";
+  logout.setAttribute("data-testid", "admin-logout");
+  logout.style.cssText = "flex-shrink:0;background:none;border:1px solid #2a2a2a;color:#8a8a8a;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;";
   logout.addEventListener("click", () => {
     disconnect(CMS);
     window.location.reload();
   });
-  heading.appendChild(logout);
-  wrap.appendChild(heading);
-
-  const who = document.createElement("p");
-  who.textContent = `Logget ind som ${name}`;
-  who.style.cssText = "color:#8a8a8a;font-size:13px;margin:0 0 24px;";
+  who.appendChild(logout);
   wrap.appendChild(who);
 
   const card = document.createElement("div");
-  card.style.cssText = "background:#161616;border:1px solid #2a2a2a;border-radius:10px;padding:20px;";
+  card.id = "tool-inline-edit";
+  card.style.cssText = "background:#161616;border:1px solid #2a2a2a;border-radius:10px;padding:20px;scroll-margin-top:80px;";
 
   const row = document.createElement("div");
   row.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:16px;";

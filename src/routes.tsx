@@ -3,7 +3,7 @@
    render valid minimal pages so navigation never 404s before content lands.
    When cms is wired, each handler builds its model from the local store. */
 import type { Locale } from "@/config.ts";
-import { Nav } from "@/components/Nav.tsx";
+import { Nav, AdminNav } from "@/components/Nav.tsx";
 import { Footer } from "@/components/Footer.tsx";
 import { RenderSections } from "@/render/blocks.tsx";
 import { Platforms } from "@/components/sections.tsx";
@@ -99,12 +99,15 @@ async function globalsChrome(locale: Locale): Promise<{ ref: CmsRef | undefined;
 // the cms-admin connect flow if not yet connected, else renders the panel.
 export async function renderAdmin(): Promise<string> {
   return renderPage(
-    <div
-      id="admin-root"
-      style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;"
-    >
-      <p style="color:#8a8a8a;font-size:14px;">Indlæser…</p>
-    </div>,
+    <>
+      <AdminNav />
+      <div
+        id="admin-root"
+        style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;"
+      >
+        <p style="color:#8a8a8a;font-size:14px;">Indlæser…</p>
+      </div>
+    </>,
     { title: "Admin — broberg.ai", description: "", locale: "da" },
     resolveAssets(),
   );

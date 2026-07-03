@@ -78,6 +78,47 @@ const COPY = {
 
 const SOLUTIONS_SEGMENT: Record<Locale, string> = { da: "losninger", en: "solutions" };
 
+// F157 — Admin header. Same chrome as the public <Nav> (logo, .navlinks, .btn)
+// so /admin feels part of the site, but the menu holds ADMIN tools (extensible —
+// new tools slot into the "Værktøjer" dropdown) and the CTA slot is an Exit →
+// back to the site, in place of the public nav's "Lad os bygge" button.
+// Dropdown + mobile toggle are wired for free by enhance.ts's mobileNav() since
+// we reuse the same .dropdown-toggle / [data-testid="nav-mobile-toggle"] hooks.
+export function AdminNav() {
+  return (
+    <header>
+      <div class="wrap nav">
+        <a class="logo" href="/" data-testid="admin-nav-logo">
+          broberg<span class="ai">.ai</span>
+        </a>
+        <button class="navlink mobile-only" data-testid="nav-mobile-toggle" aria-label="Menu" aria-expanded="false">
+          ☰
+        </button>
+        <nav class="navlinks" data-testid="admin-nav-links">
+          <span class="navlink" style="color:var(--orange-text);font-weight:600;cursor:default;" data-testid="admin-nav-badge">
+            Admin
+          </span>
+          <div class="navitem">
+            <button class="navlink dropdown-toggle" data-testid="admin-nav-tools" aria-haspopup="true" aria-expanded="false">
+              Værktøjer <span class="car">▾</span>
+            </button>
+            <div class="dd">
+              <a href="#tool-inline-edit" data-testid="admin-tool-inline-edit">
+                <b>Inline editing</b>
+                <span>Klik-til-redigér direkte på sitet</span>
+              </a>
+              {/* Fremtidige admin-værktøjer tilføjes her som nye .dd-links. */}
+            </div>
+          </div>
+          <a class="btn" href="/" data-testid="admin-exit">
+            Exit <span class="ar">→</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
 export function Nav({
   locale,
   altHref,
