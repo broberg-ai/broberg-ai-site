@@ -40,6 +40,8 @@ const COPY = {
     bagOm: "Bag om",
     bagOmSub: "Kig bag motoren i universet",
     casesSub: "Kundeløsninger i drift",
+    platform: "Platform",
+    platformSub: "Redigér, chat og byg — direkte på sitet",
     om: "Om",
     search: "Søg (⌘K)",
     theme: "Skift mellem lyst og mørkt tema",
@@ -67,6 +69,8 @@ const COPY = {
     bagOm: "Behind the scenes",
     bagOmSub: "A look behind the universe's engine",
     casesSub: "Customer solutions in production",
+    platform: "Platform",
+    platformSub: "Edit, chat and build — right on the site",
     om: "About",
     search: "Search (⌘K)",
     theme: "Toggle light/dark theme",
@@ -190,6 +194,10 @@ export function Nav({
               <a href={withLocale(locale, "/ai-metode")} data-testid="dd-ai-metode">
                 <b {...g("aiMetode")}>{t.aiMetode}</b>
                 <span {...g("aiMetodeSub")}>{t.aiMetodeSub}</span>
+              </a>
+              <a href={withLocale(locale, "/platform")} data-testid="dd-platform">
+                <b {...g("platform")}>{t.platform}</b>
+                <span {...g("platformSub")}>{t.platformSub}</span>
               </a>
               <a href={withLocale(locale, "/bag-om")} data-testid="dd-bag-om">
                 <b {...g("bagOm")}>{t.bagOm}</b>

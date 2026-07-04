@@ -495,6 +495,17 @@ export async function loadPost(locale: Locale, slug: string): Promise<StoredDoc 
   return doc;
 }
 
+// The canonical category slug a post actually lives in (its stored
+// data.category). The /:category/:slug routes use this to 301 any stale
+// prefix (e.g. /ai-metode/inline-redigering after it moved to /platform) to
+// the real URL, instead of serving the same article under every prefix.
+// Returns null when there is no such published post → the route 404s as before.
+export async function postCanonicalCategory(locale: Locale, slug: string): Promise<string | null> {
+  const doc = await loadPost(locale, slug);
+  if (!doc) return null;
+  return str(dataOf(doc).category) || null;
+}
+
 // A single embeddable block by slug (cms `blocks` collection), resolved for a
 // post's [block:<slug>] shortcode. Locale-agnostic: the post references its own
 // locale's block slug explicitly, so exact-slug lookup is correct.

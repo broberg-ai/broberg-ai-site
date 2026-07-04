@@ -24,8 +24,8 @@ import {
   renderSiteIndex,
   renderAdmin,
 } from "@/routes.tsx";
-import { buildSearchIndex } from "@/content/compose.ts";
-import { flagshipsSegment } from "@/i18n.ts";
+import { buildSearchIndex, postCanonicalCategory } from "@/content/compose.ts";
+import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
 const app = new Hono();
 const html = (s: string) => new Response(s, { headers: { "content-type": "text/html; charset=utf-8" } });
@@ -228,7 +228,12 @@ app.get("/admin", async () => html(await renderAdmin()));
 // Blog: /:category/:slug (DA) and /en/:category/:slug (EN). A real post → its
 // page; an unknown slug → 404 (not a 200 stub).
 app.get("/en/:category/:slug", async (c) => {
-  const r = await renderBlogPost("en", c.req.param("category"), c.req.param("slug"));
+  const category = c.req.param("category");
+  const slug = c.req.param("slug");
+  // Moved article? 301 the stale category prefix to the canonical URL.
+  const canon = await postCanonicalCategory("en", slug);
+  if (canon && canon !== category) return c.redirect(withLocale("en", `/${canon}/${slug}`), 301);
+  const r = await renderBlogPost("en", category, slug);
   return r ? html(r) : notFound(await renderGenericPage("en", "not-found"));
 });
 
@@ -243,7 +248,12 @@ app.get("/en/:slug", async (c) => {
 });
 
 app.get("/:category/:slug", async (c) => {
-  const r = await renderBlogPost("da", c.req.param("category"), c.req.param("slug"));
+  const category = c.req.param("category");
+  const slug = c.req.param("slug");
+  // Moved article? 301 the stale category prefix to the canonical URL.
+  const canon = await postCanonicalCategory("da", slug);
+  if (canon && canon !== category) return c.redirect(withLocale("da", `/${canon}/${slug}`), 301);
+  const r = await renderBlogPost("da", category, slug);
   return r ? html(r) : notFound(await renderGenericPage("da", "ikke-fundet"));
 });
 
