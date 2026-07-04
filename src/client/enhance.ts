@@ -20,6 +20,23 @@ function inlineEdit() {
     // Connected badge is just the exit action (no "Editing as {name}"): clicking
     // it leaves edit mode (clears the edit token), it is not a global sign-out.
     disconnectLabel: isEn ? "Finish editing" : "Afslut redigering",
+    // Toolbar + save-status text — the package defaults are Danish, so only the
+    // English page overrides them (matches the /en page language).
+    ...(isEn
+      ? {
+          labels: {
+            bold: "Bold",
+            italic: "Italic",
+            underline: "Underline",
+            color: "Colour",
+            emoji: "Insert emoji",
+            done: "Done",
+            saving: "Saving…",
+            saved: "Saved ✓",
+            error: "Error — try again",
+          },
+        }
+      : {}),
   });
 }
 
