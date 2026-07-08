@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
+import { handleAdminChat, handleAdminChatApi } from "@/chat-relay.ts";
 import { ensureRoot } from "@/content/store.ts";
 import { runBackfill, storeIsEmpty } from "@/content/backfill.ts";
 import {
@@ -64,8 +65,10 @@ app.use("*", async (c, next) => {
   else if (config.isProd && p.startsWith("/fonts/")) c.header("cache-control", "public, max-age=2592000");
   // cms-uploaded media (proxied) gets a day's cache — upload filenames are unique.
   else if (p.startsWith("/uploads/")) c.header("cache-control", "public, max-age=86400");
-  else if (p === "/icd" || p === "/healthz") {
-    /* leave default */
+  else if (p === "/icd" || p === "/healthz" || p.startsWith("/api/")) {
+    /* leave default — /api/ routes (e.g. the chat relay's SSE stream) manage
+       their own cache-control; overwriting it here would strip no-transform
+       and let a proxy buffer the event stream. */
   } else c.header("cache-control", "no-cache, must-revalidate");
 });
 
@@ -81,6 +84,13 @@ app.get("/search-index.json", async (c) => {
 
 // ICD content-push receiver (cms → us on every save/publish).
 app.post("/icd", handleIcd);
+
+// CMS AI-chat relay — same-origin SSE proxy to cms-admin's full agentic chat
+// (the ~64 build/version/control tools) + its conversation-history + memory
+// stores. Auth: the browser's editSession token is verified by delegation to
+// cms-admin; upstream uses a server-side admin token. See chat-relay.ts.
+app.post("/api/admin/chat", handleAdminChat);
+app.all("/api/admin/chat/*", handleAdminChatApi);
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 if (config.isProd) {
