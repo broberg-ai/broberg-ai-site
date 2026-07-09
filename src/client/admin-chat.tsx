@@ -68,11 +68,11 @@ function renderMarkdown(md: string): string {
 }
 
 // ── Quick actions (empty state) ───────────────────────────────────────────────
-const SUGGESTIONS: { label: string; message: string }[] = [
-  { label: "Overblik over sitet", message: "Giv mig et overblik over mit site — hvor mange kollektioner, dokumenter og kladder har jeg?" },
-  { label: "Vis mine kladder", message: "Vis alle upublicerede kladder på tværs af kollektioner." },
-  { label: "Hvad kan du?", message: "List alle de værktøjer og ting du kan hjælpe mig med på mit site." },
-  { label: "Site-info", message: "Fortæl mig alt om mit site — kollektioner, felter, indstillinger og indholds-statistik." },
+const SUGGESTIONS: { label: string; message: string; key: string }[] = [
+  { key: "overview", label: "Overblik over sitet", message: "Giv mig et overblik over mit site — hvor mange kollektioner, dokumenter og kladder har jeg?" },
+  { key: "drafts", label: "Vis mine kladder", message: "Vis alle upublicerede kladder på tværs af kollektioner." },
+  { key: "capabilities", label: "Hvad kan du?", message: "List alle de værktøjer og ting du kan hjælpe mig med på mit site." },
+  { key: "site-info", label: "Site-info", message: "Fortæl mig alt om mit site — kollektioner, felter, indstillinger og indholds-statistik." },
 ];
 
 // ── Root component ────────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ function ChatApp() {
   const newChat = useCallback(() => { setMessages([]); setConvId(uuid()); setInput(""); setDrawer(null); }, []);
 
   // ── Streaming send ──────────────────────────────────────────────────────────
-  const send = useCallback(async (text: string) => {
+  const send = useCallback(async (text: string, warmKey?: string) => {
     const clean = text.trim();
     if (!clean || streaming) return;
     const userMsg: Msg = { id: uuid(), role: "user", content: clean };
@@ -243,8 +243,35 @@ function ChatApp() {
       setStreaming(false);
       saveConversation(convId, [...base, { id: asstId, role: "assistant", content: fullText, toolCalls: localTools }]);
       loadConversations();
+      // F158: warm the quick-action cache with this streamed answer so the next
+      // click is instant. Only for a clean tool-free-or-not answer (skip errors).
+      if (warmKey && fullText && !fullText.startsWith("Forbindelsen") && !fullText.startsWith("Fejl:")) {
+        fetch(`/api/admin/chat/quick/${warmKey}`, { method: "POST", headers: authHeaders(), body: JSON.stringify({ markdown: fullText }) }).catch(() => {});
+      }
     }
   }, [streaming, convId, saveConversation, loadConversations]);
+
+  // F158: a quick-action click tries the cache first (instant), else streams
+  // normally and warms the cache on completion (via send's warmKey).
+  const sendQuick = useCallback(async (action: { key: string; message: string }) => {
+    if (streaming) return;
+    try {
+      const r = await fetch(`/api/admin/chat/quick/${action.key}`, { headers: authHeaders() });
+      if (r.ok) {
+        const d = (await r.json()) as { cached?: boolean; markdown?: string };
+        if (d.cached && d.markdown) {
+          const userMsg: Msg = { id: uuid(), role: "user", content: action.message };
+          const asstMsg: Msg = { id: uuid(), role: "assistant", content: d.markdown };
+          const next = [...messagesRef.current, userMsg, asstMsg];
+          setMessages(next);
+          saveConversation(convId, next);
+          loadConversations();
+          return;
+        }
+      }
+    } catch { /* fall through to streaming */ }
+    send(action.message, action.key);
+  }, [streaming, convId, send, saveConversation, loadConversations]);
 
   const onKey = (e: KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); }
@@ -285,7 +312,7 @@ function ChatApp() {
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: "10px", textAlign: "left" }}>
                 {SUGGESTIONS.map((s) => (
-                  <button key={s.label} data-testid="chat-suggestion" onClick={() => send(s.message)}
+                  <button key={s.label} data-testid="chat-suggestion" onClick={() => sendQuick(s)}
                     style={{ ...cardBase(c), cursor: "pointer", padding: "14px 16px", fontSize: "14px" }}>
                     {s.label}
                   </button>
