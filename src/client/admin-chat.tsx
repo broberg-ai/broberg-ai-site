@@ -231,17 +231,21 @@ function ChatApp() {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", background: c.bg, color: c.fg, fontFamily: "system-ui,-apple-system,sans-serif" }} data-testid="admin-chat-app">
-      {/* Action bar — the only chrome (no stacked admin header). */}
-      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", padding: "10px 16px", borderBottom: `1px solid ${c.border}` }}>
-        <span style={{ fontWeight: 700, fontSize: "15px", marginRight: "4px" }}>broberg<span style={{ color: c.accent }}>.ai</span></span>
-        <button data-testid="chat-new" onClick={newChat} style={btn(c, true)}>Ny chat</button>
-        <button data-testid="chat-open-conversations" onClick={() => { setDrawer("chats"); loadConversations(); }} style={btn(c)}>Samtaler</button>
-        <button data-testid="chat-open-memory" onClick={() => { setDrawer("memory"); loadMemories(); }} style={btn(c)}>
+    <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", background: c.bg, color: c.fg, fontFamily: "system-ui,-apple-system,sans-serif", overflowX: "hidden" }} data-testid="admin-chat-app">
+      {/* Action bar — the only chrome (no stacked admin header). One line, no
+          wiggle: nowrap + items that fit; on mobile the brand hides and "Ny chat"
+          collapses to "+". NEVER overflow-x scroll (global mobile hard rule). */}
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "nowrap", gap: "8px", padding: "10px 16px", borderBottom: `1px solid ${c.border}`, maxWidth: "100%" }}>
+        <span class="chat-brand" style={{ fontWeight: 700, fontSize: "15px", marginRight: "4px", flex: "0 0 auto" }}>broberg<span style={{ color: c.accent }}>.ai</span></span>
+        <button data-testid="chat-new" onClick={newChat} aria-label="Ny chat" title="Ny chat" style={{ ...btn(c, true), flex: "0 0 auto" }}>
+          <span class="chat-lbl-full">Ny chat</span><span class="chat-lbl-mini">+</span>
+        </button>
+        <button data-testid="chat-open-conversations" onClick={() => { setDrawer("chats"); loadConversations(); }} style={{ ...btn(c), flex: "0 0 auto" }}>Samtaler</button>
+        <button data-testid="chat-open-memory" onClick={() => { setDrawer("memory"); loadMemories(); }} style={{ ...btn(c), flex: "0 0 auto" }}>
           Hukommelse{memories.length ? ` (${memories.length})` : ""}
         </button>
-        <div style={{ flex: 1 }} />
-        <a data-testid="chat-exit" href="/" style={{ ...btn(c), textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>Forlad →</a>
+        <div style={{ flex: "1 1 auto", minWidth: "6px" }} />
+        <a data-testid="chat-exit" href="/" style={{ ...btn(c), flex: "0 0 auto", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>Forlad →</a>
       </div>
 
       {/* Messages */}
@@ -297,9 +301,9 @@ function ChatApp() {
               {drawer === "chats" ? (
                 conversations.length === 0 ? <p style={{ color: c.muted, fontSize: "13px", padding: "12px" }}>Ingen samtaler endnu.</p> :
                 conversations.map((cv) => (
-                  <div key={cv.id} style={{ ...cardBase(c), padding: "10px 12px", marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div key={cv.id} style={{ ...cardBase(c), padding: "10px 12px", marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px", overflow: "hidden" }}>
                     <button data-testid="chat-conv-load" onClick={() => loadConversation(cv.id)}
-                      style={{ flex: 1, textAlign: "left", background: "none", border: "none", color: c.fg, cursor: "pointer", padding: 0 }}>
+                      style={{ flex: 1, minWidth: 0, overflow: "hidden", textAlign: "left", background: "none", border: "none", color: c.fg, cursor: "pointer", padding: 0 }}>
                       <div style={{ fontSize: "13px", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cv.title}</div>
                       <div style={{ fontSize: "11px", color: c.muted }}>{relativeTime(cv.updatedAt)}</div>
                     </button>
@@ -318,9 +322,9 @@ function ChatApp() {
               ) : (
                 memories.length === 0 ? <p style={{ color: c.muted, fontSize: "13px", padding: "12px" }}>Ingen hukommelse endnu. Ting du beder om huskes automatisk fra dine samtaler.</p> :
                 memories.map((mem) => (
-                  <div key={mem.id} style={{ ...cardBase(c), padding: "10px 12px", marginBottom: "6px", display: "flex", alignItems: "flex-start", gap: "8px" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "13px" }}>{mem.fact}</div>
+                  <div key={mem.id} style={{ ...cardBase(c), padding: "10px 12px", marginBottom: "6px", display: "flex", alignItems: "flex-start", gap: "8px", overflow: "hidden" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: "13px", overflowWrap: "break-word", wordBreak: "break-word" }}>{mem.fact}</div>
                       <div style={{ fontSize: "11px", color: c.muted, marginTop: "3px" }}>{mem.category}</div>
                     </div>
                     {confirmMem === mem.id ? (
@@ -349,7 +353,7 @@ function Message({ m, c }: { m: Msg; c: Record<string, string> }) {
   if (m.role === "user") {
     return (
       <div data-testid="chat-msg-user" style={{ display: "flex", justifyContent: "flex-end", margin: "0 0 16px" }}>
-        <div style={{ maxWidth: "85%", background: c.accent, color: "#0d0d0d", padding: "10px 14px", borderRadius: "14px 14px 4px 14px", fontSize: "15px", whiteSpace: "pre-wrap", fontWeight: 500 }}>{m.content}</div>
+        <div style={{ maxWidth: "85%", background: c.accent, color: "#0d0d0d", padding: "10px 14px", borderRadius: "14px 14px 4px 14px", fontSize: "15px", whiteSpace: "pre-wrap", overflowWrap: "break-word", wordBreak: "break-word", fontWeight: 500 }}>{m.content}</div>
       </div>
     );
   }
@@ -438,7 +442,7 @@ export function mountAdminChat() {
   if (!document.getElementById("chat-anim")) {
     const st = document.createElement("style");
     st.id = "chat-anim";
-    st.textContent = "@keyframes chatpulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes chat-orbit{0%{transform:rotate(0deg) translateX(9px) rotate(0deg);opacity:1}33%{opacity:.6}66%{opacity:1}100%{transform:rotate(360deg) translateX(9px) rotate(-360deg);opacity:1}}@keyframes chat-ring{0%,100%{transform:scale(.85);opacity:.2}50%{transform:scale(1.1);opacity:.06}}.chat-md a{color:var(--orange-text,#ff6a45)}.chat-md pre{background:#161616;border:1px solid #2a2a2a;border-radius:8px;padding:12px;overflow:auto}.chat-md code{font-family:ui-monospace,monospace;font-size:.9em}.chat-md h1,.chat-md h2,.chat-md h3{margin:.8em 0 .4em}.chat-md ul,.chat-md ol{padding-left:1.4em}.chat-md p{margin:.5em 0}.chat-md table{border-collapse:collapse;width:100%;font-size:.9em;margin:.5em 0}.chat-md th,.chat-md td{border:1px solid #2a2a2a;padding:5px 9px;text-align:left}";
+    st.textContent = "@keyframes chatpulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes chat-orbit{0%{transform:rotate(0deg) translateX(9px) rotate(0deg);opacity:1}33%{opacity:.6}66%{opacity:1}100%{transform:rotate(360deg) translateX(9px) rotate(-360deg);opacity:1}}@keyframes chat-ring{0%,100%{transform:scale(.85);opacity:.2}50%{transform:scale(1.1);opacity:.06}}.chat-md a{color:var(--orange-text,#ff6a45)}.chat-md pre{background:#161616;border:1px solid #2a2a2a;border-radius:8px;padding:12px;overflow:auto}.chat-md code{font-family:ui-monospace,monospace;font-size:.9em}.chat-md h1,.chat-md h2,.chat-md h3{margin:.8em 0 .4em}.chat-md ul,.chat-md ol{padding-left:1.4em}.chat-md p{margin:.5em 0}.chat-md{overflow-wrap:break-word;word-break:break-word;max-width:100%}.chat-md pre{max-width:100%}.chat-md table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:.85em;margin:.5em 0}.chat-md th,.chat-md td{border:1px solid #2a2a2a;padding:5px 9px;text-align:left;overflow-wrap:break-word;word-break:break-word}.chat-lbl-mini{display:none}@media(max-width:520px){.chat-brand{display:none}.chat-lbl-full{display:none}.chat-lbl-mini{display:inline}}";
     document.head.appendChild(st);
   }
   root.style.cssText = "";
