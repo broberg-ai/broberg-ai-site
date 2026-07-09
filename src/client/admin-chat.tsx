@@ -167,6 +167,10 @@ function ChatApp() {
     const update = (fn: (m: Msg) => Msg) =>
       setMessages((cur) => cur.map((m) => (m.id === asstId ? fn(m) : m)));
 
+    // Accumulated across the whole turn (survives the batched display flush).
+    let fullText = "";
+    const localTools: ToolCall[] = [];
+
     try {
       const res = await fetch("/api/admin/chat", {
         method: "POST", headers: authHeaders(),
@@ -185,6 +189,20 @@ function ChatApp() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "", event = "";
+      // Batch text deltas. Streaming emits hundreds of tiny `text` events; a
+      // setState + re-render per delta saturated mobile Safari's main thread
+      // until reader.read() stalled and the connection dropped. Coalesce deltas
+      // and flush on a ~70ms throttle. fullText/localTools accumulate the whole
+      // turn so nothing is lost to throttling (used for the final render + save).
+      let pending = "";
+      let flushTimer: ReturnType<typeof setTimeout> | null = null;
+      const flushText = () => {
+        flushTimer = null;
+        if (!pending) return;
+        const t = pending; pending = "";
+        update((m) => ({ ...m, content: m.content + t }));
+      };
+      const addText = (d: string) => { if (!d) return; fullText += d; pending += d; if (!flushTimer) flushTimer = setTimeout(flushText, 70); };
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -195,27 +213,35 @@ function ChatApp() {
           if (line.startsWith("event: ")) { event = line.slice(7).trim(); continue; }
           if (!line.startsWith("data: ")) continue;
           let data: any; try { data = JSON.parse(line.slice(6)); } catch { continue; }
-          if (event === "text") update((m) => ({ ...m, content: m.content + (data.text ?? "") }));
+          if (event === "text") addText(data.text ?? "");
           else if (event === "thinking") update((m) => ({ ...m, thinking: (m.thinking ?? "") + (data.text ?? "") }));
-          else if (event === "tool_call") update((m) => ({ ...m, toolCalls: [...(m.toolCalls ?? []), { tool: data.tool, input: data.input, status: "running" }] }));
-          else if (event === "tool_result") update((m) => {
-            const tcs = [...(m.toolCalls ?? [])];
-            const i = tcs.findIndex((t) => t.tool === data.tool && t.status === "running");
-            if (i >= 0) tcs[i] = { ...tcs[i], result: data.result, status: "done" };
-            return { ...m, toolCalls: tcs };
-          });
-          else if (event === "artifact") update((m) => ({ ...m, content: m.content + `\n\n**${data.title ?? "Artefakt"}**` }));
-          else if (event === "error") update((m) => ({ ...m, content: m.content + `\n\nFejl: ${data.message ?? "ukendt"}`, isStreaming: false }));
+          else if (event === "tool_call") {
+            localTools.push({ tool: data.tool, input: data.input, status: "running" });
+            update((m) => ({ ...m, toolCalls: [...(m.toolCalls ?? []), { tool: data.tool, input: data.input, status: "running" }] }));
+          } else if (event === "tool_result") {
+            const li = localTools.findIndex((t) => t.tool === data.tool && t.status === "running");
+            if (li >= 0) localTools[li] = { ...localTools[li], result: data.result, status: "done" };
+            update((m) => {
+              const tcs = [...(m.toolCalls ?? [])];
+              const i = tcs.findIndex((t) => t.tool === data.tool && t.status === "running");
+              if (i >= 0) tcs[i] = { ...tcs[i], result: data.result, status: "done" };
+              return { ...m, toolCalls: tcs };
+            });
+          } else if (event === "artifact") addText(`\n\n**${data.title ?? "Artefakt"}**`);
+          else if (event === "error") fullText += `\n\nFejl: ${data.message ?? "ukendt"}`;
           event = "";
         }
       }
+      if (flushTimer) clearTimeout(flushTimer);
     } catch {
-      update((m) => ({ ...m, content: m.content || "Forbindelsen blev afbrudt. Prøv igen.", isStreaming: false }));
+      if (!fullText) fullText = "Forbindelsen blev afbrudt. Prøv igen.";
     } finally {
-      update((m) => ({ ...m, isStreaming: false }));
+      // One final render with the complete text — markdown now applies since
+      // isStreaming flips false — then persist from local data (the ref lags
+      // the throttled flush, so build the saved message here).
+      update((m) => ({ ...m, content: fullText, toolCalls: localTools, isStreaming: false }));
       setStreaming(false);
-      const finalMsgs = messagesRef.current;
-      saveConversation(convId, finalMsgs);
+      saveConversation(convId, [...base, { id: asstId, role: "assistant", content: fullText, toolCalls: localTools }]);
       loadConversations();
     }
   }, [streaming, convId, saveConversation, loadConversations]);
@@ -370,7 +396,13 @@ function Message({ m, c }: { m: Msg; c: Record<string, string> }) {
         </div>
       ))}
       {m.content ? (
-        <div data-testid="chat-markdown" class="chat-md" style={{ fontSize: "15px", lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }} />
+        m.isStreaming ? (
+          // While streaming render PLAIN text (no per-frame markdown re-parse —
+          // that pegged mobile Safari's main thread). Markdown applies once done.
+          <div data-testid="chat-markdown" style={{ fontSize: "15px", lineHeight: 1.6, whiteSpace: "pre-wrap", overflowWrap: "break-word", wordBreak: "break-word" }}>{m.content}</div>
+        ) : (
+          <div data-testid="chat-markdown" class="chat-md" style={{ fontSize: "15px", lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }} />
+        )
       ) : m.isStreaming ? (
         <ThinkingDots c={c} startedAt={m.startedAt} />
       ) : null}
