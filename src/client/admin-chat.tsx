@@ -20,7 +20,7 @@ const CMS = { cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" };
 // ── Types ───────────────────────────────────────────────────────────────────
 type Role = "user" | "assistant";
 interface ToolCall { tool: string; input?: Record<string, unknown>; result?: string; status: "running" | "done" | "error"; }
-interface Msg { id: string; role: Role; content: string; thinking?: string; toolCalls?: ToolCall[]; isStreaming?: boolean; }
+interface Msg { id: string; role: Role; content: string; thinking?: string; toolCalls?: ToolCall[]; isStreaming?: boolean; startedAt?: number; }
 interface ConvListItem { id: string; title: string; updatedAt: string; starred?: boolean; }
 interface Memory { id: string; fact: string; category: string; entities?: string[]; }
 
@@ -158,7 +158,7 @@ function ChatApp() {
     if (!clean || streaming) return;
     const userMsg: Msg = { id: uuid(), role: "user", content: clean };
     const asstId = uuid();
-    const asstMsg: Msg = { id: asstId, role: "assistant", content: "", toolCalls: [], isStreaming: true };
+    const asstMsg: Msg = { id: asstId, role: "assistant", content: "", toolCalls: [], isStreaming: true, startedAt: Date.now() };
     const base = [...messagesRef.current, userMsg];
     setMessages([...base, asstMsg]);
     setInput("");
@@ -231,16 +231,17 @@ function ChatApp() {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, paddingTop: "64px", display: "flex", flexDirection: "column", background: c.bg, color: c.fg, fontFamily: "system-ui,-apple-system,sans-serif" }} data-testid="admin-chat-app">
-      {/* Action bar */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 16px", borderBottom: `1px solid ${c.border}` }}>
+    <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", background: c.bg, color: c.fg, fontFamily: "system-ui,-apple-system,sans-serif" }} data-testid="admin-chat-app">
+      {/* Action bar — the only chrome (no stacked admin header). */}
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", padding: "10px 16px", borderBottom: `1px solid ${c.border}` }}>
+        <span style={{ fontWeight: 700, fontSize: "15px", marginRight: "4px" }}>broberg<span style={{ color: c.accent }}>.ai</span></span>
         <button data-testid="chat-new" onClick={newChat} style={btn(c, true)}>Ny chat</button>
         <button data-testid="chat-open-conversations" onClick={() => { setDrawer("chats"); loadConversations(); }} style={btn(c)}>Samtaler</button>
         <button data-testid="chat-open-memory" onClick={() => { setDrawer("memory"); loadMemories(); }} style={btn(c)}>
           Hukommelse{memories.length ? ` (${memories.length})` : ""}
         </button>
         <div style={{ flex: 1 }} />
-        <span style={{ fontSize: "12px", color: c.muted }}>broberg.ai · AI-chat</span>
+        <a data-testid="chat-exit" href="/" style={{ ...btn(c), textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>Forlad →</a>
       </div>
 
       {/* Messages */}
@@ -367,8 +368,37 @@ function Message({ m, c }: { m: Msg; c: Record<string, string> }) {
       {m.content ? (
         <div data-testid="chat-markdown" class="chat-md" style={{ fontSize: "15px", lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }} />
       ) : m.isStreaming ? (
-        <span data-testid="chat-cursor" style={{ display: "inline-block", width: "8px", height: "16px", background: c.accent, animation: "chatpulse 1s infinite" }} />
+        <ThinkingDots c={c} startedAt={m.startedAt} />
       ) : null}
+    </div>
+  );
+}
+
+// Claude-inspired "thinking" animation (ported from cms-admin's chat), in the
+// broberg .ai orange. Shown while the answer is generating — the CMS chat sends
+// its text only when the whole (often 30-60s) agentic turn finishes, so without
+// this the surface looks hung.
+function ThinkingDots({ c, startedAt }: { c: Record<string, string>; startedAt?: number }) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!startedAt) return;
+    const tick = () => setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+  const time = `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}`;
+  return (
+    <div data-testid="chat-thinking-dots" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <div style={{ position: "relative", width: "28px", height: "28px" }}>
+        <div style={{ position: "absolute", inset: "-2px", borderRadius: "50%", border: `1.5px solid ${c.accent}`, animation: "chat-ring 2.4s ease-in-out infinite" }} />
+        {[0, 1, 2].map((i) => (
+          <div key={i} style={{ position: "absolute", top: "50%", left: "50%", width: "5px", height: "5px", marginTop: "-2.5px", marginLeft: "-2.5px", borderRadius: "50%", background: c.accent, animation: "chat-orbit 1.8s cubic-bezier(0.4,0,0.2,1) infinite", animationDelay: `${i * -0.6}s` }} />
+        ))}
+        <div style={{ position: "absolute", top: "50%", left: "50%", width: "4px", height: "4px", marginTop: "-2px", marginLeft: "-2px", borderRadius: "50%", background: c.accent, opacity: 0.4 }} />
+      </div>
+      <span style={{ fontSize: "13px", color: c.muted, fontStyle: "italic" }}>Tænker…</span>
+      {elapsed > 0 ? <span style={{ fontSize: "12px", color: c.muted, opacity: 0.6, fontVariantNumeric: "tabular-nums" }}>{time}</span> : null}
     </div>
   );
 }
@@ -408,7 +438,7 @@ export function mountAdminChat() {
   if (!document.getElementById("chat-anim")) {
     const st = document.createElement("style");
     st.id = "chat-anim";
-    st.textContent = "@keyframes chatpulse{0%,100%{opacity:1}50%{opacity:.35}}.chat-md a{color:var(--orange-text,#ff6a45)}.chat-md pre{background:#161616;border:1px solid #2a2a2a;border-radius:8px;padding:12px;overflow:auto}.chat-md code{font-family:ui-monospace,monospace;font-size:.9em}.chat-md h1,.chat-md h2,.chat-md h3{margin:.8em 0 .4em}.chat-md ul,.chat-md ol{padding-left:1.4em}.chat-md p{margin:.5em 0}";
+    st.textContent = "@keyframes chatpulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes chat-orbit{0%{transform:rotate(0deg) translateX(9px) rotate(0deg);opacity:1}33%{opacity:.6}66%{opacity:1}100%{transform:rotate(360deg) translateX(9px) rotate(-360deg);opacity:1}}@keyframes chat-ring{0%,100%{transform:scale(.85);opacity:.2}50%{transform:scale(1.1);opacity:.06}}.chat-md a{color:var(--orange-text,#ff6a45)}.chat-md pre{background:#161616;border:1px solid #2a2a2a;border-radius:8px;padding:12px;overflow:auto}.chat-md code{font-family:ui-monospace,monospace;font-size:.9em}.chat-md h1,.chat-md h2,.chat-md h3{margin:.8em 0 .4em}.chat-md ul,.chat-md ol{padding-left:1.4em}.chat-md p{margin:.5em 0}.chat-md table{border-collapse:collapse;width:100%;font-size:.9em;margin:.5em 0}.chat-md th,.chat-md td{border:1px solid #2a2a2a;padding:5px 9px;text-align:left}";
     document.head.appendChild(st);
   }
   root.style.cssText = "";

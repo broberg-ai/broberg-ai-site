@@ -12,6 +12,10 @@ const CMS = { cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" };
 // F157.3 — no-op unless the site's Site Settings toggle is on AND this
 // browser is connected. See docs/features/F157-inline-editing.md.
 function inlineEdit() {
+  // Inline editing is for the PUBLIC site, not the admin tool pages (/admin,
+  // /admin/chat). On the chat page its "Afslut redigering" pill overlapped the
+  // input and a click reset the surface — so never mount it under /admin.
+  if (location.pathname.startsWith("/admin")) return;
   // Locale-aware edit pill (login is implicit — clicking bounces to sign-in).
   const isEn = document.documentElement.lang === "en";
   initInlineEdit({

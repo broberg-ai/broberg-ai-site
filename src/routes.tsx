@@ -113,22 +113,21 @@ export async function renderAdmin(): Promise<string> {
   );
 }
 
-// F002 — full-screen AI chat surface. Same login bounce as /admin; enhance.ts's
+// F002 — full-screen AI chat surface. Deliberately NO AdminNav: the chat gets
+// the WHOLE surface (its own action bar is the only chrome), so there's never a
+// second admin header stacked on top. Same login bounce as /admin; enhance.ts's
 // mountAdminChat() takes over #admin-chat-root client-side (redirects to the
 // cms-admin connect flow if not connected, else mounts the Preact chat that
 // streams the full CMS agentic chat via the same-origin /api/admin/chat relay).
 export async function renderAdminChat(): Promise<string> {
   return renderPage(
-    <>
-      <AdminNav />
-      <div
-        id="admin-chat-root"
-        data-testid="admin-chat-root"
-        style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;"
-      >
-        <p style="color:#8a8a8a;font-size:14px;">Indlæser chat…</p>
-      </div>
-    </>,
+    <div
+      id="admin-chat-root"
+      data-testid="admin-chat-root"
+      style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;"
+    >
+      <p style="color:#8a8a8a;font-size:14px;">Indlæser chat…</p>
+    </div>,
     { title: "AI-chat — broberg.ai", description: "", locale: "da", forceTheme: "dark" },
     resolveAssets(),
   );
