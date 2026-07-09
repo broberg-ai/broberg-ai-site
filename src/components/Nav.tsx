@@ -107,6 +107,10 @@ export function AdminNav() {
               Værktøjer <span class="car">▾</span>
             </button>
             <div class="dd">
+              <a href="/admin/chat" data-testid="admin-tool-chat">
+                <b>AI-chat</b>
+                <span>Snak med dit site — byg, ret og udgiv i chatten</span>
+              </a>
               <a href="#tool-inline-edit" data-testid="admin-tool-inline-edit">
                 <b>Inline editing</b>
                 <span>Klik-til-redigér direkte på sitet</span>

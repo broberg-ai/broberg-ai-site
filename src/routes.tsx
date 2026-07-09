@@ -113,6 +113,27 @@ export async function renderAdmin(): Promise<string> {
   );
 }
 
+// F002 — full-screen AI chat surface. Same login bounce as /admin; enhance.ts's
+// mountAdminChat() takes over #admin-chat-root client-side (redirects to the
+// cms-admin connect flow if not connected, else mounts the Preact chat that
+// streams the full CMS agentic chat via the same-origin /api/admin/chat relay).
+export async function renderAdminChat(): Promise<string> {
+  return renderPage(
+    <>
+      <AdminNav />
+      <div
+        id="admin-chat-root"
+        data-testid="admin-chat-root"
+        style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;"
+      >
+        <p style="color:#8a8a8a;font-size:14px;">Indlæser chat…</p>
+      </div>
+    </>,
+    { title: "AI-chat — broberg.ai", description: "", locale: "da", forceTheme: "dark" },
+    resolveAssets(),
+  );
+}
+
 // "Sådan bygger vi det" (F156.4) — the ORIGINAL homepage content (universe
 // diagram, all 12 flagship cards, SDLC method), relocated unchanged from `/`
 // to `/universet` (DA) / `/en/universe` (EN) when the new sales landing

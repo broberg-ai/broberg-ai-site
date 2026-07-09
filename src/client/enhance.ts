@@ -3,6 +3,7 @@
    the mobile nav/dropdown toggles flagged in the build brief. */
 import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
+import { mountAdminChat } from "@/client/admin-chat.tsx";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
 // F157 — cms-admin connection shared by inline-edit + the /admin panel.
@@ -474,3 +475,4 @@ safe(mountTurnstile);
 safe(contactForm);
 safe(inlineEdit);
 safe(adminPanel);
+safe(mountAdminChat);

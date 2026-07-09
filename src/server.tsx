@@ -24,6 +24,7 @@ import {
   renderThanks,
   renderSiteIndex,
   renderAdmin,
+  renderAdminChat,
 } from "@/routes.tsx";
 import { buildSearchIndex, postCanonicalCategory } from "@/content/compose.ts";
 import { flagshipsSegment, withLocale } from "@/i18n.ts";
@@ -233,6 +234,9 @@ app.get("/en/index", async () => html(await renderSiteIndex("en")));
 
 // F157 — internal admin tools (Inline Editing toggle, more later). Not
 // locale-prefixed — a single internal tool page, not public content.
+// /admin/chat (F002) MUST precede /admin so it isn't shadowed, and both must
+// precede the dynamic /:category/:slug catch-alls below.
+app.get("/admin/chat", async () => html(await renderAdminChat()));
 app.get("/admin", async () => html(await renderAdmin()));
 
 // Blog: /:category/:slug (DA) and /en/:category/:slug (EN). A real post → its
