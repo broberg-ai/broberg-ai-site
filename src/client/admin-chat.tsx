@@ -64,8 +64,12 @@ function toolDetail(input?: Record<string, unknown>): string {
 
 function renderMarkdown(md: string): string {
   const html = marked.parse(md, { breaks: true, async: false }) as string;
-  // Open links in a new tab (admin surface, external targets).
-  return html.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ');
+  return html
+    // Open links in a new tab (admin surface, external targets).
+    .replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')
+    // Wrap wide tables so they scroll inside their own box (no mobile wiggle).
+    .replace(/<table>/g, '<div class="chat-table-wrap"><table>')
+    .replace(/<\/table>/g, "</table></div>");
 }
 
 // ── Quick actions (empty state) ───────────────────────────────────────────────
@@ -501,7 +505,7 @@ export function mountAdminChat() {
   if (!document.getElementById("chat-anim")) {
     const st = document.createElement("style");
     st.id = "chat-anim";
-    st.textContent = "@keyframes chatpulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes chat-orbit{0%{transform:rotate(0deg) translateX(9px) rotate(0deg);opacity:1}33%{opacity:.6}66%{opacity:1}100%{transform:rotate(360deg) translateX(9px) rotate(-360deg);opacity:1}}@keyframes chat-ring{0%,100%{transform:scale(.85);opacity:.2}50%{transform:scale(1.1);opacity:.06}}.chat-md a{color:var(--orange-text,#ff6a45)}.chat-md pre{background:#161616;border:1px solid #2a2a2a;border-radius:8px;padding:12px;overflow:auto}.chat-md code{font-family:ui-monospace,monospace;font-size:.9em}.chat-md h1,.chat-md h2,.chat-md h3{margin:.8em 0 .4em}.chat-md ul,.chat-md ol{padding-left:1.4em}.chat-md p{margin:.5em 0}.chat-md{overflow-wrap:break-word;word-break:break-word;max-width:100%}.chat-md pre{max-width:100%}.chat-md table{border-collapse:collapse;width:100%;table-layout:fixed;font-size:.85em;margin:.5em 0}.chat-md th,.chat-md td{border:1px solid #2a2a2a;padding:5px 9px;text-align:left;overflow-wrap:break-word;word-break:break-word}.chat-lbl-mini{display:none}@media(max-width:520px){.chat-brand{display:none}.chat-lbl-full{display:none}.chat-lbl-mini{display:inline}}";
+    st.textContent = "@keyframes chatpulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes chat-orbit{0%{transform:rotate(0deg) translateX(9px) rotate(0deg);opacity:1}33%{opacity:.6}66%{opacity:1}100%{transform:rotate(360deg) translateX(9px) rotate(-360deg);opacity:1}}@keyframes chat-ring{0%,100%{transform:scale(.85);opacity:.2}50%{transform:scale(1.1);opacity:.06}}.chat-md{overflow-wrap:break-word;word-break:break-word;max-width:100%;color:#f0f4f8}.chat-md p{margin:.5em 0}.chat-md h1,.chat-md h2,.chat-md h3{color:#f0f4f8;font-weight:650;line-height:1.3}.chat-md h1{font-size:1.25rem;margin:20px 0 8px}.chat-md h2{font-size:1.1rem;margin:16px 0 6px}.chat-md h3{font-size:.98rem;margin:12px 0 4px}.chat-md a{color:var(--orange-text,#ff6a45);text-decoration:none}.chat-md a:hover{text-decoration:underline}.chat-md strong{color:#f0f4f8;font-weight:650}.chat-md ul,.chat-md ol{margin:6px 0;padding-left:20px}.chat-md li{margin:3px 0}.chat-md hr{border:none;border-top:1px solid #2a2a2a;margin:16px 0}.chat-md blockquote{margin:8px 0;padding:8px 14px;border-left:3px solid var(--orange-text,#ff6a45);background:rgba(255,106,69,.06);border-radius:0 6px 6px 0}.chat-md code{font-family:ui-monospace,monospace;font-size:.82em;padding:2px 6px;border-radius:4px;background:#1c1c1c;border:1px solid #2a2a2a;color:var(--orange-text,#ff6a45)}.chat-md pre{max-width:100%;background:#161616;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;overflow-x:auto;font-size:.8rem;line-height:1.5;margin:.5em 0}.chat-md pre code{padding:0;border:none;background:none;color:inherit;font-size:1em}.chat-table-wrap{overflow-x:auto;max-width:100%;margin:.5em 0}.chat-md table{border-collapse:collapse;width:100%;font-size:.8rem}.chat-md th{padding:8px 12px;text-align:left;font-weight:600;border-bottom:2px solid #2a2a2a;color:#f0f4f8;white-space:nowrap}.chat-md td{padding:6px 12px;border-bottom:1px solid #2a2a2a;color:#b8bdc4;overflow-wrap:break-word;word-break:break-word}.chat-lbl-mini{display:none}@media(max-width:520px){.chat-brand{display:none}.chat-lbl-full{display:none}.chat-lbl-mini{display:inline}}";
     document.head.appendChild(st);
   }
   root.style.cssText = "";
