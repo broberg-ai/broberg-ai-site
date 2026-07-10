@@ -310,18 +310,27 @@ function ChatApp() {
         <div style={{ maxWidth: "768px", margin: "0 auto" }}>
           {messages.length === 0 ? (
             <div data-testid="chat-welcome" style={{ textAlign: "center", paddingTop: "8vh" }}>
-              <h1 style={{ fontSize: "26px", fontWeight: 600, margin: "0 0 8px" }}>Snak med dit site</h1>
-              <p style={{ color: c.muted, fontSize: "15px", margin: "0 0 28px" }}>
+              <div style={{ width: "56px", height: "56px", borderRadius: "16px", margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,106,69,.12)", border: "1px solid rgba(255,106,69,.32)" }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color: c.accent }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              </div>
+              <h1 style={{ fontSize: "30px", fontWeight: 600, margin: "0 0 10px" }}>Snak med dit site</h1>
+              <p style={{ color: c.muted, fontSize: "15px", lineHeight: 1.5, margin: "0 auto 30px", maxWidth: "470px" }}>
                 Spørg om hvad som helst på <b style={{ color: c.fg }}>broberg.ai</b> — jeg kender dit skema, dit indhold og dine indstillinger, og kan bygge, rette og udgive for dig.
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: "10px", textAlign: "left" }}>
                 {SUGGESTIONS.map((s) => (
                   <button key={s.label} data-testid="chat-suggestion" onClick={() => sendQuick(s)}
-                    style={{ ...cardBase(c), cursor: "pointer", padding: "14px 16px", fontSize: "14px" }}>
-                    {s.label}
+                    onMouseEnter={(e) => { const t = e.currentTarget as HTMLButtonElement; t.style.borderColor = c.accent; t.style.background = c.panel2; }}
+                    onMouseLeave={(e) => { const t = e.currentTarget as HTMLButtonElement; t.style.borderColor = c.border; t.style.background = c.panel; }}
+                    style={{ ...cardBase(c), display: "flex", alignItems: "center", gap: "11px", cursor: "pointer", padding: "13px 15px", fontSize: "13.5px", fontWeight: 500, transition: "border-color .15s, background .15s" }}>
+                    {quickIcon(s.key, c.accent)}
+                    <span>{s.label}</span>
                   </button>
                 ))}
               </div>
+              <p style={{ marginTop: "26px", fontSize: "11px", color: c.muted, opacity: .55 }}>
+                Enter sender · Shift + Enter = ny linje
+              </p>
             </div>
           ) : (
             messages.map((m) => <Message key={m.id} m={m} c={c} />)
@@ -487,6 +496,22 @@ function tab(c: Record<string, string>, active: boolean) {
 }
 function cardBase(c: Record<string, string>) {
   return { background: c.panel, border: `1px solid ${c.border}`, borderRadius: "10px", color: c.fg } as const;
+}
+// Inline quick-action icons (no icon lib in this repo) — accent-coloured, 17px, lucide-style.
+function quickIcon(key: string, color: string) {
+  const s = { color, flexShrink: 0 } as const;
+  switch (key) {
+    case "overview":
+      return (<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={s}><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></svg>);
+    case "drafts":
+      return (<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={s}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>);
+    case "capabilities":
+      return (<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={s}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>);
+    case "site-info":
+      return (<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={s}><line x1="21" y1="4" x2="14" y2="4" /><line x1="10" y1="4" x2="3" y2="4" /><line x1="21" y1="12" x2="12" y2="12" /><line x1="8" y1="12" x2="3" y2="12" /><line x1="21" y1="20" x2="16" y2="20" /><line x1="12" y1="20" x2="3" y2="20" /><line x1="14" y1="2" x2="14" y2="6" /><line x1="8" y1="10" x2="8" y2="14" /><line x1="16" y1="18" x2="16" y2="22" /></svg>);
+    default:
+      return null;
+  }
 }
 function confYes() {
   return { fontSize: "0.6rem", padding: "0.1rem 0.35rem", borderRadius: "3px", border: "none", background: "var(--destructive,#e5484d)", color: "#fff", cursor: "pointer", lineHeight: 1 } as const;
