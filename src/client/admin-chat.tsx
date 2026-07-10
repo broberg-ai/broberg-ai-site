@@ -261,6 +261,18 @@ function ChatApp() {
   // normally and warms the cache on completion (via send's warmKey).
   const sendQuick = useCallback(async (action: { key: string; message: string }) => {
     if (streaming) return;
+    // "Hvad kan du?" renders a curated, designed capabilities panel (static,
+    // instant, always Danish) instead of the flat AI markdown. Rollback path:
+    // delete this block → falls back to the cached markdown answer below.
+    if (action.key === "capabilities") {
+      const userMsg: Msg = { id: uuid(), role: "user", content: action.message };
+      const asstMsg: Msg = { id: uuid(), role: "assistant", content: CAPABILITIES_MARK };
+      const next = [...messagesRef.current, userMsg, asstMsg];
+      setMessages(next);
+      saveConversation(convId, next);
+      loadConversations();
+      return;
+    }
     // F158.2: peek the shared cache via @broberg/cms-chat-client (same-origin
     // relay). A warm hit renders instantly; peek never throws, so a miss / error
     // just falls through to normal streaming (which warms the cache on finish).
@@ -414,8 +426,102 @@ function ChatApp() {
   );
 }
 
+// ── "Hvad kan du?" — curated designed capabilities panel ─────────────────────
+// Rendered client-side (static, instant, always Danish) instead of the flat AI
+// markdown answer. A sentinel content string flags the message so it survives
+// reload. Rollback = remove the sendQuick branch + this block → cached markdown.
+const CAPABILITIES_MARK = "::capabilities-panel::";
+type CapItem = { b: string; s?: string; chips?: string[] };
+type CapGroup = { icon: () => any; label: string; items: CapItem[] };
+type CapCat = { num: string; icon: () => any; title: string; groups: CapGroup[] };
+const svgBase = { fill: "none", stroke: "currentColor", strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const IcoLayers = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="m12 2 9 5-9 5-9-5 9-5z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></svg>);
+const IcoFile = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>);
+const IcoImage = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-5-5L5 21" /></svg>);
+const IcoSearch = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>);
+const IcoSparkles = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z" /></svg>);
+const IcoPen = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>);
+const IcoChevron = () => (<svg viewBox="0 0 24 24" strokeWidth={3} {...svgBase}><path d="m9 18 6-6-6-6" /></svg>);
+const CAPS: CapCat[] = [
+  { num: "01", icon: IcoLayers, title: "Indholdsstyring", groups: [
+    { icon: IcoFile, label: "Dokumenter & kollektioner", items: [
+      { b: "List, søg og læs", s: "alt indhold på tværs af kollektioner — Sektioner, Indlæg, Kategorier, Flagskibe, Løsninger, Globals" },
+      { b: "Opret nye dokumenter", s: "blogindlæg, sektioner, flagskibe i enhver kollektion" },
+      { b: "Opdatér eksisterende", s: "redigér titel, brødtekst, tags, billeder, SEO m.m." },
+      { b: "Publicér eller afpublicér", s: "enkeltvis eller i bulk" },
+      { b: "Flyt til papirkurv", s: "med bekræftelse" },
+      { b: "Gendan & klon", s: "gendan fra papirkurv, eller lav en kopi som kladde" },
+      { b: "Planlæg publicering", s: "til fremtidige datoer og tidspunkter" },
+      { b: "Oversæt & bulk-oversæt", s: "enkelte dokumenter eller alle uoversatte til et målsprog" },
+      { b: "Bulk-publicér", s: "alle kladder i én kollektion eller på hele sitet" },
+      { b: "Bulk-opdatér felter", s: "fx tilføj et tag til alle indlæg eller skift en kategori" },
+    ] },
+    { icon: IcoImage, label: "Mediebibliotek", items: [
+      { b: "List alle mediefiler", s: "billeder, video, lyd, dokumenter" },
+      { b: "Søg i medier", s: "via AI-tekster, AI-tags, brugertags eller filnavne" },
+      { b: "Find relevante billeder", s: "til et indlæg eller en sektion" },
+      { b: "Indsæt medie-URLs", s: "cover-billeder, gallerier, indlejrede billeder" },
+    ] },
+    { icon: IcoSearch, label: "SEO & metadata", items: [
+      { b: "Generér SEO-titler, -beskrivelser & -nøgleord", s: "til dine dokumenter" },
+      { b: "Opdatér meta-felter", chips: ["metaTitle", "metaDescription", "ogImage"] },
+      { b: "Optimér eksisterende indhold", s: "omskriv titler, uddrag eller beskrivelser til SEO" },
+    ] },
+  ] },
+  { num: "02", icon: IcoSparkles, title: "AI-drevet indholdsskabelse", groups: [
+    { icon: IcoPen, label: "Generér indhold", items: [
+      { b: "Skriv nyt indhold", s: "til felter som", chips: ["body", "excerpt", "description"] },
+      { b: "Omskriv eksisterende", s: "oversæt, forkort, skift tone, forenkl eller udvid" },
+      { b: "Generér AI-billeder", s: "og gem dem direkte i mediebiblioteket" },
+      { b: "Opret interaktive værktøjer", s: "beregnere, quizzer, formularer, grafer, widgets, mini-apps" },
+    ] },
+  ] },
+];
+const CAPS_CSS = `.chat-caps{max-width:100%}.chat-caps .caps-intro{color:#8a8a8a;font-size:15px;line-height:1.55;margin:0 0 22px}.chat-caps .caps-intro .brand{color:var(--orange-text,#ff6a45);font-weight:600}.chat-caps .cat{position:relative;background:#161616;border:1px solid #2a2a2a;border-radius:16px;padding:22px 24px 18px;margin-bottom:16px;overflow:hidden}.chat-caps .cat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--orange-text,#ff6a45),transparent 78%)}.chat-caps .cat-num{position:absolute;top:12px;right:20px;font-family:var(--fd,"Cormorant Garamond",Georgia,serif);font-weight:600;font-size:44px;line-height:1;color:#f0f4f8;opacity:.06;pointer-events:none}.chat-caps .cat-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}.chat-caps .cat-ic{width:38px;height:38px;border-radius:11px;flex-shrink:0;background:rgba(255,106,69,.12);border:1px solid rgba(255,106,69,.30);display:flex;align-items:center;justify-content:center;color:var(--orange-text,#ff6a45)}.chat-caps .cat-ic svg{width:20px;height:20px}.chat-caps .cat-head h2{font-family:var(--fd,"Cormorant Garamond",Georgia,serif);font-weight:600;font-size:23px;letter-spacing:.2px;margin:0;color:#f0f4f8}.chat-caps .group{margin-top:16px}.chat-caps .group:first-of-type{margin-top:0}.chat-caps .group-label{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--orange-text,#ff6a45)}.chat-caps .group-label svg{width:14px;height:14px;flex-shrink:0}.chat-caps .group-label .rule{flex:1;height:1px;background:#2a2a2a;margin-left:4px}.chat-caps .items{display:grid;grid-template-columns:1fr 1fr;gap:2px 28px}@media(max-width:560px){.chat-caps .items{grid-template-columns:1fr}}.chat-caps .item{display:flex;gap:9px;padding:7px 6px 7px 0;border-radius:8px;transition:background .14s}.chat-caps .item:hover{background:#1c1c1c}.chat-caps .item .mk{flex-shrink:0;margin-top:3px;color:var(--orange-text,#ff6a45);opacity:.85}.chat-caps .item .mk svg{width:13px;height:13px;display:block}.chat-caps .item .tx b{display:block;color:#f0f4f8;font-weight:600;font-size:13.5px;line-height:1.35}.chat-caps .item .tx span{display:block;color:#b8bdc4;font-size:12.5px;line-height:1.45;margin-top:1px}.chat-caps .item .tx code{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.82em;padding:1px 6px;border-radius:5px;background:rgba(255,106,69,.10);border:1px solid rgba(255,106,69,.26);color:var(--orange-text,#ff6a45);margin-right:4px}`;
+function Capabilities() {
+  return (
+    <div class="chat-caps" data-testid="chat-capabilities">
+      <p class="caps-intro">Her er et komplet overblik over alt, jeg kan hjælpe dig med på <span class="brand">broberg.ai</span> — organiseret efter funktion.</p>
+      {CAPS.map((cat) => (
+        <section class="cat" key={cat.num}>
+          <span class="cat-num">{cat.num}</span>
+          <div class="cat-head">
+            <span class="cat-ic">{cat.icon()}</span>
+            <h2>{cat.title}</h2>
+          </div>
+          {cat.groups.map((g) => (
+            <div class="group" key={g.label}>
+              <div class="group-label">{g.icon()} {g.label} <span class="rule" /></div>
+              <div class="items">
+                {g.items.map((it) => (
+                  <div class="item" key={it.b}>
+                    <span class="mk"><IcoChevron /></span>
+                    <div class="tx">
+                      <b>{it.b}</b>
+                      {it.s || it.chips ? (
+                        <span>{it.s}{it.s && it.chips ? " " : ""}{(it.chips ?? []).map((cc) => <code key={cc}>{cc}</code>)}</span>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 // ── Message ───────────────────────────────────────────────────────────────────
 function Message({ m, c }: { m: Msg; c: Record<string, string> }) {
+  if (m.content === CAPABILITIES_MARK) {
+    return (
+      <div data-testid="chat-msg-assistant" style={{ margin: "0 0 20px" }}>
+        <Capabilities />
+      </div>
+    );
+  }
   if (m.role === "user") {
     return (
       <div data-testid="chat-msg-user" style={{ display: "flex", justifyContent: "flex-end", margin: "0 0 16px" }}>
@@ -533,7 +639,7 @@ export function mountAdminChat() {
     // F158.2: the .chat-md rules come from the shared @broberg/cms-chat-client
     // (CHAT_MARKDOWN_CSS) — one source across all consumers. Only the
     // broberg-specific keyframes + brand-responsive rules stay local.
-    st.textContent = `@keyframes chatpulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes chat-orbit{0%{transform:rotate(0deg) translateX(9px) rotate(0deg);opacity:1}33%{opacity:.6}66%{opacity:1}100%{transform:rotate(360deg) translateX(9px) rotate(-360deg);opacity:1}}@keyframes chat-ring{0%,100%{transform:scale(.85);opacity:.2}50%{transform:scale(1.1);opacity:.06}}${CHAT_MARKDOWN_CSS}.chat-lbl-mini{display:none}@media(max-width:520px){.chat-brand{display:none}.chat-lbl-full{display:none}.chat-lbl-mini{display:inline}}`;
+    st.textContent = `@keyframes chatpulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes chat-orbit{0%{transform:rotate(0deg) translateX(9px) rotate(0deg);opacity:1}33%{opacity:.6}66%{opacity:1}100%{transform:rotate(360deg) translateX(9px) rotate(-360deg);opacity:1}}@keyframes chat-ring{0%,100%{transform:scale(.85);opacity:.2}50%{transform:scale(1.1);opacity:.06}}${CHAT_MARKDOWN_CSS}${CAPS_CSS}.chat-lbl-mini{display:none}@media(max-width:520px){.chat-brand{display:none}.chat-lbl-full{display:none}.chat-lbl-mini{display:inline}}`;
     document.head.appendChild(st);
   }
   root.style.cssText = "";
