@@ -442,6 +442,18 @@ const IcoSearch = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><
 const IcoSparkles = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z" /></svg>);
 const IcoPen = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>);
 const IcoChevron = () => (<svg viewBox="0 0 24 24" strokeWidth={3} {...svgBase}><path d="m9 18 6-6-6-6" /></svg>);
+const IcoBot = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M12 4v4" /><circle cx="9" cy="14" r="1" /><circle cx="15" cy="14" r="1" /></svg>);
+const IcoServer = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><rect x="2" y="3" width="20" height="8" rx="2" /><rect x="2" y="13" width="20" height="8" rx="2" /><path d="M6 7h.01" /><path d="M6 17h.01" /></svg>);
+const IcoSettings = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><line x1="21" y1="4" x2="14" y2="4" /><line x1="10" y1="4" x2="3" y2="4" /><line x1="21" y1="12" x2="12" y2="12" /><line x1="8" y1="12" x2="3" y2="12" /><line x1="21" y1="20" x2="16" y2="20" /><line x1="12" y1="20" x2="3" y2="20" /><line x1="14" y1="2" x2="14" y2="6" /><line x1="8" y1="10" x2="8" y2="14" /><line x1="16" y1="18" x2="16" y2="22" /></svg>);
+const IcoActivity = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>);
+const IcoInbox = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></svg>);
+const IcoShield = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>);
+const IcoRocket = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" /><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" /><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" /><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" /></svg>);
+const IcoEdit = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" /></svg>);
+const IcoZap = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></svg>);
+const IcoBox = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg>);
+const IcoGlobe = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>);
+const IcoLanguages = () => (<svg viewBox="0 0 24 24" strokeWidth={2} {...svgBase}><path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" /></svg>);
 const CAPS: CapCat[] = [
   { num: "01", icon: IcoLayers, title: "Indholdsstyring", groups: [
     { icon: IcoFile, label: "Dokumenter & kollektioner", items: [
@@ -475,6 +487,66 @@ const CAPS: CapCat[] = [
       { b: "Generér AI-billeder", s: "og gem dem direkte i mediebiblioteket" },
       { b: "Opret interaktive værktøjer", s: "beregnere, quizzer, formularer, grafer, widgets, mini-apps" },
     ] },
+    { icon: IcoBot, label: "Agenter & workflows", items: [
+      { b: "Administrér AI-agenter", s: "list, opret & redigér — tekstforfattere, SEO-specialister, oversættere" },
+      { b: "Kør agenter", s: "generér indhold på kommando" },
+      { b: "Byg workflows", s: "kæder af agenter (Skribent → SEO → Oversætter)" },
+      { b: "Kør workflows", s: "automatisér flertrins-produktion" },
+      { b: "Godkend eller afvis", s: "AI-indhold i kurateringskøen" },
+      { b: "Gem agenter som skabeloner", s: "til genbrug" },
+    ] },
+  ] },
+  { num: "03", icon: IcoServer, title: "Site-administration", groups: [
+    { icon: IcoSettings, label: "Site-konfiguration", items: [
+      { b: "Se & opdatér site-indstillinger", s: "navn, beskrivelse, navigation, footer, sociale links" },
+      { b: "Tjek content-drift", s: "sammenlign CMS-indhold med det live site" },
+    ] },
+    { icon: IcoActivity, label: "Analyse & ydeevne", items: [
+      { b: "Kør Lighthouse / PageSpeed", s: "audit af ydeevne, tilgængelighed, SEO & best practices" },
+      { b: "Se score-historik", s: "følg forbedringer over tid" },
+    ] },
+    { icon: IcoInbox, label: "Formularer & indsendelser", items: [
+      { b: "List formular-indsendelser", s: "kontaktformularer, tilmeldinger" },
+      { b: "Læs fulde detaljer", s: "beskedindhold og afsender-info" },
+      { b: "Se formular-statistik", s: "ulæste og indsendelses-tendenser" },
+    ] },
+    { icon: IcoShield, label: "Backup & vedligehold", items: [
+      { b: "Opret backups", s: "af sitets indhold" },
+      { b: "Se indholds-statistik", s: "ordtal, dokumenttal, AI- vs. menneske-forhold" },
+      { b: "List & gendan revisioner", s: "for dokumenter" },
+      { b: "Tjek for døde links", s: "på tværs af sitet" },
+      { b: "Tøm papirkurv", s: "slet permanent" },
+    ] },
+    { icon: IcoRocket, label: "Deployments", items: [
+      { b: "Byg sitet", s: "regenerér statiske sider" },
+      { b: "Deploy", s: "push ændringer til det live site" },
+      { b: "Se deploy-historik" },
+    ] },
+  ] },
+  { num: "04", icon: IcoEdit, title: "Redigering & samarbejde", groups: [
+    { icon: IcoEdit, label: "", items: [
+      { b: "Vis inline-redigeringsformularer", s: "for bestemte felter — fx titel og uddrag" },
+      { b: "Forhåndsvis dokumenter", s: "med direkte preview-links" },
+      { b: "Søg i hukommelse", s: "fra tidligere samtaler" },
+      { b: "Tilføj hukommelse", s: "fx 'brug altid britisk engelsk til denne kunde'" },
+      { b: "Glem hukommelse", s: "fjern en tidligere note" },
+    ] },
+  ] },
+  { num: "05", icon: IcoZap, title: "Avancerede funktioner", groups: [
+    { icon: IcoBox, label: "Interaktivt indhold", items: [
+      { b: "Generér interaktive HTML-værktøjer", s: "beregnere, quizzer, formularer, grafer, sliders, spil" },
+      { b: "Forhåndsvis interaktive live", s: "direkte i chatten" },
+      { b: "Gem interaktive", s: "til indlejring på sider" },
+    ] },
+    { icon: IcoGlobe, label: "Websøgning & hentning", items: [
+      { b: "Søg på nettet", s: "aktuelle fakta, tendenser, nylige begivenheder" },
+      { b: "Hent indhold fra en URL", s: "fx 'opsummér denne artikel til et blogindlæg'" },
+    ] },
+    { icon: IcoLanguages, label: "Flersproget", items: [
+      { b: "Oversæt enkelte dokumenter", s: "opretter linkede oversættelser" },
+      { b: "Bulk-oversæt alle uoversatte", s: "til et målsprog" },
+      { b: "Sæt agent-sprog", s: "fx en dansk og en engelsk skribent til samme site" },
+    ] },
   ] },
 ];
 const CAPS_CSS = `.chat-caps{max-width:100%}.chat-caps .caps-intro{color:#8a8a8a;font-size:15px;line-height:1.55;margin:0 0 22px}.chat-caps .caps-intro .brand{color:var(--orange-text,#ff6a45);font-weight:600}.chat-caps .cat{position:relative;background:#161616;border:1px solid #2a2a2a;border-radius:16px;padding:22px 24px 18px;margin-bottom:16px;overflow:hidden}.chat-caps .cat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--orange-text,#ff6a45),transparent 78%)}.chat-caps .cat-num{position:absolute;top:12px;right:20px;font-family:var(--fd,"Cormorant Garamond",Georgia,serif);font-weight:600;font-size:44px;line-height:1;color:#f0f4f8;opacity:.06;pointer-events:none}.chat-caps .cat-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}.chat-caps .cat-ic{width:38px;height:38px;border-radius:11px;flex-shrink:0;background:rgba(255,106,69,.12);border:1px solid rgba(255,106,69,.30);display:flex;align-items:center;justify-content:center;color:var(--orange-text,#ff6a45)}.chat-caps .cat-ic svg{width:20px;height:20px}.chat-caps .cat-head h2{font-family:var(--fd,"Cormorant Garamond",Georgia,serif);font-weight:600;font-size:23px;letter-spacing:.2px;margin:0;color:#f0f4f8}.chat-caps .group{margin-top:16px}.chat-caps .group:first-of-type{margin-top:0}.chat-caps .group-label{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--orange-text,#ff6a45)}.chat-caps .group-label svg{width:14px;height:14px;flex-shrink:0}.chat-caps .group-label .rule{flex:1;height:1px;background:#2a2a2a;margin-left:4px}.chat-caps .items{display:grid;grid-template-columns:1fr 1fr;gap:2px 28px}@media(max-width:560px){.chat-caps .items{grid-template-columns:1fr}}.chat-caps .item{display:flex;gap:9px;padding:7px 6px 7px 0;border-radius:8px;transition:background .14s}.chat-caps .item:hover{background:#1c1c1c}.chat-caps .item .mk{flex-shrink:0;margin-top:3px;color:var(--orange-text,#ff6a45);opacity:.85}.chat-caps .item .mk svg{width:13px;height:13px;display:block}.chat-caps .item .tx b{display:block;color:#f0f4f8;font-weight:600;font-size:13.5px;line-height:1.35}.chat-caps .item .tx span{display:block;color:#b8bdc4;font-size:12.5px;line-height:1.45;margin-top:1px}.chat-caps .item .tx code{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.82em;padding:1px 6px;border-radius:5px;background:rgba(255,106,69,.10);border:1px solid rgba(255,106,69,.26);color:var(--orange-text,#ff6a45);margin-right:4px}`;
@@ -491,7 +563,7 @@ function Capabilities() {
           </div>
           {cat.groups.map((g) => (
             <div class="group" key={g.label}>
-              <div class="group-label">{g.icon()} {g.label} <span class="rule" /></div>
+              {g.label ? <div class="group-label">{g.icon()} {g.label} <span class="rule" /></div> : null}
               <div class="items">
                 {g.items.map((it) => (
                   <div class="item" key={it.b}>
