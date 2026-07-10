@@ -14,6 +14,7 @@ import { render } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { marked } from "marked";
 import { getConnectedToken, buildConnectUrl } from "@broberg/cms-inline-edit";
+import { peekQuickAction, warmQuickAction } from "@broberg/cms-chat-client";
 
 const CMS = { cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" };
 
@@ -246,7 +247,8 @@ function ChatApp() {
       // F158: warm the quick-action cache with this streamed answer so the next
       // click is instant. Only for a clean tool-free-or-not answer (skip errors).
       if (warmKey && fullText && !fullText.startsWith("Forbindelsen") && !fullText.startsWith("Fejl:")) {
-        fetch(`/api/admin/chat/quick/${warmKey}`, { method: "POST", headers: authHeaders(), body: JSON.stringify({ markdown: fullText }) }).catch(() => {});
+        // F158.2: shared @broberg/cms-chat-client (same-origin relay). Never throws.
+        warmQuickAction(warmKey, fullText, { path: "/api/admin/chat/quick/:key", headers: authHeaders() });
       }
     }
   }, [streaming, convId, saveConversation, loadConversations]);
@@ -255,21 +257,19 @@ function ChatApp() {
   // normally and warms the cache on completion (via send's warmKey).
   const sendQuick = useCallback(async (action: { key: string; message: string }) => {
     if (streaming) return;
-    try {
-      const r = await fetch(`/api/admin/chat/quick/${action.key}`, { headers: authHeaders() });
-      if (r.ok) {
-        const d = (await r.json()) as { cached?: boolean; markdown?: string };
-        if (d.cached && d.markdown) {
-          const userMsg: Msg = { id: uuid(), role: "user", content: action.message };
-          const asstMsg: Msg = { id: uuid(), role: "assistant", content: d.markdown };
-          const next = [...messagesRef.current, userMsg, asstMsg];
-          setMessages(next);
-          saveConversation(convId, next);
-          loadConversations();
-          return;
-        }
-      }
-    } catch { /* fall through to streaming */ }
+    // F158.2: peek the shared cache via @broberg/cms-chat-client (same-origin
+    // relay). A warm hit renders instantly; peek never throws, so a miss / error
+    // just falls through to normal streaming (which warms the cache on finish).
+    const { cached, markdown } = await peekQuickAction(action.key, { path: "/api/admin/chat/quick/:key", headers: authHeaders() });
+    if (cached && markdown) {
+      const userMsg: Msg = { id: uuid(), role: "user", content: action.message };
+      const asstMsg: Msg = { id: uuid(), role: "assistant", content: markdown };
+      const next = [...messagesRef.current, userMsg, asstMsg];
+      setMessages(next);
+      saveConversation(convId, next);
+      loadConversations();
+      return;
+    }
     send(action.message, action.key);
   }, [streaming, convId, send, saveConversation, loadConversations]);
 

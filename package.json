@@ -12,6 +12,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@broberg/cms-chat-client": "^0.4.14",
     "@broberg/cms-inline-edit": "^0.4.14",
     "@broberg/forms-turnstile": "^0.1.0",
     "hono": "^4.6.14",
