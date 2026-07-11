@@ -19,7 +19,6 @@ import {
   loadBlock,
   loadPostTwin,
   loadCategoryPosts,
-  categoryLabel,
   categoryMeta,
   isCategory,
   slugifyTag,
@@ -727,7 +726,11 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   for (const [s, b] of resolved) if (b) blocks[s] = b;
 
   const twin = await loadPostTwin(doc);
-  const catLabel = await categoryLabel(category, locale);
+  // categoryMeta (not categoryLabel) so we get the category doc's own slug and can
+  // wire the eyebrow back to the `categories` collection for inline editing — same
+  // `name` field the blog index already edits.
+  const { name: catLabel, slug: catSlug } = await categoryMeta(category, locale);
+  const catRef: CmsRef | undefined = catSlug ? { collection: "categories", slug: catSlug, locale } : undefined;
   const backLabel = locale === "en" ? `All ${catLabel}` : `Alle ${catLabel}`;
   const twinLabel = twin?.locale === "en" ? "Read in English" : "Læs på dansk";
 
@@ -736,7 +739,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
       <div class="wrap reveal">
         <div class="plat-detail-head">
           <div class="plat-detail-text sec-head">
-            <div class="eyebrow">{catLabel}</div>
+            <div class="eyebrow" {...cmsAttrs(catRef, "name")}>{catLabel}</div>
             <h1 class="post-title" {...cmsAttrs(postRef, "title")}>{titleWithAccent(title, str(d.titleHighlight))}</h1>
             {meta ? <p class="post-meta">{meta}</p> : null}
             {tags.length ? (
