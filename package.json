@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@broberg/cms-chat-client": "^0.4.16",
-    "@broberg/cms-inline-edit": "^0.4.14",
+    "@broberg/cms-inline-edit": "^0.4.17",
     "@broberg/forms-turnstile": "^0.1.0",
     "hono": "^4.6.14",
     "marked": "^18.0.5",

@@ -52,14 +52,14 @@ export function PostBody({
 }: {
   content: string;
   blocks: Record<string, StoredDoc>;
-  // F157 — when set, the body is offered for inline rich-text editing, but ONLY
-  // when it's a SINGLE markdown segment (no [block:] embeds interleaving it).
-  // A multi-segment body can't be saved back as one `content` field write, so
-  // the attributes are withheld there (title/scalar fields stay editable).
+  // F003.2 — when set, EVERY prose segment is inline rich-text editable, even a
+  // body interleaved with [block:] embeds. Each segment carries data-cms-slice
+  // (its own source markdown) so @broberg/cms-inline-edit replaces just that
+  // slice inside the full `content` on save — the embeds + other segments are
+  // preserved. (Previously only a SINGLE-segment body was editable.)
   editable?: { collection: string; slug: string };
 }) {
   const parts = splitContent(content);
-  const singleMd = editable && parts.length === 1 && "md" in parts[0];
   return (
     <>
       {parts.map((p, i) =>
@@ -68,12 +68,13 @@ export function PostBody({
             <div
               class="richtext"
               key={i}
-              {...(singleMd
+              {...(editable
                 ? {
-                    "data-cms-collection": editable!.collection,
-                    "data-cms-slug": editable!.slug,
+                    "data-cms-collection": editable.collection,
+                    "data-cms-slug": editable.slug,
                     "data-cms-field": "content",
                     "data-cms-richtext": "true",
+                    "data-cms-slice": p.md,
                   }
                 : {})}
               dangerouslySetInnerHTML={{ __html: richtextBlock(p.md) }}
