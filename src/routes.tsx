@@ -716,7 +716,6 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   const title = str(d.title) || slug.replace(/-/g, " ");
   const content = str(d.content);
   const tags = arr(d.tags);
-  const meta = [str(d.author), d.date ? formatDate(str(d.date), locale) : "", str(d.readTime)].filter(Boolean).join(" · ");
   const postRef: CmsRef = { collection: "posts", slug: String(doc.slug), locale };
 
   // Resolve only the block-docs this post actually embeds.
@@ -741,15 +740,24 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
           <div class="plat-detail-text sec-head">
             <div class="eyebrow" {...cmsAttrs(catRef, "name")}>{catLabel}</div>
             <h1 class="post-title" {...cmsAttrs(postRef, "title")}>{titleWithAccent(title, str(d.titleHighlight))}</h1>
-            {meta ? <p class="post-meta">{meta}</p> : null}
+            {(str(d.author) || d.date || str(d.readTime)) ? (
+              <p class="post-meta">
+                {str(d.author) ? <span {...cmsAttrs(postRef, "author")}>{str(d.author)}</span> : null}
+                {str(d.author) && (d.date || str(d.readTime)) ? " · " : null}
+                {d.date ? formatDate(str(d.date), locale) : null}
+                {d.date && str(d.readTime) ? " · " : null}
+                {str(d.readTime) ? <span {...cmsAttrs(postRef, "readTime")}>{str(d.readTime)}</span> : null}
+              </p>
+            ) : null}
             {tags.length ? (
               <div class="post-tags">
-                {tags.map((t) => (
+                {tags.map((t, i) => (
                   <a
                     class="pill taglink"
                     key={t}
                     href={withLocale(locale, `/tags/${slugifyTag(t)}`)}
                     data-testid={`tag-${slugifyTag(t)}`}
+                    {...cmsAttrs(postRef, `tags.${i}`)}
                   >
                     {t}
                   </a>
