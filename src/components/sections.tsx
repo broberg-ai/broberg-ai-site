@@ -258,7 +258,7 @@ export function Method({ data, cmsRef }: { data: MethodData; cmsRef?: CmsRef }) 
         <div class="flow">
           {data.steps.map((s, i) => (
             <>
-              <span class={s.live ? "step live" : "step"}>{s.label}</span>
+              <span class={s.live ? "step live" : "step"} {...cmsAttrs(cmsRef, `steps.${i}.label`)}>{s.label}</span>
               {i < data.steps.length - 1 && <span class="arr">→</span>}
             </>
           ))}
@@ -266,7 +266,7 @@ export function Method({ data, cmsRef }: { data: MethodData; cmsRef?: CmsRef }) 
         <div class="grid g3">
           {data.cards.map((c, i) => (
             <div class="card" key={i}>
-              <p dangerouslySetInnerHTML={{ __html: c.html }} />
+              <p {...cmsHtmlAttrs(cmsRef, `cards.${i}.html`)} dangerouslySetInnerHTML={{ __html: c.html }} />
             </div>
           ))}
         </div>
