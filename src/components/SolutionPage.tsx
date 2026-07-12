@@ -120,12 +120,10 @@ export function SolutionPage({
 
       <section style="background:var(--dark2)">
         <div class="wrap" style="max-width:720px">
-          <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsAttrs(cmsRef, "problemHeading")}>{data.problemHeading}</h2>
+          <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsHtmlAttrs(cmsRef, "problemHeading")} dangerouslySetInnerHTML={{ __html: data.problemHeading }} />
           <div class="divider" />
           {data.problemP.map((p, i) => (
-            <p class="lead" key={i} style={`max-width:none;${i < data.problemP.length - 1 ? "margin-bottom:16px" : ""}`} {...cmsAttrs(cmsRef, `problemP.${i}`)}>
-              {p}
-            </p>
+            <p class="lead" key={i} style={`max-width:none;${i < data.problemP.length - 1 ? "margin-bottom:16px" : ""}`} {...cmsHtmlAttrs(cmsRef, `problemP.${i}`)} dangerouslySetInnerHTML={{ __html: p }} />
           ))}
         </div>
       </section>

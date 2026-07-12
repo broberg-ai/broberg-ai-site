@@ -309,16 +309,14 @@ export async function renderHome(locale: Locale): Promise<string> {
 
       <section style="background:var(--dark2)">
         <div class="wrap" style="max-width:720px">
-          <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsAttrs(landingRef, "problemHeading")}>{d.problemHeading}</h2>
+          <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsHtmlAttrs(landingRef, "problemHeading")} dangerouslySetInnerHTML={{ __html: d.problemHeading }} />
           <div class="divider" />
           {(d.problemP as string[]).map((p, i) => (
-            <p class="lead" key={i} style={`max-width:none;${i < d.problemP.length - 1 ? "margin-bottom:16px" : ""}`} {...cmsAttrs(landingRef, `problemP.${i}`)}>
-              {p}
-            </p>
+            <p class="lead" key={i} style={`max-width:none;${i < d.problemP.length - 1 ? "margin-bottom:16px" : ""}`} {...cmsHtmlAttrs(landingRef, `problemP.${i}`)} dangerouslySetInnerHTML={{ __html: p }} />
           ))}
           {d.problemCallout ? (
             <div class="card callout" style="margin-top:24px">
-              <p style="color:var(--light);font-weight:600;font-size:15px" {...cmsAttrs(landingRef, "problemCallout")}>{d.problemCallout}</p>
+              <p style="color:var(--light);font-weight:600;font-size:15px" {...cmsHtmlAttrs(landingRef, "problemCallout")} dangerouslySetInnerHTML={{ __html: d.problemCallout }} />
             </div>
           ) : null}
         </div>
