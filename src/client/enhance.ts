@@ -16,7 +16,15 @@ function inlineEdit() {
   // /admin/chat). On the chat page its "Afslut redigering" pill overlapped the
   // input and a click reset the surface — so never mount it under /admin.
   if (location.pathname.startsWith("/admin")) return;
-  // Locale-aware edit pill (login is implicit — clicking bounces to sign-in).
+  // HARD RULE (customer-safe): the "Rediger" pill must NEVER be visible to a
+  // logged-out visitor / customer — on ANY site. Only activate when a connected
+  // editor token exists. getConnectedToken() first captures a fresh ?cms_edit=
+  // token from the URL (the connect-redirect landing) into localStorage, then
+  // reads it — so the connect flow still works, but a plain visitor (no URL
+  // token, no stored token) gets null → no pill. The FIRST connect comes from
+  // the "Redigér live" button in webhouse.app CMS-admin, not an on-site pill.
+  if (!getConnectedToken(CMS)) return;
+  // Locale-aware edit pill.
   const isEn = document.documentElement.lang === "en";
   initInlineEdit({
     ...CMS,
