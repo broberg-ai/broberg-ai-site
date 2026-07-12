@@ -51,6 +51,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy til Fly
-        run: flyctl deploy --remote-only --depot=false -a broberg-ai
+        # --local-only: byg imaget på runneren (Docker er præinstalleret) og push
+        # til app-registry. Undgår org-scoped remote builder → deploy-token forbliver
+        # snævert app-scoped (mindst privilegium).
+        run: flyctl deploy --local-only -a broberg-ai
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
