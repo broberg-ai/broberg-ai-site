@@ -36,10 +36,21 @@ jobs:
       - name: Gate B — ingen ny hardcodet tekst uden for CMS
         run: bun run gate:text
 
-      # - name: Gate A — inline-edit-dækning (hvert CMS-felt redigerbart)
-      #   run: |
-      #     bun run start & sleep 4
-      #     npx --yes @webhouse/cms-cli coverage \
-      #       --schema https://webhouse.app/api/schema/collections?site=broberg-ai \
-      #       --url http://localhost:3000 --pages /,/losninger
-      #   TODO: aktivér når schema-kilde-endpointet er verificeret (F162.1 bespoke-site).
+      # Gate A (inline-edit-dækning) wires in her når serve-i-CI er verificeret
+      # (kræver content-backfill fra webhouse.app). Gate B er den aktive pre-deploy-spærring.
+
+  deploy:
+    name: Deploy (kun efter grøn port)
+    needs: gate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-broberg-ai
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy til Fly
+        run: flyctl deploy --remote-only --depot=false -a broberg-ai
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
