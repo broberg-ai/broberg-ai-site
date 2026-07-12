@@ -1,0 +1,45 @@
+name: CI — kvalitetsport (Gate A + B)
+
+# F162: Enhver ændring skal passere kvalitetsporten før den må deployes.
+# Rød port = STOP → tilbage til udvikling til den er grøn. Ingen naked cutover.
+#
+#   Gate B (aktiv):  ingen NY hardcodet, ikke-CMS-redigerbar tekst i src/.
+#   Gate A (afventer schema-kilde): hvert renderet CMS-felt SKAL være inline-redigerbart.
+#
+# Kræver @webhouse/cms-cli >= 0.4.21 (coverage + check-text). Aktiveres når værktøjet er udgivet.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gate:
+    name: Kvalitetsport
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Build
+        run: bun run build
+
+      - name: Gate B — ingen ny hardcodet tekst uden for CMS
+        run: bun run gate:text
+
+      # - name: Gate A — inline-edit-dækning (hvert CMS-felt redigerbart)
+      #   run: |
+      #     bun run start & sleep 4
+      #     npx --yes @webhouse/cms-cli coverage \
+      #       --schema https://webhouse.app/api/schema/collections?site=broberg-ai \
+      #       --url http://localhost:3000 --pages /,/losninger
+      #   TODO: aktivér når schema-kilde-endpointet er verificeret (F162.1 bespoke-site).
