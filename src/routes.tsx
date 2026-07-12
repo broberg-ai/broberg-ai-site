@@ -693,7 +693,7 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
 
   return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} bookLabel={bookLabel} globalsRef={globalsRef} labels={labels} />, {
     title: `${data.name} — broberg.ai`,
-    description: data.lead,
+    description: stripHtml(data.lead),
     locale,
     canonical: `/${seg}/${slug}`,
     altHref: `/${altSeg}/${slug}`,
@@ -816,7 +816,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
     </article>,
     {
       title: `${stripHtml(title)} — broberg.ai`,
-      description: str(d.excerpt) || `${stripHtml(title)} — en indsigt fra broberg.ai-maskinrummet.`,
+      description: stripHtml(str(d.excerpt)) || `${stripHtml(title)} — en indsigt fra broberg.ai-maskinrummet.`,
       locale,
       canonical: withLocale(locale, `/${category}/${slug}`),
       altHref: twin ? withLocale(twin.locale, `/${twin.category}/${twin.slug}`) : undefined,
