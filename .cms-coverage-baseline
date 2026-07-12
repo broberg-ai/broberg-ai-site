@@ -1,0 +1,23 @@
+# Gate A baseline (F162 vej 1) — accepterede dæknings-huller pr. 2026-07-12.
+# Format: collection/field. Næsten alle = felter uden indhold (renderes ikke → intet at redigere)
+# eller SEO/meta. broberg render er bekræftet komplet: hvert felt ER wired når det har værdi.
+# Et NYT ikke-wired felt (ikke på listen) fejler porten.
+globals/aboutHeading
+globals/contactCta
+globals/contactHeading
+globals/heroPillFallback
+globals/heroPillLabel
+globals/navCta
+globals/universeCore
+landing/heroHeadingHtml
+landing/heroLead
+platforms/body
+platforms/tagline
+posts/attribution
+posts/author
+posts/client
+posts/content
+posts/quote
+posts/titleHighlight
+sections/ctaPrimary
+sections/ctaSecondary

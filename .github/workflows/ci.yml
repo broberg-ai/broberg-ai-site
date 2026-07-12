@@ -3,10 +3,11 @@ name: CI — kvalitetsport (Gate A + B)
 # F162: Enhver ændring skal passere kvalitetsporten før den må deployes.
 # Rød port = STOP → tilbage til udvikling til den er grøn. Ingen naked cutover.
 #
-#   Gate B (aktiv):  ingen NY hardcodet, ikke-CMS-redigerbar tekst i src/.
-#   Gate A (afventer schema-kilde): hvert renderet CMS-felt SKAL være inline-redigerbart.
+#   Gate B (pre-deploy): ingen NY hardcodet, ikke-CMS-redigerbar tekst i src/.
+#   Gate A (post-deploy): hvert renderet CMS-felt MED indhold SKAL være inline-redigerbart
+#                         (F086 baseline: nye ikke-wirede felter fejler porten → rød på main).
 #
-# Kræver @webhouse/cms-cli >= 0.4.21 (coverage + check-text). Aktiveres når værktøjet er udgivet.
+# Kræver @webhouse/cms-cli >= 0.4.22 (coverage --baseline + check-text).
 
 on:
   push:
@@ -36,9 +37,6 @@ jobs:
       - name: Gate B — ingen ny hardcodet tekst uden for CMS
         run: bun run gate:text
 
-      # Gate A (inline-edit-dækning) wires in her når serve-i-CI er verificeret
-      # (kræver content-backfill fra webhouse.app). Gate B er den aktive pre-deploy-spærring.
-
   deploy:
     name: Deploy (kun efter grøn port)
     needs: gate
@@ -57,3 +55,23 @@ jobs:
         run: flyctl deploy --local-only -a broberg-ai
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  coverage:
+    name: Gate A — inline-edit-dækning (post-deploy)
+    needs: deploy
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      # computeCoverage er ren jsdom — vi behøver ikke playwrights browsere.
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install
+        run: bun install --frozen-lockfile
+      - name: Vent på ny version er live
+        run: sleep 10
+      - name: Gate A — hvert CMS-felt med indhold er redigerbart
+        run: bun run gate:coverage
