@@ -34,9 +34,7 @@ export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: L
             {data.eyebrow ?? (isEn ? "Contact" : "Kontakt")}
           </div>
           <h2 {...cmsHtmlAttrs(cmsRef, "ctaHeadingHtml")} dangerouslySetInnerHTML={{ __html: data.ctaHeadingHtml }} />
-          <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "ctaLead")}>
-            {data.ctaLead}
-          </p>
+          <p class="lead" style="margin:18px auto 30px" {...cmsHtmlAttrs(cmsRef, "ctaLead")} dangerouslySetInnerHTML={{ __html: data.ctaLead }} />
           <form
             id="contact-form"
             data-testid="contact-form"

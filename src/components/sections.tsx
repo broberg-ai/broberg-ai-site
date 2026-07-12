@@ -115,7 +115,7 @@ function SecHead({
       <div class="eyebrow" {...cmsAttrs(cmsRef, fEyebrow)}>{eyebrow}</div>
       <h2 {...cmsHtmlAttrs(cmsRef, fHeading)} dangerouslySetInnerHTML={{ __html: headingHtml }} />
       <div class="divider" />
-      <p class="lead" {...cmsAttrs(cmsRef, fLead)}>{lead}</p>
+      <p class="lead" {...cmsHtmlAttrs(cmsRef, fLead)} dangerouslySetInnerHTML={{ __html: lead }} />
     </div>
   );
 }
@@ -193,7 +193,7 @@ export function Platforms({ data, cmsRef, fields }: { data: PlatformsData; cmsRe
                   <span class="badge badge-soon">Snart</span>
                 )}
               </div>
-              <p {...cmsAttrs(p.cmsRef, "blurb")}>{p.blurb}</p>
+              <p {...cmsHtmlAttrs(p.cmsRef, "blurb")} dangerouslySetInnerHTML={{ __html: p.blurb }} />
             </a>
           ))}
         </div>
@@ -218,10 +218,10 @@ export function Cases({ data, cmsRef, fields }: { data: CasesData; cmsRef?: CmsR
               <>
                 <div class="kicker" {...cmsAttrs(c.cmsRef, "client")}>{c.kicker}</div>
                 <div class="case-h" {...cmsAttrs(c.cmsRef, "title")}>{c.title}</div>
-                <p {...cmsAttrs(c.cmsRef, "excerpt")}>{c.body}</p>
+                <p {...cmsHtmlAttrs(c.cmsRef, "excerpt")} dangerouslySetInnerHTML={{ __html: c.body }} />
                 {c.quote && (
                   <div class="quote">
-                    <span {...cmsAttrs(c.cmsRef, "quote")}>{c.quote}</span>
+                    <span {...cmsHtmlAttrs(c.cmsRef, "quote")} dangerouslySetInnerHTML={{ __html: c.quote }} />
                     {c.attr && <div class="attr">— {c.attr}</div>}
                   </div>
                 )}
@@ -289,7 +289,7 @@ export function Insights({ data, cmsRef, fields }: { data: InsightsData; cmsRef?
               <div class="blogbody">
                 <span class="nyt">{p.tag}</span>
                 <h3 {...cmsAttrs(p.cmsRef, "title")}>{p.title}</h3>
-                <p {...cmsAttrs(p.cmsRef, "excerpt")}>{p.excerpt}</p>
+                <p {...cmsHtmlAttrs(p.cmsRef, "excerpt")} dangerouslySetInnerHTML={{ __html: p.excerpt }} />
               </div>
             </a>
           ))}
@@ -355,9 +355,7 @@ export function Contact({ data, cmsRef }: { data: ContactData; cmsRef?: CmsRef }
             {data.eyebrow}
           </div>
           <h2 {...cmsHtmlAttrs(cmsRef, "heading")} dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
-          <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "subheading")}>
-            {data.lead}
-          </p>
+          <p class="lead" style="margin:18px auto 30px" {...cmsHtmlAttrs(cmsRef, "subheading")} dangerouslySetInnerHTML={{ __html: data.lead }} />
           <a href={data.formHref} class="btn" data-testid="kontakt-cta-mail">
             <span {...cmsAttrs(cmsRef, "ctaPrimary")}>{data.ctaLabel}</span> <span class="ar">→</span>
           </a>

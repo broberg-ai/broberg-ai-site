@@ -57,9 +57,9 @@ const ProofCard = ({ item, locale, cmsRef, i }: { item: ProofItem; locale: Local
         <div class="case-h" {...cmsAttrs(cmsRef, `proof.${i}.title`)}>{item.title}</div>
         {item.type ? <span class={`type-pill ${item.type}`}>{TYPE_LABEL[item.type][locale]}</span> : null}
       </div>
-      <p {...cmsAttrs(cmsRef, `proof.${i}.body`)}>{item.body}</p>
+      <p {...cmsHtmlAttrs(cmsRef, `proof.${i}.body`)} dangerouslySetInnerHTML={{ __html: item.body }} />
       {item.note ? (
-        <p style="margin-top:10px;font-style:italic;color:var(--muted)" {...cmsAttrs(cmsRef, `proof.${i}.note`)}>{item.note}</p>
+        <p style="margin-top:10px;font-style:italic;color:var(--muted)" {...cmsHtmlAttrs(cmsRef, `proof.${i}.note`)} dangerouslySetInnerHTML={{ __html: item.note }} />
       ) : null}
     </>
   );
@@ -105,7 +105,7 @@ export function SolutionPage({
               <span {...cmsAttrs(globalsRef, "solLosningerPrefix")}>{labels.losningerPrefix}</span> · <span {...cmsAttrs(cmsRef, "name")}>{data.name}</span>
             </div>
             <h2 style="margin-bottom:16px" {...cmsHtmlAttrs(cmsRef, "headingHtml")} dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
-            <p class="lead" {...cmsAttrs(cmsRef, "lead")}>{data.lead}</p>
+            <p class="lead" {...cmsHtmlAttrs(cmsRef, "lead")} dangerouslySetInnerHTML={{ __html: data.lead }} />
             <div class="cta-row">
               <a class="btn" href={kontaktHref} data-testid="solution-cta-primary">
                 <span {...cmsAttrs(globalsRef, "bookingCtaLabel")}>{bookLabel}</span> <span class="ar">→</span>
@@ -141,7 +141,7 @@ export function SolutionPage({
               <div class="step3" key={i}>
                 <div class="step3-num">{i + 1}</div>
                 <div class="workstep-title" {...cmsAttrs(cmsRef, `steps.${i}.0`)}>{title}</div>
-                <p {...cmsAttrs(cmsRef, `steps.${i}.1`)}>{desc}</p>
+                <p {...cmsHtmlAttrs(cmsRef, `steps.${i}.1`)} dangerouslySetInnerHTML={{ __html: desc }} />
               </div>
             ))}
           </div>
@@ -159,7 +159,7 @@ export function SolutionPage({
               <div class="card" key={i}>
                 <Icon name={icon} />
                 <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;color:var(--light)" {...cmsAttrs(cmsRef, `features.${i}.0`)}>{title}</h3>
-                <p {...cmsAttrs(cmsRef, `features.${i}.1`)}>{desc}</p>
+                <p {...cmsHtmlAttrs(cmsRef, `features.${i}.1`)} dangerouslySetInnerHTML={{ __html: desc }} />
               </div>
             ))}
           </div>
@@ -178,9 +178,7 @@ export function SolutionPage({
             ))}
           </div>
           {data.proofNote ? (
-            <p style="max-width:760px;margin:18px auto 0;font-size:13px;color:var(--muted);font-style:italic;text-align:center" {...cmsAttrs(cmsRef, "proofNote")}>
-              {data.proofNote}
-            </p>
+            <p style="max-width:760px;margin:18px auto 0;font-size:13px;color:var(--muted);font-style:italic;text-align:center" {...cmsHtmlAttrs(cmsRef, "proofNote")} dangerouslySetInnerHTML={{ __html: data.proofNote }} />
           ) : null}
         </div>
       </section>
@@ -192,9 +190,7 @@ export function SolutionPage({
               {data.name}
             </div>
             <h2 {...cmsHtmlAttrs(cmsRef, "ctaHeadingHtml")} dangerouslySetInnerHTML={{ __html: data.ctaHeadingHtml }} />
-            <p class="lead" style="margin:18px auto 30px" {...cmsAttrs(cmsRef, "ctaLead")}>
-              {data.ctaLead || ctaSub}
-            </p>
+            <p class="lead" style="margin:18px auto 30px" {...cmsHtmlAttrs(cmsRef, "ctaLead")} dangerouslySetInnerHTML={{ __html: data.ctaLead || ctaSub }} />
             <a class="btn" href={kontaktHref} data-testid="solution-cta-final">
               <span {...cmsAttrs(globalsRef, "bookingCtaLabel")}>{bookLabel}</span> <span class="ar">→</span>
             </a>

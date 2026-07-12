@@ -3,7 +3,7 @@
    onclick — matches the site's progressive-enhancement convention. */
 import type { Locale } from "@/config.ts";
 import type { CmsRef } from "@/content/types.ts";
-import { cmsAttrs } from "@/components/sections.tsx";
+import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
 
 export function Faq({
   items,
@@ -30,7 +30,7 @@ export function Faq({
             <button class="faq-q" data-testid={`faq-question-${i}`}>
               <span {...cmsAttrs(cmsRef, `faq.${i}.0`)}>{q}</span> <span class="faq-chev">▾</span>
             </button>
-            <div class="faq-a" {...cmsAttrs(cmsRef, `faq.${i}.1`)}>{a}</div>
+            <div class="faq-a" {...cmsHtmlAttrs(cmsRef, `faq.${i}.1`)} dangerouslySetInnerHTML={{ __html: a }} />
           </div>
         ))}
       </div>

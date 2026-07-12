@@ -327,13 +327,17 @@ export async function renderHome(locale: Locale): Promise<string> {
           <div class="sec-head">
             <div class="eyebrow" {...cmsAttrs(landingRef, "solutionsEyebrow")}>{t("solutionsEyebrow", "Løsninger", "Solutions")}</div>
             <h2 {...cmsAttrs(landingRef, "solutionsHeading")}>{t("solutionsHeading", "Hvad kan vi bygge til dig?", "What can we build for you?")}</h2>
-            <p class="lead" {...cmsAttrs(landingRef, "solutionsLead")}>
-              {t(
-                "solutionsLead",
-                "Fire veje ind — vælg den der matcher hvor I er i dag. Hver løsning har sin egen side med dybere detaljer.",
-                "Four ways in — pick the one that matches where you are today. Each solution has its own page with more detail.",
-              )}
-            </p>
+            <p
+              class="lead"
+              {...cmsHtmlAttrs(landingRef, "solutionsLead")}
+              dangerouslySetInnerHTML={{
+                __html: t(
+                  "solutionsLead",
+                  "Fire veje ind — vælg den der matcher hvor I er i dag. Hver løsning har sin egen side med dybere detaljer.",
+                  "Four ways in — pick the one that matches where you are today. Each solution has its own page with more detail.",
+                ),
+              }}
+            />
           </div>
           <div class="grid g4">
             {solutions.map((s) => (
@@ -342,7 +346,7 @@ export async function renderHome(locale: Locale): Promise<string> {
                 <div class="plat-h">
                   <div class="nm" {...cmsAttrs(s.cmsRef, "name")}>{s.name}</div>
                 </div>
-                <p {...cmsAttrs(s.cmsRef, "blurb")}>{s.blurb}</p>
+                <p {...cmsHtmlAttrs(s.cmsRef, "blurb")} dangerouslySetInnerHTML={{ __html: s.blurb }} />
               </a>
             ))}
           </div>
@@ -360,7 +364,7 @@ export async function renderHome(locale: Locale): Promise<string> {
               <div class="step3" key={i}>
                 <div class="step3-num">{i + 1}</div>
                 <div class="workstep-title" {...cmsAttrs(landingRef, `steps.${i}.0`)}>{title}</div>
-                <p {...cmsAttrs(landingRef, `steps.${i}.1`)}>{desc}</p>
+                <p {...cmsHtmlAttrs(landingRef, `steps.${i}.1`)} dangerouslySetInnerHTML={{ __html: desc }} />
               </div>
             ))}
           </div>
@@ -373,7 +377,7 @@ export async function renderHome(locale: Locale): Promise<string> {
         <div class="wrap" style="max-width:680px;text-align:center">
           <div class="eyebrow" style="justify-content:center" {...cmsAttrs(landingRef, "whyUsEyebrow")}>{t("whyUsEyebrow", "Hvorfor os", "Why us")}</div>
           <h2 {...cmsAttrs(landingRef, "whyUsHeading")}>{d.whyUsHeading}</h2>
-          <p class="lead" style="max-width:none;margin:18px auto 30px" {...cmsAttrs(landingRef, "whyUsBody")}>{d.whyUsBody}</p>
+          <p class="lead" style="max-width:none;margin:18px auto 30px" {...cmsHtmlAttrs(landingRef, "whyUsBody")} dangerouslySetInnerHTML={{ __html: d.whyUsBody }} />
           <a class="btn btn-ghost" href={universetHref} data-testid="landing-whyus-cta">
             <span {...cmsAttrs(landingRef, "whyUsCtaLabel")}>{t("whyUsCtaLabel", "Se hele maskinen", "See the whole machine")}</span> <span class="ar">→</span>
           </a>
@@ -448,9 +452,14 @@ export async function renderThanks(locale: Locale): Promise<string> {
         <div class="wrap" style="padding-top:150px;text-align:center;max-width:640px">
           <div class="eyebrow" style="justify-content:center" {...cmsAttrs(globalsRef, "thanksEyebrow")}>{g("thanksEyebrow", isEn ? "Thank you" : "Tak")}</div>
           <h1 {...cmsAttrs(globalsRef, "thanksHeading")}>{g("thanksHeading", isEn ? "Thank you!" : "Tak!")}</h1>
-          <p class="lead" style="margin:18px auto 0" {...cmsAttrs(globalsRef, "thanksLead")}>
-            {g("thanksLead", isEn ? "We'll get back to you as soon as possible." : "Vi vender tilbage hurtigst muligt.")}
-          </p>
+          <p
+            class="lead"
+            style="margin:18px auto 0"
+            {...cmsHtmlAttrs(globalsRef, "thanksLead")}
+            dangerouslySetInnerHTML={{
+              __html: g("thanksLead", isEn ? "We'll get back to you as soon as possible." : "Vi vender tilbage hurtigst muligt."),
+            }}
+          />
           <div class="cta-row" style="justify-content:center">
             <a class="btn btn-ghost" href={withLocale(locale, "/")} data-testid="thanks-home-link">
               {isEn ? "Back to the homepage" : "Til forsiden"} <span class="ar">→</span>
@@ -614,9 +623,13 @@ export async function renderSolutions(locale: Locale): Promise<string> {
           <div class="eyebrow" {...cmsAttrs(globalsRef, "solutionsPageEyebrow")}>{g("solutionsPageEyebrow", isEn ? "Solutions" : "Løsninger")}</div>
           <h2 {...cmsAttrs(globalsRef, "solutionsPageHeading")}>{g("solutionsPageHeading", isEn ? "What can we build for you?" : "Hvad kan vi bygge til dig?")}</h2>
           <div class="divider" />
-          <p class="lead" {...cmsAttrs(globalsRef, "solutionsPageLead")}>
-            {g("solutionsPageLead", isEn ? "Four ways in — pick the one that matches where you are today." : "Fire veje ind — vælg den der matcher hvor I er i dag.")}
-          </p>
+          <p
+            class="lead"
+            {...cmsHtmlAttrs(globalsRef, "solutionsPageLead")}
+            dangerouslySetInnerHTML={{
+              __html: g("solutionsPageLead", isEn ? "Four ways in — pick the one that matches where you are today." : "Fire veje ind — vælg den der matcher hvor I er i dag."),
+            }}
+          />
         </div>
         <div class="grid g4">
           {items.map((s) => (
@@ -624,7 +637,7 @@ export async function renderSolutions(locale: Locale): Promise<string> {
               <div class="plat-h">
                 <div class="nm" {...cmsAttrs(s.cmsRef, "name")}>{s.name}</div>
               </div>
-              <p {...cmsAttrs(s.cmsRef, "blurb")}>{s.blurb}</p>
+              <p {...cmsHtmlAttrs(s.cmsRef, "blurb")} dangerouslySetInnerHTML={{ __html: s.blurb }} />
             </a>
           ))}
         </div>
@@ -818,7 +831,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
         <div class="sec-head">
           <div class="eyebrow" {...cmsAttrs(globalsRef, "blogIndexEyebrow")}>{g("blogIndexEyebrow", locale === "en" ? "Insights" : "Indsigter")}</div>
           <h2 {...cmsAttrs(categoryRef, "name")}>{catLabel}</h2>
-          {description ? <p class="lead" {...cmsAttrs(categoryRef, "description")}>{description}</p> : null}
+          {description ? <p class="lead" {...cmsHtmlAttrs(categoryRef, "description")} dangerouslySetInnerHTML={{ __html: description }} /> : null}
           <div class="divider" />
         </div>
         {posts.length ? (
@@ -839,7 +852,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
                   <div class="blogbody">
                     <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
                     <h3 {...cmsAttrs(postRef, "title")}>{str(pd.title)}</h3>
-                    <p {...cmsAttrs(postRef, "excerpt")}>{str(pd.excerpt)}</p>
+                    <p {...cmsHtmlAttrs(postRef, "excerpt")} dangerouslySetInnerHTML={{ __html: str(pd.excerpt) }} />
                   </div>
                 </a>
               );
@@ -884,7 +897,7 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
               <div class="blogbody">
                 <span class="nyt">{h.meta}</span>
                 <h3 {...cmsAttrs(h.cmsRef, h.titleField)}>{h.title}</h3>
-                <p {...cmsAttrs(h.cmsRef, h.excerptField)}>{h.excerpt}</p>
+                <p {...cmsHtmlAttrs(h.cmsRef, h.excerptField)} dangerouslySetInnerHTML={{ __html: h.excerpt }} />
               </div>
             </a>
           ))}
