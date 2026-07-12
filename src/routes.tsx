@@ -185,7 +185,7 @@ export async function renderHome(locale: Locale): Promise<string> {
     const slug = String(p.slug);
     return {
       kicker: str(pd.client) || "Case",
-      title: str(pd.title),
+      title: stripHtml(str(pd.title)),
       body: str(pd.excerpt),
       quote: str(pd.quote) || undefined,
       attr: str(pd.quote) ? str(pd.client) || str(pd.author) : undefined,
@@ -700,18 +700,28 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
   });
 }
 
-// Title with the cms `titleHighlight` word rendered as the <em> accent (mirrors
-// the hero's accent). Falls back to the plain title when no highlight is set.
-function titleWithAccent(title: string, highlight: string) {
-  if (!highlight || !title.includes(highlight)) return <>{title}</>;
-  const [before, ...after] = title.split(highlight);
-  return (
-    <>
-      {before}
-      <em>{highlight}</em>
-      {after.join(highlight)}
-    </>
-  );
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// The post title is an inline-editable RICH field (data-cms-html) so the editor
+// gets the formatting toolbar on the headline. Once edited it's stored as HTML;
+// legacy docs still hold a plain `title` + a `titleHighlight` accent word, which
+// this reproduces as <em> so old and edited posts render byte-identically.
+function titleToHtml(title: string, highlight: string): string {
+  if (/<[a-z][\s\S]*>/i.test(title)) return title; // already HTML (edited) — render as-is
+  const esc = escapeHtml(title);
+  const h = highlight ? escapeHtml(highlight) : "";
+  if (!h || !esc.includes(h)) return esc;
+  const [before, ...after] = esc.split(h);
+  return `${before}<em>${h}</em>${after.join(h)}`;
+}
+
+// Plain text of a title for the browser-tab title, social-share title, and card
+// lists — strips the inline HTML an edited title now carries so those surfaces
+// never leak <em> tags. A no-op on a legacy plain title.
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]+>/g, "");
 }
 
 // Blog post detail — renders a cms post (posts collection, ICD'd to our store).
@@ -750,7 +760,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
         <div class="plat-detail-head">
           <div class="plat-detail-text sec-head">
             <div class="eyebrow" {...cmsAttrs(catRef, "name")}>{catLabel}</div>
-            <h1 class="post-title" {...cmsAttrs(postRef, "title")}>{titleWithAccent(title, str(d.titleHighlight))}</h1>
+            <h1 class="post-title" {...cmsHtmlAttrs(postRef, "title")} dangerouslySetInnerHTML={{ __html: titleToHtml(title, str(d.titleHighlight)) }} />
             {(str(d.author) || d.date || str(d.readTime)) ? (
               <p class="post-meta">
                 {str(d.author) ? <span {...cmsAttrs(postRef, "author")}>{str(d.author)}</span> : null}
@@ -805,8 +815,8 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
       </div>
     </article>,
     {
-      title: `${title} — broberg.ai`,
-      description: str(d.excerpt) || `${title} — en indsigt fra broberg.ai-maskinrummet.`,
+      title: `${stripHtml(title)} — broberg.ai`,
+      description: str(d.excerpt) || `${stripHtml(title)} — en indsigt fra broberg.ai-maskinrummet.`,
       locale,
       canonical: withLocale(locale, `/${category}/${slug}`),
       altHref: twin ? withLocale(twin.locale, `/${twin.category}/${twin.slug}`) : undefined,
@@ -851,7 +861,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
                   </div>
                   <div class="blogbody">
                     <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
-                    <h3 {...cmsAttrs(postRef, "title")}>{str(pd.title)}</h3>
+                    <h3 {...cmsAttrs(postRef, "title")}>{stripHtml(str(pd.title))}</h3>
                     <p {...cmsHtmlAttrs(postRef, "excerpt")} dangerouslySetInnerHTML={{ __html: str(pd.excerpt) }} />
                   </div>
                 </a>
@@ -896,7 +906,7 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
               <div class="blogthumb">{h.illustrationKey ? <Illustration k={h.illustrationKey} /> : null}</div>
               <div class="blogbody">
                 <span class="nyt">{h.meta}</span>
-                <h3 {...cmsAttrs(h.cmsRef, h.titleField)}>{h.title}</h3>
+                <h3 {...cmsAttrs(h.cmsRef, h.titleField)}>{stripHtml(h.title)}</h3>
                 <p {...cmsHtmlAttrs(h.cmsRef, h.excerptField)} dangerouslySetInnerHTML={{ __html: h.excerpt }} />
               </div>
             </a>
@@ -1000,7 +1010,7 @@ export async function renderSiteIndex(locale: Locale): Promise<string> {
         { label: isEn ? `All ${c.name}` : `Alle ${c.name}`, href: withLocale(locale, `/${c.slug}`) },
         ...c.posts.map((p) => {
           const pt = (p.data as Record<string, unknown>)?.title;
-          return { label: (typeof pt === "string" && pt) || String(p.slug), href: withLocale(locale, `/${c.slug}/${String(p.slug)}`) };
+          return { label: stripHtml((typeof pt === "string" && pt) || String(p.slug)), href: withLocale(locale, `/${c.slug}/${String(p.slug)}`) };
         }),
       ],
     })),
