@@ -88,8 +88,15 @@ function adminPanel() {
   logout.setAttribute("data-testid", "admin-logout");
   logout.style.cssText = "flex-shrink:0;background:none;border:1px solid #2a2a2a;color:#8a8a8a;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;";
   logout.addEventListener("click", () => {
+    // Clearing the local token is NOT a logout on its own: the next /admin
+    // bounce hits the connect flow, the still-valid webhouse.app session
+    // silently re-mints a token, and you're logged in again. End the
+    // webhouse.app session too, then land back on the public site — truly
+    // logged out (no local token, no session → /admin shows the login window).
     disconnect(CMS);
-    window.location.reload();
+    window.location.href =
+      `${CMS.cmsBaseUrl}/admin/inline-edit/logout` +
+      `?site=${encodeURIComponent(CMS.siteId)}&return=${encodeURIComponent(location.origin)}`;
   });
   who.appendChild(logout);
   wrap.appendChild(who);
