@@ -16,23 +16,20 @@ function inlineEdit() {
   // /admin/chat). On the chat page its "Afslut redigering" pill overlapped the
   // input and a click reset the surface — so never mount it under /admin.
   if (location.pathname.startsWith("/admin")) return;
-  // HARD RULE (customer-safe): the "Rediger" pill must NEVER be visible to a
-  // logged-out visitor / customer — on ANY site. Only activate when a connected
-  // editor token exists. getConnectedToken() first captures a fresh ?cms_edit=
-  // token from the URL (the connect-redirect landing) into localStorage, then
-  // reads it — so the connect flow still works, but a plain visitor (no URL
-  // token, no stored token) gets null → no pill. The FIRST connect comes from
-  // the "Redigér live" button in webhouse.app CMS-admin, not an on-site pill.
-  if (!getConnectedToken(CMS)) return;
-  // Locale-aware edit pill.
+  // The package is customer-safe by default (connectPrompt: false): a logged-out
+  // visitor sees NOTHING. A connected editor gets an idle "Rediger" pill → click
+  // enters edit mode; "Afslut redigering" returns to idle and KEEPS the login
+  // (so "Rediger" stays on every page for the token's life); only "Log ud" clears
+  // it. First connect = the "Redigér live" button in webhouse.app CMS-admin.
   const isEn = document.documentElement.lang === "en";
   initInlineEdit({
     ...CMS,
     // No emoji anywhere on this site — the package prepends a square-pen icon.
     connectLabel: isEn ? "Edit" : "Rediger",
-    // Connected badge is just the exit action (no "Editing as {name}"): clicking
-    // it leaves edit mode (clears the edit token), it is not a global sign-out.
+    // Editing badge: clicking it LEAVES edit mode but keeps the login (→ idle
+    // "Rediger" pill), it is not a logout.
     disconnectLabel: isEn ? "Finish editing" : "Afslut redigering",
+    logoutLabel: isEn ? "Log out" : "Log ud",
     // Toolbar + save-status text — the package defaults are Danish, so only the
     // English page overrides them (matches the /en page language).
     ...(isEn
