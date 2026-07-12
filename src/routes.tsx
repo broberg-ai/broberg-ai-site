@@ -862,7 +862,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
                   <div class="blogbody">
                     <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
                     <h3 {...cmsAttrs(postRef, "title")}>{stripHtml(str(pd.title))}</h3>
-                    <p {...cmsHtmlAttrs(postRef, "excerpt")} dangerouslySetInnerHTML={{ __html: str(pd.excerpt) }} />
+                    <p {...cmsAttrs(postRef, "excerpt")}>{str(pd.excerpt)}</p>
                   </div>
                 </a>
               );
@@ -907,7 +907,7 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
               <div class="blogbody">
                 <span class="nyt">{h.meta}</span>
                 <h3 {...cmsAttrs(h.cmsRef, h.titleField)}>{stripHtml(h.title)}</h3>
-                <p {...cmsHtmlAttrs(h.cmsRef, h.excerptField)} dangerouslySetInnerHTML={{ __html: h.excerpt }} />
+                <p {...cmsAttrs(h.cmsRef, h.excerptField)}>{h.excerpt}</p>
               </div>
             </a>
           ))}

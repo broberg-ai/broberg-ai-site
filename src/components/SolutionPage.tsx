@@ -105,7 +105,7 @@ export function SolutionPage({
               <span {...cmsAttrs(globalsRef, "solLosningerPrefix")}>{labels.losningerPrefix}</span> · <span {...cmsAttrs(cmsRef, "name")}>{data.name}</span>
             </div>
             <h2 style="margin-bottom:16px" {...cmsHtmlAttrs(cmsRef, "headingHtml")} dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
-            <p class="lead" {...cmsHtmlAttrs(cmsRef, "lead")} dangerouslySetInnerHTML={{ __html: data.lead }} />
+            <p class="lead" {...cmsAttrs(cmsRef, "lead")}>{data.lead}</p>
             <div class="cta-row">
               <a class="btn" href={kontaktHref} data-testid="solution-cta-primary">
                 <span {...cmsAttrs(globalsRef, "bookingCtaLabel")}>{bookLabel}</span> <span class="ar">→</span>

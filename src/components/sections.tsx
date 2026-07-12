@@ -218,7 +218,7 @@ export function Cases({ data, cmsRef, fields }: { data: CasesData; cmsRef?: CmsR
               <>
                 <div class="kicker" {...cmsAttrs(c.cmsRef, "client")}>{c.kicker}</div>
                 <div class="case-h" {...cmsAttrs(c.cmsRef, "title")}>{c.title}</div>
-                <p {...cmsHtmlAttrs(c.cmsRef, "excerpt")} dangerouslySetInnerHTML={{ __html: c.body }} />
+                <p {...cmsAttrs(c.cmsRef, "excerpt")}>{c.body}</p>
                 {c.quote && (
                   <div class="quote">
                     <span {...cmsHtmlAttrs(c.cmsRef, "quote")} dangerouslySetInnerHTML={{ __html: c.quote }} />
@@ -289,7 +289,7 @@ export function Insights({ data, cmsRef, fields }: { data: InsightsData; cmsRef?
               <div class="blogbody">
                 <span class="nyt">{p.tag}</span>
                 <h3 {...cmsAttrs(p.cmsRef, "title")}>{p.title}</h3>
-                <p {...cmsHtmlAttrs(p.cmsRef, "excerpt")} dangerouslySetInnerHTML={{ __html: p.excerpt }} />
+                <p {...cmsAttrs(p.cmsRef, "excerpt")}>{p.excerpt}</p>
               </div>
             </a>
           ))}
