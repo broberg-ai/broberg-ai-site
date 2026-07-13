@@ -26,6 +26,7 @@ import {
   renderAdmin,
   renderAdminChat,
 } from "@/routes.tsx";
+import { renderSitemapXml } from "@/sitemap.ts";
 import { buildSearchIndex, postCanonicalCategory } from "@/content/compose.ts";
 import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
@@ -81,6 +82,13 @@ app.get("/healthz", (c) => c.json({ ok: true }));
 app.get("/search-index.json", async (c) => {
   const locale = c.req.query("locale") === "en" ? "en" : "da";
   return c.json(await buildSearchIndex(locale));
+});
+
+// sitemap.xml — every page on the site, from the same single source as the human
+// index (siteIndexGroups). The coverage gates discover pages from this.
+app.get("/sitemap.xml", async (c) => {
+  const xml = await renderSitemapXml(new URL(c.req.url).origin);
+  return c.body(xml, 200, { "Content-Type": "application/xml; charset=utf-8" });
 });
 
 // ICD content-push receiver (cms → us on every save/publish).

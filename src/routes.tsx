@@ -975,11 +975,16 @@ export async function renderTagCloud(locale: Locale): Promise<string> {
 // Site index (Indeks) — one page linking to EVERY page on the site: main pages,
 // all solutions, all flagships, every blog category + its articles, tags. Doubles
 // as a human sitemap and a traversal aid. Linked from the footer's Navigation column.
-export async function renderSiteIndex(locale: Locale): Promise<string> {
+// Every page on the site, grouped, in reading order — derived entirely from the
+// CMS loaders + broberg's own i18n URL helpers. THE single source of truth for
+// the site's page list: consumed by both the human site-index (renderSiteIndex)
+// and the machine sitemap (src/sitemap.ts → /sitemap.xml). Never hand-list URLs.
+export async function siteIndexGroups(
+  locale: Locale,
+): Promise<{ title: string; links: { label: string; href: string }[] }[]> {
   const isEn = locale === "en";
   const seg = SOLUTIONS_SEGMENT[locale];
   const fseg = flagshipsSegment(locale);
-  const { ref: globalsRef, g } = await globalsChrome(locale);
   const [solutions, platforms, categories] = await Promise.all([
     loadSolutions(locale),
     loadPlatforms(locale),
@@ -998,9 +1003,7 @@ export async function renderSiteIndex(locale: Locale): Promise<string> {
     { label: isEn ? "Thank you" : "Tak", href: withLocale(locale, isEn ? "/thanks" : "/tak") },
   ];
 
-  // Every group of pages, in reading order. Rendered as one striped table so
-  // it's easy to scan (Christian: "lækker tabel med farveskift").
-  const groups: { title: string; links: { label: string; href: string }[] }[] = [
+  return [
     { title: isEn ? "Main pages" : "Hovedsider", links: mainPages },
     { title: isEn ? "Solutions" : "Løsninger", links: solutions.map((s) => ({ label: s.name, href: `/${seg}/${s.slug}` })) },
     { title: isEn ? "Flagships" : "Flagskibe", links: platforms.map((p) => ({ label: p.name, href: withLocale(locale, `/${fseg}/${p.logoKey}`) })) },
@@ -1015,6 +1018,14 @@ export async function renderSiteIndex(locale: Locale): Promise<string> {
       ],
     })),
   ].filter((gr) => gr.links.length);
+}
+
+export async function renderSiteIndex(locale: Locale): Promise<string> {
+  const isEn = locale === "en";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+  // Single source for "every page on the site" — shared with /sitemap.xml
+  // (src/sitemap.ts) so the human index and the machine sitemap can never drift.
+  const groups = await siteIndexGroups(locale);
 
   // color-mix on var(--light) → a stripe that reads on BOTH the dark and light
   // themes (near-white foreground on dark, near-black on light) without a
