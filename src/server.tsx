@@ -87,7 +87,9 @@ app.get("/search-index.json", async (c) => {
 // sitemap.xml — every page on the site, from the same single source as the human
 // index (siteIndexGroups). The coverage gates discover pages from this.
 app.get("/sitemap.xml", async (c) => {
-  const xml = await renderSitemapXml(new URL(c.req.url).origin);
+  // Behind Fly's proxy the internal request is http; the public origin is https.
+  const host = c.req.header("x-forwarded-host") || new URL(c.req.url).host;
+  const xml = await renderSitemapXml(`https://${host}`);
   return c.body(xml, 200, { "Content-Type": "application/xml; charset=utf-8" });
 });
 

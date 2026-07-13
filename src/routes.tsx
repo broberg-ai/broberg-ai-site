@@ -997,15 +997,15 @@ export async function siteIndexGroups(
   const mainPages: { label: string; href: string }[] = [
     { label: isEn ? "Home" : "Forsiden", href: withLocale(locale, "/") },
     { label: isEn ? "How we build it" : "Sådan bygger vi det", href: isEn ? "/en/universe" : "/universet" },
-    { label: isEn ? "Solutions" : "Løsninger", href: `/${seg}` },
-    { label: isEn ? "Flagships" : "Flagskibe", href: `/${fseg}` },
+    { label: isEn ? "Solutions" : "Løsninger", href: withLocale(locale, `/${seg}`) },
+    { label: isEn ? "Flagships" : "Flagskibe", href: withLocale(locale, `/${fseg}`) },
     { label: "Tags", href: withLocale(locale, "/tags") },
     { label: isEn ? "Thank you" : "Tak", href: withLocale(locale, isEn ? "/thanks" : "/tak") },
   ];
 
   return [
     { title: isEn ? "Main pages" : "Hovedsider", links: mainPages },
-    { title: isEn ? "Solutions" : "Løsninger", links: solutions.map((s) => ({ label: s.name, href: `/${seg}/${s.slug}` })) },
+    { title: isEn ? "Solutions" : "Løsninger", links: solutions.map((s) => ({ label: s.name, href: withLocale(locale, `/${seg}/${s.slug}`) })) },
     { title: isEn ? "Flagships" : "Flagskibe", links: platforms.map((p) => ({ label: p.name, href: withLocale(locale, `/${fseg}/${p.logoKey}`) })) },
     ...catPosts.map((c) => ({
       title: c.name,
