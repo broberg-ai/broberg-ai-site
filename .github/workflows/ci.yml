@@ -73,5 +73,12 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Vent på ny version er live
         run: sleep 10
-      - name: Gate A — hvert CMS-felt med indhold er redigerbart
+      # A.1 — content-scan (side-niveau): AL synlig tekst i <main> skal ligge i et
+      # [data-cms-field]. 0 gaps krævet. Fanger tekst en besøgende faktisk ser som
+      # ikke er redigerbar (finere end schema-gaten, som er collection-niveau union).
+      - name: Gate A.1 — synligt indhold redigerbart (0 gaps)
+        run: bun run gate:editable
+      # A.2 — schema-coverage (F086 no-new-gaps): hvert rendret CMS-felt målt mod
+      # skema + baseline. Fanger et NYT skemafelt der renderes uden wiring.
+      - name: Gate A.2 — hvert CMS-felt med indhold er redigerbart (no-new-gaps)
         run: bun run gate:coverage

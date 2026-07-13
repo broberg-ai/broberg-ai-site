@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "gate:text": "cms check-text --dir src --allowlist .cms-check-text-allowlist",
-    "gate:coverage": "cms coverage --schema .cms-coverage-schema.json --url https://broberg.ai --pages /,/losninger,/losninger/ai-integration,/losninger/websites,/losninger/webshops,/losninger/platforme,/universet,/flagskibe,/inline-redigering,/own-your-own-data,/sanne-andersen,/tre-arkitekturer-agent-hukommelse,/x-rt-platform,/fysio-dk-sport,/fysio-dk-aalborg,/chat-med-dit-website,/sft-vs-prompt-rag-trail,/bevis-ikke-loefter,/design-i-højere-luftlag,/fra-forfatter-til-redaktoer --ignore metaTitle,metaDescription,ogTitle,ogDescription,siteName,siteTitle,siteDescription,navCtaUrl,ctaPrimaryUrl,ctaSecondaryUrl,contactEmail,order,readTime,url,label --baseline .cms-coverage-baseline"
+    "gate:editable": "bun scripts/gate-editable.mjs",
+    "gate:coverage": "bun scripts/gate-coverage.mjs"
   },
   "dependencies": {
     "@broberg/cms-chat-client": "^0.4.16",
@@ -26,7 +27,7 @@
     "@broberg/lens-engine": "^0.4.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/bun": "^1.1.14",
-    "@webhouse/cms-cli": "^0.4.22",
+    "@webhouse/cms-cli": "^0.4.23",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.6.0",
     "vite": "^6.0.7"

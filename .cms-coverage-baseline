@@ -2,6 +2,13 @@
 # Format: collection/field. Næsten alle = felter uden indhold (renderes ikke → intet at redigere)
 # eller SEO/meta. broberg render er bekræftet komplet: hvert felt ER wired når det har værdi.
 # Et NYT ikke-wired felt (ikke på listen) fejler porten.
+#
+# F162.8 burn-down (2026-07-13) — de 7 globals-entries audited, ingen ægte gap:
+#   aboutHeading  → headingHtml (HTML-felt, bevidst ekskluderet fra inline-edit)
+#   universeCore  → core (SVG-illustrations-label, ikke redigerbar prosa)
+#   heroPillLabel → livePillLabel "Live" (status-chip, ikke prosa)
+#   contactCta / contactHeading / heroPillFallback / navCta → renderes ikke (ubrugte felter)
+# A.1 (cms check-editable) bekræfter 0 synlige gaps på de 8 rigtige sider (954 felter).
 globals/aboutHeading
 globals/contactCta
 globals/contactHeading
