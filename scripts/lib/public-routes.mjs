@@ -18,26 +18,14 @@ export const PUBLIC_ROUTES = [
   "/flagskibe",
 ];
 
-/** Planned pages whose CMS content was never written — they resolve to the
- *  generic "content coming" placeholder (routes.tsx `renderGenericPage`) at
- *  HTTP 200, so every visible line on them is hardcoded + non-editable. Parked
- *  here (NOT scanned) until built, and tracked as a content to-do on the board
- *  (cardmem F162.8 finding). To retire one: write its CMS content, verify it
- *  renders real editable fields, then MOVE the slug up to PUBLIC_ROUTES. */
-export const PENDING_CONTENT = [
-  "/inline-redigering",
-  "/own-your-own-data",
-  "/sanne-andersen",
-  "/tre-arkitekturer-agent-hukommelse",
-  "/x-rt-platform",
-  "/fysio-dk-sport",
-  "/fysio-dk-aalborg",
-  "/chat-med-dit-website",
-  "/sft-vs-prompt-rag-trail",
-  "/bevis-ikke-loefter",
-  "/design-i-højere-luftlag",
-  "/fra-forfatter-til-redaktoer",
-];
+// NOTE: the ~17 DA blog posts live at /{category}/{slug} (e.g.
+// /indsigter/bevis-ikke-loefter) and ARE already fully editable — verified 0
+// visible-text gaps (1399 fields). They are NOT scanned here YET: adding them
+// surfaces 27 pre-existing schema-level gaps (custom case-blocks + category
+// metadata + excerpt) that deserve a proper wire/classify pass, not a rushed
+// baseline dump. Tracked as a follow-up story (F162.9). The bare top-level slugs
+// a prior list used (/inline-redigering, /bevis-ikke-loefter, …) were WRONG —
+// they resolve to a generic placeholder; the real article is the URL above.
 
 export function publicRoutes() {
   return PUBLIC_ROUTES;
