@@ -82,7 +82,7 @@ export interface FlagshipPage {
 
 const H = ({ s, cmsRef, idx }: { s: { heading: string; headingHtml?: string }; cmsRef?: CmsRef; idx: number }) =>
   s.headingHtml ? (
-    <h2 dangerouslySetInnerHTML={{ __html: s.headingHtml }} />
+    <h2 data-cms-html="heading" dangerouslySetInnerHTML={{ __html: s.headingHtml }} />
   ) : (
     <h2 {...cmsAttrs(cmsRef, slidePath(idx, "heading"))}>{s.heading}</h2>
   );
@@ -91,7 +91,7 @@ const H = ({ s, cmsRef, idx }: { s: { heading: string; headingHtml?: string }; c
 
 const Lead = ({ b, cmsRef, path }: { b: Extract<Block, { k: "lead" }>; cmsRef?: CmsRef; path: string }) =>
   b.html ? (
-    <p class="lead" dangerouslySetInnerHTML={{ __html: b.html }} />
+    <p class="lead" data-cms-html="lead" dangerouslySetInnerHTML={{ __html: b.html }} />
   ) : (
     <p class="lead" {...cmsAttrs(cmsRef, path)}>{b.text}</p>
   );
