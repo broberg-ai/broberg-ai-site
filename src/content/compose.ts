@@ -362,10 +362,11 @@ export async function loadPlatforms(locale: Locale): Promise<Platform[]> {
       const d = dataOf(p);
       return {
         name: str(d.name),
-        // The flagship detail page resolves by the doc's logoKey (e.g. "hosting",
-        // "pitch-vault") — NOT the display name. Falling back to name.toLowerCase()
-        // broke drift (→hosting) + pitch vault (→pitch-vault): the link 404'd.
-        logoKey: str(d.logoKey) || str(d.name).toLowerCase(),
+        // The flagship detail page resolves by the doc's SLUG (locale-prefix
+        // stripped) — e.g. the "drift" platform lives at slug "hosting", "pitch
+        // vault" at "pitch-vault". name.toLowerCase() broke those two (→ 404);
+        // the slug is the actual route key renderFlagshipDetail resolves.
+        logoKey: stripLocalePrefix(String(p.slug), locale),
         blurb: str(d.blurb) || str(d.tagline),
         status: str(d.status) || "live",
         cmsRef: { collection: "platforms", slug: String(p.slug), locale },
