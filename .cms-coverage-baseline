@@ -28,3 +28,11 @@ posts/quote
 posts/titleHighlight
 sections/ctaPrimary
 sections/ctaSecondary
+#
+# F162.10 (2026-07-13) — surfaced when the gate switched to full-sitemap scanning
+# (85 pages incl. all blog posts + case pages). A.1 (cms check-editable) confirms
+# 0 VISIBLE gaps on every page, so these are structural/non-prose schema fields,
+# not text a visitor sees uneditable. Proper wire/classify pass tracked in F162.9.
+blocks/caption
+blocks/text
+categories/description
