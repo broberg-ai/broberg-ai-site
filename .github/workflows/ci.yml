@@ -37,6 +37,9 @@ jobs:
       - name: Gate B — ingen ny hardcodet tekst uden for CMS
         run: bun run gate:text
 
+      - name: Gate C — nye interaktive elementer skal have data-testid (Lens-anker)
+        run: bun run gate:testids
+
   deploy:
     name: Deploy (kun efter grøn port)
     needs: gate

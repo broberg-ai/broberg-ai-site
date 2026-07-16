@@ -17,7 +17,7 @@
         "@broberg/lens-engine": "^0.4.0",
         "@tailwindcss/vite": "^4.0.0",
         "@types/bun": "^1.1.14",
-        "@webhouse/cms-cli": "^0.4.25",
+        "@webhouse/cms-cli": "^0.4.27",
         "tailwindcss": "^4.0.0",
         "typescript": "^5.6.0",
         "vite": "^6.0.7",
@@ -207,7 +207,7 @@
 
     "@webhouse/cms-ai": ["@webhouse/cms-ai@0.4.20", "", { "dependencies": { "@broberg/ai-sdk": "^0.13.0", "@webhouse/cms": "^0.4.20", "zod": "^3.24.1" } }, "sha512-BinhaAB0kV7/Vw0Pf9S8H36W9YyZS/8lOefdVGNWWLLJzRCJOqPvCYA5Q7Pb7XoApw2eGmkkJP1Vikbxatb4Wg=="],
 
-    "@webhouse/cms-cli": ["@webhouse/cms-cli@0.4.25", "", { "dependencies": { "@hono/node-server": "^1.13.7", "@modelcontextprotocol/sdk": "^1.12.1", "@webhouse/cms": "^0.4.20", "@webhouse/cms-ai": "^0.4.20", "@webhouse/cms-mcp-client": "^0.4.20", "chokidar": "^4.0.3", "citty": "^0.1.6", "jiti": "^2.4.2", "node-html-parser": "^9.0.0", "picocolors": "^1.1.1", "typescript": "^5.7.2" }, "peerDependencies": { "@broberg/lens-engine": ">=0.4.0" }, "optionalPeers": ["@broberg/lens-engine"], "bin": { "cms": "dist/index.js" } }, "sha512-DDyqfKZakzMXn8+2ORusGsq38y9ewAKb+Cc8rpDZPFf3d+KGtKEMA4+F0LpqhS74BRMaKQncigVYZEsBaVpDjA=="],
+    "@webhouse/cms-cli": ["@webhouse/cms-cli@0.4.27", "", { "dependencies": { "@hono/node-server": "^1.13.7", "@modelcontextprotocol/sdk": "^1.12.1", "@webhouse/cms": "^0.4.20", "@webhouse/cms-ai": "^0.4.20", "@webhouse/cms-mcp-client": "^0.4.20", "chokidar": "^4.0.3", "citty": "^0.1.6", "jiti": "^2.4.2", "node-html-parser": "^9.0.0", "picocolors": "^1.1.1", "typescript": "^5.7.2" }, "peerDependencies": { "@broberg/lens-engine": ">=0.4.0" }, "optionalPeers": ["@broberg/lens-engine"], "bin": { "cms": "dist/index.js" } }, "sha512-8Jntg57mf7a0fPfR1GYXHTky8A9ERAJO6VC6EyAafe8gRXmJ3o4WDwUq9cOgl2cb4limm/N/KrgiC65s7WqCWA=="],
 
     "@webhouse/cms-mcp-client": ["@webhouse/cms-mcp-client@0.4.20", "", { "dependencies": { "@modelcontextprotocol/sdk": "^1.27.1", "@webhouse/cms": "^0.4.20" } }, "sha512-dYB/BtM6R+27SwHhZVQ0yIpjfZBfsocAMKeQUHukHLZFu8hZBU+7TYnWEcfSNO0D53eIWdpUWStO9z7LI6GBJQ=="],
 

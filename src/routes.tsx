@@ -1062,7 +1062,7 @@ export async function renderSiteIndex(locale: Locale): Promise<string> {
                 {group.links.map((l, i) => (
                   <tr class={`si-row${i % 2 ? " odd" : ""}`} key={l.href} data-testid={`siteindex-row-${l.href}`}>
                     <td>
-                      <a href={l.href}>{l.label}</a>
+                      <a href={l.href} data-testid={`siteindex-link-${l.href}`}>{l.label}</a>
                     </td>
                     <td class="si-path">{l.href}</td>
                   </tr>

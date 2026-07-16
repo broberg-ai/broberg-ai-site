@@ -1,0 +1,3 @@
+# Gate C baseline (F162.6) — accepterede testid-huller pr. i dag (per-fil antal).
+# Kun bevidste ikke-Lens-elementer (fx skjult honeypot). Fix nye interaktive elementer med data-testid.
+src/components/Contact.tsx 1

@@ -66,7 +66,7 @@ const ProofCard = ({ item, locale, cmsRef, i }: { item: ProofItem; locale: Local
   // Clickable proof cards: the click-to-edit handler in @broberg/cms-inline-edit
   // stops the field's click from bubbling into this <a>, so editing wins over nav.
   return item.href ? (
-    <a class="card" href={item.href}>
+    <a class="card" href={item.href} data-testid="solution-proof-card">
       {inner}
     </a>
   ) : (

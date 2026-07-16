@@ -19,7 +19,7 @@ export function Footer({ data, cmsRef }: { data: FooterData; cmsRef?: CmsRef }) 
           <div class="foot-col" key={col.heading}>
             <div class="foot-col-h" {...cmsAttrs(cmsRef, `footerColumns.${ci}.heading`)}>{col.heading}</div>
             {col.links.map((l, li) => (
-              <a href={l.href} key={l.href} target={l.href.startsWith("http") ? "_blank" : undefined} rel={l.href.startsWith("http") ? "noopener" : undefined}>
+              <a href={l.href} key={l.href} data-testid={`footer-link-${ci}-${li}`} target={l.href.startsWith("http") ? "_blank" : undefined} rel={l.href.startsWith("http") ? "noopener" : undefined}>
                 <span {...cmsAttrs(cmsRef, `footerColumns.${ci}.links.${li}.label`)}>{l.label}</span>
               </a>
             ))}
