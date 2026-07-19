@@ -1743,6 +1743,14 @@ footer {
 .richtext a:hover {
   color: var(--blue-light);
 }
+/* A [cta:] button inside article prose must keep the .btn look — otherwise the
+   generic `.richtext a` rule paints its label blue-on-blue (invisible) and adds
+   the link underline. Higher specificity (a.btn) restores the button. */
+.richtext a.btn,
+.richtext a.btn:hover {
+  color: var(--dark);
+  border-bottom: none;
+}
 /* Markdown tables (e.g. an article's comparison table) — same visual
    language as the flagship .ctable, wrapped in a card so it reads as a
    deliberate component, not raw browser table defaults.
