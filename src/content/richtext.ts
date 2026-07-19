@@ -33,6 +33,20 @@ export function richtextInline(md: string): string {
   return md ? (marked.parseInline(md) as string) : "";
 }
 
+// `[cta:<url>|<label>]` on its own line → a real primary button (.btn), for
+// article CTAs. Kept as a plain-text shortcode (not raw HTML in the source) so
+// it round-trips through a richtext-editor save as text instead of degrading
+// back to a plain link. Expanded to trusted HTML at render time (no sanitizer,
+// same as the rest of richtextBlock).
+const CTA_RE = /^\[cta:\s*([^\]|]+?)\s*\|\s*([^\]]+?)\s*\]\s*$/gim;
+function expandCtas(md: string): string {
+  return md.replace(
+    CTA_RE,
+    (_m, href, label) =>
+      `\n<p class="post-cta"><a class="btn" href="${String(href).trim()}">${String(label).trim()} <span class="ar">→</span></a></p>\n`,
+  );
+}
+
 export function richtextBlock(md: string): string {
-  return md ? (marked.parse(md) as string) : "";
+  return md ? (marked.parse(expandCtas(md)) as string) : "";
 }

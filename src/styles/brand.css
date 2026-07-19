@@ -350,6 +350,10 @@ header {
 .btn-ghost .ar {
   color: var(--orange-text);
 }
+/* Article-body CTA button ([cta:] shortcode) — a little breathing room above. */
+.post-cta {
+  margin-top: 28px;
+}
 .mobile-only {
   display: none;
 }
