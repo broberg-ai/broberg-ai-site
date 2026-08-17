@@ -8,6 +8,8 @@
 // full article bodies. text/textarea fields (heading/subheading/eyebrow) are
 // intentional HTML snippets — do NOT pass those through here.
 import { marked } from "marked";
+import { resolveCmsLinks } from "@broberg/cms-inline-edit/server";
+import { cmsLinkLookup, ensureFreshLinkLookup } from "./link-lookup.ts";
 
 marked.setOptions({ gfm: true, breaks: false });
 
@@ -48,5 +50,12 @@ function expandCtas(md: string): string {
 }
 
 export function richtextBlock(md: string): string {
-  return md ? (marked.parse(expandCtas(md)) as string) : "";
+  if (!md) return "";
+  const html = marked.parse(expandCtas(md)) as string;
+  // cms F164 — a link the editor made to a PAGE carries data-cms-ref, so it can
+  // be re-pointed here when that page moves or is renamed. A reference we don't
+  // recognise keeps the href it was stored with, so this can only ever improve
+  // a link, never break one.
+  ensureFreshLinkLookup();
+  return resolveCmsLinks(html, cmsLinkLookup);
 }
