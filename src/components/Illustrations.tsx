@@ -652,6 +652,60 @@ const sanneAndersen = wrap(
   </g>,
 );
 
+// The answer card sits ABOVE a dashed separator; the paid slot sits below it.
+// Your own document flows INTO the answer and reappears as the cited chip
+// (earned, blue); the coin buys the orange block underneath (bought). No text —
+// the same illustration serves the Danish and the English post. Nails: you can
+// pay for the space under an answer that never mentioned you.
+const chatgptAnnoncer = wrap(
+  <g fill="none">
+    {/* the answer */}
+    <rect x="96" y="34" width="200" height="106" rx="12" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke="var(--blue)" stroke-width="1.8" />
+    <g stroke="var(--blue)" stroke-width="2" stroke-linecap="round" opacity=".5">
+      <path d="M116 60 H266" />
+      <path d="M116 74 H278" />
+      <path d="M116 88 H240" />
+    </g>
+    {/* the earned position: your document, cited inside the answer */}
+    <g class="illu-glow">
+      <rect x="116" y="102" width="52" height="24" rx="7" fill="color-mix(in srgb,var(--blue) 18%,transparent)" stroke="var(--blue-light)" stroke-width="1.6" />
+      <g transform="translate(126 108)">
+        <rect x="0" y="0" width="10" height="12" rx="2" fill="none" stroke="var(--blue-light)" stroke-width="1.3" />
+        <path d="M2.5 4 H7.5 M2.5 7 H7.5" stroke="var(--blue-light)" stroke-width="1.1" stroke-linecap="round" />
+      </g>
+      <path d="M146 114 H160" stroke="var(--blue-light)" stroke-width="1.6" stroke-linecap="round" />
+    </g>
+
+    {/* your content, and the route that is earned rather than bought */}
+    <g>
+      <rect x="20" y="90" width="34" height="44" rx="6" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+      <g stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" opacity=".6">
+        <path d="M28 102 H46" />
+        <path d="M28 110 H46" />
+        <path d="M28 118 H40" />
+      </g>
+    </g>
+    <path class="illu-flow" d="M58 112 C 76 112, 82 114, 96 114" stroke="var(--blue)" stroke-width="1.8" stroke-dasharray="3 5" />
+
+    {/* the separator — the whole point of the piece */}
+    <path d="M96 156 H296" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 5" opacity=".65" />
+
+    {/* the paid slot, below the line */}
+    <rect x="96" y="172" width="200" height="56" rx="12" fill="rgba(243,82,44,.14)" stroke="#F3522C" stroke-width="1.8" />
+    <g stroke="#F3522C" stroke-width="2" stroke-linecap="round" opacity=".45">
+      <path d="M116 194 H248" />
+      <path d="M116 208 H206" />
+    </g>
+    {/* the sponsored marker */}
+    <circle cx="278" cy="188" r="4" fill="#F3522C" />
+
+    {/* the bought route in */}
+    <path d="M58 200 H96" stroke="#F3522C" stroke-width="1.6" stroke-dasharray="3 5" />
+    <path d="M22 199 L36 185 L52 185 L52 201 L38 215 Z" fill="rgba(243,82,44,.16)" stroke="#F3522C" stroke-width="1.6" stroke-linejoin="round" />
+    <circle cx="46" cy="191" r="2.6" stroke="#F3522C" stroke-width="1.4" />
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -669,6 +723,10 @@ const REGISTRY: Record<string, JSX.Element> = {
   "fysio-dk-aalborg": fysioDkAalborg,
   "x-rt-platform": xrtPlatform,
   "sanne-andersen": sanneAndersen,
+  // One bespoke illustration, registered under BOTH the Danish and the
+  // English post slug — the piece carries no text, so it serves either.
+  "chatgpt-annoncer": chatgptAnnoncer,
+  "chatgpt-ads": chatgptAnnoncer,
 };
 
 export function hasIllustration(k: string): boolean {
