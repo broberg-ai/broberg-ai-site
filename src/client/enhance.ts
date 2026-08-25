@@ -114,6 +114,11 @@ function adminPanel() {
   const toggle = document.createElement("button");
   toggle.type = "button";
   toggle.setAttribute("data-testid", "admin-inline-edit-toggle");
+  // Dead until the server has said what the setting currently IS. Clickable
+  // beforehand, the first click sends the opposite of a value nobody has read
+  // yet — measured in a browser: a click ~20ms after load asked to turn ON
+  // something that was already on.
+  toggle.disabled = true;
   toggle.style.cssText = "flex-shrink:0;width:40px;height:22px;border-radius:11px;border:none;position:relative;cursor:pointer;transition:background 150ms;";
   const knob = document.createElement("div");
   knob.style.cssText = "position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 150ms;box-shadow:0 1px 3px rgba(0,0,0,.3);";
@@ -133,6 +138,7 @@ function adminPanel() {
   function paintToggle(enabled: boolean) {
     toggle.style.background = enabled ? "#00b2ff" : "#2a2a2a";
     knob.style.left = enabled ? "21px" : "3px";
+    toggle.disabled = false;
   }
 
   fetch(`${CMS.cmsBaseUrl}/api/inline-edit/status?site=${CMS.siteId}`)
