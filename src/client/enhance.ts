@@ -120,6 +120,13 @@ function adminPanel() {
   toggle.appendChild(knob);
   row.appendChild(toggle);
   card.appendChild(row);
+  // A rejected save used to leave the switch exactly where it was, silently —
+  // which reads as "I must have missed the button". Every click has to answer.
+  const err = document.createElement("p");
+  err.setAttribute("data-testid", "admin-inline-edit-error");
+  err.style.cssText = "font-size:12px;color:#ff6b6b;margin:12px 0 0;display:none;";
+  err.textContent = "Kunne ikke ændre indstillingen — prøv igen";
+  card.appendChild(err);
   wrap.appendChild(card);
   root.appendChild(wrap);
 
@@ -137,15 +144,28 @@ function adminPanel() {
     const next = knob.style.left !== "21px";
     toggle.disabled = true;
     try {
-      const res = await fetch(`${CMS.cmsBaseUrl}/api/inline-edit/toggle`, {
+      // ?site= is REQUIRED: an edit-session token is scoped to one site, and
+      // the server refuses a write that does not say which one it means. It was
+      // missing here (the status call above always had it), so this switch had
+      // never once changed anything — measured against production, 403 without
+      // it and 200 with it. The id comes from the CMS constant, not a second
+      // copy of the string.
+      const res = await fetch(`${CMS.cmsBaseUrl}/api/inline-edit/toggle?site=${CMS.siteId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ enabled: next }),
       });
       if (res.ok) {
+        err.style.display = "none";
+        // The endpoint returns the value it actually stored, re-read from disk.
+        // Paint THAT, never the value we asked for.
         const body = (await res.json()) as { enabled: boolean };
         paintToggle(body.enabled);
+      } else {
+        err.style.display = "block";
       }
+    } catch {
+      err.style.display = "block";
     } finally {
       toggle.disabled = false;
     }
