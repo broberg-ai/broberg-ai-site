@@ -746,6 +746,20 @@ export interface SearchEntry {
   badge: string;
   badgeTone: "clay" | "olive" | "oat" | "neutral";
   data: string;
+  /**
+   * Extra words this entry can be FOUND by, never shown.
+   *
+   * The index used to be title + excerpt only, so a case was unfindable by the
+   * one word a person actually types: the customer's name. Measured 27 Aug 2026
+   * — searching "Sanne" returned nothing, while the case about her sat at
+   * /cases/sanne-andersen titled "Fire forretninger, én platform". Same for
+   * "fd sundhed" before the case was renamed.
+   *
+   * A case is looked for by WHO it is about at least as often as by what it is
+   * called, and that word lives in `client`, in the tags and in the slug —
+   * all of them already written, none of them searchable.
+   */
+  keywords?: string;
 }
 
 export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
@@ -765,6 +779,7 @@ export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
       badge: "FLAGSKIB",
       badgeTone: "clay",
       data: withLocale(locale, `/${seg}/${slug}`),
+      keywords: [slug, ...(Array.isArray(d.tags) ? d.tags.map(String) : [])].join(" "),
     });
   }
 
@@ -779,6 +794,12 @@ export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
       badge: cat === "cases" ? "CASE" : "INDSIGT",
       badgeTone: cat === "cases" ? "oat" : "olive",
       data: withLocale(locale, `/${cat}/${String(p.slug)}`),
+      // client is the customer's name — the word people actually type.
+      keywords: [
+        str(d.client),
+        String(p.slug).replace(/-/g, " "),
+        ...(Array.isArray(d.tags) ? d.tags.map(String) : []),
+      ].filter(Boolean).join(" "),
     });
   }
 

@@ -15,6 +15,7 @@ export interface CmdItem {
   badge?: string; // short type label, e.g. "NODE" | "POST" | "CASE"
   badgeTone?: "clay" | "olive" | "oat" | "neutral"; // optional badge colour key
   data?: unknown; // anything you need back in onActivate (e.g. the URL)
+  keywords?: string; // searched, NEVER rendered — customer name, tags, slug
 }
 
 export interface CmdPaletteProps {
@@ -51,7 +52,8 @@ export function useCmdkHotkey(toggle: () => void) {
 export function makeFuzzy(items: CmdItem[], limit = 25): (q: string) => CmdItem[] {
   const idx = items.map((it) => ({
     it,
-    hay: `${it.title} ${it.subtitle ?? ""} ${it.badge ?? ""}`.toLowerCase(),
+    // `keywords` is searched but never rendered — see SearchEntry.keywords.
+    hay: `${it.title} ${it.subtitle ?? ""} ${it.badge ?? ""} ${it.keywords ?? ""}`.toLowerCase(),
   }));
   return (q: string) => {
     const needle = q.trim().toLowerCase();
