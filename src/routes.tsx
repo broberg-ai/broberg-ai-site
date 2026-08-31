@@ -770,8 +770,8 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   const outroHtml = g(
     "postOutroHtml",
     locale === "en"
-      ? 'The machinery in this piece isn\'t something we describe — it\'s what we build with every day. <a href="/en/flagships" data-testid="post-outro-flagships">The flagships</a> are the systems it is made of, and the components they share. That is what makes it possible to build very large, robust IT solutions in record time.<br><br>If you have a project, the shortest route is to <a href="/en#kontakt" data-testid="post-outro-contact">talk it through with Christian</a>.'
-      : 'Maskineriet her er ikke noget vi beskriver — det er det, vi bygger med hver dag. <a href="/flagskibe" data-testid="post-outro-flagships">Flagskibene</a> er systemerne det består af, og de komponenter de deler. Det er dét, der gør det muligt at bygge meget store og robuste IT-løsninger på rekordtid.<br><br>Har I et projekt, er den korteste vej at <a href="/#kontakt" data-testid="post-outro-contact">tale det igennem med Christian</a>.',
+      ? "The machinery in this piece isn't something we describe — it's what we build with every day. [The flagships](/en/flagships) are the systems it is made of, and the components they share. That is what makes it possible to build very large, robust IT solutions in record time.\\\n\\\nIf you have a project, the shortest route is to [talk it through with Christian](/en#kontakt)."
+      : "Maskineriet her er ikke noget vi beskriver — det er det, vi bygger med hver dag. [Flagskibene](/flagskibe) er systemerne det består af, og de komponenter de deler. Det er dét, der gør det muligt at bygge meget store og robuste IT-løsninger på rekordtid.\\\n\\\nHar I et projekt, er den korteste vej at [tale det igennem med Christian](/#kontakt).",
   );
 
   return await page(
@@ -821,7 +821,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
           <h2 {...cmsAttrs(globalsRef, "postOutroHeading")}>
             {g("postOutroHeading", locale === "en" ? "Read on" : "Læs videre")}
           </h2>
-          <p {...cmsHtmlAttrs(globalsRef, "postOutroHtml")} dangerouslySetInnerHTML={{ __html: outroHtml }} />
+          <p {...cmsRichAttrs(globalsRef, "postOutroHtml")} dangerouslySetInnerHTML={{ __html: richtextInline(outroHtml) }} />
         </aside>
         <div class="cta-row" style="margin-top:36px">
           {twin ? (
