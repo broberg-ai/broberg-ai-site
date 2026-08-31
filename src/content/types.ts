@@ -201,4 +201,6 @@ export interface NewsListItem {
   category: string;
   categoryLabel: string;
   href: string;
+  /** Samme illustration som artiklen selv bruger. null = ingen for dette slug. */
+  illustrationKey: string | null;
 }

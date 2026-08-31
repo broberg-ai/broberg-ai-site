@@ -613,6 +613,7 @@ export async function loadAllNews(locale: Locale): Promise<NewsListItem[]> {
         category,
         categoryLabel: await categoryLabel(category, locale),
         href: withLocale(locale, `/${category}/${String(p.slug)}`),
+        illustrationKey: pickNewsIllustration(String(p.slug)),
       };
     }),
   );

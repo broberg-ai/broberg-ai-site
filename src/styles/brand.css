@@ -2211,7 +2211,10 @@ a.pill.taglink:active {
   margin-top: 32px;
 }
 .newsrow {
-  display: block;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 24px;
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: 14px;
@@ -2249,4 +2252,49 @@ a.pill.taglink:active {
   color: var(--muted);
   font-size: 14.5px;
   line-height: 1.6;
+}
+
+/* Illustrationen i en nyhedsraekke — samme tegning som artiklen selv bruger,
+   hoejrestillet og STILLESTAAENDE. Kortet er en oversigt man skanner; tolv
+   samtidige loops ville traekke oejet vaek fra det der skal laeses.
+
+   Animationerne bor som klasser INDE i hver SVG (.illu-snap, .illu-glow,
+   .illu-flow m.fl. i Illustrations.tsx). Vi slaar dem fra her frem for at lave
+   en stillestaaende KOPI af hver tegning: en kopi ville drifte fra originalen
+   foerste gang nogen retter en illustration, og saa ville listen og artiklen
+   vise to forskellige billeder af samme artikel.
+
+   To klasser (0,2,0) slaar de enkelte animations-klasser (0,1,0), saa der
+   er ikke brug for !important — og ingen afhaengighed af raekkefoelgen i filen. */
+.newsrow .newsillu {
+  /* Fast BOKS, ikke fast bredde. Tegningerne har hver sit viewBox, saa en ren
+     bredde gav dem vidt forskellige hoejder og listen saa uryddig ud. Med en
+     fast boks og svg'ens egen preserveAspectRatio fylder hver tegning det
+     samme felt. */
+  width: 140px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.newsrow .newsillu svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.newsrow .newsillu * {
+  animation: none;
+}
+.newsrow-text {
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  /* Paa en telefon er der ikke plads til begge dele ved siden af hinanden, og
+     teksten er det man er kommet efter. */
+  .newsrow {
+    grid-template-columns: 1fr;
+  }
+  .newsrow .newsillu {
+    display: none;
+  }
 }

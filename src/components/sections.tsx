@@ -289,7 +289,7 @@ export function Insights({ data, cmsRef, fields }: { data: InsightsData; cmsRef?
               </div>
               <div class="blogbody">
                 <span class="nyt">{p.tag}</span>
-                <h3 {...cmsAttrs(p.cmsRef, "title")}>{stripHtml(p.title)}</h3>
+                <h3>{stripHtml(p.title)}</h3>
                 <p {...cmsAttrs(p.cmsRef, "excerpt")}>{p.excerpt}</p>
               </div>
             </a>

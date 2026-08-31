@@ -75,7 +75,7 @@ app.use("*", async (c, next) => {
   } else c.header("cache-control", "no-cache, must-revalidate");
 });
 
-app.get("/healthz", (c) => c.json({ ok: true }));
+app.get("/healthz", (c) => c.json({ ok: true, sha: process.env.GIT_SHA ?? null }));
 
 // ⌘K search index — the prebuilt client-side fuzzy index (platforms + posts),
 // built from the local cms store so search content stays editable in cms. The

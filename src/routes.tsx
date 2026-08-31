@@ -862,7 +862,7 @@ export async function renderBlogIndex(locale: Locale, category: string): Promise
                   </div>
                   <div class="blogbody">
                     <span class="nyt">{str(pd.readTime) || (locale === "en" ? "Article" : "Artikel")}</span>
-                    <h3 {...cmsAttrs(postRef, "title")}>{stripHtml(str(pd.title))}</h3>
+                    <h3>{stripHtml(str(pd.title))}</h3>
                     <p {...cmsAttrs(postRef, "excerpt")}>{str(pd.excerpt)}</p>
                   </div>
                 </a>
@@ -907,7 +907,7 @@ export async function renderTagPage(locale: Locale, tagSlug: string): Promise<st
               <div class="blogthumb">{h.illustrationKey ? <Illustration k={h.illustrationKey} /> : null}</div>
               <div class="blogbody">
                 <span class="nyt">{h.meta}</span>
-                <h3 {...cmsAttrs(h.cmsRef, h.titleField)}>{stripHtml(h.title)}</h3>
+                <h3>{stripHtml(h.title)}</h3>
                 <p {...cmsAttrs(h.cmsRef, h.excerptField)}>{h.excerpt}</p>
               </div>
             </a>
@@ -1098,6 +1098,10 @@ export async function renderSiteIndex(locale: Locale): Promise<string> {
 export async function renderAllNews(locale: Locale): Promise<string> {
   const isEn = locale === "en";
   const items = await loadAllNews(locale);
+  // Sidens egen tekst skal kunne rettes inline som alle andre sider. Uden det
+  // er overskrift + manchet synlig prosa en besoegende laeser og ingen kan
+  // aendre — praecis det Gate A.1 findes for at fange.
+  const { ref: globalsRef, g } = await globalsChrome(locale);
   const fmtDate = (iso: string) => {
     if (!iso) return "";
     const d = new Date(iso);
@@ -1108,25 +1112,39 @@ export async function renderAllNews(locale: Locale): Promise<string> {
     <section>
       <div class="wrap reveal">
         <div class="sec-head">
-          <div class="eyebrow">{isEn ? "News" : "Nyheder"}</div>
-          <h2>{isEn ? "Everything we have written" : "Alt hvad vi har skrevet"}</h2>
+          <div class="eyebrow" {...cmsAttrs(globalsRef, "allNewsEyebrow")}>
+            {g("allNewsEyebrow", isEn ? "News" : "Nyheder")}
+          </div>
+          <h2 {...cmsAttrs(globalsRef, "allNewsHeading")}>
+            {g("allNewsHeading", isEn ? "Everything we have written" : "Alt hvad vi har skrevet")}
+          </h2>
           <div class="divider" />
-          <p class="lead">
-            {isEn
-              ? "Every article and note from the engine room, newest first."
-              : "Hver artikel og hvert nedslag fra maskinrummet, nyeste først."}
+          <p class="lead" {...cmsAttrs(globalsRef, "allNewsLead")}>
+            {g(
+              "allNewsLead",
+              isEn
+                ? "Every article and note from the engine room, newest first."
+                : "Hver artikel og hvert nedslag fra maskinrummet, nyeste først.",
+            )}
           </p>
         </div>
         <div class="newslist" data-testid="allnews-list">
           {items.map((n) => (
             <a class="newsrow" key={n.slug} href={n.href} data-testid={`allnews-${n.slug}`}>
-              <div class="newsmeta">
-                {fmtDate(n.date) ? <time datetime={n.date}>{fmtDate(n.date)}</time> : null}
-                <span class="nyt">{n.categoryLabel}</span>
-                {n.readTime ? <span class="newsread">{n.readTime}</span> : null}
+              <div class="newsrow-text">
+                <div class="newsmeta">
+                  {fmtDate(n.date) ? <time datetime={n.date}>{fmtDate(n.date)}</time> : null}
+                  <span class="nyt">{n.categoryLabel}</span>
+                  {n.readTime ? <span class="newsread">{n.readTime}</span> : null}
+                </div>
+                <h3>{stripHtml(n.title)}</h3>
+                <p>{n.excerpt}</p>
               </div>
-              <h3>{stripHtml(n.title)}</h3>
-              <p>{n.excerpt}</p>
+              {n.illustrationKey ? (
+                <div class="newsillu" aria-hidden="true">
+                  <Illustration k={n.illustrationKey} />
+                </div>
+              ) : null}
             </a>
           ))}
         </div>

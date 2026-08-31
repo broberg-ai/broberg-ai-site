@@ -55,7 +55,7 @@ jobs:
         # --local-only: byg imaget på runneren (Docker er præinstalleret) og push
         # til app-registry. Undgår org-scoped remote builder → deploy-token forbliver
         # snævert app-scoped (mindst privilegium).
-        run: flyctl deploy --local-only -a broberg-ai
+        run: flyctl deploy --local-only -a broberg-ai --build-arg GIT_SHA=${{ github.sha }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -74,8 +74,20 @@ jobs:
           bun-version: latest
       - name: Install
         run: bun install --frozen-lockfile
-      - name: Vent på ny version er live
-        run: sleep 10
+      # sleep 10 var et GAET, og gaettet var forkert: 31/8-2026 naaede porten at
+      # maale den FORRIGE udgave, fandt 0 gaps og meldte groent — mens den nye
+      # side havde 4. En port der kan maale den forkerte udgave er ikke en port.
+      # Nu venter vi paa at /healthz svarer med PRAECIS denne commit.
+      - name: Vent på at NETOP denne commit er live
+        run: |
+          for i in $(seq 1 60); do
+            live=$(curl -fsS --max-time 10 https://broberg.ai/healthz | jq -r '.sha // empty' || true)
+            if [ "$live" = "${{ github.sha }}" ]; then echo "live: $live"; exit 0; fi
+            echo "  ($i/60) live=${live:-?} venter på ${{ github.sha }}"
+            sleep 5
+          done
+          echo "::error::Den nye udgave blev aldrig live — porten ville ellers måle den forrige."
+          exit 1
       # A.1 — content-scan (side-niveau): AL synlig tekst i <main> skal ligge i et
       # [data-cms-field]. 0 gaps krævet. Fanger tekst en besøgende faktisk ser som
       # ikke er redigerbar (finere end schema-gaten, som er collection-niveau union).
