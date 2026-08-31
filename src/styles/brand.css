@@ -2320,11 +2320,15 @@ a.pill.taglink:active {
   color: var(--muted);
   line-height: 1.7;
 }
+/* SAMME link-udseende som artiklens egen broedtekst (.richtext a). Foerste
+   udgave hjemmestrikkede sit eget med `var(--primary)` — en variabel der ikke
+   findes i temaet. En ukendt CSS-variabel falder TAVST tilbage til arvet farve,
+   saa linkene blev sorte uden en fejl nogen steder. Se proeven i
+   src/css-tokens.test.ts. */
 .post-outro a {
-  color: var(--primary);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  color: var(--blue);
+  border-bottom: 1px solid rgba(0, 178, 255, 0.3);
 }
 .post-outro a:hover {
-  text-decoration-thickness: 2px;
+  color: var(--blue-light);
 }
