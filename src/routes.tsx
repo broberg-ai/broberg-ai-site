@@ -34,7 +34,7 @@ import {
   loadFooter,
   loadGlobals,
 } from "@/content/compose.ts";
-import { richtextBlock, richtextInline } from "@/content/richtext.ts";
+import { richtextBlock, richtextInline, stripHtml } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
@@ -490,7 +490,7 @@ export async function renderThanks(locale: Locale): Promise<string> {
                   </div>
                   <div class="blogbody">
                     <span class="nyt">{n.categoryLabel}</span>
-                    <h3>{n.title}</h3>
+                    <h3>{stripHtml(n.title)}</h3>
                     <p>{n.excerpt}</p>
                   </div>
                 </a>
@@ -724,12 +724,6 @@ function titleToHtml(title: string, highlight: string): string {
   return `${before}<em>${h}</em>${after.join(h)}`;
 }
 
-// Plain text of a title for the browser-tab title, social-share title, and card
-// lists — strips the inline HTML an edited title now carries so those surfaces
-// never leak <em> tags. A no-op on a legacy plain title.
-function stripHtml(s: string): string {
-  return s.replace(/<[^>]+>/g, "");
-}
 
 // Blog post detail — renders a cms post (posts collection, ICD'd to our store).
 // `content` is markdown richtext with optional [block:<slug>] shortcodes that
@@ -1131,7 +1125,7 @@ export async function renderAllNews(locale: Locale): Promise<string> {
                 <span class="nyt">{n.categoryLabel}</span>
                 {n.readTime ? <span class="newsread">{n.readTime}</span> : null}
               </div>
-              <h3>{n.title}</h3>
+              <h3>{stripHtml(n.title)}</h3>
               <p>{n.excerpt}</p>
             </a>
           ))}

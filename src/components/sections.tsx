@@ -2,6 +2,7 @@
    fallback). Rich copy carries <em>/<strong>/<br> from the approved mockup, so a
    few fields render as HTML. The block-renderer (render/blocks.tsx) dispatches
    on section kind. */
+import { stripHtml } from "@/content/richtext.ts";
 import type {
   HeroData,
   UniverseData,
@@ -288,7 +289,7 @@ export function Insights({ data, cmsRef, fields }: { data: InsightsData; cmsRef?
               </div>
               <div class="blogbody">
                 <span class="nyt">{p.tag}</span>
-                <h3 {...cmsAttrs(p.cmsRef, "title")}>{p.title}</h3>
+                <h3 {...cmsAttrs(p.cmsRef, "title")}>{stripHtml(p.title)}</h3>
                 <p {...cmsAttrs(p.cmsRef, "excerpt")}>{p.excerpt}</p>
               </div>
             </a>

@@ -59,3 +59,19 @@ export function richtextBlock(md: string): string {
   ensureFreshLinkLookup();
   return resolveCmsLinks(html, cmsLinkLookup);
 }
+
+/**
+ * Ren tekst ud af en titel til faneblad, deling og KORTLISTER.
+ *
+ * `posts.title` er et rich, inline-redigerbart felt (artiklens <h1> bærer
+ * data-cms-html), så en overskrift der er rettet på det live site er gemt som
+ * HTML: "Seletøjet, <em>ikke agenten</em>". Artiklen skal vise kursiven; et
+ * kort i en liste skal ikke vise taggene som tekst.
+ *
+ * Lå tidligere som en privat kopi i routes.tsx, hvor sections.tsx ikke kunne nå
+ * den — og derfor renderede forsidens kort titlen rå. Én kilde nu.
+ * No-op på en gammeldags ren titel.
+ */
+export function stripHtml(s: string): string {
+  return s.replace(/<[^>]+>/g, "");
+}
