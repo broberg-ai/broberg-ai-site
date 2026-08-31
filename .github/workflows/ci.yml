@@ -80,13 +80,33 @@ jobs:
       # Nu venter vi paa at /healthz svarer med PRAECIS denne commit.
       - name: Vent på at NETOP denne commit er live
         run: |
+          # TRE UDFALD, TRE BESKEDER. buddy's tilføjelse (intercom #24393), og
+          # den er rigtig: «feltet mangler» må ALDRIG læses som «passer ikke
+          # endnu, prøv igen» — så venter porten på en maskine der aldrig KAN
+          # svare, og timeout ligner et fejlet deploy i stedet for en for gammel
+          # app. To forskellige fejl skal have to forskellige beskeder.
+          #
+          # Men vi fejler ikke STRAKS på et manglende felt, som buddy foreslog:
+          # under selve udrulningen svarer den GAMLE maskine stadig, og på den
+          # allerførste deploy der indfører sha'en har den gamle per definition
+          # ikke feltet. Fejl-straks ville gøre netop dén deploy umulig.
+          # Vi venter derfor, men HUSKER hvad vi så, og siger det ved timeout.
+          sidst_set=""
+          saa_nogensinde_sha=0
           for i in $(seq 1 60); do
-            live=$(curl -fsS --max-time 10 https://broberg.ai/healthz | jq -r '.sha // empty' || true)
+            svar=$(curl -fsS --max-time 10 https://broberg.ai/healthz || true)
+            live=$(printf '%s' "$svar" | jq -r '.sha // empty' 2>/dev/null || true)
+            [ -n "$live" ] && saa_nogensinde_sha=1
             if [ "$live" = "${{ github.sha }}" ]; then echo "live: $live"; exit 0; fi
-            echo "  ($i/60) live=${live:-?} venter på ${{ github.sha }}"
+            sidst_set="${live:-<intet sha-felt>}"
+            echo "  ($i/60) live=$sidst_set — venter på ${{ github.sha }}"
             sleep 5
           done
-          echo "::error::Den nye udgave blev aldrig live — porten ville ellers måle den forrige."
+          if [ "$saa_nogensinde_sha" = "0" ]; then
+            echo "::error::/healthz svarede aldrig med et sha-felt. Appen er for gammel til at melde sin egen version — porten kan derfor ikke vide HVILKEN udgave den ville måle. Deployet kan sagtens være lykkedes; det er rapporteringen der mangler."
+          else
+            echo "::error::Den nye udgave blev aldrig live (sidst set: $sidst_set, ventede på ${{ github.sha }}). Porten ville ellers have målt den forrige udgave."
+          fi
           exit 1
       # A.1 — content-scan (side-niveau): AL synlig tekst i <main> skal ligge i et
       # [data-cms-field]. 0 gaps krævet. Fanger tekst en besøgende faktisk ser som
