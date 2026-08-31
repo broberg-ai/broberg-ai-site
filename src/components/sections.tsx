@@ -294,6 +294,11 @@ export function Insights({ data, cmsRef, fields }: { data: InsightsData; cmsRef?
             </a>
           ))}
         </div>
+        {data.allLink ? (
+          <div style="margin-top:28px;text-align:center">
+            <CtaButton cta={data.allLink} />
+          </div>
+        ) : null}
       </div>
     </section>
   );

@@ -23,6 +23,7 @@ import {
   renderSolutionDetail,
   renderThanks,
   renderSiteIndex,
+  renderAllNews,
   renderAdmin,
   renderAdminChat,
 } from "@/routes.tsx";
@@ -239,6 +240,8 @@ app.get("/en/thanks", async () => html(await renderThanks("en")));
 
 // Site index (Indeks) — human sitemap linking to every page. Literal, so it
 // MUST precede the dynamic /:slug + /en/:slug catch-alls below.
+app.get("/nyheder", async () => html(await renderAllNews("da")));
+app.get("/en/news", async () => html(await renderAllNews("en")));
 app.get("/indeks", async () => html(await renderSiteIndex("da")));
 app.get("/en/index", async () => html(await renderSiteIndex("en")));
 

@@ -121,6 +121,8 @@ export interface InsightsData {
   headingHtml: string;
   lead: string;
   posts: PostCard[];
+  /** Valgfrit "se alle"-link under kortene — samme Cta som CasesData bruger. */
+  allLink?: Cta;
 }
 
 export interface AboutData {
@@ -186,4 +188,17 @@ export interface PageModel {
   title: string;
   description: string;
   sections: SectionData[];
+}
+
+/** Én række på den samlede nyhedsliste (/nyheder, /en/news). */
+export interface NewsListItem {
+  slug: string;
+  title: string;
+  excerpt: string;
+  /** ISO-dato fra cms. Kan være tom — så vises ingen dato, og rækken bliver. */
+  date: string;
+  readTime: string;
+  category: string;
+  categoryLabel: string;
+  href: string;
 }

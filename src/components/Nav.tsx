@@ -40,6 +40,8 @@ const COPY = {
     bagOm: "Bag om",
     bagOmSub: "Kig bag motoren i universet",
     casesSub: "Kundeløsninger i drift",
+    allNews: "Alle nyheder",
+    allNewsSub: "Alt vi har skrevet, nyeste først",
     platform: "Platform",
     platformSub: "Redigér, chat og byg — direkte på sitet",
     om: "Om",
@@ -69,6 +71,8 @@ const COPY = {
     bagOm: "Behind the scenes",
     bagOmSub: "A look behind the universe's engine",
     casesSub: "Customer solutions in production",
+    allNews: "All news",
+    allNewsSub: "Everything we have written, newest first",
     platform: "Platform",
     platformSub: "Edit, chat and build — right on the site",
     om: "About",
@@ -210,6 +214,10 @@ export function Nav({
               <a href={withLocale(locale, "/cases")} data-testid="dd-cases">
                 <b {...g("cases")}>{t.cases}</b>
                 <span {...g("casesSub")}>{t.casesSub}</span>
+              </a>
+              <a href={withLocale(locale, locale === "en" ? "/news" : "/nyheder")} data-testid="dd-all-news">
+                <b {...g("allNews")}>{t.allNews}</b>
+                <span {...g("allNewsSub")}>{t.allNewsSub}</span>
               </a>
             </div>
           </div>

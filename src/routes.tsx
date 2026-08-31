@@ -30,6 +30,7 @@ import {
   loadLanding,
   loadLatestNewsPerCategory,
   loadRandomNews,
+  loadAllNews,
   loadFooter,
   loadGlobals,
 } from "@/content/compose.ts";
@@ -409,6 +410,12 @@ export async function renderHome(locale: Locale): Promise<string> {
               "Weekly notes on AI-native development and automation — for builders, product managers and the curious.",
             ),
             posts: randomNews,
+            allLink: {
+              label: isEn ? "Read more news" : "Læs flere nyheder",
+              href: withLocale(locale, isEn ? "/news" : "/nyheder"),
+              testid: "insights-all-news",
+              ghost: true,
+            },
           }}
           cmsRef={landingRef}
           fields={{ eyebrow: "insightsEyebrow", heading: "insightsHeadingHtml", lead: "insightsLead" }}
@@ -999,6 +1006,7 @@ export async function siteIndexGroups(
     { label: isEn ? "How we build it" : "Sådan bygger vi det", href: isEn ? "/en/universe" : "/universet" },
     { label: isEn ? "Solutions" : "Løsninger", href: withLocale(locale, `/${seg}`) },
     { label: isEn ? "Flagships" : "Flagskibe", href: withLocale(locale, `/${fseg}`) },
+    { label: isEn ? "All news" : "Alle nyheder", href: withLocale(locale, isEn ? "/news" : "/nyheder") },
     { label: "Tags", href: withLocale(locale, "/tags") },
     { label: isEn ? "Thank you" : "Tak", href: withLocale(locale, isEn ? "/thanks" : "/tak") },
   ];
@@ -1079,6 +1087,65 @@ export async function renderSiteIndex(locale: Locale): Promise<string> {
       locale,
       canonical: withLocale(locale, isEn ? "/index" : "/indeks"),
       altHref: withLocale(isEn ? "da" : "en", isEn ? "/indeks" : "/index"),
+    },
+  );
+}
+
+/**
+ * F004 — alle nyheder, nyeste først.
+ *
+ * Forsidens tre kort er TILFÆLDIGE med vilje (loadRandomNews blander ved hver
+ * reload), så der fandtes ingen vej til «hvad har de skrevet for nylig». Denne
+ * side er den vej. Kategorisiderne bliver: de svarer på et andet spørgsmål.
+ *
+ * Ingen paginering — 38 poster i alt. En paginering uden nok indhold er en
+ * kontrol der kun kan gøre siden langsommere at bruge.
+ */
+export async function renderAllNews(locale: Locale): Promise<string> {
+  const isEn = locale === "en";
+  const items = await loadAllNews(locale);
+  const fmtDate = (iso: string) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString(isEn ? "en-GB" : "da-DK", { year: "numeric", month: "long", day: "numeric" });
+  };
+  return await page(
+    <section>
+      <div class="wrap reveal">
+        <div class="sec-head">
+          <div class="eyebrow">{isEn ? "News" : "Nyheder"}</div>
+          <h2>{isEn ? "Everything we have written" : "Alt hvad vi har skrevet"}</h2>
+          <div class="divider" />
+          <p class="lead">
+            {isEn
+              ? "Every article and note from the engine room, newest first."
+              : "Hver artikel og hvert nedslag fra maskinrummet, nyeste først."}
+          </p>
+        </div>
+        <div class="newslist" data-testid="allnews-list">
+          {items.map((n) => (
+            <a class="newsrow" key={n.slug} href={n.href} data-testid={`allnews-${n.slug}`}>
+              <div class="newsmeta">
+                {fmtDate(n.date) ? <time datetime={n.date}>{fmtDate(n.date)}</time> : null}
+                <span class="nyt">{n.categoryLabel}</span>
+                {n.readTime ? <span class="newsread">{n.readTime}</span> : null}
+              </div>
+              <h3>{n.title}</h3>
+              <p>{n.excerpt}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>,
+    {
+      title: isEn ? "All news — broberg.ai" : "Alle nyheder — broberg.ai",
+      description: isEn
+        ? "Every article from broberg.ai, newest first."
+        : "Alle artikler fra broberg.ai, nyeste først.",
+      locale,
+      canonical: withLocale(locale, isEn ? "/news" : "/nyheder"),
+      altHref: withLocale(isEn ? "da" : "en", isEn ? "/nyheder" : "/news"),
     },
   );
 }

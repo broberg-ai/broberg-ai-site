@@ -22,6 +22,7 @@ import type {
   DiagramNode,
   Stat,
   PostCard,
+  NewsListItem,
   FooterData,
   TechTickerItem,
   CmsRef,
@@ -584,6 +585,39 @@ export async function loadCategoryPosts(locale: Locale, category: string): Promi
 // re-shuffled on every reload — this is SSR'd fresh per request already, so
 // a plain Math.random() pick at render time is enough, no client JS needed).
 // Excludes "cases" — those are real named customers, not "nyheder".
+/**
+ * Alle nyheder for et sprog, nyeste først — kilden bag /nyheder og /en/news.
+ *
+ * `cases` er ude med SAMME begrundelse som loadRandomNews bruger: det er
+ * rigtige navngivne kunder, ikke nyheder. Det er ikke en detalje — bruger
+ * listen en anden regel end teaseren på forsiden, siger de to flader
+ * forskellige ting om hvad en nyhed ER, og forskellen er der ingen der opdager.
+ *
+ * Sorteringen er på `date` faldende, samme som loadCategoryPosts. Poster uden
+ * dato falder bagest frem for at ryge ud: en manglende dato er en fejl i
+ * indholdet, ikke et signal om at artiklen ikke findes.
+ */
+export async function loadAllNews(locale: Locale): Promise<NewsListItem[]> {
+  const posts = forLocale(await list("posts"), locale).filter((p) => dataOf(p).category !== "cases");
+  const sorted = [...posts].sort((a, b) => String(dataOf(b).date ?? "").localeCompare(String(dataOf(a).date ?? "")));
+  return await Promise.all(
+    sorted.map(async (p) => {
+      const pd = dataOf(p);
+      const category = str(pd.category) || "indsigter";
+      return {
+        slug: String(p.slug),
+        title: str(pd.title),
+        excerpt: str(pd.excerpt),
+        date: str(pd.date),
+        readTime: str(pd.readTime),
+        category,
+        categoryLabel: await categoryLabel(category, locale),
+        href: withLocale(locale, `/${category}/${String(p.slug)}`),
+      };
+    }),
+  );
+}
+
 export async function loadRandomNews(locale: Locale, count: number): Promise<PostCard[]> {
   const posts = forLocale(await list("posts"), locale).filter((p) => dataOf(p).category !== "cases");
   const shuffled = [...posts];
