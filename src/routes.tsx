@@ -755,6 +755,25 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
   const backLabel = locale === "en" ? `All ${catLabel}` : `Alle ${catLabel}`;
   const twinLabel = twin?.locale === "en" ? "Read in English" : "Læs på dansk";
 
+  // Afslutningen på HVER artikel. Christian, 31/8: den skal stå på alle, ikke
+  // skrives ind i hver enkelt tekst — så er der ét sted at rette den, og en ny
+  // artikel har den fra fødslen uden at nogen husker det.
+  //
+  // ÉN rich HTML-globals-felt frem for tekst-stumper omkring hardkodede links:
+  // sætningerne løber IND i linkene ("[Flagskibene] er systemerne det består
+  // af"), og splittes de i separate felter, kan de to halvdele rettes hver for
+  // sig til noget der ikke hænger sammen. Samme mønster som heroHeadingHtml.
+  //
+  // Flagskibs-siden har forskelligt SLUG pr. sprog (/flagskibe vs /flagships),
+  // så withLocale rækker ikke — vejen vælges eksplicit.
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+  const outroHtml = g(
+    "postOutroHtml",
+    locale === "en"
+      ? 'The machinery in this piece isn\'t something we describe — it\'s what we build with every day. <a href="/en/flagships" data-testid="post-outro-flagships">The flagships</a> are the systems it is made of, and the components they share. That is what makes it possible to build very large, robust IT solutions in record time.<br><br>If you have a project, the shortest route is to <a href="/en#kontakt" data-testid="post-outro-contact">talk it through with Christian</a>.'
+      : 'Maskineriet her er ikke noget vi beskriver — det er det, vi bygger med hver dag. <a href="/flagskibe" data-testid="post-outro-flagships">Flagskibene</a> er systemerne det består af, og de komponenter de deler. Det er dét, der gør det muligt at bygge meget store og robuste IT-løsninger på rekordtid.<br><br>Har I et projekt, er den korteste vej at <a href="/#kontakt" data-testid="post-outro-contact">tale det igennem med Christian</a>.',
+  );
+
   return await page(
     <article class="post">
       <div class="wrap reveal">
@@ -798,6 +817,12 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
         {str(d.attribution) ? (
           <p class="post-attr" {...cmsRichAttrs(postRef, "attribution")} dangerouslySetInnerHTML={{ __html: richtextInline(str(d.attribution)) }} />
         ) : null}
+        <aside class="post-outro" data-testid="post-outro">
+          <h2 {...cmsAttrs(globalsRef, "postOutroHeading")}>
+            {g("postOutroHeading", locale === "en" ? "Read on" : "Læs videre")}
+          </h2>
+          <p {...cmsHtmlAttrs(globalsRef, "postOutroHtml")} dangerouslySetInnerHTML={{ __html: outroHtml }} />
+        </aside>
         <div class="cta-row" style="margin-top:36px">
           {twin ? (
             <a

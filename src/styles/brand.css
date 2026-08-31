@@ -2298,3 +2298,33 @@ a.pill.taglink:active {
     display: none;
   }
 }
+
+/* Afslutningen på hver artikel (routes.tsx renderPost). Sat visuelt AF teksten
+   frem for at ligne endnu et afsnit: den er husets stemme, ikke artiklens, og
+   en læser skal kunne se hvor artiklen holder op. */
+.post-outro {
+  display: block;
+  margin-top: 40px;
+  padding: 24px 26px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+}
+.post-outro h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  line-height: 1.3;
+}
+.post-outro p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.post-outro a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.post-outro a:hover {
+  text-decoration-thickness: 2px;
+}
