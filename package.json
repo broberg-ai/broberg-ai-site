@@ -13,7 +13,8 @@
     "gate:text": "cms check-text --dir src --allowlist .cms-check-text-allowlist",
     "gate:testids": "cms check-testids --dir src --baseline .cms-testid-baseline",
     "gate:editable": "bun scripts/gate-editable.mjs",
-    "gate:coverage": "bun scripts/gate-coverage.mjs"
+    "gate:coverage": "bun scripts/gate-coverage.mjs",
+    "gate:cms-text": "bun scripts/gate-cms-text.mjs"
   },
   "dependencies": {
     "@broberg/cms-chat-client": "^0.4.16",
