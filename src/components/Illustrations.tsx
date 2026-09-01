@@ -706,6 +706,50 @@ const chatgptAnnoncer = wrap(
   </g>,
 );
 
+// Ambient + Web Clipper: to tragte ind til samme hukommelse. Oeverst et vindue
+// med en GROEN lampe der lyser roligt — den betoed kun at appen koerte, ikke at
+// noget naaede frem; ORANGE ring markerer bruddet paa vejen, som blev fundet og
+// lukket. Nederst clipperens fane, hvis vej altid har vaeret hel.
+// Nails: fangsten var aldrig problemet — leveringen var, og indikatoren loej.
+const AMBIENT_PATH = "M108 92 C 168 92, 196 118, 244 132";
+const CLIP_PATH = "M108 196 C 168 196, 196 166, 244 150";
+const trailAmbientClipper = wrap(
+  <g fill="none">
+    {/* ── kilde 1: Ambient — et vindue paa en Mac ── */}
+    <rect x="20" y="60" width="88" height="64" rx="8" stroke="var(--blue)" stroke-width="1.8" fill="color-mix(in srgb,var(--blue) 10%,transparent)" />
+    <line x1="20" y1="78" x2="108" y2="78" stroke="var(--blue)" stroke-width="1.2" opacity=".55" />
+    {/* den groenne lampe — lyser roligt uanset om noget kommer frem */}
+    <circle class="illu-glow" cx="31" cy="69" r="3.6" fill="#2ecc71" />
+    {/* genkendt skaermtekst, on-device */}
+    {[92, 101, 110].map((y, i) => (
+      <line key={i} x1="31" y1={y} x2={i === 2 ? 74 : 96} y2={y} stroke="var(--blue)" stroke-width="2" stroke-linecap="round" opacity=".5" />
+    ))}
+
+    {/* ── kilde 2: Web Clipper — en browserfane ── */}
+    <path d="M20 178 h30 l8 -12 h50 v58 h-88 z" stroke="var(--blue)" stroke-width="1.8" fill="color-mix(in srgb,var(--blue) 10%,transparent)" stroke-linejoin="round" />
+    {[196, 205, 214].map((y, i) => (
+      <line key={i} x1="31" y1={y} x2={i === 1 ? 96 : 78} y2={y} stroke="var(--blue)" stroke-width="2" stroke-linecap="round" opacity=".5" />
+    ))}
+
+    {/* ── vejene ind ── */}
+    <path class="illu-flow" d={AMBIENT_PATH} stroke="var(--blue)" stroke-width="2" stroke-dasharray="7 7" stroke-linecap="round" />
+    <path class="illu-flow" d={CLIP_PATH} stroke="var(--blue)" stroke-width="2" stroke-dasharray="7 7" stroke-linecap="round" />
+
+    {/* bruddet der blev fundet — ét orange element, nu gennemstroemmet */}
+    <circle cx="176" cy="105" r="11" stroke="#F3522C" stroke-width="2.4" fill="rgba(243,82,44,.16)" />
+
+    {/* ── hukommelsen: tre lag der modtager ── */}
+    {[0, 1, 2].map((i) => (
+      <rect key={i} x="250" y={112 + i * 24} width="92" height="19" rx="5"
+        stroke="var(--blue)" stroke-width="1.6"
+        fill="color-mix(in srgb,var(--blue) 14%,transparent)" />
+    ))}
+    {[0, 1, 2].map((i) => (
+      <circle class="node" key={`n${i}`} cx="262" cy={121.5 + i * 24} r="3.4" fill="var(--blue-light)" style={`animation-delay:${i * 0.5}s`} />
+    ))}
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -727,6 +771,8 @@ const REGISTRY: Record<string, JSX.Element> = {
   // English post slug — the piece carries no text, so it serves either.
   "chatgpt-annoncer": chatgptAnnoncer,
   "chatgpt-ads": chatgptAnnoncer,
+  "trail-ambient-og-web-clipper": trailAmbientClipper,
+  "trail-ambient-and-web-clipper": trailAmbientClipper,
 };
 
 export function hasIllustration(k: string): boolean {
