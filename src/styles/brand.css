@@ -1712,6 +1712,22 @@ footer {
   font-size: 15.5px;
   line-height: 1.78;
 }
+
+/* Der var INGEN billed-regel i brødteksten, så et billede renderede i sin
+   naturlige størrelse. Aidan er en 1024×1024-figur og fyldte hele skærmen. */
+.richtext img {
+  max-width: 100%;
+  height: auto;
+}
+/* En SVG i brødteksten er en FIGUR, ikke et skærmbillede. Skærmbillederne
+   (png/webp) skal blive ved med at fylde spalten — det er hele deres pointe —
+   mens en tegnet figur skal have en menneskelig størrelse. Målt på den levende
+   side inden reglen blev sendt: 760×760 px før, 300×300 efter. */
+.richtext img[src$=".svg"] {
+  max-width: 300px;
+  display: block;
+  margin: 2.2rem auto;
+}
 .richtext h2,
 .richtext h3,
 .richtext h4 {

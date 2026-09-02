@@ -84,6 +84,27 @@ const logos: Record<string, JSX.Element> = {
     </svg>
   ),
   // Hosting / Drift — server-lag med status-prikker (altid oppe). Sky accent.
+  /* Lens — a viewfinder with a tick inside: framed, and found good. Corner
+     brackets rather than a ring, so it cannot be confused with trail's mark at
+     24px; rose is unused elsewhere in the fleet. */
+  lens: (
+    <svg viewBox="0 0 32 32" width="24" height="24">
+      <g fill="none" stroke="#fb7185" stroke-width="1.5" opacity="0.9" stroke-linecap="round">
+        <path d="M6 11V8a2 2 0 0 1 2-2h3" />
+        <path d="M21 6h3a2 2 0 0 1 2 2v3" />
+        <path d="M26 21v3a2 2 0 0 1-2 2h-3" />
+        <path d="M11 26H8a2 2 0 0 1-2-2v-3" />
+      </g>
+      <path
+        d="M11.5 16.4l3.1 3.1 6-6.6"
+        fill="none"
+        stroke="#fb7185"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  ),
   hosting: (
     <svg viewBox="0 0 32 32" width="24" height="24">
       <g fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.9">
