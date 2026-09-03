@@ -1728,6 +1728,56 @@ footer {
   display: block;
   margin: 2.2rem auto;
 }
+
+/* Figur-boks: tekst til venstre, figur til højre, stramt.
+   Én klasse brugt begge steder i Aidan-artiklen (manchetten i toppen og
+   P.S.'et om Airina), så de to ikke kan skride fra hinanden.
+   Selektoren er .richtext .fig-box img for at slå reglen ovenfor, der ellers
+   centrerer hver SVG med 2,2rem luft over og under — præcis den luft boksen
+   findes for at fjerne. */
+.richtext .fig-box {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 26px 0;
+  padding: 18px 22px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: var(--card);
+}
+.richtext .fig-box > div {
+  flex: 1;
+  min-width: 0;
+}
+.richtext .fig-box p:first-child {
+  margin-top: 0;
+}
+.richtext .fig-box p:last-child {
+  margin-bottom: 0;
+}
+.richtext .fig-box img,
+.richtext .fig-box img[src$=".svg"] {
+  width: 140px;
+  max-width: 140px;
+  margin: 0;
+  flex-shrink: 0;
+  display: block;
+}
+/* Under ~560px er der ikke plads til to spor. column-reverse lægger figuren
+   ØVERST — den introducerer teksten, den er ikke en fodnote til den. */
+@media (max-width: 560px) {
+  .richtext .fig-box {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+  }
+  .richtext .fig-box img,
+  .richtext .fig-box img[src$=".svg"] {
+    width: 112px;
+    max-width: 112px;
+  }
+}
 .richtext h2,
 .richtext h3,
 .richtext h4 {
