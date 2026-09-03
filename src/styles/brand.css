@@ -1772,11 +1772,8 @@ footer {
 .richtext .fig-box video {
   display: block;
 }
-/* Klippet har sin egen lyse baggrund. Runde hjørner gør det kvadrat til en
-   bevidst portræt-flise frem for et billede der ikke passer til kortet. */
-.richtext .fig-box video {
-  border-radius: 12px;
-}
+/* Ingen runde hjørner: klippene er nu gennemsigtige, så der er ingen kant at
+   maskere. Flisen fandtes kun fordi kildeklippet bar en cremet baggrund. */
 /* Stillbilledet er RESERVEN, ikke standarden: skjult mens videoen kører, vist
    når den ikke må. */
 .richtext .fig-box .fig-still {
