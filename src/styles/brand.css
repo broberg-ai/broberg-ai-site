@@ -1794,6 +1794,39 @@ footer {
   display: none;
 }
 
+/* KNAPPEN OM KLIPPENE. Figuren står stille indtil nogen klikker; så kører den
+   to gange og vender tilbage. Det er en RIGTIG knap frem for et klikbart
+   billede, så tastatur og skærmlæser får den gratis — og fordi et element man
+   kan aktivere skal se ud som om man kan.
+   Ingen autoplay betyder samtidig at reduced-motion er opfyldt af DESIGNET:
+   intet bevæger sig før læseren selv beder om det. */
+.richtext .fig-box .fig-play {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 0;
+  flex-shrink: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.richtext .fig-box .fig-play:hover {
+  transform: scale(1.04);
+}
+.richtext .fig-box .fig-play:active {
+  transform: scale(0.98);
+}
+.richtext .fig-box .fig-play:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+/* Mens den kører: ingen hover-vækst, så figuren ikke hopper under afspilning. */
+.richtext .fig-box .fig-play[data-fig-playing] {
+  transform: none;
+  cursor: default;
+}
+
 /* Stillbilledet er RESERVEN, ikke standarden: skjult mens videoen kører, vist
    når den ikke må. */
 .richtext .fig-box .fig-still {
@@ -2004,13 +2037,14 @@ footer {
     opacity: 1;
     transform: none;
   }
-  /* En auto-afspillende video er også bevægelse. CSS kan ikke standse
-     afspilningen, så figuren byttes til det stillestående mærke. BEGGE tema-
-     klip skjules — en regel der kun ramte det ene ville lade det andet køre
-     videre for netop den læser der har bedt om ro. */
-  .richtext .fig-box video,
-  [data-theme="light"] .richtext .fig-box .fig-lys {
-    display: none;
+  /* Figur-klippene står stille af sig selv nu — de kører kun på et klik, og
+     et klik ER læserens eget valg. Derfor skjules de IKKE her: det ville
+     fjerne en mulighed frem for at fjerne uønsket bevægelse. Kun den
+     automatiske forstørrelse ved hover slås fra. */
+  .richtext .fig-box .fig-play,
+  .richtext .fig-box .fig-play:hover,
+  .richtext .fig-box .fig-play:active {
+    transform: none;
   }
   .richtext .fig-box .fig-still {
     display: block;

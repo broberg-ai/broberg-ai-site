@@ -498,6 +498,73 @@ function contactForm() {
 
 // Run each feature independently so a page-specific element missing on a subpage
 // can never abort the shared nav/dropdown wiring (cms #116). Nav goes first.
+/**
+ * Figur-klippene: stillbillede indtil man klikker, så to gennemløb, så tilbage.
+ *
+ * Christian, 4/9: «start med still billederne og klikker man på dem så kører
+ * videoen 2 gang og så tilbage til still».
+ *
+ * DET LØSER OGSÅ ET PROBLEM VI HAVDE. Før kørte klippene af sig selv i løkke,
+ * og så måtte vi bytte dem ud med et stillbillede for læsere der har bedt om
+ * mindre bevægelse. Nu bevæger intet sig før nogen SELV beder om det — så
+ * reduced-motion-reglen er opfyldt af designet frem for af en undtagelse.
+ *
+ * `poster` ER stillbilledet, og det er videoens EGET første billede frem for
+ * mærkets SVG: klikker man, må udseendet ikke hoppe. load() bringer posteren
+ * tilbage bagefter; pause() alene ville efterlade det SIDSTE billede stående.
+ */
+function figurKlip() {
+  document.querySelectorAll<HTMLElement>("[data-fig-play]").forEach((knap) => {
+    // Begge temaers klip ligger i DOM'en; kun det ene er synligt.
+    const synlig = () =>
+      Array.from(knap.querySelectorAll<HTMLVideoElement>("video")).find(
+        (v) => v.offsetParent !== null,
+      ) ?? null;
+
+    let koerer = false;
+
+    const spil = () => {
+      const v = synlig();
+      if (!v || koerer) return;
+      koerer = true;
+      knap.dataset.figPlaying = "1";
+      let gennemloeb = 0;
+
+      const slut = () => {
+        gennemloeb += 1;
+        if (gennemloeb < 2) {
+          v.currentTime = 0;
+          void v.play();
+          return;
+        }
+        v.removeEventListener("ended", slut);
+        koerer = false;
+        delete knap.dataset.figPlaying;
+        // load() frem for pause(): det er dét der sætter posteren tilbage.
+        v.currentTime = 0;
+        v.load();
+      };
+
+      v.addEventListener("ended", slut);
+      v.currentTime = 0;
+      void v.play().catch(() => {
+        // Afviser browseren afspilningen, må knappen ikke stå og se travl ud.
+        v.removeEventListener("ended", slut);
+        koerer = false;
+        delete knap.dataset.figPlaying;
+      });
+    };
+
+    knap.addEventListener("click", spil);
+    knap.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        spil();
+      }
+    });
+  });
+}
+
 function safe(fn: () => void) {
   try {
     fn();
@@ -511,6 +578,7 @@ safe(countUps);
 safe(heroSlides);
 safe(reducedMotion);
 safe(themeToggle);
+safe(figurKlip);
 safe(mountCmdk);
 safe(faqAccordion);
 safe(mountTurnstile);
