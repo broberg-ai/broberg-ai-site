@@ -1774,6 +1774,26 @@ footer {
 }
 /* Ingen runde hjørner: klippene er nu gennemsigtige, så der er ingen kant at
    maskere. Flisen fandtes kun fordi kildeklippet bar en cremet baggrund. */
+/* TO KLIP PR. FIGUR, ÉT PR. TEMA — og det er en bevidst tilbagetrækning fra
+   gennemsigtighed. Alfa i video kræver to formater (VP9-alfa til Chrome, HEVC-alfa
+   til Safari), og hvilken af dem en browser vælger afgør om mærket er
+   gennemsigtigt eller står i en kasse. Det holdt ikke: Christian så det fejle.
+   Baggrunden er derfor MÅLT på det levende kort og bagt ind i klippet —
+   #2C3037 i mørkt, #ffffff i lyst — så der ikke længere er en codec-egenskab
+   at være afhængig af. Kanten kan heller ikke lyse, fordi den blandes med
+   præcis den farve den kommer til at stå på.
+   Rækkefølgen følger CSS'ens egen: mørk er standard (:root), lys er
+   overskrivningen. Mangler data-theme, får man samme tema som resten af siden. */
+.richtext .fig-box .fig-lys {
+  display: none;
+}
+[data-theme="light"] .richtext .fig-box .fig-lys {
+  display: block;
+}
+[data-theme="light"] .richtext .fig-box .fig-moerk {
+  display: none;
+}
+
 /* Stillbilledet er RESERVEN, ikke standarden: skjult mens videoen kører, vist
    når den ikke må. */
 .richtext .fig-box .fig-still {
@@ -1985,8 +2005,11 @@ footer {
     transform: none;
   }
   /* En auto-afspillende video er også bevægelse. CSS kan ikke standse
-     afspilningen, så figuren byttes til det stillestående mærke. */
-  .richtext .fig-box video {
+     afspilningen, så figuren byttes til det stillestående mærke. BEGGE tema-
+     klip skjules — en regel der kun ramte det ene ville lade det andet køre
+     videre for netop den læser der har bedt om ro. */
+  .richtext .fig-box video,
+  [data-theme="light"] .richtext .fig-box .fig-lys {
     display: none;
   }
   .richtext .fig-box .fig-still {
