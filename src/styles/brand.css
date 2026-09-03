@@ -1755,6 +1755,11 @@ footer {
 .richtext .fig-box p:last-child {
   margin-bottom: 0;
 }
+/* STØRRELSE HER, SYNLIGHED NEDENFOR — og det er ikke en smagssag.
+   Første udgave satte display:block i denne regel, og `.fig-box img[src$=".svg"]`
+   (2 klasser + attribut) slår `.fig-box .fig-still` (3 klasser) på
+   specificitet. Reserven kunne derfor ikke skjules, og BEGGE figurer stod
+   side om side i boksen. Fundet på et skærmbillede, ikke i koden. */
 .richtext .fig-box img,
 .richtext .fig-box img[src$=".svg"],
 .richtext .fig-box video {
@@ -1763,6 +1768,8 @@ footer {
   height: auto;
   margin: 0;
   flex-shrink: 0;
+}
+.richtext .fig-box video {
   display: block;
 }
 /* Klippet har sin egen lyse baggrund. Runde hjørner gør det kvadrat til en
