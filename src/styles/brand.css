@@ -1756,12 +1756,24 @@ footer {
   margin-bottom: 0;
 }
 .richtext .fig-box img,
-.richtext .fig-box img[src$=".svg"] {
+.richtext .fig-box img[src$=".svg"],
+.richtext .fig-box video {
   width: 140px;
   max-width: 140px;
+  height: auto;
   margin: 0;
   flex-shrink: 0;
   display: block;
+}
+/* Klippet har sin egen lyse baggrund. Runde hjørner gør det kvadrat til en
+   bevidst portræt-flise frem for et billede der ikke passer til kortet. */
+.richtext .fig-box video {
+  border-radius: 12px;
+}
+/* Stillbilledet er RESERVEN, ikke standarden: skjult mens videoen kører, vist
+   når den ikke må. */
+.richtext .fig-box .fig-still {
+  display: none;
 }
 /* Under ~560px er der ikke plads til to spor. column-reverse lægger figuren
    ØVERST — den introducerer teksten, den er ikke en fodnote til den. */
@@ -1773,7 +1785,8 @@ footer {
     padding: 16px 18px;
   }
   .richtext .fig-box img,
-  .richtext .fig-box img[src$=".svg"] {
+  .richtext .fig-box img[src$=".svg"],
+  .richtext .fig-box video {
     width: 112px;
     max-width: 112px;
   }
@@ -1966,6 +1979,14 @@ footer {
   .reveal {
     opacity: 1;
     transform: none;
+  }
+  /* En auto-afspillende video er også bevægelse. CSS kan ikke standse
+     afspilningen, så figuren byttes til det stillestående mærke. */
+  .richtext .fig-box video {
+    display: none;
+  }
+  .richtext .fig-box .fig-still {
+    display: block;
   }
 }
 
