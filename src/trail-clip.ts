@@ -1,0 +1,86 @@
+/* Trail-klip — ÉN kilde til «side → markdown → KB» (F007).
+ *
+ * Deles af scripts/trail-sync.mjs (fuld re-sync af sitemappet) og
+ * src/trail-push.ts (det faste job: udgiv i CMS → siden pushes automatisk).
+ * To kopier af rensningen ville drive fra hinanden første gang én blev rettet.
+ */
+
+/** HTML → læsbar markdown-agtig tekst. Bevidst simpel: overskrifter, afsnit,
+ *  lister og links overlever; alt chrome (nav/footer/scripts/Aidan) ryger. */
+export function tilTekst(html: string): string {
+  let s = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<header[\s\S]*?<\/header>/gi, "")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, "")
+    .replace(/<nav[\s\S]*?<\/nav>/gi, "")
+    .replace(/<div id="aidan"[\s\S]*$/i, "");
+  const main = /<main[\s\S]*?<\/main>/i.exec(s);
+  if (main) s = main[0];
+  return s
+    .replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, "\n# $1\n")
+    .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, "\n## $1\n")
+    .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, "\n### $1\n")
+    .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, "\n- $1")
+    .replace(/<a [^>]*href="(\/[^"]*|https:\/\/[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "[$2]($1)")
+    .replace(/<(p|br|div|section|article|tr|ul|ol)[^>]*>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/** Side-URL → filnavn i KB'en (stabilt: samme side = samme navn). */
+export function trailFilnavn(url: string): string {
+  const p = new URL(url).pathname.replace(/\/$/, "") || "/forside";
+  return p.replace(/^\//, "").replace(/[^a-zA-Z0-9æøåÆØÅ-]+/g, "_") + ".md";
+}
+
+function auth(): { token: string; kb: string; tenant: string } | null {
+  const token = process.env.TRAIL_TOKEN;
+  const kb = process.env.TRAIL_KB;
+  if (!token || !kb) return null;
+  return { token, kb, tenant: process.env.TRAIL_TENANT ?? "broberg-ai" };
+}
+
+const API = () => process.env.TRAIL_API ?? "https://app.trailmem.com/api/v1";
+
+/** Har KB'en allerede et dokument for denne side? Bruges som dublet-spærre
+ *  indtil trails upsert-på-sourceUrl (deres F243.1) er live — derefter kan
+ *  spærren fjernes og et gen-push blive en opdatering. */
+export async function trailHarSide(sourceUrl: string): Promise<boolean> {
+  const a = auth();
+  if (!a) return false;
+  const res = await fetch(
+    `${API()}/knowledge-bases/${encodeURIComponent(a.kb)}/search?q=${encodeURIComponent(`Kilde: ${sourceUrl}`)}&limit=5`,
+    { headers: { authorization: `Bearer ${a.token}`, "x-trail-tenant": a.tenant } },
+  );
+  if (!res.ok) return false;
+  const data = (await res.json()) as { documents?: Array<{ content?: string; highlight?: string }> };
+  return (data.documents ?? []).some((d) =>
+    String(d.content ?? d.highlight ?? "").includes(`Kilde: ${sourceUrl}`),
+  );
+}
+
+/** Upload én side (markdown) til KB'en. Kaster ved fejl — kalderen afgør om
+ *  det er et log-og-videre (det faste job) eller en rød kørsel (sync-scriptet). */
+export async function trailUploadSide(md: string, sourceUrl: string): Promise<void> {
+  const a = auth();
+  if (!a) throw new Error("TRAIL_TOKEN/TRAIL_KB er ikke sat");
+  const form = new FormData();
+  form.set("file", new File([md], trailFilnavn(sourceUrl), { type: "text/markdown" }));
+  form.set("path", "/broberg-ai-site");
+  form.set("metadata", JSON.stringify({ connector: "broberg-ai-site-sync", sourceUrl }));
+  const res = await fetch(`${API()}/knowledge-bases/${encodeURIComponent(a.kb)}/documents/upload`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${a.token}`, "x-trail-tenant": a.tenant },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`trail-upload ${res.status}: ${(await res.text()).slice(0, 200)}`);
+}

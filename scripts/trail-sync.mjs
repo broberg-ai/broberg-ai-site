@@ -22,33 +22,7 @@ if (fase !== "collect" && fase !== "push") {
   process.exit(1);
 }
 
-/** HTML → læsbar markdown-agtig tekst. Bevidst simpel: overskrifter, afsnit,
- *  lister og links overlever; alt chrome (nav/footer/scripts/Aidan) ryger. */
-function tilTekst(html) {
-  let s = html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<header[\s\S]*?<\/header>/gi, "")
-    .replace(/<footer[\s\S]*?<\/footer>/gi, "")
-    .replace(/<nav[\s\S]*?<\/nav>/gi, "")
-    .replace(/<div id="aidan"[\s\S]*$/i, "");
-  const main = /<main[\s\S]*?<\/main>/i.exec(s);
-  if (main) s = main[0];
-  s = s
-    .replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, "\n# $1\n")
-    .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, "\n## $1\n")
-    .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, "\n### $1\n")
-    .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, "\n- $1")
-    .replace(/<a [^>]*href="(\/[^"]*|https:\/\/[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "[$2]($1)")
-    .replace(/<(p|br|div|section|article|tr|ul|ol)[^>]*>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&nbsp;/g, " ")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-  return s;
-}
+import { tilTekst } from "../src/trail-clip.ts";
 
 function filnavn(url) {
   const p = new URL(url).pathname.replace(/\/$/, "") || "/forside";

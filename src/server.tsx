@@ -7,6 +7,7 @@ import { serveStatic } from "hono/bun";
 import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
 import { handleAidanChat, handleAidanHealth } from "@/aidan.ts";
+import { handleTrailIngest } from "@/trail-push.ts";
 import { handleAdminChat, handleAdminChatApi } from "@/chat-relay.ts";
 import { ensureRoot } from "@/content/store.ts";
 import { runBackfill, storeIsEmpty } from "@/content/backfill.ts";
@@ -103,6 +104,10 @@ app.post("/icd", handleIcd);
 // stores. Auth: the browser's editSession token is verified by delegation to
 // cms-admin; upstream uses a server-side admin token. See chat-relay.ts.
 // Aidan — besøgs-AI'ens offentlige chat (SSE) + health. Ship-dark uden nøgle.
+// F007.3 — Trail-ingest-webhook: CMS'ets F35-stage kalder hertil ved udgiv/ret
+// (registreret pr. site i CMS-admin → contentWebhooks). HMAC-verificeret.
+app.post("/api/trail-ingest", handleTrailIngest);
+
 app.post("/api/aidan/chat", handleAidanChat);
 app.get("/api/aidan/health", handleAidanHealth);
 
