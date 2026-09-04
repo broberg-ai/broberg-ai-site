@@ -18,6 +18,7 @@ import path from "node:path";
 import type { Context } from "hono";
 import { createMailerFromEnv, type Mailer } from "@broberg/mail";
 import { hentLyd, laesKonfigureret, LydFejl, type Persona } from "@/aidan-laes.ts";
+import { renderOplaesningsMail } from "@/aidan-mail-brev.ts";
 
 const LEADS_FIL = process.env.AIDAN_LEADS ?? "/data/aidan-leads.jsonl";
 
@@ -84,13 +85,16 @@ export async function handleAidanSendLyd(c: Context): Promise<Response> {
     const { audio, mimeType, titel } = await hentLyd(sti, persona);
     const en = sti === "/en" || sti.startsWith("/en/");
     const url = `https://broberg.ai${sti}`;
+    // Brevet er husets eksterne skabelon (mail-core-skallen — Christian 5/9),
+    // og afsender-NAVNET følger personaen; adressen er den verificerede.
+    const brev = renderOplaesningsMail({ titel, url, persona, en });
     const resultat = await mailer().send({
       to: email,
       bcc: "cb@webhouse.dk",
-      subject: en ? `Your reading: ${titel}` : `Din oplæsning: ${titel}`,
-      text: en
-        ? `Hi!\n\nHere is the reading you asked for on broberg.ai: "${titel}".\nThe audio file is attached — the article itself lives at ${url}\n\n— Aidan, AI guide at broberg.ai`
-        : `Hej!\n\nHer er oplæsningen du bad om på broberg.ai: «${titel}».\nLydfilen er vedhæftet — selve artiklen bor på ${url}\n\n— Aidan, AI-guide på broberg.ai`,
+      from: `${persona === "airina" ? "Airina" : "Aidan"} fra broberg.ai <aidan@broberg.ai>`,
+      subject: brev.subject,
+      html: brev.html,
+      text: brev.text,
       attachments: [
         {
           filename: `${sti.split("/").filter(Boolean).pop() ?? "oplaesning"}.mp3`,
