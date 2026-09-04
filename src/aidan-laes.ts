@@ -65,10 +65,30 @@ export function resetLaesForTest(client?: AiClient): void {
  *  engelske ord rigtigt. Nyt galt-udtalt ord = én række her. */
 const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" | "da" }> = [
   { word: "AI", alias: "A I", sprog: "alle" },
+  // Domæner og produktnavne — læses som NAVNE (Christians «Trail Mem»-regel).
   { word: "broberg.ai", alias: "broberg dot A I", sprog: "alle" },
+  { word: "trailmem.com", alias: "trail mem dot com", sprog: "alle" },
+  { word: "trailmem", alias: "trail mem", sprog: "alle" },
+  { word: "webhouse.app", alias: "web house dot app", sprog: "alle" },
+  { word: "xrt81.com", alias: "x r t 81 dot com", sprog: "alle" },
+  { word: "fdsundhed.dk", alias: "f d sundhed dot d k", sprog: "alle" },
+  { word: "sanneandersen.dk", alias: "sanne andersen dot d k", sprog: "alle" },
+  { word: "gbrain", alias: "G brain", sprog: "alle" },
   { word: "webhooks", alias: "web-hooks", sprog: "alle" },
   { word: "webhook", alias: "web-hook", sprog: "alle" },
+  // Bruttolisten fra sitets MÅLTE danske ordforråd (25 artikler, 5/9) + de
+  // bøjede låneord Christian fangede («stylet» → stylet på dansk). Aliaser er
+  // TALE-tekst — lydord bor fint dér uden at røre den skrevne tekst.
   { word: "native", ipa: "ˈneɪtɪv", sprog: "da" },
+  { word: "stylet", alias: "stajlet", sprog: "da" },
+  { word: "stylede", alias: "stajlede", sprog: "da" },
+  { word: "styling", alias: "stajling", sprog: "da" },
+  { word: "fine-tuning", alias: "fajn-tjuning", sprog: "da" },
+  { word: "workflows", ipa: "ˈwɜːkfloʊs", sprog: "da" },
+  { word: "workflow", ipa: "ˈwɜːkfloʊ", sprog: "da" },
+  { word: "engineering", ipa: "ˌɛndʒɪˈnɪərɪŋ", sprog: "da" },
+  { word: "agentic", ipa: "eɪˈdʒɛntɪk", sprog: "da" },
+  { word: "harness", ipa: "ˈhɑːnəs", sprog: "da" },
 ];
 export function udtaleFor(locale: Locale): Array<{ word: string; alias?: string; ipa?: string }> {
   return ORDBOG.filter((r) => r.sprog === "alle" || r.sprog === locale).map(({ word, alias, ipa }) => ({
@@ -95,6 +115,7 @@ export function tilTale(md: string): string {
     // «mindre end...»): HTML-tags når ALDRIG stemmen, uanset hvor de sniger
     // sig ind i et felt. Dataen rettes altid også — dette er nødbremsen.
     .replace(/<[^>]+>/g, "")
+    .replace(/\bwww\./gi, "") // «www.» siges aldrig — det talte domæne er navnet
     .replace(/^\[block:[a-z0-9-]+\]\s*$/gim, "")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/^#{1,4}\s+/gm, "")

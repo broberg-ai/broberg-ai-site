@@ -40,6 +40,17 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
     expect(ordbogNoegle("da")).toMatch(/^[0-9a-f]{8}$/);
     expect(ordbogNoegle("da")).not.toBe(ordbogNoegle("en")); // forskellige ordbøger → forskellige nøgler
   });
+  test("bruttolisten (5/9): domæner som navne, bøjede låneord, www. siges aldrig", () => {
+    expect(tilTale("Se www.trailmem.com her")).toBe("Se trailmem.com her");
+    const da = udtaleFor("da");
+    expect(da).toContainEqual({ word: "trailmem.com", alias: "trail mem dot com" });
+    expect(da).toContainEqual({ word: "stylet", alias: "stajlet" });
+    expect(da).toContainEqual({ word: "workflow", ipa: "ˈwɜːkfloʊ" });
+    // engelsk får domænerne men IKKE de danske bøjnings-lydord
+    const en = udtaleFor("en");
+    expect(en.find((r) => r.word === "stylet")).toBeUndefined();
+    expect(en).toContainEqual({ word: "trailmem", alias: "trail mem" });
+  });
   test("HTML-tags når ALDRIG stemmen — bæltet mod rå markup i felter (Christians fund 5/9)", () => {
     expect(tilTale("Grøn, <em>og alligevel i stykker</em>")).toBe("Grøn, og alligevel i stykker");
     expect(tilTale("tekst med <br> og <a href=\"/x\">link</a>")).toBe("tekst med og link");
