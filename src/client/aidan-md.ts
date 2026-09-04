@@ -55,6 +55,7 @@ function inline(t: string, knapBudget: { tilbage: number }): string {
 
 const PUNKT = /^\s*[-•]\s+/;
 const NUMMER = /^\s*\d+[.)]\s+/;
+const STREG = /^\s*[-–—_*]{3,}\s*$/; // modellens ---/___-skillelinjer
 
 /** Modelsvar → sikker HTML. Input er RÅ modeltekst; escaping sker her. */
 export function aidanTilHtml(raa: string): string {
@@ -78,9 +79,14 @@ export function aidanTilHtml(raa: string): string {
           const run: string[] = [];
           while (i < linjer.length && NUMMER.test(linjer[i])) run.push(linjer[i++].replace(NUMMER, ""));
           dele.push(`<ol>${run.map((l) => `<li>${inline(l, knapBudget)}</li>`).join("")}</ol>`);
+        } else if (STREG.test(linjer[i])) {
+          // «---» renderet som rå bindestreger lignede markdown (E2E-screenshot
+          // 4/9 aften) — nu en tynd skillelinje.
+          dele.push('<hr class="aidan-hr">');
+          i++;
         } else {
           const run: string[] = [];
-          while (i < linjer.length && !PUNKT.test(linjer[i]) && !NUMMER.test(linjer[i])) {
+          while (i < linjer.length && !PUNKT.test(linjer[i]) && !NUMMER.test(linjer[i]) && !STREG.test(linjer[i])) {
             // ### Overskrift → fremhævet linje (modellen skriver dem af sig selv)
             const h = /^#{1,4}\s+(.+)$/.exec(linjer[i]);
             run.push(h ? `<strong class="aidan-h">${inline(h[1], knapBudget)}</strong>` : inline(linjer[i], knapBudget));

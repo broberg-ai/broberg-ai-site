@@ -3127,6 +3127,11 @@ a.pill.taglink:active {
   display: none;
 }
 /* Svar-typografi — «sygt lækker», ikke markdown-agtig (Christian 4/9). */
+.aidan-msg .aidan-hr {
+  border: none;
+  border-top: 1px solid var(--card-border);
+  margin: 0.7em 0;
+}
 .aidan-msg ul,
 .aidan-msg ol {
   margin: 0.45em 0;

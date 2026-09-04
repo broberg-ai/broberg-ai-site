@@ -89,6 +89,17 @@ describe("handlings-knapper (Eir-mønstret)", () => {
   });
 });
 
+describe("skillelinjer (E2E-screenshot 4/9 aften)", () => {
+  test("--- på egen linje bliver en tynd <hr>, aldrig rå bindestreger", () => {
+    const html = aidanTilHtml("FLAGSKIBE\n---\n9. contracts");
+    expect(html).toContain('<hr class="aidan-hr">');
+    expect(html).not.toContain("---");
+  });
+  test("en tankestreg midt i en sætning er stadig bare tekst", () => {
+    expect(aidanTilHtml("cases — ét ad gangen")).not.toContain("<hr");
+  });
+});
+
 describe("fremad-tolerance — gamle faner må aldrig se maskineri", () => {
   test("et UKENDT fremtidigt token renderes som rent link uden præfiks", () => {
     const html = aidanTilHtml("Se her: [kort:Læs casen](/cases)");
