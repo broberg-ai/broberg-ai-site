@@ -134,3 +134,60 @@ describe("primeren", () => {
     expect(p).not.toContain("Du påstår ikke");
   });
 });
+
+describe("Trail-hjernen (lag 3b)", () => {
+  const realFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    delete process.env.TRAIL_TOKEN;
+    delete process.env.TRAIL_KB;
+  });
+
+  test("uden token/KB: intet opslag, og netværket RØRES ikke — ship-dark", async () => {
+    delete process.env.TRAIL_TOKEN;
+    // En kastende stub er ikke et bevis — catch'en i trailOpslag ville æde den
+    // og svaret ville stadig være "". Der TÆLLES i stedet: nul kald er kravet.
+    let kald = 0;
+    globalThis.fetch = (async () => {
+      kald++;
+      return new Response("{}", { status: 200 });
+    }) as unknown as typeof fetch;
+    const { trailOpslag } = await import("./aidan.ts");
+    expect(await trailOpslag("hvad er cardmem?")).toBe("");
+    expect(kald).toBe(0);
+  });
+
+  test("med træf: opslaget bærer titel, kilde-URL og instruks om at citere", async () => {
+    process.env.TRAIL_TOKEN = "trail_test";
+    process.env.TRAIL_KB = "broberg-ai";
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          documents: [
+            {
+              title: "Flagskibe — broberg.ai",
+              highlight: "De <mark>AI</mark>-native platforme",
+              content: "# Flagskibe\n\nKilde: https://broberg.ai/flagskibe\n\n…",
+            },
+          ],
+        }),
+        { status: 200 },
+      )) as unknown as typeof fetch;
+    const { trailOpslag } = await import("./aidan.ts");
+    const o = await trailOpslag("hvad er flagskibene?");
+    expect(o).toContain("OPSLAG I DIN VIDENSBASE");
+    expect(o).toContain("Flagskibe — broberg.ai");
+    expect(o).toContain("https://broberg.ai/flagskibe");
+    expect(o).not.toContain("<mark>"); // markeringstags må aldrig nå primeren
+  });
+
+  test("en fejlende eller langsom Trail vælter aldrig svaret", async () => {
+    process.env.TRAIL_TOKEN = "trail_test";
+    process.env.TRAIL_KB = "broberg-ai";
+    globalThis.fetch = (async () => {
+      throw new Error("nede");
+    }) as unknown as typeof fetch;
+    const { trailOpslag } = await import("./aidan.ts");
+    expect(await trailOpslag("hej")).toBe("");
+  });
+});

@@ -126,6 +126,51 @@ export async function aidanSystemPrompt(locale: Locale): Promise<string> {
   return `${kontrakt}\n\n=== DIN HISTORIE — hvem du er og hvor du kommer fra ===\n${historie}\n\n=== ${await sitekort(locale)}`;
 }
 
+
+// ── Trail-hjernen (spec §3) — KB'en «broberg.ai» hos app.trailmem.com.
+// Pr. BESKED slås brugerens spørgsmål op i vidensbasen, og de bedste træf
+// lægges i primeren med kilde-URL, så Aidan kan sige HVOR det står.
+// Ship-dark: uden TRAIL_TOKEN/TRAIL_KB springes opslaget over, og Aidan kører
+// videre på sitekortet alene — ingen død afhængighed i svar-vejen.
+const TRAIL_API = process.env.TRAIL_API ?? "https://app.trailmem.com/api/v1";
+
+export function trailConfigured(): boolean {
+  return Boolean(process.env.TRAIL_TOKEN && process.env.TRAIL_KB);
+}
+
+export async function trailOpslag(spoergsmaal: string): Promise<string> {
+  if (!trailConfigured()) return "";
+  try {
+    const ctl = new AbortController();
+    // En langsom vidensbase må aldrig stalle chatten — så hellere et svar
+    // uden opslag end en besøgende der kigger på tre prikker.
+    const timer = setTimeout(() => ctl.abort(), 2500);
+    const url = `${TRAIL_API}/knowledge-bases/${encodeURIComponent(process.env.TRAIL_KB!)}/search?q=${encodeURIComponent(spoergsmaal.slice(0, 200))}&limit=6`;
+    const res = await fetch(url, {
+      headers: {
+        authorization: `Bearer ${process.env.TRAIL_TOKEN}`,
+        "x-trail-tenant": process.env.TRAIL_TENANT ?? "broberg-ai",
+      },
+      signal: ctl.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) return "";
+    const data = (await res.json()) as { documents?: Array<{ title?: string; highlight?: string; content?: string }> };
+    const hits = (data.documents ?? []).slice(0, 6).map((d) => {
+      const tekst = String(d.highlight ?? d.content ?? "")
+        .replace(/<\/?mark>/g, "")
+        .replace(/\s+/g, " ")
+        .slice(0, 500);
+      const kilde = /Kilde: (\S+)/.exec(String(d.content ?? d.highlight ?? ""))?.[1] ?? "";
+      return `— ${d.title ?? "uden titel"}${kilde ? ` (${kilde})` : ""}: ${tekst}`;
+    });
+    if (!hits.length) return "";
+    return `OPSLAG I DIN VIDENSBASE (Trail «broberg.ai») for netop dette spørgsmål — citér herfra og link til kilden når du bruger et opslag:\n${hits.join("\n")}`;
+  } catch {
+    return ""; // opslag er en forstærkning, aldrig en forudsætning
+  }
+}
+
 // ── Ruterne ─────────────────────────────────────────────────────────────────
 
 const MAX_BESKED = 2000;
@@ -159,7 +204,9 @@ export async function handleAidanChat(c: Context): Promise<Response> {
     return c.json({ error: "no_user_message" }, 400);
   }
 
-  const system = await aidanSystemPrompt(locale);
+  const sidste = messages[messages.length - 1].content;
+  const [grund, opslag] = await Promise.all([aidanSystemPrompt(locale), trailOpslag(sidste)]);
+  const system = opslag ? `${grund}\n\n=== ${opslag}` : grund;
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
