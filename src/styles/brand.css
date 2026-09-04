@@ -2874,3 +2874,170 @@ a.pill.taglink:active {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
+
+/* ── F007.4: storskærm + fuldskærm + historik + velkommen-banner ── */
+/* Stor skærm: panelet vokser som Eirs — bredere og næsten fuld højde.
+   Højden er ALTID klemt til viewporten; et fixed panel der er lavere end
+   skærmen kan pr. konstruktion ikke kravle ud af den. */
+@media (min-width: 1100px) {
+  .aidan-panel {
+    width: 460px;
+    height: min(820px, calc(100dvh - 110px));
+  }
+}
+/* Fuldskærm — Eir-stil overlay, centreret, luft hele vejen rundt. */
+.aidan-panel.fuld {
+  left: 50%;
+  right: auto;
+  bottom: 24px;
+  transform: translateX(-50%);
+  width: min(900px, calc(100vw - 32px));
+  height: calc(100dvh - 48px);
+}
+.aidan-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--blue-glow);
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.82rem;
+  color: var(--light);
+}
+.aidan-banner[hidden] {
+  display: none;
+}
+.aidan-banner-knapper {
+  display: inline-flex;
+  gap: 8px;
+}
+.aidan-banner-primaer,
+.aidan-banner-sekundaer {
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.aidan-banner-primaer {
+  border: none;
+  background: var(--blue);
+  color: #04222f;
+}
+[data-theme="light"] .aidan-banner-primaer {
+  color: #fff;
+}
+.aidan-banner-primaer:hover {
+  background: var(--blue-light);
+}
+.aidan-banner-primaer:active,
+.aidan-banner-sekundaer:active {
+  transform: translateY(1px);
+}
+.aidan-banner-sekundaer {
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--light);
+}
+.aidan-banner-sekundaer:hover {
+  border-color: var(--blue);
+  color: var(--blue-light);
+}
+.aidan-historik {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.aidan-historik[hidden] {
+  display: none;
+}
+.aidan-historik-hoved {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 8px;
+  color: var(--light);
+}
+.aidan-hist-raekke {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.aidan-hist-raekke:hover {
+  background: var(--card);
+}
+.aidan-hist-tekst {
+  flex: 1;
+  min-width: 0;
+}
+.aidan-hist-titel {
+  color: var(--light);
+  font-size: 0.86rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aidan-hist-meta {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.aidan-hist-tom {
+  padding: 24px 16px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+/* Slet med husets inline-bekræftelse — aldrig en native dialog. */
+.aidan-hist-slet,
+.aidan-hist-ja,
+.aidan-hist-nej {
+  font-size: 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.aidan-hist-slet {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+}
+.aidan-hist-slet:hover {
+  color: var(--orange-text);
+}
+.aidan-hist-slet:active,
+.aidan-hist-ja:active,
+.aidan-hist-nej:active {
+  transform: translateY(1px);
+}
+.aidan-hist-spoerg {
+  font-size: 0.7rem;
+  color: var(--orange-text);
+  font-weight: 500;
+}
+.aidan-hist-ja {
+  border: none;
+  background: var(--orange);
+  color: #fff;
+}
+.aidan-hist-nej {
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--light);
+}
+/* hidden-attributten skal vinde over klassernes display:flex — ellers er
+   msgs.hidden=true en no-op (UA-reglen taber til enhver klasse-selektor). */
+.aidan-msgs[hidden],
+.aidan-chips[hidden] {
+  display: none;
+}

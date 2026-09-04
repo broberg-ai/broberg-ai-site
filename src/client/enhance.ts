@@ -5,6 +5,7 @@ import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
 import { mountAdminChat } from "@/client/admin-chat.tsx";
 import { aidanTilHtml } from "@/client/aidan-md.ts";
+import { listSamtaler, hentSamtale, gemAktiv, sletSamtale, aktivId, saetAktiv, relativTid, type Tur } from "@/client/aidan-samtaler.ts";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
 // F157 — cms-admin connection shared by inline-edit + the /admin panel.
@@ -629,18 +630,18 @@ function aidan() {
     fab.classList.remove("aaben");
   });
 
-  // ── Samtalen. sessionStorage så navigation ikke sletter den; kun tekst.
-  type Tur = { role: "user" | "assistant"; content: string };
-  const NOEGLE = "aidan-samtale";
+  // ── Samtalen (F007.4): rigtigt lager med historik + Ny samtale — Eir-
+  // pariteten. Ren logik bor i aidan-samtaler.ts; her er kun DOM-limen.
+  const banner = rod.querySelector<HTMLElement>("[data-testid='aidan-banner']")!;
+  const bannerTitel = banner.querySelector<HTMLElement>(".aidan-banner-titel")!;
+  const histVisning = rod.querySelector<HTMLElement>("[data-testid='aidan-historik-visning']")!;
+  const histListe = rod.querySelector<HTMLElement>("[data-testid='aidan-hist-liste']")!;
+  const chipsEl = rod.querySelector<HTMLElement>(".aidan-chips")!;
+  const hilsenHtml = msgs.innerHTML; // SSR-hilsnen — genbruges ved Ny samtale
+
   let historik: Tur[] = [];
-  try {
-    historik = JSON.parse(sessionStorage.getItem(NOEGLE) || "[]");
-  } catch {}
-  const gem = () => {
-    try {
-      sessionStorage.setItem(NOEGLE, JSON.stringify(historik.slice(-20)));
-    } catch {}
-  };
+  const gem = () => void gemAktiv(historik);
+
   const boblEl = (cls: string) => {
     const d = document.createElement("div");
     d.className = `aidan-msg ${cls}`;
@@ -648,12 +649,130 @@ function aidan() {
     msgs.scrollTop = msgs.scrollHeight;
     return d;
   };
-  // Genindlæs en igangværende samtale i panelet.
-  for (const t of historik) {
-    const d = boblEl(t.role === "user" ? "fra-mig" : "fra-aidan");
-    if (t.role === "user") d.textContent = t.content;
-    else d.innerHTML = tilHtml(t.content);
+  const visSamtale = (beskeder: Tur[]) => {
+    msgs.innerHTML = hilsenHtml;
+    historik = [...beskeder];
+    for (const t of historik) {
+      const d = boblEl(t.role === "user" ? "fra-mig" : "fra-aidan");
+      if (t.role === "user") d.textContent = t.content;
+      else d.innerHTML = tilHtml(t.content);
+    }
+    msgs.scrollTop = msgs.scrollHeight;
+  };
+  const nySamtale = () => {
+    saetAktiv(null);
+    visSamtale([]);
+    banner.hidden = true;
+    lukHistorik();
+  };
+
+  // Velkommen tilbage: kun når der FINDES en tidligere samtale med indhold.
+  const seneste = aktivId() ? hentSamtale(aktivId()!) : listSamtaler()[0] ?? null;
+  if (seneste && seneste.beskeder.length) {
+    bannerTitel.textContent = seneste.titel;
+    banner.hidden = false;
   }
+  banner.querySelector("[data-testid='aidan-banner-fortsaet']")!.addEventListener("click", () => {
+    saetAktiv(seneste!.id);
+    visSamtale(seneste!.beskeder);
+    banner.hidden = true;
+  });
+  banner.querySelector("[data-testid='aidan-banner-startny']")!.addEventListener("click", nySamtale);
+
+  // ── Historik-visningen
+  const en = locale === "en";
+  const lukHistorik = () => {
+    histVisning.hidden = true;
+    msgs.hidden = false;
+    chipsEl.hidden = false;
+  };
+  const tegnHistorik = () => {
+    histListe.innerHTML = "";
+    const alle = listSamtaler();
+    if (!alle.length) {
+      const tom = document.createElement("div");
+      tom.className = "aidan-hist-tom";
+      tom.textContent = histListe.dataset.tomTekst ?? "";
+      histListe.appendChild(tom);
+      return;
+    }
+    for (const sam of alle) {
+      const rk = document.createElement("div");
+      rk.className = "aidan-hist-raekke";
+      rk.dataset.testid = "aidan-hist-raekke";
+      const tekst = document.createElement("div");
+      tekst.className = "aidan-hist-tekst";
+      const ti = document.createElement("div");
+      ti.className = "aidan-hist-titel";
+      ti.textContent = sam.titel;
+      const meta = document.createElement("div");
+      meta.className = "aidan-hist-meta";
+      const ture = sam.beskeder.filter((b) => b.role === "user").length;
+      meta.textContent = `${relativTid(sam.opdateret, en)} · ${ture} tur${ture === 1 ? "" : "e"}`;
+      tekst.append(ti, meta);
+      rk.appendChild(tekst);
+
+      // Slet — husets inline-bekræftelse, aldrig en native dialog.
+      const slet = document.createElement("button");
+      slet.type = "button";
+      slet.className = "aidan-hist-slet";
+      slet.dataset.testid = "aidan-hist-slet";
+      slet.textContent = "✕";
+      slet.setAttribute("aria-label", en ? "Delete" : "Slet");
+      slet.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const spoerg = document.createElement("span");
+        spoerg.className = "aidan-hist-spoerg";
+        spoerg.textContent = en ? "Delete?" : "Slet?";
+        const ja = document.createElement("button");
+        ja.type = "button";
+        ja.className = "aidan-hist-ja";
+        ja.dataset.testid = "aidan-hist-ja";
+        ja.textContent = en ? "Yes" : "Ja";
+        const nej = document.createElement("button");
+        nej.type = "button";
+        nej.className = "aidan-hist-nej";
+        nej.dataset.testid = "aidan-hist-nej";
+        nej.textContent = en ? "No" : "Nej";
+        ja.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          sletSamtale(sam.id);
+          tegnHistorik();
+        });
+        nej.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          spoerg.remove(); ja.remove(); nej.remove();
+          slet.hidden = false;
+        });
+        slet.hidden = true;
+        rk.append(spoerg, ja, nej);
+      });
+      rk.appendChild(slet);
+      rk.addEventListener("click", () => {
+        saetAktiv(sam.id);
+        visSamtale(sam.beskeder);
+        banner.hidden = true;
+        lukHistorik();
+      });
+      histListe.appendChild(rk);
+    }
+  };
+  rod.querySelector("[data-testid='aidan-historik-knap']")!.addEventListener("click", () => {
+    if (histVisning.hidden) {
+      tegnHistorik();
+      histVisning.hidden = false;
+      msgs.hidden = true;
+      chipsEl.hidden = true;
+    } else {
+      lukHistorik();
+    }
+  });
+  rod.querySelector("[data-testid='aidan-ny']")!.addEventListener("click", nySamtale);
+
+  // ── Fuldskærm (Eir-stil overlay)
+  rod.querySelector("[data-testid='aidan-fuld']")!.addEventListener("click", () => {
+    panel.classList.toggle("fuld");
+  });
 
   let travl = false;
   async function spoerg(tekst: string) {

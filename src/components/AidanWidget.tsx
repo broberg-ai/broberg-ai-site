@@ -30,6 +30,12 @@ export interface AidanTekster {
   chips: string;
   placeholder: string;
   disclaimer: string;
+  velkommen: string;
+  fortsaet: string;
+  startNy: string;
+  tidligere: string;
+  nySamtale: string;
+  ingenSamtaler: string;
 }
 
 export function aidanTekster(
@@ -54,6 +60,12 @@ export function aidanTekster(
         : "Vis mig jeres cases\nHvad kan I bygge for mig?\nHvordan arbejder I?",
     ),
     placeholder: g("aidanPlaceholder", en ? "Write to Aidan…" : "Skriv til Aidan…"),
+    velkommen: g("aidanVelkommen", en ? "Welcome back. Last time we talked about" : "Velkommen tilbage. Sidst talte vi om"),
+    fortsaet: g("aidanFortsaet", en ? "Continue" : "Fortsæt"),
+    startNy: g("aidanStartNy", en ? "Start new" : "Start ny"),
+    tidligere: g("aidanTidligere", en ? "Previous conversations" : "Tidligere samtaler"),
+    nySamtale: g("aidanNySamtale", en ? "New conversation" : "Ny samtale"),
+    ingenSamtaler: g("aidanIngenSamtaler", en ? "No previous conversations yet" : "Ingen tidligere samtaler endnu"),
     disclaimer: g(
       "aidanDisclaimer",
       en ? "Aidan is an AI — answers may contain mistakes" : "Aidan er en AI — svar kan indeholde fejl",
@@ -113,9 +125,38 @@ export function AidanWidget({
               <span {...cmsAttrs(globalsRef, "aidanRolle")}>{t.rolle}</span>
             </small>
           </div>
+          <button type="button" class="aidan-knap" data-testid="aidan-historik-knap" aria-label={t.tidligere} title={t.tidligere}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
+            </svg>
+          </button>
+          <button type="button" class="aidan-knap" data-testid="aidan-fuld" aria-label={en ? "Full screen" : "Fuld skærm"} title={en ? "Full screen" : "Fuld skærm"}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
+            </svg>
+          </button>
           <button type="button" class="aidan-knap" data-testid="aidan-luk" aria-label={en ? "Close" : "Luk"}>
             ✕
           </button>
+        </div>
+        {/* Velkommen tilbage — Eir-mønstret: seneste samtales titel + Fortsæt/Start ny.
+            Klienten udfylder titlen og viser banneret når der ER en tidligere samtale. */}
+        <div class="aidan-banner" data-testid="aidan-banner" hidden>
+          <span>
+            <span {...cmsAttrs(globalsRef, "aidanVelkommen")}>{t.velkommen}</span> <b class="aidan-banner-titel" />.
+          </span>
+          <span class="aidan-banner-knapper">
+            <button type="button" class="aidan-banner-primaer" data-testid="aidan-banner-fortsaet">{t.fortsaet}</button>
+            <button type="button" class="aidan-banner-sekundaer" data-testid="aidan-banner-startny">{t.startNy}</button>
+          </span>
+        </div>
+        {/* Historik-visningen lægger sig over beskederne når klok-knappen trykkes. */}
+        <div class="aidan-historik" data-testid="aidan-historik-visning" hidden>
+          <div class="aidan-historik-hoved">
+            <b {...cmsAttrs(globalsRef, "aidanTidligere")}>{t.tidligere}</b>
+            <button type="button" class="aidan-banner-primaer" data-testid="aidan-ny">{t.nySamtale}</button>
+          </div>
+          <div class="aidan-hist-liste" data-testid="aidan-hist-liste" data-tom-tekst={t.ingenSamtaler} />
         </div>
         <div class="aidan-msgs" data-testid="aidan-msgs">
           <div class="aidan-msg fra-aidan" {...cmsAttrs(globalsRef, "aidanHilsen")}>
