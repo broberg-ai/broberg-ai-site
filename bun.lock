@@ -9,6 +9,7 @@
         "@broberg/cms-chat-client": "^0.4.16",
         "@broberg/cms-inline-edit": "0.6.3",
         "@broberg/forms-turnstile": "^0.1.0",
+        "@broberg/mail": "0.10.1",
         "hono": "^4.6.14",
         "marked": "^18.0.5",
         "preact": "^10.25.4",
@@ -37,6 +38,8 @@
     "@broberg/forms-turnstile": ["@broberg/forms-turnstile@0.1.0", "", { "peerDependencies": { "hono": ">=4", "preact": ">=10.0.0" }, "optionalPeers": ["hono", "preact"] }, "sha512-6E3kS6MzGE+Q0ry8LWr6ZYeCAUyiGJjrBv3xpHrP6abHldc0uZdVJf31t7W95aO51S3PP6d6DStRXonLmS5ZJg=="],
 
     "@broberg/lens-engine": ["@broberg/lens-engine@0.4.0", "", { "dependencies": { "@broberg/ai-sdk": "^0.21.1", "@mozilla/readability": "^0.6.0", "jsdom": "^25.0.1", "playwright": "^1.61.1", "turndown": "^7.2.4", "zod": "^3.24.1" } }, "sha512-/blOeHkjo6kxxQE7d9y9BFSqaoyFE3k8+Gbu6UcGLXAf9HmEJ0T0zhdbbbWQX4mejtpRKr0CzpwhiiwAoSLoaw=="],
+
+    "@broberg/mail": ["@broberg/mail@0.10.1", "", {}, "sha512-Dfvel9zRwwfxyrUK2PeAXtQao2zt0uPHZZbuyHTEiYPzogoBJEhNZdU65MzrtCDG356iB/C+lfiSI1ViY6BDBw=="],
 
     "@csstools/color-helpers": ["@csstools/color-helpers@5.1.0", "", {}, "sha512-S11EXWJyy0Mz5SYvRmY8nJYTFFd1LCNV+7cXyAgQtOOuzb4EsgfqDufL+9esx72/eLhsRdGZwaldu/h+E4t4BA=="],
 

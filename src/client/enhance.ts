@@ -608,9 +608,13 @@ function aidan() {
           v.removeEventListener("ended", faerdig);
           v.currentTime = 0;
           v.load(); // load() sætter posteren tilbage; pause() ville efterlade sidste billede.
+          fab.classList.remove("spiller"); // det diskrete nik genoptages på stillbilledet
         };
         v.addEventListener("ended", faerdig);
-        setTimeout(() => void v.play().catch(() => faerdig()), 450);
+        setTimeout(() => {
+          fab.classList.add("spiller");
+          void v.play().catch(() => faerdig());
+        }, 450);
       }
     }
   };
@@ -721,6 +725,62 @@ function aidan() {
     return indsigter;
   };
   let lyd: HTMLAudioElement | null = null;
+  // F007.9: når afspilningen er i gang, tilbydes «få den tilsendt på mail».
+  // Samtykket håndhæves på serveren — fluebenet her er kun UI.
+  const visMailTilbud = (efter: HTMLElement, sti: string) => {
+    if (rod.querySelector("[data-testid='aidan-mail-form']")) return;
+    const d = rod.dataset;
+    const form = document.createElement("form");
+    form.className = "aidan-mail";
+    form.dataset.testid = "aidan-mail-form";
+    const hoved = document.createElement("b");
+    hoved.textContent = d.mailTilbud ?? "";
+    const felt = document.createElement("input");
+    felt.type = "email";
+    felt.required = true;
+    felt.placeholder = d.mailFelt ?? "";
+    felt.dataset.testid = "aidan-mail-felt";
+    const samtykke = document.createElement("label");
+    samtykke.className = "aidan-samtykke";
+    const boks = document.createElement("input");
+    boks.type = "checkbox";
+    boks.required = true;
+    boks.className = "aidan-skjult-felt";
+    boks.dataset.testid = "aidan-mail-samtykke";
+    const tegnet = document.createElement("span");
+    tegnet.className = "aidan-boks";
+    samtykke.append(boks, tegnet, document.createTextNode(d.mailSamtykke ?? ""));
+    const send = document.createElement("button");
+    send.type = "submit";
+    send.className = "aidan-banner-primaer";
+    send.dataset.testid = "aidan-mail-send";
+    send.textContent = d.mailSend ?? "";
+    const status = document.createElement("small");
+    status.className = "aidan-mail-status";
+    status.dataset.testid = "aidan-mail-status";
+    form.append(hoved, felt, samtykke, send, status);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      send.disabled = true;
+      status.textContent = "…";
+      status.classList.remove("fejl");
+      try {
+        const res = await fetch("/api/aidan/send-lyd", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sti, persona: persona(), email: felt.value.trim(), samtykke: boks.checked }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        form.replaceChildren(Object.assign(document.createElement("b"), { textContent: d.mailSendt ?? "" }));
+      } catch {
+        status.textContent = d.mailFejl ?? "";
+        status.classList.add("fejl");
+        send.disabled = false;
+      }
+    });
+    efter.insertAdjacentElement("afterend", form);
+    rulNed();
+  };
   const tilbydOplaesning = async (svarBoble: HTMLElement): Promise<void> => {
     try {
       const stier = await hentIndsigter();
@@ -768,6 +828,7 @@ function aidan() {
           await lyd.play();
           tilstand = "spiller";
           knap.textContent = `\u23F8 ${d.laesPause ?? ""}`;
+          visMailTilbud(knap, sti);
         } catch {
           tilstand = "klar";
           knap.textContent = d.laesFejl ?? "";

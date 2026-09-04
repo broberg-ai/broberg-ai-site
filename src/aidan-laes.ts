@@ -99,6 +99,47 @@ export async function handleAidanIndsigter(c: Context): Promise<Response> {
   return c.json({ stier: [...(await indsigtsStier())] });
 }
 
+/** Fejl med HTTP-status — hentLyd kaster dem, ruterne oversætter. */
+export class LydFejl extends Error {
+  constructor(public status: 404 | 422 | 502, kode: string) {
+    super(kode);
+  }
+}
+
+/** Delt af /laes (afspilning) og /send-lyd (mail, F007.9): sti → lydfil.
+ *  Server-autoritativ sti-validering + cache pr. (indhold, stemme). */
+export async function hentLyd(
+  sti: string,
+  persona: Persona,
+): Promise<{ audio: Uint8Array; mimeType: string; titel: string }> {
+  if (!(await indsigtsStier()).has(sti)) throw new LydFejl(404, "ikke_en_indsigt");
+  const res = await fetch(`http://127.0.0.1:${config.port}${sti}`);
+  if (!res.ok) throw new LydFejl(502, "side_utilgaengelig");
+  const html = await res.text();
+  const titel = (/<title>([^<]*)<\/title>/.exec(html)?.[1] ?? sti).split("|")[0].split("—")[0].trim();
+  const tale = tilTale(tilTekst(html));
+  if (tale.length < 200) throw new LydFejl(422, "for_tynd");
+
+  const locale: Locale = sti === "/en" || sti.startsWith("/en/") ? "en" : "da";
+  const stemme = STEMMER[persona][locale];
+  await mkdir(CACHE_DIR, { recursive: true });
+  const fil = path.join(CACHE_DIR, `${laesCacheNoegle(tale, stemme)}.mp3`);
+  try {
+    return { audio: new Uint8Array(await readFile(fil)), mimeType: "audio/mpeg", titel };
+  } catch {
+    /* ikke i cache endnu */
+  }
+  const { audio, mimeType } = await ai().tts({
+    text: tale,
+    voice: stemme,
+    lang: locale === "en" ? "en-US" : "da-DK",
+    override: { provider: "azure" },
+  });
+  await writeFile(fil, audio).catch(() => {}); // en fejlet cache-skrivning må aldrig koste svaret
+  console.log(`[aidan-laes] genereret ${audio.byteLength} bytes (${stemme}) for ${sti}`);
+  return { audio: new Uint8Array(audio), mimeType: mimeType || "audio/mpeg", titel };
+}
+
 export async function handleAidanLaes(c: Context): Promise<Response> {
   if (!laesKonfigureret()) return c.json({ error: "ikke_konfigureret" }, 503);
   if (rateLimited(c)) return c.json({ error: "rate_limited" }, 429);
@@ -112,35 +153,13 @@ export async function handleAidanLaes(c: Context): Promise<Response> {
   } catch {
     return c.json({ error: "ugyldig_krop" }, 400);
   }
-  if (!(await indsigtsStier()).has(sti)) return c.json({ error: "ikke_en_indsigt" }, 404);
-
-  const res = await fetch(`http://127.0.0.1:${config.port}${sti}`);
-  if (!res.ok) return c.json({ error: "side_utilgaengelig" }, 502);
-  const tale = tilTale(tilTekst(await res.text()));
-  if (tale.length < 200) return c.json({ error: "for_tynd" }, 422);
-
-  const locale: Locale = sti === "/en" || sti.startsWith("/en/") ? "en" : "da";
-  const stemme = STEMMER[persona][locale];
-  await mkdir(CACHE_DIR, { recursive: true });
-  const fil = path.join(CACHE_DIR, `${laesCacheNoegle(tale, stemme)}.mp3`);
   try {
-    const cached = await readFile(fil);
-    return new Response(new Uint8Array(cached), {
-      headers: { "Content-Type": "audio/mpeg", "Cache-Control": "private, max-age=86400" },
+    const { audio, mimeType } = await hentLyd(sti, persona);
+    return new Response(new Uint8Array(audio).buffer as ArrayBuffer, {
+      headers: { "Content-Type": mimeType, "Cache-Control": "private, max-age=86400" },
     });
-  } catch {
-    /* ikke i cache endnu */
+  } catch (e) {
+    if (e instanceof LydFejl) return c.json({ error: e.message }, e.status);
+    throw e;
   }
-
-  const { audio, mimeType } = await ai().tts({
-    text: tale,
-    voice: stemme,
-    lang: locale === "en" ? "en-US" : "da-DK",
-    override: { provider: "azure" },
-  });
-  await writeFile(fil, audio).catch(() => {}); // en fejlet cache-skrivning må aldrig koste svaret
-  console.log(`[aidan-laes] genereret ${audio.byteLength} bytes (${stemme}) for ${sti}`);
-  return new Response(new Uint8Array(audio), {
-    headers: { "Content-Type": mimeType || "audio/mpeg", "Cache-Control": "private, max-age=86400" },
-  });
 }

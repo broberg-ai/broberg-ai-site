@@ -47,6 +47,12 @@ export interface AidanTekster {
   vaelgStemme: string;
   stemmeAidan: string;
   stemmeAirina: string;
+  mailTilbud: string;
+  mailFelt: string;
+  mailSamtykke: string;
+  mailSend: string;
+  mailSendt: string;
+  mailFejl: string;
 }
 
 export function aidanTekster(
@@ -93,6 +99,12 @@ export function aidanTekster(
     vaelgStemme: g("aidanVaelgStemme", en ? "Who should read aloud?" : "Hvem skal læse højt?"),
     stemmeAidan: g("aidanStemmeAidan", en ? "Aidan — male voice" : "Aidan — mandlig stemme"),
     stemmeAirina: g("aidanStemmeAirina", en ? "Airina — female voice" : "Airina — kvindelig stemme"),
+    mailTilbud: g("aidanMailTilbud", en ? "Want the reading sent to you as an audio file?" : "Vil du have oplæsningen tilsendt som lydfil?"),
+    mailFelt: g("aidanMailFelt", en ? "your@email.com" : "din@mail.dk"),
+    mailSamtykke: g("aidanMailSamtykke", en ? "Yes — send me the audio file and relevant news from broberg.ai" : "Ja tak — send mig lydfilen og relevant nyt fra broberg.ai"),
+    mailSend: g("aidanMailSend", en ? "Send" : "Send"),
+    mailSendt: g("aidanMailSendt", en ? "Sent — check your inbox" : "Sendt — tjek din indbakke"),
+    mailFejl: g("aidanMailFejl", en ? "Couldn't send — try again" : "Kunne ikke sende — prøv igen"),
     disclaimer: g(
       "aidanDisclaimer",
       en ? "Aidan is an AI — answers may contain mistakes" : "Aidan er en AI — svar kan indeholde fejl",
@@ -131,6 +143,12 @@ export function AidanWidget({
       data-laes-pause={t.laesPause}
       data-laes-videre={t.laesVidere}
       data-laes-fejl={t.laesFejl}
+      data-mail-tilbud={t.mailTilbud}
+      data-mail-felt={t.mailFelt}
+      data-mail-samtykke={t.mailSamtykke}
+      data-mail-send={t.mailSend}
+      data-mail-sendt={t.mailSendt}
+      data-mail-fejl={t.mailFejl}
     >
       <button
         type="button"
