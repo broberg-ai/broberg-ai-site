@@ -7,6 +7,7 @@ import { serveStatic } from "hono/bun";
 import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
 import { handleAidanChat, handleAidanHealth } from "@/aidan.ts";
+import { handleAidanIndsigter, handleAidanLaes } from "@/aidan-laes.ts";
 import { handleTrailIngest } from "@/trail-push.ts";
 import { handleAdminChat, handleAdminChatApi } from "@/chat-relay.ts";
 import { ensureRoot } from "@/content/store.ts";
@@ -110,6 +111,8 @@ app.post("/api/trail-ingest", handleTrailIngest);
 
 app.post("/api/aidan/chat", handleAidanChat);
 app.get("/api/aidan/health", handleAidanHealth);
+app.get("/api/aidan/indsigter", handleAidanIndsigter);
+app.post("/api/aidan/laes", handleAidanLaes);
 
 app.post("/api/admin/chat", handleAdminChat);
 app.all("/api/admin/chat/*", handleAdminChatApi);

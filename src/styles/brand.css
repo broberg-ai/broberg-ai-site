@@ -2865,11 +2865,122 @@ a.pill.taglink:active {
   opacity: 0.5;
   cursor: default;
 }
+.aidan-fod-raekke {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px 8px;
+}
 .aidan-fod {
   text-align: center;
   font-size: 0.64rem;
   color: var(--muted);
-  padding: 0 10px 8px;
+}
+/* F007.8: info-knap + persona-popover */
+.aidan-info-knap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.aidan-info-knap:hover {
+  color: var(--blue-light);
+  background: var(--card);
+}
+.aidan-info-knap:active {
+  transform: translateY(1px);
+}
+.aidan-info-knap:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.aidan-info-popover {
+  position: absolute;
+  right: 12px;
+  bottom: 118px;
+  z-index: 7;
+  width: min(320px, calc(100% - 24px));
+  background: var(--dark2);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+.aidan-info-tekst {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--light);
+}
+.aidan-info-hoved {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.aidan-personaer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.aidan-persona {
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--light);
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem;
+  font: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.aidan-persona:hover {
+  border-color: var(--blue);
+}
+.aidan-persona:active {
+  transform: translateY(1px);
+}
+.aidan-persona:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.aidan-persona.valgt {
+  border-color: var(--blue);
+  color: var(--blue-light);
+}
+/* F007.7: oplæsnings-tilbuddet under et svar */
+.aidan-laes {
+  align-self: flex-start;
+  max-width: 86%;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--light);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.aidan-laes:hover {
+  border-color: var(--blue);
+  color: var(--blue-light);
+}
+.aidan-laes:active {
+  transform: translateY(1px);
+}
+.aidan-laes:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 /* F007.5: flyder over beskederne når man er scrollet op og nyt svar strømmer
    ind — chatten kæmper ikke længere om scrollbaren, den tilbyder et hop. */
@@ -3123,7 +3234,8 @@ a.pill.taglink:active {
 .aidan-msgs[hidden],
 .aidan-chips[hidden],
 .aidan-nyt-svar[hidden],
-.aidan-chips-fold[hidden] {
+.aidan-chips-fold[hidden],
+.aidan-info-popover[hidden] {
   display: none;
 }
 /* Svar-typografi — «sygt lækker», ikke markdown-agtig (Christian 4/9). */

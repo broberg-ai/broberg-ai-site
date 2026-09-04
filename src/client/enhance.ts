@@ -634,7 +634,9 @@ function aidan() {
   // fuldskærmen af — standard lag-adfærd — og andet ESC lukker panelet.
   addEventListener("keydown", (e: KeyboardEvent) => {
     if (e.key !== "Escape" || panel.hidden) return;
-    if (panel.classList.contains("fuld")) panel.classList.remove("fuld");
+    const pop = rod.querySelector<HTMLElement>("[data-testid='aidan-info-popover']");
+    if (pop && !pop.hidden) pop.hidden = true;
+    else if (panel.classList.contains("fuld")) panel.classList.remove("fuld");
     else lukPanel();
   });
 
@@ -682,6 +684,104 @@ function aidan() {
     foldPill.hidden = !aktiv;
   };
   foldPill.addEventListener("click", () => foldChips(!chipsEl.classList.contains("foldet")));
+
+  // ── F007.7/F007.8: oplæsning af indsigter + persona-valg. Tilbuddet vises
+  // KUN når svaret linker til en news post — facitlisten kommer fra serveren,
+  // og serveren afviser alt andet uanset hvad klienten sender.
+  const infoKnap = rod.querySelector<HTMLButtonElement>("[data-testid='aidan-info-knap']")!;
+  const infoPop = rod.querySelector<HTMLElement>("[data-testid='aidan-info-popover']")!;
+  const persona = (): "aidan" | "airina" =>
+    document.cookie.includes("aidan_persona=airina") ? "airina" : "aidan";
+  const markerPersona = () => {
+    infoPop.querySelectorAll<HTMLButtonElement>(".aidan-persona").forEach((k) =>
+      k.classList.toggle("valgt", k.dataset.persona === persona()),
+    );
+  };
+  infoKnap.addEventListener("click", () => {
+    infoPop.hidden = !infoPop.hidden;
+    if (!infoPop.hidden) markerPersona();
+  });
+  infoPop.querySelectorAll<HTMLButtonElement>(".aidan-persona").forEach((k) =>
+    k.addEventListener("click", () => {
+      // Christians eksplicitte valg: cookie (ikke localStorage) — 1 år.
+      document.cookie = `aidan_persona=${k.dataset.persona ?? "aidan"}; max-age=31536000; path=/; samesite=lax`;
+      markerPersona();
+    }),
+  );
+
+  let indsigter: Set<string> | null = null;
+  const hentIndsigter = async (): Promise<Set<string>> => {
+    if (indsigter) return indsigter;
+    try {
+      const r = await fetch("/api/aidan/indsigter");
+      indsigter = new Set<string>(((await r.json()) as { stier?: string[] }).stier ?? []);
+    } catch {
+      indsigter = new Set();
+    }
+    return indsigter;
+  };
+  let lyd: HTMLAudioElement | null = null;
+  const tilbydOplaesning = async (svarBoble: HTMLElement): Promise<void> => {
+    try {
+      const stier = await hentIndsigter();
+      if (!stier.size) return;
+      const sti = Array.from(svarBoble.querySelectorAll<HTMLAnchorElement>("a"))
+        .map((a) => new URL(a.getAttribute("href") ?? "", location.origin).pathname)
+        .find((p) => stier.has(p));
+      if (!sti) return;
+      const d = rod.dataset;
+      const knap = document.createElement("button");
+      knap.type = "button";
+      knap.className = "aidan-laes";
+      knap.dataset.testid = "aidan-laes-tilbud";
+      knap.textContent = `\u{1F50A} ${d.laesTilbud ?? ""}`;
+      let tilstand: "klar" | "henter" | "spiller" | "pause" = "klar";
+      knap.addEventListener("click", async () => {
+        if (tilstand === "henter") return;
+        if (tilstand === "spiller") {
+          lyd?.pause();
+          tilstand = "pause";
+          knap.textContent = `\u25B6 ${d.laesVidere ?? ""}`;
+          return;
+        }
+        if (tilstand === "pause") {
+          void lyd?.play();
+          tilstand = "spiller";
+          knap.textContent = `\u23F8 ${d.laesPause ?? ""}`;
+          return;
+        }
+        tilstand = "henter";
+        knap.textContent = d.laesHenter ?? "";
+        try {
+          const res = await fetch("/api/aidan/laes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sti, persona: persona() }),
+          });
+          if (!res.ok) throw new Error(String(res.status));
+          lyd?.pause();
+          lyd = new Audio(URL.createObjectURL(await res.blob()));
+          lyd.addEventListener("ended", () => {
+            tilstand = "klar";
+            knap.textContent = `\u{1F50A} ${d.laesTilbud ?? ""}`;
+          });
+          await lyd.play();
+          tilstand = "spiller";
+          knap.textContent = `\u23F8 ${d.laesPause ?? ""}`;
+        } catch {
+          tilstand = "klar";
+          knap.textContent = d.laesFejl ?? "";
+          setTimeout(() => {
+            if (tilstand === "klar") knap.textContent = `\u{1F50A} ${d.laesTilbud ?? ""}`;
+          }, 4000);
+        }
+      });
+      svarBoble.insertAdjacentElement("afterend", knap);
+      rulNed();
+    } catch {
+      /* tilbuddet må aldrig vælte chatten */
+    }
+  };
 
   let historik: Tur[] = [];
   const gem = () => void gemAktiv(historik);
@@ -884,6 +984,7 @@ function aidan() {
       if (svar) {
         historik.push({ role: "assistant", content: svar });
         gem();
+        if (svarEl) void tilbydOplaesning(svarEl);
       } else if (!svarEl) {
         fejl();
       }

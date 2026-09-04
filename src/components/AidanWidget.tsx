@@ -38,6 +38,15 @@ export interface AidanTekster {
   ingenSamtaler: string;
   nytSvar: string;
   forslag: string;
+  laesTilbud: string;
+  laesHenter: string;
+  laesPause: string;
+  laesVidere: string;
+  laesFejl: string;
+  info: string;
+  vaelgStemme: string;
+  stemmeAidan: string;
+  stemmeAirina: string;
 }
 
 export function aidanTekster(
@@ -70,6 +79,20 @@ export function aidanTekster(
     ingenSamtaler: g("aidanIngenSamtaler", en ? "No previous conversations yet" : "Ingen tidligere samtaler endnu"),
     nytSvar: g("aidanNytSvar", en ? "New reply" : "Nyt svar"),
     forslag: g("aidanForslag", en ? "Suggestions" : "Forslag"),
+    laesTilbud: g("aidanLaesTilbud", en ? "Want me to read the article aloud?" : "Skal jeg læse artiklen højt for dig?"),
+    laesHenter: g("aidanLaesHenter", en ? "Fetching the reading…" : "Henter oplæsningen…"),
+    laesPause: g("aidanLaesPause", en ? "Pause" : "Pause"),
+    laesVidere: g("aidanLaesVidere", en ? "Resume reading" : "Fortsæt oplæsningen"),
+    laesFejl: g("aidanLaesFejl", en ? "Couldn't fetch the reading — try again" : "Kunne ikke hente oplæsningen — prøv igen"),
+    info: g(
+      "aidanInfo",
+      en
+        ? "Aidan is broberg.ai's own AI guide — built on the house components with this whole universe as its knowledge base. Answers may contain mistakes."
+        : "Aidan er broberg.ai's egen AI-guide — bygget på husets komponenter og med hele universet her som vidensbase. Svar kan indeholde fejl.",
+    ),
+    vaelgStemme: g("aidanVaelgStemme", en ? "Who should read aloud?" : "Hvem skal læse højt?"),
+    stemmeAidan: g("aidanStemmeAidan", en ? "Aidan — male voice" : "Aidan — mandlig stemme"),
+    stemmeAirina: g("aidanStemmeAirina", en ? "Airina — female voice" : "Airina — kvindelig stemme"),
     disclaimer: g(
       "aidanDisclaimer",
       en ? "Aidan is an AI — answers may contain mistakes" : "Aidan er en AI — svar kan indeholde fejl",
@@ -99,7 +122,16 @@ export function AidanWidget({
   const en = locale === "en";
   const chips = t.chips.split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 4);
   return (
-    <div id="aidan" data-aidan data-locale={locale}>
+    <div
+      id="aidan"
+      data-aidan
+      data-locale={locale}
+      data-laes-tilbud={t.laesTilbud}
+      data-laes-henter={t.laesHenter}
+      data-laes-pause={t.laesPause}
+      data-laes-videre={t.laesVidere}
+      data-laes-fejl={t.laesFejl}
+    >
       <button
         type="button"
         class="aidan-fab"
@@ -203,7 +235,27 @@ export function AidanWidget({
             </svg>
           </button>
         </form>
-        <div class="aidan-fod" {...cmsAttrs(globalsRef, "aidanDisclaimer")}>{t.disclaimer}</div>
+        {/* F007.8: info + stemmevalg — popover over foden, valget bor i cookie. */}
+        <div class="aidan-info-popover" data-testid="aidan-info-popover" hidden>
+          <p class="aidan-info-tekst" {...cmsAttrs(globalsRef, "aidanInfo")}>{t.info}</p>
+          <b class="aidan-info-hoved" {...cmsAttrs(globalsRef, "aidanVaelgStemme")}>{t.vaelgStemme}</b>
+          <div class="aidan-personaer">
+            <button type="button" class="aidan-persona" data-persona="aidan" data-testid="aidan-persona-aidan" {...cmsAttrs(globalsRef, "aidanStemmeAidan")}>
+              {t.stemmeAidan}
+            </button>
+            <button type="button" class="aidan-persona" data-persona="airina" data-testid="aidan-persona-airina" {...cmsAttrs(globalsRef, "aidanStemmeAirina")}>
+              {t.stemmeAirina}
+            </button>
+          </div>
+        </div>
+        <div class="aidan-fod-raekke">
+          <div class="aidan-fod" {...cmsAttrs(globalsRef, "aidanDisclaimer")}>{t.disclaimer}</div>
+          <button type="button" class="aidan-info-knap" data-testid="aidan-info-knap" aria-label={en ? "About Aidan" : "Om Aidan"}>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" /><path d="M12 11v5" /><circle cx="12" cy="8" r="0.6" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
