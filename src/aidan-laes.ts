@@ -16,13 +16,14 @@
  * deploy) — det er den billige og rigtige afvejning her.
  */
 import { createHash } from "node:crypto";
+import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Context } from "hono";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
-import { config, type Locale } from "@/config.ts";
+import type { Locale } from "@/config.ts";
 import { buildSearchIndex } from "@/content/compose.ts";
-import { tilTekst } from "@/trail-clip.ts";
+import { list } from "@/content/store.ts";
 
 /** Persona → stemme pr. sprog (Azure-rosteret i ai-sdk). */
 const STEMMER = {
@@ -31,7 +32,12 @@ const STEMMER = {
 } as const;
 export type Persona = keyof typeof STEMMER;
 const TEKST_LOFT = 12_000;
-const CACHE_DIR = process.env.AIDAN_LAES_CACHE ?? ".cache/aidan-laes";
+// VARIGT lager (Christian 4/9): første oplæsning gemmer filen; alle senere
+// afspilninger OG mail-forsendelser kommer fra lageret. Kun en RETTELSE i
+// teksten (eller en anden stemme) giver en ny fil — nøglen er et fingeraftryk
+// af netop (tale, stemme). Lokal dev uden /data falder tilbage til .cache.
+const CACHE_DIR =
+  process.env.AIDAN_LAES_CACHE ?? (existsSync("/data") ? "/data/aidan-lyd" : ".cache/aidan-laes");
 
 export function laesKonfigureret(): boolean {
   return !!process.env.AZURE_SPEECH_KEY;
@@ -45,16 +51,24 @@ export function resetLaesForTest(client?: AiClient): void {
   hits.clear();
 }
 
-/** Markdown-agtig sidetekst → noget et menneske gider HØRE. Links læses som
- *  deres tekst (aldrig URL'en), markører (#, -) siges ikke højt. */
+/** Artikel-markdown → noget et menneske gider HØRE (Christians GO 4/9 på
+ *  eksemplet i /Downloads). Links læses som deres tekst (aldrig URL'en),
+ *  markører og skillelinjer siges ikke, indlejrede [block:]-figurer springes
+ *  over — og UDTALE-ORDBOGEN sikrer at navnet og «AI» siges rigtigt.
+ *  Ordbogens rækkefølge bærer: broberg.ai-reglen SKAL køre før AI-reglen,
+ *  ellers bliver navnet til «broberg.A I». */
 export function tilTale(md: string): string {
   return md
+    .replace(/^\[block:[a-z0-9-]+\]\s*$/gim, "")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/^#{1,4}\s+/gm, "")
-    .replace(/^-\s+/gm, "")
+    .replace(/^[-•]\s+/gm, "")
     .replace(/[*_`]/g, "")
+    .replace(/^\s*[-–—_]{3,}\s*$/gm, "")
+    .replace(/\bbroberg\.ai\b/gi, "broberg dot A I")
+    .replace(/\bAI\b/g, "A I")
     .replace(/[ \t]+/g, " ")
-    .replace(/\n{2,}/g, "\n\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim()
     .slice(0, TEKST_LOFT);
 }
@@ -64,18 +78,20 @@ export function laesCacheNoegle(tale: string, stemme: string): string {
 }
 
 // ── Indsigts-stierne — KUN posts-samlingen, fra sitets kanoniske søgeindeks.
+// Kortet sti → (slug, locale) er også opslaget når en artikel skal læses.
 // Cache 5 min: listen ændrer sig ved udgivelser, ikke pr. request.
-let _stier: { sæt: Set<string>; hentet: number } | null = null;
-async function indsigtsStier(): Promise<Set<string>> {
-  if (_stier && Date.now() - _stier.hentet < 300_000) return _stier.sæt;
-  const sæt = new Set<string>();
+let _stier: { kort: Map<string, { slug: string; locale: Locale }>; hentet: number } | null = null;
+async function indsigtsStier(): Promise<Map<string, { slug: string; locale: Locale }>> {
+  if (_stier && Date.now() - _stier.hentet < 300_000) return _stier.kort;
+  const kort = new Map<string, { slug: string; locale: Locale }>();
   for (const locale of ["da", "en"] as Locale[]) {
     for (const e of await buildSearchIndex(locale)) {
-      if (e.id.startsWith("post:") && typeof e.data === "string") sæt.add(e.data);
+      if (e.id.startsWith("post:") && typeof e.data === "string")
+        kort.set(e.data, { slug: e.id.slice("post:".length), locale });
     }
   }
-  _stier = { sæt, hentet: Date.now() };
-  return sæt;
+  _stier = { kort, hentet: Date.now() };
+  return kort;
 }
 
 // Egen, strammere spærre end chatten: TTS er dyr pr. kald.
@@ -96,7 +112,7 @@ function rateLimited(c: Context): boolean {
 
 export async function handleAidanIndsigter(c: Context): Promise<Response> {
   if (!laesKonfigureret()) return c.json({ stier: [] });
-  return c.json({ stier: [...(await indsigtsStier())] });
+  return c.json({ stier: [...(await indsigtsStier()).keys()] });
 }
 
 /** Fejl med HTTP-status — hentLyd kaster dem, ruterne oversætter. */
@@ -112,15 +128,22 @@ export async function hentLyd(
   sti: string,
   persona: Persona,
 ): Promise<{ audio: Uint8Array; mimeType: string; titel: string }> {
-  if (!(await indsigtsStier()).has(sti)) throw new LydFejl(404, "ikke_en_indsigt");
-  const res = await fetch(`http://127.0.0.1:${config.port}${sti}`);
-  if (!res.ok) throw new LydFejl(502, "side_utilgaengelig");
-  const html = await res.text();
-  const titel = (/<title>([^<]*)<\/title>/.exec(html)?.[1] ?? sti).split("|")[0].split("—")[0].trim();
-  const tale = tilTale(tilTekst(html));
+  const post = (await indsigtsStier()).get(sti);
+  if (!post) throw new LydFejl(404, "ikke_en_indsigt");
+  // KILDEN ER ARTIKLENS EGET CMS-FELT, ikke sidens HTML (Christians GO 4/9):
+  // så hører oplæseren aldrig breadcrumb, meta-linje, tags eller outro — og
+  // fordi begge ruter deler denne funktion, gælder det ALLE artikler.
+  const doc = (await list("posts")).find((d) => String(d.slug) === post.slug);
+  const data = (doc?.data ?? {}) as Record<string, unknown>;
+  if (!doc || !data.content) throw new LydFejl(502, "side_utilgaengelig");
+  const titel = String(data.title ?? post.slug);
+  const dele = [titel];
+  if (data.excerpt) dele.push(String(data.excerpt));
+  dele.push(String(data.content));
+  const tale = tilTale(dele.join("\n\n"));
   if (tale.length < 200) throw new LydFejl(422, "for_tynd");
 
-  const locale: Locale = sti === "/en" || sti.startsWith("/en/") ? "en" : "da";
+  const locale = post.locale;
   const stemme = STEMMER[persona][locale];
   await mkdir(CACHE_DIR, { recursive: true });
   const fil = path.join(CACHE_DIR, `${laesCacheNoegle(tale, stemme)}.mp3`);

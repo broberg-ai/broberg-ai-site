@@ -23,6 +23,25 @@ describe("tilTale — det man gider høre", () => {
   });
 });
 
+describe("udtale-ordbogen (Christians lytte-fund 4/9)", () => {
+  test("broberg.ai siges «broberg dot A I» — og reglen kører FØR AI-reglen", () => {
+    expect(tilTale("Velkommen til broberg.ai her.")).toBe("Velkommen til broberg dot A I her.");
+    // Rækkefølgen: kørte AI-reglen først, ville navnet blive «broberg.A I»
+    expect(tilTale("broberg.ai")).not.toContain("broberg.A I");
+  });
+  test("AI siges «A I» — men ordet 'aids' eller 'MAIL' røres ikke", () => {
+    expect(tilTale("vores AI-assistent og AI generelt")).toBe("vores A I-assistent og A I generelt");
+    expect(tilTale("MAILEN")).toBe("MAILEN");
+  });
+  test("[block:]-figurer og skillelinjer siges ikke", () => {
+    const t = tilTale("Før.\n\n[block:min-figur]\n\n---\n\nEfter.");
+    expect(t).not.toContain("block");
+    expect(t).not.toContain("---");
+    expect(t).toContain("Før.");
+    expect(t).toContain("Efter.");
+  });
+});
+
 describe("cache-nøglen", () => {
   test("samme tale+stemme = samme nøgle; ændret tale ELLER stemme = ny nøgle", () => {
     expect(laesCacheNoegle("abc", "jeppe")).toBe(laesCacheNoegle("abc", "jeppe"));
