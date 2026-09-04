@@ -33,6 +33,10 @@ describe("udtale-ordbogen (Christians lytte-fund 4/9)", () => {
     expect(tilTale("vores AI-assistent og AI generelt")).toBe("vores A I-assistent og A I generelt");
     expect(tilTale("MAILEN")).toBe("MAILEN");
   });
+  test("webhook siges «web-hook» (Christians lytte-fund 5/9) — uanset kasse og flertal", () => {
+    expect(tilTale("CMS'ets webhook fyrer")).toBe("CMS'ets web-hook fyrer");
+    expect(tilTale("Registrerede Webhooks kaldes")).toBe("Registrerede web-hooks kaldes");
+  });
   test("[block:]-figurer og skillelinjer siges ikke", () => {
     const t = tilTale("Før.\n\n[block:min-figur]\n\n---\n\nEfter.");
     expect(t).not.toContain("block");

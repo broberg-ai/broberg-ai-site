@@ -51,6 +51,22 @@ export function resetLaesForTest(client?: AiClient): void {
   hits.clear();
 }
 
+/** UDTALE-ORDBOGEN — ord stemmerne siger galt, skrevet som de skal LYDE.
+ *  Vokser én linje ad gangen når Christian hører et nyt (webhook 5/9: Jeppe
+ *  kunne ikke sige det). Alle opslag matches som hele ord, uafhængigt af
+ *  store/små bogstaver — og de kører FØR den generelle AI-regel, så
+ *  «broberg.ai» ikke mangles til «broberg.A I». */
+const ORDBOG: Array<[skrevet: string, siges: string]> = [
+  ["broberg.ai", "broberg dot A I"],
+  ["webhooks", "web-hooks"],
+  ["webhook", "web-hook"],
+];
+const ORDBOG_OPSLAG = Object.fromEntries(ORDBOG.map(([k, v]) => [k.toLowerCase(), v]));
+const ORDBOG_ANVEND = new RegExp(
+  `\\b(${ORDBOG.map(([k]) => k.replace(/\./g, "\\.")).join("|")})\\b`,
+  "gi",
+);
+
 /** Artikel-markdown → noget et menneske gider HØRE (Christians GO 4/9 på
  *  eksemplet i /Downloads). Links læses som deres tekst (aldrig URL'en),
  *  markører og skillelinjer siges ikke, indlejrede [block:]-figurer springes
@@ -65,7 +81,7 @@ export function tilTale(md: string): string {
     .replace(/^[-•]\s+/gm, "")
     .replace(/[*_`]/g, "")
     .replace(/^\s*[-–—_]{3,}\s*$/gm, "")
-    .replace(/\bbroberg\.ai\b/gi, "broberg dot A I")
+    .replace(ORDBOG_ANVEND, (ord) => ORDBOG_OPSLAG[ord.toLowerCase()] ?? ord)
     .replace(/\bAI\b/g, "A I")
     .replace(/[ \t]+/g, " ")
     .replace(/\n{3,}/g, "\n\n")
