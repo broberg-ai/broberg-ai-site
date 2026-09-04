@@ -37,6 +37,12 @@ describe("udtale-ordbogen (Christians lytte-fund 4/9)", () => {
     expect(tilTale("CMS'ets webhook fyrer")).toBe("CMS'ets web-hook fyrer");
     expect(tilTale("Registrerede Webhooks kaldes")).toBe("Registrerede web-hooks kaldes");
   });
+  test("LYDORD er sprogopdelte: «native» → «nejtiv» KUN på dansk (Christian 5/9)", () => {
+    expect(tilTale("en ai-native platform", "da")).toBe("en ai-nejtiv platform");
+    expect(tilTale("an ai-native platform", "en")).toBe("an ai-native platform");
+    // fælles-reglerne gælder stadig begge sprog
+    expect(tilTale("the webhook fires", "en")).toBe("the web-hook fires");
+  });
   test("[block:]-figurer og skillelinjer siges ikke", () => {
     const t = tilTale("Før.\n\n[block:min-figur]\n\n---\n\nEfter.");
     expect(t).not.toContain("block");

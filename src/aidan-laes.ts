@@ -56,16 +56,22 @@ export function resetLaesForTest(client?: AiClient): void {
  *  kunne ikke sige det). Alle opslag matches som hele ord, uafhængigt af
  *  store/små bogstaver — og de kører FØR den generelle AI-regel, så
  *  «broberg.ai» ikke mangles til «broberg.A I». */
-const ORDBOG: Array<[skrevet: string, siges: string]> = [
-  ["broberg.ai", "broberg dot A I"],
-  ["webhooks", "web-hooks"],
-  ["webhook", "web-hook"],
+const ORDBOG: Array<[skrevet: string, siges: string, sprog: "alle" | "da"]> = [
+  ["broberg.ai", "broberg dot A I", "alle"],
+  ["webhooks", "web-hooks", "alle"],
+  ["webhook", "web-hook", "alle"],
+  // LYDORD (Christian 5/9): den danske stemme læser fonetisk-dansk stavning
+  // pænt — men de må ALDRIG ramme engelske artikler, hvor Andrew/Ava udtaler
+  // de rigtige ord perfekt. Derfor sprog-kolonnen.
+  ["native", "nejtiv", "da"],
 ];
-const ORDBOG_OPSLAG = Object.fromEntries(ORDBOG.map(([k, v]) => [k.toLowerCase(), v]));
-const ORDBOG_ANVEND = new RegExp(
-  `\\b(${ORDBOG.map(([k]) => k.replace(/\./g, "\\.")).join("|")})\\b`,
-  "gi",
-);
+function ordbogFor(locale: Locale) {
+  const rækker = ORDBOG.filter(([, , sprog]) => sprog === "alle" || sprog === locale);
+  return {
+    opslag: Object.fromEntries(rækker.map(([k, v]) => [k.toLowerCase(), v])),
+    anvend: new RegExp(`\\b(${rækker.map(([k]) => k.replace(/\./g, "\\.")).join("|")})\\b`, "gi"),
+  };
+}
 
 /** Artikel-markdown → noget et menneske gider HØRE (Christians GO 4/9 på
  *  eksemplet i /Downloads). Links læses som deres tekst (aldrig URL'en),
@@ -73,7 +79,8 @@ const ORDBOG_ANVEND = new RegExp(
  *  over — og UDTALE-ORDBOGEN sikrer at navnet og «AI» siges rigtigt.
  *  Ordbogens rækkefølge bærer: broberg.ai-reglen SKAL køre før AI-reglen,
  *  ellers bliver navnet til «broberg.A I». */
-export function tilTale(md: string): string {
+export function tilTale(md: string, locale: Locale = "da"): string {
+  const ordbog = ordbogFor(locale);
   return md
     .replace(/^\[block:[a-z0-9-]+\]\s*$/gim, "")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
@@ -81,7 +88,7 @@ export function tilTale(md: string): string {
     .replace(/^[-•]\s+/gm, "")
     .replace(/[*_`]/g, "")
     .replace(/^\s*[-–—_]{3,}\s*$/gm, "")
-    .replace(ORDBOG_ANVEND, (ord) => ORDBOG_OPSLAG[ord.toLowerCase()] ?? ord)
+    .replace(ordbog.anvend, (ord) => ordbog.opslag[ord.toLowerCase()] ?? ord)
     .replace(/\bAI\b/g, "A I")
     .replace(/[ \t]+/g, " ")
     .replace(/\n{3,}/g, "\n\n")
@@ -156,7 +163,7 @@ export async function hentLyd(
   const dele = [titel];
   if (data.excerpt) dele.push(String(data.excerpt));
   dele.push(String(data.content));
-  const tale = tilTale(dele.join("\n\n"));
+  const tale = tilTale(dele.join("\n\n"), post.locale);
   if (tale.length < 200) throw new LydFejl(422, "for_tynd");
 
   const locale = post.locale;
