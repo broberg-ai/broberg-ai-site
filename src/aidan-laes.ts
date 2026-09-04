@@ -192,7 +192,9 @@ export async function hentLyd(
   const doc = (await list("posts")).find((d) => String(d.slug) === post.slug);
   const data = (doc?.data ?? {}) as Record<string, unknown>;
   if (!doc || !data.content) throw new LydFejl(502, "side_utilgaengelig");
-  const titel = String(data.title ?? post.slug);
+  // Bælte også HER: titlen går i mailens emne/overskrift, og et rich-title-
+  // felt kan bære HTML (målt i Christians mail 5/9: escaped <em> i overskriften).
+  const titel = String(data.title ?? post.slug).replace(/<[^>]+>/g, "").trim();
   const dele = [titel];
   if (data.excerpt) dele.push(String(data.excerpt));
   dele.push(String(data.content));
