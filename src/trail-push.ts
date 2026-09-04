@@ -64,8 +64,10 @@ async function pushSide(collection: string, slug: string, locale: Locale): Promi
   const titel = /<title>([^<]*)<\/title>/.exec(html)?.[1]?.trim() ?? sourceUrl;
   const tekst = tilTekst(html);
   if (tekst.length < 200) return; // en tynd side er støj i en vidensbase
-  await trailUploadSide(`# ${titel}\n\nKilde: ${sourceUrl}\n\n${tekst}\n`, sourceUrl);
-  console.log(`[trail-push] sendt til KB: ${sourceUrl}`);
+  const udfald = await trailUploadSide(`# ${titel}\n\nKilde: ${sourceUrl}\n\n${tekst}\n`, sourceUrl);
+  console.log(udfald === "uaendret"
+    ? `[trail-push] uændret — KB'en har allerede præcis dette indhold: ${sourceUrl}`
+    : `[trail-push] sendt til KB: ${sourceUrl}`);
 }
 
 /** Planlæg et push. Fyrer-og-glemmer: webhook-svaret må ALDRIG vente på —

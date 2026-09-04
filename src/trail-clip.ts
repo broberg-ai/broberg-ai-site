@@ -70,7 +70,7 @@ export async function trailHarSide(sourceUrl: string): Promise<boolean> {
 
 /** Upload én side (markdown) til KB'en. Kaster ved fejl — kalderen afgør om
  *  det er et log-og-videre (det faste job) eller en rød kørsel (sync-scriptet). */
-export async function trailUploadSide(md: string, sourceUrl: string): Promise<void> {
+export async function trailUploadSide(md: string, sourceUrl: string): Promise<"sendt" | "uaendret"> {
   const a = auth();
   if (!a) throw new Error("TRAIL_TOKEN/TRAIL_KB er ikke sat");
   const form = new FormData();
@@ -82,5 +82,12 @@ export async function trailUploadSide(md: string, sourceUrl: string): Promise<vo
     headers: { authorization: `Bearer ${a.token}`, "x-trail-tenant": a.tenant },
     body: form,
   });
+  if (res.status === 409) {
+    // Trails egen indholds-hash-spærre: NØJAGTIG samme indhold findes allerede.
+    // Målt live 4/9 (gen-udgivelse uden tekstændring → 409 duplicate_source).
+    // Det er jobbets FORVENTEDE udfald for en uændret side — ikke en fejl.
+    return "uaendret";
+  }
   if (!res.ok) throw new Error(`trail-upload ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  return "sendt";
 }
