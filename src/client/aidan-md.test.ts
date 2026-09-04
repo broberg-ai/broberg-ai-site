@@ -76,3 +76,18 @@ describe("handlings-knapper (Eir-mønstret)", () => {
     expect(aidanTilHtml("Se [casen](/cases).")).not.toContain("aidan-cta");
   });
 });
+
+describe("fremad-tolerance — gamle faner må aldrig se maskineri", () => {
+  test("et UKENDT fremtidigt token renderes som rent link uden præfiks", () => {
+    const html = aidanTilHtml("Se her: [kort:Læs casen](/cases)");
+    expect(html).toContain('<a href="/cases">Læs casen</a>');
+    expect(html).not.toContain("kort:");
+  });
+  test("[Knap:…] med stort K virker også som knap", () => {
+    expect(aidanTilHtml("[Knap:Book](/kontakt)")).toContain('class="aidan-cta"');
+  });
+  test("prosa med kolon i link-tekst klippes IKKE (store bogstaver/lange ord)", () => {
+    expect(aidanTilHtml("[NB: vigtigt](/x)")).toContain(">NB: vigtigt</a>");
+    expect(aidanTilHtml("[Sådan bygger vi: metoden](/metode)")).toContain(">Sådan bygger vi: metoden</a>");
+  });
+});

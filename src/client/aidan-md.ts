@@ -21,7 +21,7 @@ export function escHtml(t: string): string {
  *  et TOKEN med kendt form — ikke "style nogle links som knapper". Loftet
  *  håndhæves i aidanTilHtml: max 2 knapper pr. svar, resten bliver
  *  almindelige links (sannes erfaring: uden loft bliver et svar en menu). */
-const KNAP_RE = /\[knap:([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g;
+const KNAP_RE = /\[knap:([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/gi;
 
 /** Inline-former på ALLEREDE escaped tekst. Knap-tokenet FØRST (ellers æder
  *  den generelle link-regel det); links før fed/kursiv, så en * i en URL ikke
@@ -35,6 +35,12 @@ function inline(t: string, knapBudget: { tilbage: number }): string {
       }
       return `<a href="${href}">${tekst}</a>`;
     })
+    // FREMAD-TOLERANCE (Christians «knap:»-skærmbillede 4/9): en fane indlæst
+    // FØR en udrulning kender ikke tokens serveren er begyndt at tale. Ethvert
+    // ukendt [ord:Tekst](sti)-token renderes derfor som et RENT link uden
+    // maskineriet — kun små bogstaver, 2-12 tegn, så «[NB: vigtigt]» og
+    // almindelig prosa aldrig klippes. Gælder fra denne bundle og frem.
+    .replace(/\[[a-zæøå]{2,12}:\s*([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[\s>])\*([^*\n]+)\*(?=[\s.,!?:;<]|$)/g, "$1<em>$2</em>");
