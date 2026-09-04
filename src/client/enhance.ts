@@ -558,7 +558,7 @@ function figurKlip() {
     };
 
     knap.addEventListener("click", spil);
-    knap.addEventListener("keydown", (e) => {
+    knap.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         spil();
@@ -624,10 +624,18 @@ function aidan() {
     boble.classList.remove("vis");
     felt.focus();
   };
-  fab.addEventListener("click", aabn);
-  luk.addEventListener("click", () => {
+  const lukPanel = () => {
     panel.hidden = true;
     fab.classList.remove("aaben");
+  };
+  fab.addEventListener("click", aabn);
+  luk.addEventListener("click", lukPanel);
+  // ESC lukker Aidan (Christian 4/9). I fuldskærm tager første ESC kun
+  // fuldskærmen af — standard lag-adfærd — og andet ESC lukker panelet.
+  addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.key !== "Escape" || panel.hidden) return;
+    if (panel.classList.contains("fuld")) panel.classList.remove("fuld");
+    else lukPanel();
   });
 
   // ── Samtalen (F007.4): rigtigt lager med historik + Ny samtale — Eir-
