@@ -32,9 +32,13 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
     const da = udtaleFor("da");
     expect(da).toContainEqual({ word: "native", ipa: "ˈneɪtɪv" });
     expect(da).toContainEqual({ word: "AI", alias: "A I" });
+    // Engelsk virker out-of-the-box (Christian 5/9): domæner, AI og webhook
+    // er KUN danske regler — Andrew/Ava siger dem rigtigt selv.
     const en = udtaleFor("en");
     expect(en.find((r) => r.word === "native")).toBeUndefined();
-    expect(en).toContainEqual({ word: "broberg.ai", alias: "broberg dot A I" });
+    expect(en.find((r) => r.word === "broberg.ai")).toBeUndefined();
+    expect(en.find((r) => r.word === "AI")).toBeUndefined();
+    expect(en.find((r) => r.word === "webhook")).toBeUndefined();
   });
   test("en ændret udtale giver en NY lyd-nøgle (ellers serverer lageret den gamle lyd for evigt)", () => {
     expect(ordbogNoegle("da")).toMatch(/^[0-9a-f]{8}$/);
@@ -43,7 +47,7 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
   test("bruttolisten (5/9): domæner som navne, bøjede låneord, www. siges aldrig", () => {
     expect(tilTale("Se www.trailmem.com her")).toBe("Se trailmem.com her");
     const da = udtaleFor("da");
-    expect(da).toContainEqual({ word: "trailmem.com", alias: "trail mem dot com" });
+    expect(da).toContainEqual({ word: "trailmem.com", alias: "trail mem punktum com" });
     expect(da).toContainEqual({ word: "stylet", alias: "stajlet" });
     expect(da).toContainEqual({ word: "workflow", ipa: "ˈwɜːkfloʊ" });
     expect(da).toContainEqual({ word: "lens", ipa: "lɛnz" });

@@ -64,21 +64,21 @@ export function resetLaesForTest(client?: AiClient): void {
  *  `sprog: "da"` holder danske lydregler væk fra Andrew/Ava, der udtaler de
  *  engelske ord rigtigt. Nyt galt-udtalt ord = én række her. */
 const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" | "da" }> = [
-  { word: "AI", alias: "A I", sprog: "alle" },
-  // Domæner og produktnavne — læses som NAVNE (Christians «Trail Mem»-regel).
-  { word: "broberg.ai", alias: "broberg dot A I", sprog: "alle" },
-  { word: "trailmem.com", alias: "trail mem dot com", sprog: "alle" },
+  // Christians princip 5/9: engelsk tale håndterer engelske ord og domæner
+  // out-of-the-box — så NÆSTEN alt er da-scoped, og domæner siges med
+  // «punktum» på dansk (ikke «dot»).
+  { word: "AI", alias: "A I", sprog: "da" },
+  { word: "broberg.ai", alias: "broberg punktum A I", sprog: "da" },
+  { word: "trailmem.com", alias: "trail mem punktum com", sprog: "da" },
   { word: "trailmem", alias: "trail mem", sprog: "alle" },
-  { word: "webhouse.app", alias: "web house dot app", sprog: "alle" },
-  { word: "xrt81.com", alias: "x r t 81 dot com", sprog: "alle" },
-  { word: "fdsundhed.dk", alias: "f d sundhed dot d k", sprog: "alle" },
-  { word: "sanneandersen.dk", alias: "sanne andersen dot d k", sprog: "alle" },
+  { word: "webhouse.app", alias: "web house punktum app", sprog: "da" },
+  { word: "xrt81.com", alias: "x r t 81 punktum com", sprog: "da" },
+  { word: "fdsundhed.dk", alias: "f d sundhed punktum d k", sprog: "da" },
+  { word: "sanneandersen.dk", alias: "sanne andersen punktum d k", sprog: "da" },
   { word: "gbrain", alias: "G brain", sprog: "alle" },
-  { word: "webhooks", alias: "web-hooks", sprog: "alle" },
-  { word: "webhook", alias: "web-hook", sprog: "alle" },
-  // Bruttolisten fra sitets MÅLTE danske ordforråd (25 artikler, 5/9) + de
-  // bøjede låneord Christian fangede («stylet» → stylet på dansk). Aliaser er
-  // TALE-tekst — lydord bor fint dér uden at røre den skrevne tekst.
+  { word: "webhooks", alias: "web-hooks", sprog: "da" },
+  { word: "webhook", alias: "web-hook", sprog: "da" },
+  // Målte danske faldgruber (bøjede låneord som lydord-alias, rene som IPA).
   { word: "native", ipa: "ˈneɪtɪv", sprog: "da" },
   { word: "stylet", alias: "stajlet", sprog: "da" },
   { word: "stylede", alias: "stajlede", sprog: "da" },
