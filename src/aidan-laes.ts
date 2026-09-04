@@ -91,6 +91,10 @@ export function ordbogNoegle(locale: Locale): string {
  *  ellers bliver navnet til «broberg.A I». */
 export function tilTale(md: string): string {
   return md
+    // BÆLTE (Christians fund 5/9: rå <em> i en titel blev læst højt som
+    // «mindre end...»): HTML-tags når ALDRIG stemmen, uanset hvor de sniger
+    // sig ind i et felt. Dataen rettes altid også — dette er nødbremsen.
+    .replace(/<[^>]+>/g, "")
     .replace(/^\[block:[a-z0-9-]+\]\s*$/gim, "")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/^#{1,4}\s+/gm, "")

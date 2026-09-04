@@ -40,6 +40,10 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
     expect(ordbogNoegle("da")).toMatch(/^[0-9a-f]{8}$/);
     expect(ordbogNoegle("da")).not.toBe(ordbogNoegle("en")); // forskellige ordbøger → forskellige nøgler
   });
+  test("HTML-tags når ALDRIG stemmen — bæltet mod rå markup i felter (Christians fund 5/9)", () => {
+    expect(tilTale("Grøn, <em>og alligevel i stykker</em>")).toBe("Grøn, og alligevel i stykker");
+    expect(tilTale("tekst med <br> og <a href=\"/x\">link</a>")).toBe("tekst med og link");
+  });
   test("[block:]-figurer og skillelinjer siges ikke", () => {
     const t = tilTale("Før.\n\n[block:min-figur]\n\n---\n\nEfter.");
     expect(t).not.toContain("block");

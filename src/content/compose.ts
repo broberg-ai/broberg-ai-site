@@ -824,8 +824,8 @@ export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
     const cat = str(d.category);
     out.push({
       id: `post:${String(p.slug)}`,
-      title: str(d.title),
-      subtitle: str(d.excerpt),
+      title: str(d.title).replace(/<[^>]+>/g, ""),
+      subtitle: str(d.excerpt).replace(/<[^>]+>/g, ""),
       badge: cat === "cases" ? "CASE" : "INDSIGT",
       badgeTone: cat === "cases" ? "oat" : "olive",
       data: withLocale(locale, `/${cat}/${String(p.slug)}`),
