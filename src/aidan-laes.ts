@@ -56,21 +56,31 @@ export function resetLaesForTest(client?: AiClient): void {
  *  kunne ikke sige det). Alle opslag matches som hele ord, uafhængigt af
  *  store/små bogstaver — og de kører FØR den generelle AI-regel, så
  *  «broberg.ai» ikke mangles til «broberg.A I». */
-const ORDBOG: Array<[skrevet: string, siges: string, sprog: "alle" | "da"]> = [
-  ["broberg.ai", "broberg dot A I", "alle"],
-  ["webhooks", "web-hooks", "alle"],
-  ["webhook", "web-hook", "alle"],
-  // LYDORD (Christian 5/9): den danske stemme læser fonetisk-dansk stavning
-  // pænt — men de må ALDRIG ramme engelske artikler, hvor Andrew/Ava udtaler
-  // de rigtige ord perfekt. Derfor sprog-kolonnen.
-  ["native", "nejtiv", "da"],
+/** UDTALE-ORDBOGEN (F007.7.1, Christians formål ordret: «en ordbog der gør at
+ *  vores stemme bare bliver bedre og bedre jo flere faldgrupper jeg fanger den
+ *  i») — fra ai-sdk 0.39.0 et FØRSTEKLASSES tts-felt: teksten forbliver ren
+ *  (mail, genbrug), kun LYDEN ændres, og substitution + escaping sker i
+ *  adapteren (injektions-værnet er pakkens, ikke vores).
+ *  `sprog: "da"` holder danske lydregler væk fra Andrew/Ava, der udtaler de
+ *  engelske ord rigtigt. Nyt galt-udtalt ord = én række her. */
+const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" | "da" }> = [
+  { word: "AI", alias: "A I", sprog: "alle" },
+  { word: "broberg.ai", alias: "broberg dot A I", sprog: "alle" },
+  { word: "webhooks", alias: "web-hooks", sprog: "alle" },
+  { word: "webhook", alias: "web-hook", sprog: "alle" },
+  { word: "native", ipa: "ˈneɪtɪv", sprog: "da" },
 ];
-function ordbogFor(locale: Locale) {
-  const rækker = ORDBOG.filter(([, , sprog]) => sprog === "alle" || sprog === locale);
-  return {
-    opslag: Object.fromEntries(rækker.map(([k, v]) => [k.toLowerCase(), v])),
-    anvend: new RegExp(`\\b(${rækker.map(([k]) => k.replace(/\./g, "\\.")).join("|")})\\b`, "gi"),
-  };
+export function udtaleFor(locale: Locale): Array<{ word: string; alias?: string; ipa?: string }> {
+  return ORDBOG.filter((r) => r.sprog === "alle" || r.sprog === locale).map(({ word, alias, ipa }) => ({
+    word,
+    ...(alias ? { alias } : {}),
+    ...(ipa ? { ipa } : {}),
+  }));
+}
+/** Ordbogen er en del af lydens identitet: en ændret udtale SKAL give en ny
+ *  fil, ellers serverer lageret den gamle lyd for evigt. */
+export function ordbogNoegle(locale: Locale): string {
+  return createHash("sha256").update(JSON.stringify(udtaleFor(locale))).digest("hex").slice(0, 8);
 }
 
 /** Artikel-markdown → noget et menneske gider HØRE (Christians GO 4/9 på
@@ -79,8 +89,7 @@ function ordbogFor(locale: Locale) {
  *  over — og UDTALE-ORDBOGEN sikrer at navnet og «AI» siges rigtigt.
  *  Ordbogens rækkefølge bærer: broberg.ai-reglen SKAL køre før AI-reglen,
  *  ellers bliver navnet til «broberg.A I». */
-export function tilTale(md: string, locale: Locale = "da"): string {
-  const ordbog = ordbogFor(locale);
+export function tilTale(md: string): string {
   return md
     .replace(/^\[block:[a-z0-9-]+\]\s*$/gim, "")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
@@ -88,8 +97,6 @@ export function tilTale(md: string, locale: Locale = "da"): string {
     .replace(/^[-•]\s+/gm, "")
     .replace(/[*_`]/g, "")
     .replace(/^\s*[-–—_]{3,}\s*$/gm, "")
-    .replace(ordbog.anvend, (ord) => ordbog.opslag[ord.toLowerCase()] ?? ord)
-    .replace(/\bAI\b/g, "A I")
     .replace(/[ \t]+/g, " ")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
@@ -163,13 +170,13 @@ export async function hentLyd(
   const dele = [titel];
   if (data.excerpt) dele.push(String(data.excerpt));
   dele.push(String(data.content));
-  const tale = tilTale(dele.join("\n\n"), post.locale);
+  const tale = tilTale(dele.join("\n\n"));
   if (tale.length < 200) throw new LydFejl(422, "for_tynd");
 
   const locale = post.locale;
   const stemme = STEMMER[persona][locale];
   await mkdir(CACHE_DIR, { recursive: true });
-  const fil = path.join(CACHE_DIR, `${laesCacheNoegle(tale, stemme)}.mp3`);
+  const fil = path.join(CACHE_DIR, `${laesCacheNoegle(tale, `${stemme}:${ordbogNoegle(locale)}`)}.mp3`);
   try {
     return { audio: new Uint8Array(await readFile(fil)), mimeType: "audio/mpeg", titel };
   } catch {
@@ -179,6 +186,7 @@ export async function hentLyd(
     text: tale,
     voice: stemme,
     lang: locale === "en" ? "en-US" : "da-DK",
+    pronunciations: udtaleFor(locale),
     override: { provider: "azure" },
   });
   await writeFile(fil, audio).catch(() => {}); // en fejlet cache-skrivning må aldrig koste svaret

@@ -5,7 +5,7 @@
     "": {
       "name": "broberg-ai-site",
       "dependencies": {
-        "@broberg/ai-sdk": "0.38.0",
+        "@broberg/ai-sdk": "0.39.0",
         "@broberg/cms-chat-client": "^0.4.16",
         "@broberg/cms-inline-edit": "0.6.3",
         "@broberg/forms-turnstile": "^0.1.0",
@@ -30,7 +30,7 @@
   "packages": {
     "@asamuzakjp/css-color": ["@asamuzakjp/css-color@3.2.0", "", { "dependencies": { "@csstools/css-calc": "^2.1.3", "@csstools/css-color-parser": "^3.0.9", "@csstools/css-parser-algorithms": "^3.0.4", "@csstools/css-tokenizer": "^3.0.3", "lru-cache": "^10.4.3" } }, "sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw=="],
 
-    "@broberg/ai-sdk": ["@broberg/ai-sdk@0.38.0", "", { "dependencies": { "zod": "^3.23.8" } }, "sha512-F+B5QgcOZecl/k+oFnXtmCwQ7zAUtoNNaeawZRH4LeLD1OGpbLVjr5rMgpY8OxULkaJEVVfFz9H3ovd45ouAfA=="],
+    "@broberg/ai-sdk": ["@broberg/ai-sdk@0.39.0", "", { "dependencies": { "zod": "^3.23.8" } }, "sha512-rqXm4Pp+lid/EFJVobrTffRs2youEIIuL/ZtLlK/Ag6Rj1Lm1LXcHi2FndXJf8KmA/cN74YlxJ7fAjH1pBZw2Q=="],
 
     "@broberg/cms-chat-client": ["@broberg/cms-chat-client@0.4.16", "", {}, "sha512-R6r1bnHf/DAm8S+1vAQWPUtnopiSHqJs1ffMBUQ/fzAAqi6h9m7jHdViuDDsVLE1SmFLa9eWsH/0Z9Pfwt1w0Q=="],
 

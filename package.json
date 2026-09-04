@@ -17,7 +17,7 @@
     "gate:cms-text": "bun scripts/gate-cms-text.mjs"
   },
   "dependencies": {
-    "@broberg/ai-sdk": "0.38.0",
+    "@broberg/ai-sdk": "0.39.0",
     "@broberg/cms-chat-client": "^0.4.16",
     "@broberg/cms-inline-edit": "0.6.3",
     "@broberg/forms-turnstile": "^0.1.0",

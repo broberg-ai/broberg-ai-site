@@ -1,6 +1,6 @@
 /* Segl for oplæsningen (F007.7) — den rene logik: tale-rensning + cache-nøgle. */
 import { describe, test, expect } from "bun:test";
-import { tilTale, laesCacheNoegle } from "./aidan-laes.ts";
+import { tilTale, laesCacheNoegle, udtaleFor, ordbogNoegle } from "./aidan-laes.ts";
 
 describe("tilTale — det man gider høre", () => {
   test("links læses som deres tekst, aldrig URL'en", () => {
@@ -23,25 +23,22 @@ describe("tilTale — det man gider høre", () => {
   });
 });
 
-describe("udtale-ordbogen (Christians lytte-fund 4/9)", () => {
-  test("broberg.ai siges «broberg dot A I» — og reglen kører FØR AI-reglen", () => {
-    expect(tilTale("Velkommen til broberg.ai her.")).toBe("Velkommen til broberg dot A I her.");
-    // Rækkefølgen: kørte AI-reglen først, ville navnet blive «broberg.A I»
-    expect(tilTale("broberg.ai")).not.toContain("broberg.A I");
+describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5/9)", () => {
+  test("teksten forvanskes IKKE længere — udtalen bor i pronunciations-feltet", () => {
+    expect(tilTale("vores AI-assistent på broberg.ai")).toBe("vores AI-assistent på broberg.ai");
+    expect(tilTale("en ai-native webhook")).toBe("en ai-native webhook");
   });
-  test("AI siges «A I» — men ordet 'aids' eller 'MAIL' røres ikke", () => {
-    expect(tilTale("vores AI-assistent og AI generelt")).toBe("vores A I-assistent og A I generelt");
-    expect(tilTale("MAILEN")).toBe("MAILEN");
+  test("udtaleFor: dansk får lydreglerne, engelsk får kun de fælles", () => {
+    const da = udtaleFor("da");
+    expect(da).toContainEqual({ word: "native", ipa: "ˈneɪtɪv" });
+    expect(da).toContainEqual({ word: "AI", alias: "A I" });
+    const en = udtaleFor("en");
+    expect(en.find((r) => r.word === "native")).toBeUndefined();
+    expect(en).toContainEqual({ word: "broberg.ai", alias: "broberg dot A I" });
   });
-  test("webhook siges «web-hook» (Christians lytte-fund 5/9) — uanset kasse og flertal", () => {
-    expect(tilTale("CMS'ets webhook fyrer")).toBe("CMS'ets web-hook fyrer");
-    expect(tilTale("Registrerede Webhooks kaldes")).toBe("Registrerede web-hooks kaldes");
-  });
-  test("LYDORD er sprogopdelte: «native» → «nejtiv» KUN på dansk (Christian 5/9)", () => {
-    expect(tilTale("en ai-native platform", "da")).toBe("en ai-nejtiv platform");
-    expect(tilTale("an ai-native platform", "en")).toBe("an ai-native platform");
-    // fælles-reglerne gælder stadig begge sprog
-    expect(tilTale("the webhook fires", "en")).toBe("the web-hook fires");
+  test("en ændret udtale giver en NY lyd-nøgle (ellers serverer lageret den gamle lyd for evigt)", () => {
+    expect(ordbogNoegle("da")).toMatch(/^[0-9a-f]{8}$/);
+    expect(ordbogNoegle("da")).not.toBe(ordbogNoegle("en")); // forskellige ordbøger → forskellige nøgler
   });
   test("[block:]-figurer og skillelinjer siges ikke", () => {
     const t = tilTale("Før.\n\n[block:min-figur]\n\n---\n\nEfter.");
