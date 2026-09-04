@@ -77,7 +77,11 @@ export async function trailUploadSide(md: string, sourceUrl: string): Promise<"s
   form.set("file", new File([md], trailFilnavn(sourceUrl), { type: "text/markdown" }));
   form.set("path", "/broberg-ai-site");
   form.set("metadata", JSON.stringify({ connector: "broberg-ai-site-sync", sourceUrl }));
-  const res = await fetch(`${API()}/knowledge-bases/${encodeURIComponent(a.kb)}/documents/upload`, {
+  // ?localCompile=true — «local ingest» (Christians ordre 4/9): kilden gemmes
+  // identisk men PARKERES til gratis kompilering på Max-planen i stedet for
+  // betalt sky-kompilering (~20¢/kilde). Målt konsekvens af at mangle flaget:
+  // de første 169 kilder kørte betalt (~$35) — det må aldrig ske igen.
+  const res = await fetch(`${API()}/knowledge-bases/${encodeURIComponent(a.kb)}/documents/upload?localCompile=true`, {
     method: "POST",
     headers: { authorization: `Bearer ${a.token}`, "x-trail-tenant": a.tenant },
     body: form,
