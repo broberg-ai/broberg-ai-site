@@ -23,7 +23,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Context } from "hono";
 import { config } from "@/config.ts";
 import { buildSearchIndex } from "@/content/compose.ts";
-import { tilTekst, trailHarSide, trailUploadSide } from "@/trail-clip.ts";
+import { tilTekst, trailUploadSide } from "@/trail-clip.ts";
 import type { Locale } from "@/config.ts";
 
 const OFFENTLIG_BASE = process.env.SITE_BASE ?? "https://broberg.ai";
@@ -49,12 +49,6 @@ async function pushSide(collection: string, slug: string, locale: Locale): Promi
   const sti = await findSti(collection, slug, locale);
   if (!sti) return; // ikke (længere) en offentlig side — intet at pushe
   const sourceUrl = `${OFFENTLIG_BASE}${sti}`;
-
-  if (await trailHarSide(sourceUrl)) {
-    // Dublet-spærren — fjernes når trails upsert-på-sourceUrl er live.
-    console.log(`[trail-push] springer over (findes allerede, afventer upsert): ${sourceUrl}`);
-    return;
-  }
 
   // Hent fra VORES EGEN server: storen er netop skrevet, så det rendrede er
   // friskere end den offentlige URL (CDN/andre replikaer er ikke et krav her).

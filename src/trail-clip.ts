@@ -93,5 +93,9 @@ export async function trailUploadSide(md: string, sourceUrl: string): Promise<"s
     return "uaendret";
   }
   if (!res.ok) throw new Error(`trail-upload ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  // F243.1 (trails upsert-på-sourceUrl, live 4/9): 200 kan nu betyde
+  // «uændret» (nul skrivninger) eller «opdateret» (samme dokument, version+1).
+  const krop = await res.json().catch(() => ({}));
+  if (krop?.upsert === "unchanged") return "uaendret";
   return "sendt";
 }

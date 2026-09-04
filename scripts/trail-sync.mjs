@@ -71,6 +71,7 @@ if (fase === "push") {
   const filer = readdirSync(UD).filter((f) => f.endsWith(".md"));
   console.log(`pusher ${filer.length} sider til KB «${KB}»`);
   let ok = 0, fejl = 0;
+  const upserts = { unchanged: 0, updated: 0, created: 0, andet: 0 };
   for (const f of filer) {
     const md = readFileSync(UD + f, "utf8");
     const kilde = /^Kilde: (.+)$/m.exec(md)?.[1];
@@ -78,15 +79,22 @@ if (fase === "push") {
     form.set("file", new File([md], f, { type: "text/markdown" }));
     form.set("path", "/broberg-ai-site");
     form.set("metadata", JSON.stringify({ connector: "broberg-ai-site-sync", sourceUrl: kilde }));
-    const res = await fetch(`${API}/knowledge-bases/${encodeURIComponent(KB)}/documents/upload`, {
+    // ?localCompile=true — $0-vejen, ALTID (de første 169 kilder kørte betalt uden flaget)
+    const res = await fetch(`${API}/knowledge-bases/${encodeURIComponent(KB)}/documents/upload?localCompile=true`, {
       method: "POST",
       // X-Trail-Tenant: en scope=all-nøgle falder ellers stille tilbage på hjemme-tenant (trail #25543)
       headers: { authorization: `Bearer ${TOKEN}`, "x-trail-tenant": process.env.TRAIL_TENANT ?? "broberg-ai" },
       body: form,
     });
-    if (res.ok) { ok++; }
+    if (res.ok) {
+      ok++;
+      // F243.1: serveren svarer med upsert-status — unchanged = nul skrivninger.
+      const krop = await res.json().catch(() => ({}));
+      const u = krop?.upsert ?? (krop?.document ? "created" : "andet");
+      upserts[u in upserts ? u : "andet"]++;
+    }
     else { fejl++; console.error(`  ${res.status} ${f}: ${(await res.text()).slice(0, 200)}`); }
   }
-  console.log(`pushet: ${ok} · fejl: ${fejl}`);
+  console.log(`pushet: ${ok} · fejl: ${fejl} · upsert: ${JSON.stringify(upserts)}`);
   process.exit(fejl ? 1 : 0);
 }
