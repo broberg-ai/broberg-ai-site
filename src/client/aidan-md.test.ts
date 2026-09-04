@@ -79,6 +79,14 @@ describe("handlings-knapper (Eir-mønstret)", () => {
   test("et almindeligt link bliver ALDRIG til en knap", () => {
     expect(aidanTilHtml("Se [casen](/cases).")).not.toContain("aidan-cta");
   });
+  test("sætningstegn lige efter en knap sluges — intet ensomt «.» under knappen (E2E-screenshot 4/9)", () => {
+    const html = aidanTilHtml("Læs mere eller [knap:Tal med Christian](/kontakt).");
+    expect(html).toContain(">Tal med Christian</a>");
+    expect(html).not.toContain("</a>.");
+    // Degraderet knap (over loftet) er et rent inline-link — dér hører punktummet med.
+    const tre = aidanTilHtml("[knap:En](/a) [knap:To](/b) [knap:Tre](/c).");
+    expect(tre).toContain('<a href="/c">Tre</a>.');
+  });
 });
 
 describe("fremad-tolerance — gamle faner må aldrig se maskineri", () => {

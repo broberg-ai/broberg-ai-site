@@ -21,7 +21,7 @@ export function escHtml(t: string): string {
  *  et TOKEN med kendt form — ikke "style nogle links som knapper". Loftet
  *  håndhæves i aidanTilHtml: max 2 knapper pr. svar, resten bliver
  *  almindelige links (sannes erfaring: uden loft bliver et svar en menu). */
-const KNAP_RE = /\[knap:([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/gi;
+const KNAP_RE = /\[knap:([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)([.,!?;:]*)/gi;
 
 /** Inline-former på ALLEREDE escaped tekst. Rækkefølgen bærer korrektheden:
  *  1. KODE først, gemt bag pladsholdere — indholdet af `…` må aldrig ses af
@@ -36,12 +36,15 @@ function inline(t: string, knapBudget: { tilbage: number }): string {
     return `\u0000K${koder.length - 1}\u0000`;
   });
   ud = ud
-    .replace(KNAP_RE, (_alt, tekst: string, href: string) => {
+    .replace(KNAP_RE, (_alt, tekst: string, href: string, tegn: string) => {
       if (knapBudget.tilbage > 0) {
         knapBudget.tilbage--;
+        // Sætningstegn LIGE efter tokenet sluges: knappen renderes som blok, så
+        // et efterhængt «.» ville stå alene på sin egen linje under knappen
+        // (målt på Christians E2E-screenshot 4/9). På et rent link hører det med.
         return `<a class="aidan-cta" data-testid="aidan-cta" href="${href}">${tekst}</a>`;
       }
-      return `<a href="${href}">${tekst}</a>`;
+      return `<a href="${href}">${tekst}</a>${tegn}`;
     })
     .replace(/\[[a-zæøå]{2,12}:\s*([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
