@@ -20,6 +20,10 @@ import { cmsAttrs } from "@/components/sections.tsx";
 const STILL = "/uploads/aidan-kanonisk-rfjl.svg";
 const KLIP_MOERK = "/uploads/g2-aidan-moerk-s45h.mp4";
 const KLIP_LYS = "/uploads/g2-aidan-lys-6kty.mp4";
+// F007.8.2: Airina — Aidans kvindelige modstykke (figurerne fra supers Assets).
+const AIRINA_STILL = "/uploads/airina-klasser-77ms.svg";
+const AIRINA_MOERK = "/uploads/airina-tema-moerk-kdtq.mp4";
+const AIRINA_LYS = "/uploads/airina-tema-lys-656n.mp4";
 
 export interface AidanTekster {
   boble: string;
@@ -53,6 +57,10 @@ export interface AidanTekster {
   mailSend: string;
   mailSendt: string;
   mailFejl: string;
+  airinaNavn: string;
+  airinaBoble: string;
+  airinaHilsen: string;
+  airinaDisclaimer: string;
 }
 
 export function aidanTekster(
@@ -105,6 +113,18 @@ export function aidanTekster(
     mailSend: g("aidanMailSend", en ? "Send" : "Send"),
     mailSendt: g("aidanMailSendt", en ? "Sent — check your inbox" : "Sendt — tjek din indbakke"),
     mailFejl: g("aidanMailFejl", en ? "Couldn't send — try again" : "Kunne ikke sende — prøv igen"),
+    airinaNavn: g("airinaNavn", "Airina"),
+    airinaBoble: g("airinaBoble", en ? "Hi — I'm Airina" : "Hej — jeg er Airina"),
+    airinaHilsen: g(
+      "airinaHilsen",
+      en
+        ? "Hi! I'm Airina — I know this whole universe. Ask me about the cases, the flagships, or what we can build for you."
+        : "Hej! Jeg er Airina — jeg kender hele universet her. Spørg mig om cases, flagskibe eller hvad vi kan bygge for dig.",
+    ),
+    airinaDisclaimer: g(
+      "airinaDisclaimer",
+      en ? "Airina is an AI — answers may contain mistakes" : "Airina er en AI — svar kan indeholde fejl",
+    ),
     disclaimer: g(
       "aidanDisclaimer",
       en ? "Aidan is an AI — answers may contain mistakes" : "Aidan er en AI — svar kan indeholde fejl",
@@ -112,13 +132,21 @@ export function aidanTekster(
   };
 }
 
-/** Ét videopar (mørk+lys) i en rund maske. Poster = kanonisk SVG. */
+/** Ét videopar (mørk+lys) i en rund maske. Poster = kanonisk SVG.
+ *  BEGGE personaers figurer ligger i DOM'en; CSS viser den valgte
+ *  (#aidan.persona-airina) — samme mønster som tema-klippene. */
 function Figur({ klasse }: { klasse: string }) {
   return (
-    <span class={klasse} aria-hidden="true">
-      <video class="aidan-v aidan-v-moerk" src={KLIP_MOERK} poster={STILL} muted playsinline preload="none" />
-      <video class="aidan-v aidan-v-lys" src={KLIP_LYS} poster={STILL} muted playsinline preload="none" />
-    </span>
+    <>
+      <span class={`${klasse} figur-aidan`} aria-hidden="true">
+        <video class="aidan-v aidan-v-moerk" src={KLIP_MOERK} poster={STILL} muted playsinline preload="none" />
+        <video class="aidan-v aidan-v-lys" src={KLIP_LYS} poster={STILL} muted playsinline preload="none" />
+      </span>
+      <span class={`${klasse} figur-airina`} aria-hidden="true">
+        <video class="aidan-v aidan-v-moerk" src={AIRINA_MOERK} poster={AIRINA_STILL} muted playsinline preload="none" />
+        <video class="aidan-v aidan-v-lys" src={AIRINA_LYS} poster={AIRINA_STILL} muted playsinline preload="none" />
+      </span>
+    </>
   );
 }
 
@@ -149,6 +177,14 @@ export function AidanWidget({
       data-mail-send={t.mailSend}
       data-mail-sendt={t.mailSendt}
       data-mail-fejl={t.mailFejl}
+      data-navn-aidan={t.navn}
+      data-navn-airina={t.airinaNavn}
+      data-boble-aidan={t.boble}
+      data-boble-airina={t.airinaBoble}
+      data-hilsen-aidan={t.hilsen}
+      data-hilsen-airina={t.airinaHilsen}
+      data-disclaimer-aidan={t.disclaimer}
+      data-disclaimer-airina={t.airinaDisclaimer}
     >
       <button
         type="button"
@@ -173,7 +209,7 @@ export function AidanWidget({
         <div class="aidan-top">
           <Figur klasse="aidan-avatar" />
           <div class="aidan-navn">
-            <b {...cmsAttrs(globalsRef, "aidanNavn")}>{t.navn}</b>
+            <b class="aidan-navn-tekst" {...cmsAttrs(globalsRef, "aidanNavn")}>{t.navn}</b>
             <small>
               <span class="aidan-prik" />
               <span {...cmsAttrs(globalsRef, "aidanRolle")}>{t.rolle}</span>

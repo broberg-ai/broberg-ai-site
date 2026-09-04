@@ -134,6 +134,19 @@ describe("primeren", () => {
     expect(p).not.toContain("Du påstår ikke");
   });
 
+  test("Airina-personaen (F007.8.2): prompten skifter identitet, aldrig regler", async () => {
+    const da = await aidanSystemPrompt("da", "airina");
+    expect(da).toContain("OPTRÆDER DU SOM AIRINA");
+    expect(da).toContain("VAGTVÆRK"); // reglerne følger med uanset persona
+    expect(await aidanSystemPrompt("en", "airina")).toContain("YOU APPEAR AS AIRINA");
+    expect(await aidanSystemPrompt("da")).not.toContain("AIRINA");
+  });
+
+  test("kontakt-knappen må aldrig stå alene (F007.11) — begge sprog bærer reglen", async () => {
+    expect(await aidanSystemPrompt("da")).toContain("KONTAKT-KNAPPEN MÅ ALDRIG STÅ ALENE");
+    expect(await aidanSystemPrompt("en")).toContain("THE CONTACT BUTTON MUST NEVER STAND ALONE");
+  });
+
   test("vagtværket (F007.10) står i BEGGE sprogs kontrakt — internet, on-topic, skadeligt, injektion", async () => {
     const da = await aidanSystemPrompt("da");
     expect(da).toContain("VAGTVÆRK");

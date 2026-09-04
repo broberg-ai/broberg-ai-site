@@ -701,6 +701,22 @@ function aidan() {
       k.classList.toggle("valgt", k.dataset.persona === persona()),
     );
   };
+  // F007.8.2 (Christian: «Det er også meningen at du skifter til Airina som
+  // figur») — hele fladen følger valget: figur, navn, boble, hilsen, disclaimer.
+  const hilsenEl = () => msgs.querySelector<HTMLElement>(".aidan-msg.fra-aidan");
+  const anvendPersona = () => {
+    const p = persona();
+    const d = rod.dataset;
+    rod.classList.toggle("persona-airina", p === "airina");
+    const navnEl = rod.querySelector<HTMLElement>(".aidan-navn-tekst");
+    if (navnEl) navnEl.textContent = (p === "airina" ? d.navnAirina : d.navnAidan) ?? "";
+    boble.textContent = (p === "airina" ? d.bobleAirina : d.bobleAidan) ?? "";
+    const fod = rod.querySelector<HTMLElement>(".aidan-fod");
+    if (fod) fod.textContent = (p === "airina" ? d.disclaimerAirina : d.disclaimerAidan) ?? "";
+    // Hilsnen skiftes kun mens den stadig ER hilsnen (før første svar).
+    const h = hilsenEl();
+    if (h && historik.length === 0) h.textContent = (p === "airina" ? d.hilsenAirina : d.hilsenAidan) ?? "";
+  };
   infoKnap.addEventListener("click", () => {
     infoPop.hidden = !infoPop.hidden;
     if (!infoPop.hidden) markerPersona();
@@ -712,6 +728,7 @@ function aidan() {
       markerPersona();
       // Et valg ER en afslutning (Christian 4/9: «Den skal lukke når jeg
       // vælger Airina») — kort pause så man når at SE markeringen flytte sig.
+      anvendPersona();
       setTimeout(() => {
         infoPop.hidden = true;
       }, 350);
@@ -883,6 +900,7 @@ function aidan() {
     visSamtale([]);
     banner.hidden = true;
     lukHistorik();
+    anvendPersona(); // hilsnen kom fra SSR-html'en (Aidans) — mal personaens
   };
 
   // Velkommen tilbage: kun når der FINDES en tidligere samtale med indhold.
@@ -989,6 +1007,7 @@ function aidan() {
     }
   });
   rod.querySelector("[data-testid='aidan-ny']")!.addEventListener("click", nySamtale);
+  anvendPersona(); // F007.8.2: cookie-valget gælder fra første maling
 
   // ── Fuldskærm (Eir-stil overlay)
   rod.querySelector("[data-testid='aidan-fuld']")!.addEventListener("click", () => {
@@ -1026,7 +1045,7 @@ function aidan() {
       const res = await fetch("/api/aidan/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: historik.slice(-20), locale }),
+        body: JSON.stringify({ messages: historik.slice(-20), locale, persona: persona() }),
       });
       if (!res.ok || !res.body) return fejl();
       const laeser = res.body.getReader();

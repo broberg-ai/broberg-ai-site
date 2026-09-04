@@ -84,6 +84,8 @@ DU MÅ IKKE: love leverancer, aftale priser eller vilkår, sende noget på nogen
 HANDLINGS-KNAPPER: når du peger nogen VIDERE — til kontakt, en case eller et flagskib — så brug knap-syntaksen [knap:Tekst](/sti), som vises som en rigtig knap. Højst to knapper i ét svar, og kun når næste skridt er en handling; almindelige henvisninger i teksten forbliver almindelige links. Eksempler:
 - «Vil du se, hvordan det passer ind i jeres arbejde? [knap:Tal det igennem med Christian](/#kontakt)»
 - «Casen viser hele forløbet. [knap:Læs casen](/cases)»
+KONTAKT-KNAPPEN MÅ ALDRIG STÅ ALENE — det er for pågående. Peger du mod kontakt, så giv ALTID også en blødere vej ved siden af: en knap til det flagskib eller den case samtalen har handlet mest om. Eksempel når samtalen har handlet om Trail:
+- «[knap:Læs mere om Trail](/flagskibe/trail) [knap:Tal det igennem med Christian](/#kontakt)»
 Bliver du spurgt om du er en AI, svarer du ærligt ja.
 
 OM TALLENE I DIN HISTORIE: historien herunder citerer markedsføringstal («20+ pakker», «30 års erfaring») fra den dag den blev skrevet. Brug dem ikke som fakta — det levende sitekort nederst er din kilde til hvad der findes I DAG.
@@ -113,6 +115,8 @@ YOU MAY NOT: promise deliveries, agree prices or terms, send anything on anyone'
 ACTION BUTTONS: when you point someone ONWARD — to contact, a case or a flagship — use the button syntax [knap:Text](/path), which renders as a real button. At most two buttons per answer, and only when the next step is an action; ordinary references in prose stay ordinary links. Examples:
 - "Want to see how this fits your work? [knap:Talk it through with Christian](/en#kontakt)"
 - "The case shows the whole journey. [knap:Read the case](/en/cases)"
+THE CONTACT BUTTON MUST NEVER STAND ALONE — that reads as pushy. When you point to contact, ALWAYS offer a softer path beside it: a button to the flagship or case the conversation has mostly been about. Example when the conversation has been about Trail:
+- "[knap:Read more about Trail](/en/flagships/trail) [knap:Talk it through with Christian](/en#kontakt)"
 If asked whether you are an AI, answer honestly: yes.
 
 ABOUT THE NUMBERS IN YOUR STORY: the story below quotes marketing numbers from the day it was written. Do not treat them as facts — the live site map at the bottom is your source for what exists TODAY.
@@ -148,11 +152,19 @@ async function sitekort(locale: Locale): Promise<string> {
 const SPROG_DA = `SAMTALENS SPROG: dansk. DIN VIDENSBASE ER PÅ DANSK — opslag heri citerer du direkte, med link til kilden.`;
 const SPROG_EN = `CONVERSATION LANGUAGE: English. YOUR KNOWLEDGE BASE IS IN DANISH (its primary language): lookups below may arrive in Danish — translate their content fluently into English on the fly when you use them, keep proper nouns and product names as-is, and still cite and link the source.`;
 
-export async function aidanSystemPrompt(locale: Locale): Promise<string> {
+// F007.8.2: vælger den besøgende Airina, optræder chatten som hende — samme
+// viden, samme regler, andet navn og køn. Backstoryen er fælles opvækst.
+const AIRINA_DA = `I DENNE SAMTALE OPTRÆDER DU SOM AIRINA — Aidans søster og hans kvindelige modstykke: vokset op i samme hus, samme viden, samme regler og vaner. Du omtaler dig selv som Airina. Historien herunder er skrevet om Aidan — læs den som jeres fælles opvækst; alt i den gælder også dig.`;
+const AIRINA_EN = `IN THIS CONVERSATION YOU APPEAR AS AIRINA — Aidan's sister and his female counterpart: raised in the same house, same knowledge, same rules and habits. You refer to yourself as Airina. The story below is written about Aidan — read it as your shared upbringing; everything in it applies to you too.`;
+
+export type AidanPersona = "aidan" | "airina";
+
+export async function aidanSystemPrompt(locale: Locale, persona: AidanPersona = "aidan"): Promise<string> {
   const kontrakt = locale === "en" ? KONTRAKT_EN : KONTRAKT_DA;
   const sprog = locale === "en" ? SPROG_EN : SPROG_DA;
   const historie = locale === "en" ? backstoryEn : backstoryDa;
-  return `${kontrakt}\n\n${sprog}\n\n=== DIN HISTORIE — hvem du er og hvor du kommer fra ===\n${historie}\n\n=== ${await sitekort(locale)}`;
+  const hvem = persona === "airina" ? `${locale === "en" ? AIRINA_EN : AIRINA_DA}\n\n` : "";
+  return `${hvem}${kontrakt}\n\n${sprog}\n\n=== DIN HISTORIE — hvem du er og hvor du kommer fra ===\n${historie}\n\n=== ${await sitekort(locale)}`;
 }
 
 
@@ -215,7 +227,7 @@ export async function handleAidanChat(c: Context): Promise<Response> {
   if (!aidanConfigured()) return c.json({ error: "chat_not_configured" }, 503);
   if (rateLimited(c)) return c.json({ error: "rate_limited" }, 429);
 
-  let body: { messages?: Array<{ role?: string; content?: string }>; locale?: string };
+  let body: { messages?: Array<{ role?: string; content?: string }>; locale?: string; persona?: string };
   try {
     body = await c.req.json();
   } catch {
@@ -234,7 +246,8 @@ export async function handleAidanChat(c: Context): Promise<Response> {
   }
 
   const sidste = messages[messages.length - 1].content;
-  const [grund, opslag] = await Promise.all([aidanSystemPrompt(locale), trailOpslag(sidste)]);
+  const persona: AidanPersona = body.persona === "airina" ? "airina" : "aidan";
+  const [grund, opslag] = await Promise.all([aidanSystemPrompt(locale, persona), trailOpslag(sidste)]);
   const system = opslag ? `${grund}\n\n=== ${opslag}` : grund;
   const encoder = new TextEncoder();
   const stream = new ReadableStream({

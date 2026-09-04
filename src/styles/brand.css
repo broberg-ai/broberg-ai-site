@@ -2527,6 +2527,16 @@ a.pill.taglink:active {
 }
 /* Figuren: rund maske om videoparret. Begge temaers klip ligger i DOM'en;
    kun det aktive temas er synligt — samme princip som artiklernes fig-box. */
+/* F007.8.2: begge personaers figurer ligger i DOM'en — kun den valgte vises.
+   display-værdien røres ikke (spans beholder deres klasse-styling); den
+   fravalgte tvinges væk. */
+#aidan:not(.persona-airina) .figur-airina {
+  display: none !important;
+}
+#aidan.persona-airina .figur-aidan {
+  display: none !important;
+}
+
 /* F007.4.2: figuren nikker diskret når den står statisk — pauses mens
    vinke-videoen kører (.spiller) og ved reduceret bevægelse. */
 @keyframes aidan-nik {
@@ -2809,9 +2819,12 @@ a.pill.taglink:active {
 }
 .aidan-fold-pil {
   transition: transform 0.25s ease;
+  /* Foldet peger OP (Christians melding 4/9: «pilen vender forkert») —
+     åben peger ned mod chips-rækken der kan foldes sammen igen. */
+  transform: rotate(180deg);
 }
 .aidan-chips-fold.aaben .aidan-fold-pil {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 .aidan-chip {
   border: 1px solid var(--card-border);
