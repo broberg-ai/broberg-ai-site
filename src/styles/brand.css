@@ -2588,7 +2588,10 @@ a.pill.taglink:active {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  z-index: 70;
+  /* OVER sitets klæbende header (z 200) — det var Christians screenshot:
+     panelets top lå BAG headeren, som både skjulte navnet og opsnappede klik
+     på luk/fuldskærm, så man ikke kunne komme ud igen. Under ⌘K (1000). */
+  z-index: 300;
   width: min(400px, calc(100vw - 16px));
   height: min(620px, calc(100dvh - 40px));
   display: flex;
