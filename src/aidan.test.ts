@@ -191,3 +191,16 @@ describe("Trail-hjernen (lag 3b)", () => {
     expect(await trailOpslag("hej")).toBe("");
   });
 });
+
+describe("sproget påføres eksplicit (dansk-primær vidensbase)", () => {
+  test("engelsk samtale primes med oversæt-i-farten fra dansk KB", async () => {
+    const p = await aidanSystemPrompt("en");
+    expect(p).toContain("CONVERSATION LANGUAGE: English");
+    expect(p).toContain("KNOWLEDGE BASE IS IN DANISH");
+    expect(p).toContain("translate their content fluently");
+  });
+  test("dansk samtale erklærer også sit sprog", async () => {
+    const p = await aidanSystemPrompt("da");
+    expect(p).toContain("SAMTALENS SPROG: dansk");
+  });
+});

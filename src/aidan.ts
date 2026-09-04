@@ -120,10 +120,17 @@ async function sitekort(locale: Locale): Promise<string> {
   return text;
 }
 
+// Sproget PÅFØRES modellen eksplicit (Christian 4/9): vidensbasen er DANSK
+// som primært sprog, og den engelske samtale skal oversætte opslag i farten —
+// det må aldrig afhænge af at modellen selv gætter det ud fra konteksten.
+const SPROG_DA = `SAMTALENS SPROG: dansk. DIN VIDENSBASE ER PÅ DANSK — opslag heri citerer du direkte, med link til kilden.`;
+const SPROG_EN = `CONVERSATION LANGUAGE: English. YOUR KNOWLEDGE BASE IS IN DANISH (its primary language): lookups below may arrive in Danish — translate their content fluently into English on the fly when you use them, keep proper nouns and product names as-is, and still cite and link the source.`;
+
 export async function aidanSystemPrompt(locale: Locale): Promise<string> {
   const kontrakt = locale === "en" ? KONTRAKT_EN : KONTRAKT_DA;
+  const sprog = locale === "en" ? SPROG_EN : SPROG_DA;
   const historie = locale === "en" ? backstoryEn : backstoryDa;
-  return `${kontrakt}\n\n=== DIN HISTORIE — hvem du er og hvor du kommer fra ===\n${historie}\n\n=== ${await sitekort(locale)}`;
+  return `${kontrakt}\n\n${sprog}\n\n=== DIN HISTORIE — hvem du er og hvor du kommer fra ===\n${historie}\n\n=== ${await sitekort(locale)}`;
 }
 
 
