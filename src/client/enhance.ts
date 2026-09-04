@@ -710,8 +710,20 @@ function aidan() {
       // Christians eksplicitte valg: cookie (ikke localStorage) — 1 år.
       document.cookie = `aidan_persona=${k.dataset.persona ?? "aidan"}; max-age=31536000; path=/; samesite=lax`;
       markerPersona();
+      // Et valg ER en afslutning (Christian 4/9: «Den skal lukke når jeg
+      // vælger Airina») — kort pause så man når at SE markeringen flytte sig.
+      setTimeout(() => {
+        infoPop.hidden = true;
+      }, 350);
     }),
   );
+  // Klik hvor som helst udenfor lukker også — den lille ⓘ og ESC var de
+  // eneste veje ud, og det læses som «kan ikke lukke» (Christian 4/9).
+  document.addEventListener("click", (e) => {
+    if (infoPop.hidden) return;
+    const t = e.target as Node;
+    if (!infoPop.contains(t) && !infoKnap.contains(t)) infoPop.hidden = true;
+  });
 
   let indsigter: Set<string> | null = null;
   const hentIndsigter = async (): Promise<Set<string>> => {
