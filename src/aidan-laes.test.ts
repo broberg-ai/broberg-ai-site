@@ -46,6 +46,7 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
     expect(da).toContainEqual({ word: "trailmem.com", alias: "trail mem dot com" });
     expect(da).toContainEqual({ word: "stylet", alias: "stajlet" });
     expect(da).toContainEqual({ word: "workflow", ipa: "ˈwɜːkfloʊ" });
+    expect(da).toContainEqual({ word: "lens", ipa: "lɛnz" });
     // engelsk får domænerne men IKKE de danske bøjnings-lydord
     const en = udtaleFor("en");
     expect(en.find((r) => r.word === "stylet")).toBeUndefined();

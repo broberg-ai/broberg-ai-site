@@ -89,6 +89,7 @@ const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" 
   { word: "engineering", ipa: "ˌɛndʒɪˈnɪərɪŋ", sprog: "da" },
   { word: "agentic", ipa: "eɪˈdʒɛntɪk", sprog: "da" },
   { word: "harness", ipa: "ˈhɑːnəs", sprog: "da" },
+  { word: "lens", ipa: "lɛnz", sprog: "da" },
 ];
 export function udtaleFor(locale: Locale): Array<{ word: string; alias?: string; ipa?: string }> {
   return ORDBOG.filter((r) => r.sprog === "alle" || r.sprog === locale).map(({ word, alias, ipa }) => ({
