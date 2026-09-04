@@ -716,6 +716,7 @@ function aidan() {
     // Hilsnen skiftes kun mens den stadig ER hilsnen (før første svar).
     const h = hilsenEl();
     if (h && historik.length === 0) h.textContent = (p === "airina" ? d.hilsenAirina : d.hilsenAidan) ?? "";
+    felt.placeholder = (p === "airina" ? d.placeholderAirina : d.placeholderAidan) ?? felt.placeholder;
   };
   infoKnap.addEventListener("click", () => {
     infoPop.hidden = !infoPop.hidden;

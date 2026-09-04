@@ -61,6 +61,7 @@ export interface AidanTekster {
   airinaBoble: string;
   airinaHilsen: string;
   airinaDisclaimer: string;
+  airinaPlaceholder: string;
 }
 
 export function aidanTekster(
@@ -121,6 +122,7 @@ export function aidanTekster(
         ? "Hi! I'm Airina — I know this whole universe. Ask me about the cases, the flagships, or what we can build for you."
         : "Hej! Jeg er Airina — jeg kender hele universet her. Spørg mig om cases, flagskibe eller hvad vi kan bygge for dig.",
     ),
+    airinaPlaceholder: g("airinaPlaceholder", en ? "Write to Airina…" : "Skriv til Airina…"),
     airinaDisclaimer: g(
       "airinaDisclaimer",
       en ? "Airina is an AI — answers may contain mistakes" : "Airina er en AI — svar kan indeholde fejl",
@@ -185,6 +187,8 @@ export function AidanWidget({
       data-hilsen-airina={t.airinaHilsen}
       data-disclaimer-aidan={t.disclaimer}
       data-disclaimer-airina={t.airinaDisclaimer}
+      data-placeholder-aidan={t.placeholder}
+      data-placeholder-airina={t.airinaPlaceholder}
     >
       <button
         type="button"
