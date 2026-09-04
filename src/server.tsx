@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
+import { handleAidanChat, handleAidanHealth } from "@/aidan.ts";
 import { handleAdminChat, handleAdminChatApi } from "@/chat-relay.ts";
 import { ensureRoot } from "@/content/store.ts";
 import { runBackfill, storeIsEmpty } from "@/content/backfill.ts";
@@ -101,6 +102,10 @@ app.post("/icd", handleIcd);
 // (the ~64 build/version/control tools) + its conversation-history + memory
 // stores. Auth: the browser's editSession token is verified by delegation to
 // cms-admin; upstream uses a server-side admin token. See chat-relay.ts.
+// Aidan — besøgs-AI'ens offentlige chat (SSE) + health. Ship-dark uden nøgle.
+app.post("/api/aidan/chat", handleAidanChat);
+app.get("/api/aidan/health", handleAidanHealth);
+
 app.post("/api/admin/chat", handleAdminChat);
 app.all("/api/admin/chat/*", handleAdminChatApi);
 

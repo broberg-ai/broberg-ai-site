@@ -565,6 +565,186 @@ function figurKlip() {
   });
 }
 
+/* Aidan — besøgs-AI (F-kort i cardmem, mockup 01a06cbf godkendt 4/9).
+   Markup'en er SSR'et af page() (kun når chatten er konfigureret); alt liv bor
+   her: reveal ved første scroll, ét vink, klik åbner panelet, SSE-chat mod
+   /api/aidan/chat. Historikken bor i sessionStorage så en sidenavigation ikke
+   nulstiller samtalen. */
+function aidan() {
+  const rod = document.querySelector<HTMLElement>("[data-aidan]");
+  if (!rod) return;
+  const fab = rod.querySelector<HTMLButtonElement>(".aidan-fab")!;
+  const boble = rod.querySelector<HTMLElement>(".aidan-boble")!;
+  const panel = rod.querySelector<HTMLElement>(".aidan-panel")!;
+  const msgs = rod.querySelector<HTMLElement>(".aidan-msgs")!;
+  const form = rod.querySelector<HTMLFormElement>(".aidan-input")!;
+  const felt = form.querySelector<HTMLInputElement>("input")!;
+  const send = form.querySelector<HTMLButtonElement>(".aidan-send")!;
+  const luk = rod.querySelector<HTMLButtonElement>(".aidan-luk, [data-testid='aidan-luk']")!;
+  const locale = rod.dataset.locale === "en" ? "en" : "da";
+  const roligt = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ── Sikker rendering af et modelsvar: ALT escapes, derefter genkendes KUN
+  // afsnit + markdown-links med relative/https-mål. Modellen kan citere
+  // brugertekst, så rå HTML herfra må aldrig nå DOM'en.
+  const esc = (t: string) =>
+    t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const tilHtml = (t: string) =>
+    esc(t)
+      .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
+      .split(/\n{2,}/)
+      .map((a) => `<p>${a.replace(/\n/g, "<br>")}</p>`)
+      .join("");
+
+  // ── Reveal ved første scroll — og ét vink. Vinket er det tema-bagte klip;
+  // med reduceret bevægelse står SVG-posteren stille, som designet foreskriver.
+  let vist = false;
+  const visFab = () => {
+    if (vist) return;
+    vist = true;
+    fab.classList.add("vis");
+    boble.classList.add("vis");
+    setTimeout(() => boble.classList.remove("vis"), 6000);
+    if (!roligt) {
+      const v = Array.from(fab.querySelectorAll<HTMLVideoElement>("video")).find(
+        (x) => x.offsetParent !== null,
+      );
+      if (v) {
+        const faerdig = () => {
+          v.removeEventListener("ended", faerdig);
+          v.currentTime = 0;
+          v.load(); // load() sætter posteren tilbage; pause() ville efterlade sidste billede.
+        };
+        v.addEventListener("ended", faerdig);
+        setTimeout(() => void v.play().catch(() => faerdig()), 450);
+      }
+    }
+  };
+  addEventListener("scroll", () => scrollY > 120 && visFab(), { passive: true });
+  if (scrollY > 120) visFab(); // landet midt på siden (anker/back-nav)
+
+  // ── Åbn/luk
+  const aabn = () => {
+    panel.hidden = false;
+    fab.classList.add("aaben");
+    boble.classList.remove("vis");
+    felt.focus();
+  };
+  fab.addEventListener("click", aabn);
+  luk.addEventListener("click", () => {
+    panel.hidden = true;
+    fab.classList.remove("aaben");
+  });
+
+  // ── Samtalen. sessionStorage så navigation ikke sletter den; kun tekst.
+  type Tur = { role: "user" | "assistant"; content: string };
+  const NOEGLE = "aidan-samtale";
+  let historik: Tur[] = [];
+  try {
+    historik = JSON.parse(sessionStorage.getItem(NOEGLE) || "[]");
+  } catch {}
+  const gem = () => {
+    try {
+      sessionStorage.setItem(NOEGLE, JSON.stringify(historik.slice(-20)));
+    } catch {}
+  };
+  const boblEl = (cls: string) => {
+    const d = document.createElement("div");
+    d.className = `aidan-msg ${cls}`;
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+    return d;
+  };
+  // Genindlæs en igangværende samtale i panelet.
+  for (const t of historik) {
+    const d = boblEl(t.role === "user" ? "fra-mig" : "fra-aidan");
+    if (t.role === "user") d.textContent = t.content;
+    else d.innerHTML = tilHtml(t.content);
+  }
+
+  let travl = false;
+  async function spoerg(tekst: string) {
+    if (travl || !tekst.trim()) return;
+    travl = true;
+    send.disabled = true;
+    boblEl("fra-mig").textContent = tekst;
+    historik.push({ role: "user", content: tekst });
+    gem();
+
+    const taenker = document.createElement("div");
+    taenker.className = "aidan-taenker";
+    taenker.innerHTML = "<i></i><i></i><i></i>";
+    msgs.appendChild(taenker);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    let svar = "";
+    let svarEl: HTMLElement | null = null;
+    const fejl = () => {
+      taenker.remove();
+      const d = boblEl("fra-aidan");
+      d.textContent =
+        locale === "en"
+          ? "Something went wrong on my end — try again in a moment."
+          : "Noget gik galt i min ende — prøv igen om lidt.";
+    };
+    try {
+      const res = await fetch("/api/aidan/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: historik.slice(-20), locale }),
+      });
+      if (!res.ok || !res.body) return fejl();
+      const laeser = res.body.getReader();
+      const dek = new TextDecoder();
+      let buffer = "";
+      for (;;) {
+        const { done, value } = await laeser.read();
+        if (done) break;
+        buffer += dek.decode(value, { stream: true });
+        // SSE-rammer: "event: x\ndata: {...}\n\n"
+        let i: number;
+        while ((i = buffer.indexOf("\n\n")) >= 0) {
+          const ramme = buffer.slice(0, i);
+          buffer = buffer.slice(i + 2);
+          const ev = /^event: (\w+)$/m.exec(ramme)?.[1];
+          const data = /^data: (.*)$/m.exec(ramme)?.[1];
+          if (ev === "text" && data) {
+            taenker.remove();
+            svar += String(JSON.parse(data).delta ?? "");
+            if (!svarEl) svarEl = boblEl("fra-aidan");
+            svarEl.innerHTML = tilHtml(svar);
+            msgs.scrollTop = msgs.scrollHeight;
+          } else if (ev === "error") {
+            if (!svar) fejl();
+          }
+        }
+      }
+      if (svar) {
+        historik.push({ role: "assistant", content: svar });
+        gem();
+      } else if (!svarEl) {
+        fejl();
+      }
+    } catch {
+      if (!svar) fejl();
+    } finally {
+      taenker.remove();
+      travl = false;
+      send.disabled = false;
+    }
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const t = felt.value.trim();
+    felt.value = "";
+    void spoerg(t);
+  });
+  rod.querySelectorAll<HTMLButtonElement>(".aidan-chip").forEach((chip) =>
+    chip.addEventListener("click", () => void spoerg(chip.textContent?.trim() ?? "")),
+  );
+}
+
 function safe(fn: () => void) {
   try {
     fn();
@@ -586,3 +766,4 @@ safe(contactForm);
 safe(inlineEdit);
 safe(adminPanel);
 safe(mountAdminChat);
+safe(aidan);

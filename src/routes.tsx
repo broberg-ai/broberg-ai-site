@@ -43,6 +43,8 @@ import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlide
 import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
 import { Cases, Insights, About, cmsAttrs, cmsHtmlAttrs, cmsRichAttrs } from "@/components/sections.tsx";
 import type { CmsRef } from "@/content/types.ts";
+import { AidanWidget, aidanTekster } from "@/components/AidanWidget.tsx";
+import { aidanConfigured } from "@/aidan.ts";
 import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
 import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
@@ -75,6 +77,18 @@ async function page(
       <Nav locale={meta.locale} altHref={meta.altHref} nav={navLabels} globalsRef={globalsRef} />
       {children}
       <Footer data={footerData} cmsRef={globalsRef} />
+      {/* Aidan — kun når chatten faktisk kan svare (ship-dark). Admin-fladerne
+          går udenom page(), så han optræder kun på de offentlige sider. */}
+      {aidanConfigured() ? (
+        <AidanWidget
+          t={aidanTekster(
+            (f, fb) => (typeof globalsData[f] === "string" && (globalsData[f] as string)) || fb,
+            meta.locale,
+          )}
+          globalsRef={globalsRef}
+          locale={meta.locale}
+        />
+      ) : null}
     </>,
     meta,
     resolveAssets(),
