@@ -4,6 +4,7 @@
 import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
 import { mountAdminChat } from "@/client/admin-chat.tsx";
+import { aidanTilHtml } from "@/client/aidan-md.ts";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
 // F157 — cms-admin connection shared by inline-edit + the /admin panel.
@@ -584,17 +585,9 @@ function aidan() {
   const locale = rod.dataset.locale === "en" ? "en" : "da";
   const roligt = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // ── Sikker rendering af et modelsvar: ALT escapes, derefter genkendes KUN
-  // afsnit + markdown-links med relative/https-mål. Modellen kan citere
-  // brugertekst, så rå HTML herfra må aldrig nå DOM'en.
-  const esc = (t: string) =>
-    t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  const tilHtml = (t: string) =>
-    esc(t)
-      .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
-      .split(/\n{2,}/)
-      .map((a) => `<p>${a.replace(/\n/g, "<br>")}</p>`)
-      .join("");
+  // Sikker rendering bor i aidan-md.ts (Christian 4/9, screenshot: rå **fed**
+  // og lister i panelet) — testbar for sig, escaper alt, lukket formliste.
+  const tilHtml = aidanTilHtml;
 
   // ── Reveal ved første scroll — og ét vink. Vinket er det tema-bagte klip;
   // med reduceret bevægelse står SVG-posteren stille, som designet foreskriver.

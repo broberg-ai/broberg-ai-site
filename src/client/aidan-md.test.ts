@@ -1,0 +1,59 @@
+/* Segl for Aidans svar-rendering. Første test ER Christians screenshot 4/9:
+   flåde-listen med **fed** stod rå i panelet. */
+import { describe, test, expect } from "bun:test";
+import { aidanTilHtml, escHtml } from "./aidan-md.ts";
+
+describe("hændelsen fra screenshottet", () => {
+  test("punktliste med fed renderes som <ul> med <strong>, ingen rå stjerner", () => {
+    const svar =
+      "Hele processen kører på vores egne flagskibe:\n\n" +
+      "- **cardmem** skriver og vedligeholder planen.\n" +
+      "- **buddy** holder øje med kvaliteten i hvert trin.\n" +
+      "- **Lens** åbner hver ændring i en browser og gemmer beviset.";
+    const html = aidanTilHtml(svar);
+    expect(html).toContain("<ul><li><strong>cardmem</strong>");
+    expect(html).toContain("<strong>buddy</strong>");
+    expect(html).not.toContain("**");
+    expect(html).not.toContain("- <strong>"); // markøren er væk, ikke bare pakket ind
+  });
+});
+
+describe("formerne", () => {
+  test("afsnit + fed + kursiv + link", () => {
+    const html = aidanTilHtml("Se **cases** her: [Cases](/cases).\n\nDet er *hurtigt*.");
+    expect(html).toBe(
+      '<p>Se <strong>cases</strong> her: <a href="/cases">Cases</a>.</p><p>Det er <em>hurtigt</em>.</p>',
+    );
+  });
+
+  test("nummereret liste", () => {
+    const html = aidanTilHtml("1. Første\n2. Anden");
+    expect(html).toBe("<ol><li>Første</li><li>Anden</li></ol>");
+  });
+
+  test("en enkelt tankestreg midt i prosa bliver IKKE til en liste", () => {
+    const html = aidanTilHtml("Vi bygger alt selv\n- og det kan ses.");
+    expect(html).toContain("<p>");
+    expect(html).not.toContain("<ul>");
+  });
+
+  test("kun relative og https-links slipper igennem", () => {
+    expect(aidanTilHtml("[x](javascript:alert(1))")).not.toContain("<a");
+    expect(aidanTilHtml("[x](http://usikker.dk)")).not.toContain("<a");
+    expect(aidanTilHtml("[x](/cases)")).toContain('href="/cases"');
+    expect(aidanTilHtml("[x](https://broberg.ai/)")).toContain('href="https://broberg.ai/"');
+  });
+});
+
+describe("sikkerheden — HTML fra modellen når aldrig DOM'en", () => {
+  test("script-tags og attributter escapes, også inde i lister og fed", () => {
+    const html = aidanTilHtml('- **<script>alert(1)</script>**\n- <img src=x onerror=y>');
+    expect(html).not.toContain("<script");
+    expect(html).not.toContain("<img");
+    expect(html).toContain("&lt;script&gt;");
+  });
+
+  test("escHtml dækker de fire farlige tegn", () => {
+    expect(escHtml('<a b="c">&')).toBe("&lt;a b=&quot;c&quot;&gt;&amp;");
+  });
+});
