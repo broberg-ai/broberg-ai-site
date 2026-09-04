@@ -31,10 +31,14 @@ describe("formerne", () => {
     expect(html).toBe("<ol><li>Første</li><li>Anden</li></ol>");
   });
 
-  test("en enkelt tankestreg midt i prosa bliver IKKE til en liste", () => {
+  test("en linje der STARTER med '- ' er et punkt — også efter en indledningslinje", () => {
+    // Ændret 4/9 efter Christians screenshot: den gamle alt-eller-intet-regel
+    // lod «Det indeholder:\n- x» stå som rå tekst. En bindestreg MIDT i en
+    // sætning rammes stadig aldrig (reglen kræver linjestart).
     const html = aidanTilHtml("Vi bygger alt selv\n- og det kan ses.");
-    expect(html).toContain("<p>");
-    expect(html).not.toContain("<ul>");
+    expect(html).toContain("<p>Vi bygger alt selv</p>");
+    expect(html).toContain("<ul><li>og det kan ses.</li></ul>");
+    expect(aidanTilHtml("alt selv - og det kan ses")).not.toContain("<ul>");
   });
 
   test("kun relative og https-links slipper igennem", () => {
@@ -89,5 +93,28 @@ describe("fremad-tolerance — gamle faner må aldrig se maskineri", () => {
   test("prosa med kolon i link-tekst klippes IKKE (store bogstaver/lange ord)", () => {
     expect(aidanTilHtml("[NB: vigtigt](/x)")).toContain(">NB: vigtigt</a>");
     expect(aidanTilHtml("[Sådan bygger vi: metoden](/metode)")).toContain(">Sådan bygger vi: metoden</a>");
+  });
+});
+
+describe("Christians screenshot 4/9 kl. 21 — rå markdown i svaret", () => {
+  test("PRÆCIS den fejlende tekst renderes rent: liste efter indledning, fed med * i, kode-backticks", () => {
+    const svar =
+      "Det indeholder:\n" +
+      "- **20+ `@broberg/*`-pakker** (fx `@broberg/ui`, `@broberg/auth`) — genbrugsklar kode.\n" +
+      "- **UI-komponenter** (knapper, formularer) — designet til at passe sammen.";
+    const html = aidanTilHtml(svar);
+    expect(html).toContain("<p>Det indeholder:</p>");
+    expect(html).toContain("<ul><li>");
+    expect(html).toContain("<strong>20+ <code>@broberg/*</code>-pakker</strong>");
+    expect(html).toContain("<code>@broberg/ui</code>");
+    expect(html).not.toContain("**");
+    expect(html).not.toContain("`");
+    expect(html).not.toContain("- <strong>");
+  });
+  test("### overskrift bliver en fremhævet linje", () => {
+    expect(aidanTilHtml("### Flagskibene\nDe bærer alt.")).toContain('<strong class="aidan-h">Flagskibene</strong>');
+  });
+  test("kode-indhold røres ALDRIG af fed/kursiv-regler", () => {
+    expect(aidanTilHtml("`**ikke fed**`")).toContain("<code>**ikke fed**</code>");
   });
 });

@@ -23,11 +23,19 @@ export function escHtml(t: string): string {
  *  almindelige links (sannes erfaring: uden loft bliver et svar en menu). */
 const KNAP_RE = /\[knap:([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/gi;
 
-/** Inline-former på ALLEREDE escaped tekst. Knap-tokenet FØRST (ellers æder
- *  den generelle link-regel det); links før fed/kursiv, så en * i en URL ikke
- *  kan klippe et link over. */
+/** Inline-former på ALLEREDE escaped tekst. Rækkefølgen bærer korrektheden:
+ *  1. KODE først, gemt bag pladsholdere — indholdet af `…` må aldrig ses af
+ *     fed/kursiv-reglerne (Christians screenshot 4/9: `@broberg/*` bar en *,
+ *     som fik fed-reglen til at fejle og vise rå ** til en besøgende).
+ *  2. Knap-tokenet før den generelle link-regel (ellers æder den tokenet).
+ *  3. Fed er IKKE-grådig og udelukker kun linjeskift — ikke stjerner. */
 function inline(t: string, knapBudget: { tilbage: number }): string {
-  return t
+  const koder: string[] = [];
+  let ud = t.replace(/`([^`\n]+)`/g, (_alt, kode: string) => {
+    koder.push(kode);
+    return `\u0000K${koder.length - 1}\u0000`;
+  });
+  ud = ud
     .replace(KNAP_RE, (_alt, tekst: string, href: string) => {
       if (knapBudget.tilbage > 0) {
         knapBudget.tilbage--;
@@ -35,15 +43,11 @@ function inline(t: string, knapBudget: { tilbage: number }): string {
       }
       return `<a href="${href}">${tekst}</a>`;
     })
-    // FREMAD-TOLERANCE (Christians «knap:»-skærmbillede 4/9): en fane indlæst
-    // FØR en udrulning kender ikke tokens serveren er begyndt at tale. Ethvert
-    // ukendt [ord:Tekst](sti)-token renderes derfor som et RENT link uden
-    // maskineriet — kun små bogstaver, 2-12 tegn, så «[NB: vigtigt]» og
-    // almindelig prosa aldrig klippes. Gælder fra denne bundle og frem.
     .replace(/\[[a-zæøå]{2,12}:\s*([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
-    .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*\*([^\n]+?)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[\s>])\*([^*\n]+)\*(?=[\s.,!?:;<]|$)/g, "$1<em>$2</em>");
+  return ud.replace(/\u0000K(\d+)\u0000/g, (_alt, i: string) => `<code>${koder[Number(i)]}</code>`);
 }
 
 const PUNKT = /^\s*[-•]\s+/;
@@ -57,15 +61,32 @@ export function aidanTilHtml(raa: string): string {
     .map((blok) => {
       const linjer = blok.split("\n").filter((l) => l.trim());
       if (!linjer.length) return "";
-      // En blok er en liste når HVER linje er et punkt — ellers renderes den
-      // som afsnit, så en enkelt tankestreg midt i prosa ikke bliver til <ul>.
-      if (linjer.length && linjer.every((l) => PUNKT.test(l))) {
-        return `<ul>${linjer.map((l) => `<li>${inline(l.replace(PUNKT, ""), knapBudget)}</li>`).join("")}</ul>`;
+      // En blok kan blande indledning og liste («Det indeholder:\n- x\n- y»)
+      // — Christians screenshot. Derfor runs af ens linjetyper, ikke
+      // alt-eller-intet: hver run bliver <ul>/<ol>/afsnit for sig.
+      const dele: string[] = [];
+      let i = 0;
+      while (i < linjer.length) {
+        if (PUNKT.test(linjer[i])) {
+          const run: string[] = [];
+          while (i < linjer.length && PUNKT.test(linjer[i])) run.push(linjer[i++].replace(PUNKT, ""));
+          dele.push(`<ul>${run.map((l) => `<li>${inline(l, knapBudget)}</li>`).join("")}</ul>`);
+        } else if (NUMMER.test(linjer[i])) {
+          const run: string[] = [];
+          while (i < linjer.length && NUMMER.test(linjer[i])) run.push(linjer[i++].replace(NUMMER, ""));
+          dele.push(`<ol>${run.map((l) => `<li>${inline(l, knapBudget)}</li>`).join("")}</ol>`);
+        } else {
+          const run: string[] = [];
+          while (i < linjer.length && !PUNKT.test(linjer[i]) && !NUMMER.test(linjer[i])) {
+            // ### Overskrift → fremhævet linje (modellen skriver dem af sig selv)
+            const h = /^#{1,4}\s+(.+)$/.exec(linjer[i]);
+            run.push(h ? `<strong class="aidan-h">${inline(h[1], knapBudget)}</strong>` : inline(linjer[i], knapBudget));
+            i++;
+          }
+          dele.push(`<p>${run.join("<br>")}</p>`);
+        }
       }
-      if (linjer.length && linjer.every((l) => NUMMER.test(l))) {
-        return `<ol>${linjer.map((l) => `<li>${inline(l.replace(NUMMER, ""), knapBudget)}</li>`).join("")}</ol>`;
-      }
-      return `<p>${inline(blok.trim(), knapBudget).replace(/\n/g, "<br>")}</p>`;
+      return dele.join("");
     })
     .filter(Boolean)
     .join("");

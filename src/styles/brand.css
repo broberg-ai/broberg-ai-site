@@ -3044,3 +3044,29 @@ a.pill.taglink:active {
 .aidan-chips[hidden] {
   display: none;
 }
+/* Svar-typografi — «sygt lækker», ikke markdown-agtig (Christian 4/9). */
+.aidan-msg ul,
+.aidan-msg ol {
+  margin: 0.45em 0;
+  padding-left: 1.15em;
+}
+.aidan-msg li {
+  margin: 0.3em 0;
+}
+.aidan-msg li::marker {
+  color: var(--blue);
+}
+.aidan-msg code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.82em;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+  padding: 0.08em 0.35em;
+  white-space: nowrap;
+}
+.aidan-msg .aidan-h {
+  display: block;
+  margin: 0.2em 0 0.1em;
+  font-size: 0.95rem;
+}
