@@ -57,3 +57,22 @@ describe("sikkerheden — HTML fra modellen når aldrig DOM'en", () => {
     expect(escHtml('<a b="c">&')).toBe("&lt;a b=&quot;c&quot;&gt;&amp;");
   });
 });
+
+describe("handlings-knapper (Eir-mønstret)", () => {
+  test("[knap:…] renderes som knap med klasse + testid, kun relative/https-mål", () => {
+    const html = aidanTilHtml("Vil du videre? [knap:Tal det igennem med Christian](/#kontakt)");
+    expect(html).toContain('class="aidan-cta"');
+    expect(html).toContain('data-testid="aidan-cta"');
+    expect(html).toContain('href="/#kontakt"');
+    expect(html).toContain(">Tal det igennem med Christian</a>");
+    expect(aidanTilHtml("[knap:x](javascript:alert(1))")).not.toContain("aidan-cta");
+  });
+  test("loft på 2: tredje knap degraderer til almindeligt link", () => {
+    const html = aidanTilHtml("[knap:En](/a) [knap:To](/b) [knap:Tre](/c)");
+    expect(html.split('class="aidan-cta"').length - 1).toBe(2);
+    expect(html).toContain('<a href="/c">Tre</a>');
+  });
+  test("et almindeligt link bliver ALDRIG til en knap", () => {
+    expect(aidanTilHtml("Se [casen](/cases).")).not.toContain("aidan-cta");
+  });
+});

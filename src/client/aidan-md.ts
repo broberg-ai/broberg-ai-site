@@ -16,10 +16,25 @@ export function escHtml(t: string): string {
   return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-/** Inline-former på ALLEREDE escaped tekst. Links før fed/kursiv, så en * i en
- *  URL ikke kan klippe et link over. */
-function inline(t: string): string {
+/** CTA-token (Eir-mønstret fra sanne, 4/9): modellen skriver
+ *  [knap:Tekst](/sti) og UI'et veksler det til en rigtig knap. Kontrakten er
+ *  et TOKEN med kendt form — ikke "style nogle links som knapper". Loftet
+ *  håndhæves i aidanTilHtml: max 2 knapper pr. svar, resten bliver
+ *  almindelige links (sannes erfaring: uden loft bliver et svar en menu). */
+const KNAP_RE = /\[knap:([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g;
+
+/** Inline-former på ALLEREDE escaped tekst. Knap-tokenet FØRST (ellers æder
+ *  den generelle link-regel det); links før fed/kursiv, så en * i en URL ikke
+ *  kan klippe et link over. */
+function inline(t: string, knapBudget: { tilbage: number }): string {
   return t
+    .replace(KNAP_RE, (_alt, tekst: string, href: string) => {
+      if (knapBudget.tilbage > 0) {
+        knapBudget.tilbage--;
+        return `<a class="aidan-cta" data-testid="aidan-cta" href="${href}">${tekst}</a>`;
+      }
+      return `<a href="${href}">${tekst}</a>`;
+    })
     .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[\s>])\*([^*\n]+)\*(?=[\s.,!?:;<]|$)/g, "$1<em>$2</em>");
@@ -30,6 +45,7 @@ const NUMMER = /^\s*\d+[.)]\s+/;
 
 /** Modelsvar → sikker HTML. Input er RÅ modeltekst; escaping sker her. */
 export function aidanTilHtml(raa: string): string {
+  const knapBudget = { tilbage: 2 };
   return escHtml(raa)
     .split(/\n{2,}/)
     .map((blok) => {
@@ -38,12 +54,12 @@ export function aidanTilHtml(raa: string): string {
       // En blok er en liste når HVER linje er et punkt — ellers renderes den
       // som afsnit, så en enkelt tankestreg midt i prosa ikke bliver til <ul>.
       if (linjer.length && linjer.every((l) => PUNKT.test(l))) {
-        return `<ul>${linjer.map((l) => `<li>${inline(l.replace(PUNKT, ""))}</li>`).join("")}</ul>`;
+        return `<ul>${linjer.map((l) => `<li>${inline(l.replace(PUNKT, ""), knapBudget)}</li>`).join("")}</ul>`;
       }
       if (linjer.length && linjer.every((l) => NUMMER.test(l))) {
-        return `<ol>${linjer.map((l) => `<li>${inline(l.replace(NUMMER, ""))}</li>`).join("")}</ol>`;
+        return `<ol>${linjer.map((l) => `<li>${inline(l.replace(NUMMER, ""), knapBudget)}</li>`).join("")}</ol>`;
       }
-      return `<p>${inline(blok.trim()).replace(/\n/g, "<br>")}</p>`;
+      return `<p>${inline(blok.trim(), knapBudget).replace(/\n/g, "<br>")}</p>`;
     })
     .filter(Boolean)
     .join("");

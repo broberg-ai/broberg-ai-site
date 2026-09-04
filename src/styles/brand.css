@@ -2838,3 +2838,39 @@ a.pill.taglink:active {
     bottom: 36px;
   }
 }
+
+/* Aidans handlings-knap i chatsvar — Eir-mønstret fra sanne (mål: padding
+   9/14, radius 10, soft bg + accent-kant), men med de states deres egen
+   udgave ærligt mangler: hover/active/focus fra fødslen (husregel). */
+.aidan-msg .aidan-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--blue-glow);
+  border: 1px solid var(--blue);
+  color: var(--blue-light);
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.aidan-msg .aidan-cta:hover {
+  background: var(--blue);
+  border-color: var(--blue-light);
+  color: #04222f;
+}
+[data-theme="light"] .aidan-msg .aidan-cta:hover {
+  color: #fff;
+}
+.aidan-msg .aidan-cta:active {
+  transform: translateY(1px);
+}
+.aidan-msg .aidan-cta:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
