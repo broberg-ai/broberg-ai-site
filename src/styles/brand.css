@@ -2750,6 +2750,50 @@ a.pill.taglink:active {
   flex-wrap: wrap;
   gap: 8px;
   padding: 0 16px 10px;
+  /* F007.6: foldes animeret ned når et forslag er valgt — de fylder en del. */
+  overflow: hidden;
+  max-height: 220px;
+  transition: max-height 0.3s ease, opacity 0.22s ease, padding 0.3s ease;
+}
+.aidan-chips.foldet {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+.aidan-chips-fold {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 16px 8px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.aidan-chips-fold:hover {
+  border-color: var(--blue);
+  color: var(--blue-light);
+}
+.aidan-chips-fold:active {
+  transform: translateY(1px);
+}
+.aidan-chips-fold:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.aidan-fold-pil {
+  transition: transform 0.25s ease;
+}
+.aidan-chips-fold.aaben .aidan-fold-pil {
+  transform: rotate(180deg);
 }
 .aidan-chip {
   border: 1px solid var(--card-border);
@@ -2826,6 +2870,42 @@ a.pill.taglink:active {
   font-size: 0.64rem;
   color: var(--muted);
   padding: 0 10px 8px;
+}
+/* F007.5: flyder over beskederne når man er scrollet op og nyt svar strømmer
+   ind — chatten kæmper ikke længere om scrollbaren, den tilbyder et hop. */
+.aidan-nyt-svar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 132px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #04222f;
+  padding: 0.38rem 0.85rem;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+[data-theme="light"] .aidan-nyt-svar {
+  color: #fff;
+}
+.aidan-nyt-svar:hover {
+  background: var(--blue-light);
+}
+.aidan-nyt-svar:active {
+  transform: translateX(-50%) translateY(1px);
+}
+.aidan-nyt-svar:focus-visible {
+  outline: 2px solid var(--light);
+  outline-offset: 2px;
 }
 @media (max-width: 560px) {
   .aidan-panel {
@@ -3041,7 +3121,9 @@ a.pill.taglink:active {
 /* hidden-attributten skal vinde over klassernes display:flex — ellers er
    msgs.hidden=true en no-op (UA-reglen taber til enhver klasse-selektor). */
 .aidan-msgs[hidden],
-.aidan-chips[hidden] {
+.aidan-chips[hidden],
+.aidan-nyt-svar[hidden],
+.aidan-chips-fold[hidden] {
   display: none;
 }
 /* Svar-typografi — «sygt lækker», ikke markdown-agtig (Christian 4/9). */

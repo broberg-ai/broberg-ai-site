@@ -9,7 +9,7 @@ const lager = new Map<string, string>();
   removeItem: (k: string) => void lager.delete(k),
 };
 
-import { gemAktiv, hentSamtale, listSamtaler, sletSamtale, aktivId, saetAktiv, titelFra, relativTid } from "./aidan-samtaler.ts";
+import { gemAktiv, hentSamtale, listSamtaler, sletSamtale, aktivId, saetAktiv, titelFra, relativTid, erNaerBunden } from "./aidan-samtaler.ts";
 
 beforeEach(() => lager.clear());
 
@@ -83,5 +83,22 @@ describe("hjælperne", () => {
   test("relativ tid på begge sprog", () => {
     expect(relativTid(Date.now() - 5 * 60_000, false)).toBe("for 5 min siden");
     expect(relativTid(Date.now() - 5 * 60_000, true)).toBe("5 min ago");
+  });
+});
+
+describe("erNaerBunden (F007.5) — hvornår må chatten auto-scrolle", () => {
+  test("helt i bunden: ja", () => {
+    expect(erNaerBunden(400, 600, 1000)).toBe(true);
+  });
+  test("scrollet op: nej — brugerens scroll må ikke bekæmpes", () => {
+    expect(erNaerBunden(0, 600, 1000)).toBe(false);
+    expect(erNaerBunden(200, 600, 1000)).toBe(false);
+  });
+  test("marginen tilgiver et par linjers afdrift, men ikke mere", () => {
+    expect(erNaerBunden(360, 600, 1000)).toBe(true); // 40px fra bunden < 48-margin
+    expect(erNaerBunden(351, 600, 1000)).toBe(false); // 49px fra bunden
+  });
+  test("indhold kortere end vinduet: altid ja", () => {
+    expect(erNaerBunden(0, 600, 300)).toBe(true);
   });
 });

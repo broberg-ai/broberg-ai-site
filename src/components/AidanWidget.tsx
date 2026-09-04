@@ -36,6 +36,8 @@ export interface AidanTekster {
   tidligere: string;
   nySamtale: string;
   ingenSamtaler: string;
+  nytSvar: string;
+  forslag: string;
 }
 
 export function aidanTekster(
@@ -66,6 +68,8 @@ export function aidanTekster(
     tidligere: g("aidanTidligere", en ? "Previous conversations" : "Tidligere samtaler"),
     nySamtale: g("aidanNySamtale", en ? "New conversation" : "Ny samtale"),
     ingenSamtaler: g("aidanIngenSamtaler", en ? "No previous conversations yet" : "Ingen tidligere samtaler endnu"),
+    nytSvar: g("aidanNytSvar", en ? "New reply" : "Nyt svar"),
+    forslag: g("aidanForslag", en ? "Suggestions" : "Forslag"),
     disclaimer: g(
       "aidanDisclaimer",
       en ? "Aidan is an AI — answers may contain mistakes" : "Aidan er en AI — svar kan indeholde fejl",
@@ -163,6 +167,20 @@ export function AidanWidget({
             {t.hilsen}
           </div>
         </div>
+        {/* F007.5: vises kun når brugeren er scrollet op og nyt svar strømmer ind. */}
+        <button type="button" class="aidan-nyt-svar" data-testid="aidan-nyt-svar" hidden>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M6 13l6 6 6-6" />
+          </svg>
+          <span {...cmsAttrs(globalsRef, "aidanNytSvar")}>{t.nytSvar}</span>
+        </button>
+        {/* F007.6: folder forslags-chippene ud/ind — chevronen roterer med tilstanden. */}
+        <button type="button" class="aidan-chips-fold" data-testid="aidan-chips-fold" hidden>
+          <span {...cmsAttrs(globalsRef, "aidanForslag")}>{t.forslag}</span>
+          <svg class="aidan-fold-pil" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
         <div class="aidan-chips" data-testid="aidan-chips" {...cmsAttrs(globalsRef, "aidanChips")}>
           {chips.map((c, i) => (
             <button type="button" class="aidan-chip" data-testid={`aidan-chip-${i + 1}`}>

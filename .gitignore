@@ -153,3 +153,4 @@ vite.config.ts.timestamp-*
 .claude/settings.local.json
 fly.preview.toml
 .trail-sync/
+.claude/rules.local.json

@@ -82,6 +82,14 @@ export function saetAktiv(id: string | null): void {
   } catch {}
 }
 
+/** F007.5: står brugeren (nær) bunden af scroll-området? Chatten må KUN
+ *  auto-scrolle når svaret er ja — ellers kæmper den mod brugerens egen
+ *  opadgående scroll under streaming (Christians «blinker»-rapport 4/9).
+ *  Marginen tilgiver sub-pixel-afrunding og et par linjers afdrift. */
+export function erNaerBunden(scrollTop: number, clientHeight: number, scrollHeight: number, margin = 48): boolean {
+  return scrollTop + clientHeight >= scrollHeight - margin;
+}
+
 /** «for 2 timer siden» — spejler sitets egen relative-tid-form. */
 export function relativTid(epokeMs: number, en: boolean): string {
   const s = Math.max(0, (Date.now() - epokeMs) / 1000);

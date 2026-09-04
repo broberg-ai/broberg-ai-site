@@ -5,7 +5,7 @@ import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
 import { mountAdminChat } from "@/client/admin-chat.tsx";
 import { aidanTilHtml } from "@/client/aidan-md.ts";
-import { listSamtaler, hentSamtale, gemAktiv, sletSamtale, aktivId, saetAktiv, relativTid, type Tur } from "@/client/aidan-samtaler.ts";
+import { listSamtaler, hentSamtale, gemAktiv, sletSamtale, aktivId, saetAktiv, relativTid, erNaerBunden, type Tur } from "@/client/aidan-samtaler.ts";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
 // F157 — cms-admin connection shared by inline-edit + the /admin panel.
@@ -639,6 +639,42 @@ function aidan() {
   const chipsEl = rod.querySelector<HTMLElement>(".aidan-chips")!;
   const hilsenHtml = msgs.innerHTML; // SSR-hilsnen — genbruges ved Ny samtale
 
+  // ── F007.5: chatten følger kun med når brugeren står i bunden. Scroller man
+  // op mens Aidan skriver, kæmpede hver SSE-bid før mod brugerens scroll
+  // (Christians «blinker»-rapport) — nu lades man i fred, og en «↓ Nyt svar»-
+  // pill hopper ned på klik. Egen besked/genindlæsning tvinger altid ned.
+  const nytSvar = rod.querySelector<HTMLButtonElement>("[data-testid='aidan-nyt-svar']")!;
+  let foelger = true;
+  const rulNed = (tving = false) => {
+    if (tving) {
+      foelger = true;
+      nytSvar.hidden = true;
+    }
+    if (foelger) msgs.scrollTop = msgs.scrollHeight;
+    else nytSvar.hidden = false;
+  };
+  msgs.addEventListener(
+    "scroll",
+    () => {
+      foelger = erNaerBunden(msgs.scrollTop, msgs.clientHeight, msgs.scrollHeight);
+      if (foelger) nytSvar.hidden = true;
+    },
+    { passive: true },
+  );
+  nytSvar.addEventListener("click", () => rulNed(true));
+
+  // ── F007.6: forslags-chippene fylder — de foldes ned når man vælger ét (eller
+  // skriver selv), og en lille «Forslag»-pill folder dem ud igen.
+  const foldPill = rod.querySelector<HTMLButtonElement>("[data-testid='aidan-chips-fold']")!;
+  let pillAktiv = false;
+  const foldChips = (ned: boolean, aktiv = true) => {
+    pillAktiv = aktiv;
+    chipsEl.classList.toggle("foldet", ned);
+    foldPill.classList.toggle("aaben", !ned);
+    foldPill.hidden = !aktiv;
+  };
+  foldPill.addEventListener("click", () => foldChips(!chipsEl.classList.contains("foldet")));
+
   let historik: Tur[] = [];
   const gem = () => void gemAktiv(historik);
 
@@ -646,7 +682,7 @@ function aidan() {
     const d = document.createElement("div");
     d.className = `aidan-msg ${cls}`;
     msgs.appendChild(d);
-    msgs.scrollTop = msgs.scrollHeight;
+    rulNed();
     return d;
   };
   const visSamtale = (beskeder: Tur[]) => {
@@ -657,7 +693,9 @@ function aidan() {
       if (t.role === "user") d.textContent = t.content;
       else d.innerHTML = tilHtml(t.content);
     }
-    msgs.scrollTop = msgs.scrollHeight;
+    if (historik.length) foldChips(true);
+    else foldChips(false, false);
+    rulNed(true);
   };
   const nySamtale = () => {
     saetAktiv(null);
@@ -685,6 +723,7 @@ function aidan() {
     histVisning.hidden = true;
     msgs.hidden = false;
     chipsEl.hidden = false;
+    foldPill.hidden = !pillAktiv;
   };
   const tegnHistorik = () => {
     histListe.innerHTML = "";
@@ -763,6 +802,7 @@ function aidan() {
       histVisning.hidden = false;
       msgs.hidden = true;
       chipsEl.hidden = true;
+      foldPill.hidden = true;
     } else {
       lukHistorik();
     }
@@ -779,6 +819,8 @@ function aidan() {
     if (travl || !tekst.trim()) return;
     travl = true;
     send.disabled = true;
+    foldChips(true);
+    rulNed(true);
     boblEl("fra-mig").textContent = tekst;
     historik.push({ role: "user", content: tekst });
     gem();
@@ -787,7 +829,7 @@ function aidan() {
     taenker.className = "aidan-taenker";
     taenker.innerHTML = "<i></i><i></i><i></i>";
     msgs.appendChild(taenker);
-    msgs.scrollTop = msgs.scrollHeight;
+    rulNed();
 
     let svar = "";
     let svarEl: HTMLElement | null = null;
@@ -825,7 +867,7 @@ function aidan() {
             svar += String(JSON.parse(data).delta ?? "");
             if (!svarEl) svarEl = boblEl("fra-aidan");
             svarEl.innerHTML = tilHtml(svar);
-            msgs.scrollTop = msgs.scrollHeight;
+            rulNed();
           } else if (ev === "error") {
             if (!svar) fejl();
           }
