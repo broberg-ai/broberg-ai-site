@@ -33,6 +33,7 @@ import {
   renderAdminChat,
 } from "@/routes.tsx";
 import { renderSitemapXml } from "@/sitemap.ts";
+import { renderLlmsTxt } from "@/llms.ts";
 import { buildSearchIndex, postCanonicalCategory } from "@/content/compose.ts";
 import { flagshipsSegment, withLocale } from "@/i18n.ts";
 
@@ -97,6 +98,14 @@ app.get("/sitemap.xml", async (c) => {
   const host = c.req.header("x-forwarded-host") || new URL(c.req.url).host;
   const xml = await renderSitemapXml(`https://${host}`);
   return c.body(xml, 200, { "Content-Type": "application/xml; charset=utf-8" });
+});
+
+// llms.txt — AI-readable page list from the SAME source as sitemap.xml
+// (siteIndexGroups). Regenerated per request, so it can never go stale.
+app.get("/llms.txt", async (c) => {
+  const host = c.req.header("x-forwarded-host") || new URL(c.req.url).host;
+  const txt = await renderLlmsTxt(`https://${host}`);
+  return c.body(txt, 200, { "Content-Type": "text/plain; charset=utf-8" });
 });
 
 // ICD content-push receiver (cms → us on every save/publish).
