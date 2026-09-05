@@ -3136,6 +3136,12 @@ a.pill.taglink:active {
   html.aidan-aaben body {
     overflow: hidden;
   }
+  /* 16px er iOS' grænse for auto-zoom ved fokus — under den zoomer Safari
+     siden ind og zoomer ALDRIG tilbage, så send-knappen røg ud over højre
+     kant (IMG_9596, 5/9). */
+  .aidan-input input {
+    font-size: 16px;
+  }
   /* Fuldskærms-knappen er meningsløs når chatten allerede ER fuldskærm —
      og .fuld-klassens centrerings-transform ville KRYMPE panelet her. */
   [data-testid="aidan-fuld"] {

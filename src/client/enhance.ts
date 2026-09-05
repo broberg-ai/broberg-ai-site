@@ -622,22 +622,42 @@ function aidan() {
   if (scrollY > 120) visFab(); // landet midt på siden (anker/back-nav)
 
   // ── Åbn/luk
+  const mobil = () => matchMedia("(max-width: 560px)").matches;
   const aabn = () => {
     panel.hidden = false;
     fab.classList.add("aaben");
     boble.classList.remove("vis");
     // preventScroll: uden den scroller browseren SIDEN bagved for at «vise»
     // feltet ved åbning (Christians «scrolle kører omme bagved»-rapport 5/9).
-    felt.focus({ preventScroll: true });
+    // På mobil fokuseres SLET ikke: autofokus åbnede tastaturet oven i en
+    // chat man endnu ikke har set, og skjulte skrivefeltet (IMG_9595, 5/9).
+    if (!mobil()) felt.focus({ preventScroll: true });
     // Mobil: panelet er fuldskærm, så siden bagved låses (scroll-kæden stoppes
     // i CSS via denne klasse — kun under 560px, desktop-siden skal kunne rulle).
     document.documentElement.classList.add("aidan-aaben");
+    tilpasViewport();
   };
   const lukPanel = () => {
     panel.hidden = true;
     fab.classList.remove("aaben");
     document.documentElement.classList.remove("aidan-aaben");
+    panel.style.height = "";
+    panel.style.transform = "";
   };
+  // Tastaturet krymper KUN den synlige viewport, aldrig layout-viewporten som
+  // det fixed panel hænger på — så uden dette lå felt+send BAG tasterne
+  // (IMG_9595). Panelet får den højde der faktisk er synlig, og forskydes med
+  // offsetTop, så skrivefeltet sidder lige over tastaturet som i enhver anden
+  // chat-app. Kun mobil; desktop-panelet er lavere end skærmen pr. design.
+  const vv = window.visualViewport;
+  const tilpasViewport = () => {
+    if (panel.hidden || !mobil() || !vv) return;
+    panel.style.height = `${vv.height}px`;
+    panel.style.transform = `translateY(${vv.offsetTop}px)`;
+    rulNed();
+  };
+  vv?.addEventListener("resize", tilpasViewport);
+  vv?.addEventListener("scroll", tilpasViewport);
   fab.addEventListener("click", aabn);
   luk.addEventListener("click", lukPanel);
   // En handlings-knap i et svar ([knap:]-CTA'en) navigerer — så dialogen skal
