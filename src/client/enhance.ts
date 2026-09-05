@@ -721,6 +721,9 @@ function aidan() {
     foldPill.hidden = !aktiv;
   };
   foldPill.addEventListener("click", () => foldChips(!chipsEl.classList.contains("foldet")));
+  // F007.14: forslagene starter FOLDET — også på en helt frisk første åbning
+  // (visSamtale-stien rammes kun ved genindlæsning, målt i Lens-run 073bf595).
+  foldChips(true);
 
   // ── F007.7/F007.8: oplæsning af indsigter + persona-valg. Tilbuddet vises
   // KUN når svaret linker til en news post — facitlisten kommer fra serveren,
