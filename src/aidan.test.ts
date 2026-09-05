@@ -230,3 +230,24 @@ describe("sproget påføres eksplicit (dansk-primær vidensbase)", () => {
     expect(p).toContain("SAMTALENS SPROG: dansk");
   });
 });
+
+// ── Tools-seglet (Christian 5/9: «Den skal kun have adgang til de tools vi
+// giver den»). I dag er listen TOM: chat-kaldet må ikke bære et tools-felt,
+// så modellen mekanisk ikke kan kalde noget — hverken net, filer eller API'er.
+// Vagten læser kaldestedet i kilden; vil nogen give Aidan et tool, skal denne
+// test ændres BEVIDST sammen med ejerens GO.
+import { readFileSync } from "node:fs";
+
+describe("tools-seglet", () => {
+  const kilde = readFileSync(new URL("./aidan.ts", import.meta.url), "utf8");
+
+  test("chat-kaldet findes (vagten kigger det rigtige sted)", () => {
+    expect(kilde).toContain("chatStream({");
+  });
+
+  test("chat-kaldet bærer INGEN tools", () => {
+    const kald = kilde.match(/chatStream\(\{[\s\S]*?\}\)/g) ?? [];
+    expect(kald.length).toBeGreaterThan(0);
+    for (const k of kald) expect(k.includes("tools")).toBe(false);
+  });
+});
