@@ -2966,6 +2966,16 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   align-content: start;
   gap: 16px;
 }
+/* ER DER FLERE END ÉT lille kort, deler de stakkens højde ligeligt og fylder
+   den store boks ud. Uden det bestemmer den STORE artikels TITELLÆNGDE hvor
+   mange der er plads til: en lang overskrift gav en høj boks med luft til tre,
+   en kort gav plads til to (målt 6/9 — BI-titlen 418px høj boks mod Aidans).
+   Med ét kort ville 1fr strække det til fuld højde med et hul i midten, og
+   derfor er reglen betinget frem for at gælde altid. */
+.f-stak:has(> :nth-child(2)) {
+  align-content: stretch;
+  grid-auto-rows: 1fr;
+}
 .f-lille {
   display: flex;
   flex-direction: column;
