@@ -1,3 +1,5 @@
+import { erAlleredeSendt, noterSendt } from "@/trail-sendt.ts";
+
 /* Trail-klip — ÉN kilde til «side → markdown → KB» (F007).
  *
  * Deles af scripts/trail-sync.mjs (fuld re-sync af sitemappet) og
@@ -14,6 +16,15 @@ export function tilTekst(html: string): string {
     .replace(/<header[\s\S]*?<\/header>/gi, "")
     .replace(/<footer[\s\S]*?<\/footer>/gi, "")
     .replace(/<nav[\s\S]*?<\/nav>/gi, "")
+    // SIDENS KROM ER IKKE ARTIKLEN. Featured-båndet og -boksen viser ANDRE
+    // siders titler, så de ændrer sig hver gang en HVILKEN SOM HELST artikel
+    // featurees — og siden rotationen (F008.3) også ved hver sidevisning.
+    // Målt 6/9-2026: det gjorde 39 artikler til 90 sider i KB'en, hver med sin
+    // egen kompilering, så et spørgsmål kunne få tre forskellige svar.
+    // En artikels tekst i vidensbasen skal være ARTIKLEN og intet andet.
+    .replace(/<div class="f-baand"[\s\S]*?<\/div>\s*(?=<)/gi, "")
+    .replace(/<div[^>]*data-testid="featured-baand"[\s\S]*?<\/div>\s*(?=<)/gi, "")
+    .replace(/<section[^>]*data-testid="featured-boks"[\s\S]*?<\/section>/gi, "")
     .replace(/<div id="aidan"[\s\S]*$/i, "");
   const main = /<main[\s\S]*?<\/main>/i.exec(s);
   if (main) s = main[0];
@@ -73,6 +84,10 @@ export async function trailHarSide(sourceUrl: string): Promise<boolean> {
 export async function trailUploadSide(md: string, sourceUrl: string): Promise<"sendt" | "uaendret"> {
   const a = auth();
   if (!a) throw new Error("TRAIL_TOKEN/TRAIL_KB er ikke sat");
+  // VORES EGEN SPÆRRE, før noget forlader huset. Vi stolede før på at Trail
+  // afviste dubletten; da deres indgang holdt op med det, blev 39 artikler til
+  // 90 sider. En spærre hos modtageren er ikke vores spærre. Se trail-sendt.ts.
+  if (erAlleredeSendt(sourceUrl, md)) return "uaendret";
   const form = new FormData();
   form.set("file", new File([md], trailFilnavn(sourceUrl), { type: "text/markdown" }));
   form.set("path", "/broberg-ai-site");
@@ -90,12 +105,14 @@ export async function trailUploadSide(md: string, sourceUrl: string): Promise<"s
     // Trails egen indholds-hash-spærre: NØJAGTIG samme indhold findes allerede.
     // Målt live 4/9 (gen-udgivelse uden tekstændring → 409 duplicate_source).
     // Det er jobbets FORVENTEDE udfald for en uændret side — ikke en fejl.
+    noterSendt(sourceUrl, md); // KB'en HAR det — husk det, så vi ikke spørger igen
     return "uaendret";
   }
   if (!res.ok) throw new Error(`trail-upload ${res.status}: ${(await res.text()).slice(0, 200)}`);
   // F243.1 (trails upsert-på-sourceUrl, live 4/9): 200 kan nu betyde
   // «uændret» (nul skrivninger) eller «opdateret» (samme dokument, version+1).
   const krop = await res.json().catch(() => ({}));
+  noterSendt(sourceUrl, md);
   if (krop?.upsert === "unchanged") return "uaendret";
   return "sendt";
 }
