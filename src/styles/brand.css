@@ -2956,6 +2956,31 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   border-left: 1px solid var(--card-border);
   padding: 20px;
 }
+
+/* F008.3: artiklens egen visual i featured-boksen — video/billede fylder
+   fladen; uden egen visual arver den forsidens bølge-animation (.wOut).
+   Reduced-motion: videoen skjules, posteren/animationen står stille. */
+.f-visual-video,
+.f-visual-billede {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 220px;
+}
+.f-anim {
+  width: 100%;
+  max-width: 260px;
+  overflow: visible;
+}
+@media (prefers-reduced-motion: reduce) {
+  .f-visual-video {
+    display: none;
+  }
+  .f-anim .wOut {
+    animation: none;
+  }
+}
+
 .f-boks-visual svg {
   width: 100%;
   max-width: 260px;

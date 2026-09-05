@@ -62,18 +62,36 @@ export function FeaturedBoks({
             </a>
           </div>
           <div class="f-boks-visual" aria-hidden="true">
-            <svg viewBox="0 0 260 140">
-              <rect x="10" y="90" width="30" height="40" rx="4" fill="var(--blue)" opacity="0.35" />
-              <rect x="50" y="60" width="30" height="70" rx="4" fill="var(--blue)" opacity="0.55" />
-              <rect x="90" y="75" width="30" height="55" rx="4" fill="var(--blue)" opacity="0.45" />
-              <rect x="130" y="35" width="30" height="95" rx="4" fill="var(--blue)" />
-              <rect x="170" y="50" width="30" height="80" rx="4" fill="var(--blue)" opacity="0.7" />
-              <polyline points="15,70 65,45 105,55 145,20 185,32 230,14" fill="none" stroke="var(--blue-light)" stroke-width="3" stroke-linecap="round" />
-              <circle cx="230" cy="14" r="5" fill="var(--blue-light)" />
-            </svg>
+            {item.visualVideo ? (
+              <video class="f-visual-video" autoplay muted loop playsinline preload="metadata" poster={item.visualPoster} src={item.visualVideo}></video>
+            ) : item.visualImg ? (
+              <img class="f-visual-billede" src={item.visualImg} alt="" loading="lazy" />
+            ) : (
+              <FeaturedAnimation />
+            )}
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+/** Fælles featured-animation — forsidens egne bølger (samme wOut-klasser og
+ *  animation fra brand.css), så en artikel uden egen visual arver husets puls. */
+export function FeaturedAnimation() {
+  return (
+    <svg class="f-anim" viewBox="200 90 220 160" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="fFeat" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#00b2ff" />
+          <stop offset="1" stop-color="#40c8ff" />
+        </linearGradient>
+      </defs>
+      <path class="wOut" d="M236 170 q10 -42 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="url(#fFeat)" stroke-width="3" fill="none" />
+      <path class="wOut o2" d="M236 170 q10 -26 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="#00b2ff" stroke-width="2" fill="none" opacity="0.5" />
+      <path class="wOut o3" d="M236 170 q10 -58 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="#00b2ff" stroke-width="1.4" fill="none" opacity="0.25" />
+      <circle cx="236" cy="170" r="4" fill="#00b2ff" />
+    </svg>
+  );
+}
+

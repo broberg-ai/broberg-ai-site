@@ -954,6 +954,11 @@ export type FeaturedItem = {
   featuredText: string;
   category: string;
   slug: string;
+  /** Artiklens egen visual — første video/billede i indholdet (kun /uploads).
+   *  Mangler begge, render fladen forsidens fælles animation i stedet. */
+  visualVideo?: string;
+  visualPoster?: string;
+  visualImg?: string;
 };
 export async function loadFeatured(locale: Locale): Promise<FeaturedItem[]> {
   const en = locale === "en";
@@ -964,12 +969,21 @@ export async function loadFeatured(locale: Locale): Promise<FeaturedItem[]> {
       const d = dataOf(p);
       const slug = String(p.slug);
       const category = typeof d.category === "string" ? d.category : "indsigter";
+      const indhold = typeof d.content === "string" ? d.content : "";
+      const video =
+        /<source[^>]+src="(\/uploads\/[^"]+\.mp4)"/.exec(indhold)?.[1] ??
+        /<video[^>]+src="(\/uploads\/[^"]+\.mp4)"/.exec(indhold)?.[1];
+      const poster = /<video[^>]+poster="(\/uploads\/[^"]+)"/.exec(indhold)?.[1];
+      const billede = /<img[^>]+src="(\/uploads\/[^"]+)"/.exec(indhold)?.[1];
       return {
         href: `${en ? "/en" : ""}/${category}/${slug}`,
         title: typeof d.title === "string" ? d.title.replace(/<[^>]+>/g, "") : slug,
         featuredText: typeof d.featuredText === "string" ? d.featuredText : "",
         category,
         slug,
+        ...(video ? { visualVideo: video } : {}),
+        ...(poster ? { visualPoster: poster } : {}),
+        ...(billede && !video ? { visualImg: billede } : {}),
       };
     });
 }
