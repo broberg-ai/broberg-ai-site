@@ -7,11 +7,11 @@ import type { CmsRef } from "@/content/types.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
 import { stripHtml } from "@/content/richtext.ts";
 
-export function FeaturedBaand({ items, laes }: { items: FeaturedItem[]; laes: string }) {
+export function FeaturedBaand({ items, laes, maerke }: { items: FeaturedItem[]; laes: string; maerke: string }) {
   if (!items.length) return null;
   return (
     <div class="f-baand" data-testid="featured-baand">
-      <span class="f-maerke">★ FEATURED</span>
+      <span class="f-maerke">{maerke}</span>
       <span class="f-baand-spor">
         {items.map((it, i) => (
           <a class={`f-baand-punkt${i === 0 ? " akt" : ""}`} href={it.href} data-testid="featured-baand-titel">
@@ -37,11 +37,13 @@ export function FeaturedBoks({
   item,
   eyebrow,
   laes,
+  maerke,
   globalsRef,
 }: {
   item: FeaturedItem;
   eyebrow: string;
   laes: string;
+  maerke: string;
   globalsRef?: CmsRef;
 }) {
   return (
@@ -50,7 +52,7 @@ export function FeaturedBoks({
         <div class="eyebrow" {...cmsAttrs(globalsRef, "featuredEyebrow")}>{eyebrow}</div>
         <div class="f-boks">
           <div class="f-boks-tekst">
-            <span class="f-maerke">★ FEATURED</span>
+            <span class="f-maerke">{maerke}</span>
             <h2>{stripHtml(item.title)}</h2>
             <p>{item.featuredText}</p>
             <a class="btn" href={item.href} data-testid="featured-boks-laes">

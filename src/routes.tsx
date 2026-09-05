@@ -78,7 +78,7 @@ async function page(
   return renderPage(
     <>
       <Nav locale={meta.locale} altHref={meta.altHref} nav={navLabels} globalsRef={globalsRef} />
-      <FeaturedBaand items={featured} laes={laesLabel} />
+      <FeaturedBaand items={featured} laes={laesLabel} maerke={(typeof globalsData.featuredMaerke === "string" && (globalsData.featuredMaerke as string)) || "★ FEATURED"} />
       {children}
       <Footer data={footerData} cmsRef={globalsRef} />
       {/* Aidan — kun når chatten faktisk kan svare (ship-dark). Admin-fladerne
@@ -332,6 +332,7 @@ export async function renderHome(locale: Locale): Promise<string> {
           item={featuredForside[0]}
           eyebrow={(typeof globalsData.featuredEyebrow === "string" && (globalsData.featuredEyebrow as string)) || (isEn ? "Featured right now" : "Fremhævet lige nu")}
           laes={(typeof globalsData.featuredLaes === "string" && (globalsData.featuredLaes as string)) || (isEn ? "Read" : "Læs")}
+          maerke={(typeof globalsData.featuredMaerke === "string" && (globalsData.featuredMaerke as string)) || "★ FEATURED"}
           globalsRef={globalsRef}
         />
       ) : null}
