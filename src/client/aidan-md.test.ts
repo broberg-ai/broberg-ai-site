@@ -197,6 +197,11 @@ describe("F007.13 markører", () => {
     expect(aidanTilHtml("[sprog:en]")).toContain('data-sprog="en"');
     expect(aidanTilHtml("[sprog:tysk]")).not.toContain("data-sprog");
   });
+  test("partiel tabel under streaming kaster ALDRIG (svaret frøs ved tegn 108)", () => {
+    expect(() => aidanTilHtml("Intro.\n\n| |")).not.toThrow();
+    expect(() => aidanTilHtml("| :--- |")).not.toThrow();
+    expect(aidanTilHtml("| |")).not.toContain("<table>");
+  });
   test("markør-linje sluges ikke af et afsnit", () => {
     const h = aidanTilHtml("Se casen her:\n[case:/cases/x|X|y]");
     expect(h).toContain("aidan-case");

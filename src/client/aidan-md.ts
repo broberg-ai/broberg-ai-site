@@ -124,6 +124,11 @@ function tabel(linjer: string[], knapBudget: { tilbage: number }): string {
     .filter((l) => !/^\s*\|[\s:|-]+\|\s*$/.test(l))
     .map((l) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim()));
   const [hoved, ...krop] = rk;
+  // Under STREAMING kan blokken et øjeblik bestå af skillerækken alene
+  // (chunk-grænsen faldt efter «| |») — så er der ingen hovedrække, og et
+  // kald på undefined ville dræbe hele læse-løkken midt i svaret (målt på
+  // prod 5/9: svaret frøs ved tegn 108). Render intet; næste chunk fikser.
+  if (!hoved) return "";
   return `<div class="aidan-tabel"><table><thead><tr>${hoved.map((c) => `<th>${inline(c, knapBudget)}</th>`).join("")}</tr></thead><tbody>${krop.map((r) => `<tr>${r.map((c) => `<td>${inline(c, knapBudget)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 
