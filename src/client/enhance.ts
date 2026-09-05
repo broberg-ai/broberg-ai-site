@@ -623,8 +623,10 @@ function aidan() {
 
   // ── Åbn/luk
   const mobil = () => matchMedia("(max-width: 560px)").matches;
+  const bagtaeppe = rod.querySelector<HTMLElement>("[data-testid='aidan-bagtaeppe']");
   const aabn = () => {
     panel.hidden = false;
+    if (bagtaeppe) bagtaeppe.hidden = false;
     fab.classList.add("aaben");
     boble.classList.remove("vis");
     // preventScroll: uden den scroller browseren SIDEN bagved for at «vise»
@@ -640,6 +642,7 @@ function aidan() {
   };
   const lukPanel = () => {
     panel.hidden = true;
+    if (bagtaeppe) bagtaeppe.hidden = true;
     fab.classList.remove("aaben");
     document.documentElement.classList.remove("aidan-aaben");
     panel.style.height = "";
@@ -660,6 +663,7 @@ function aidan() {
   vv?.addEventListener("resize", tilpasViewport);
   vv?.addEventListener("scroll", tilpasViewport);
   fab.addEventListener("click", aabn);
+  bagtaeppe?.addEventListener("click", lukPanel);
   luk.addEventListener("click", lukPanel);
   // En handlings-knap i et svar ([knap:]-CTA'en) navigerer — så dialogen skal
   // af vejen med det samme, ellers dækker fuldskærms-chatten den side man

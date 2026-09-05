@@ -246,6 +246,7 @@ export function AidanWidget({
         {t.boble}
       </div>
 
+      <div class="aidan-bagtaeppe" data-testid="aidan-bagtaeppe" hidden></div>
       <div
         class="aidan-panel"
         data-testid="aidan-panel"

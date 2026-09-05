@@ -3059,6 +3059,29 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   transform: none;
 }
 
+
+/* F007.14.1 — glas-bagtæppe bag panelet (ejer 5/9): frostet glas dæmper
+   siden bagved så chatten får fokus; klik på glasset lukker. Ikke på mobil,
+   hvor panelet selv dækker alt. */
+.aidan-bagtaeppe {
+  position: fixed;
+  inset: 0;
+  z-index: 299;
+  background: rgba(13, 16, 20, 0.45);
+  -webkit-backdrop-filter: blur(7px) saturate(0.9);
+  backdrop-filter: blur(7px) saturate(0.9);
+  animation: aidan-glas 0.25s ease;
+  cursor: pointer;
+}
+@keyframes aidan-glas {
+  from { opacity: 0; }
+}
+@media (max-width: 560px) {
+  .aidan-bagtaeppe {
+    display: none;
+  }
+}
+
 .aidan-panel {
   position: fixed;
   right: 20px;
