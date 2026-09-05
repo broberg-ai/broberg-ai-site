@@ -175,14 +175,27 @@ export function aidanTekster(
  *    hjul     (514,717) r65               skiven: #ea8f1f, mørk: #030202
  *    antenne  (514,62)  r31               kuglen: #df5416
  *
+ *  VIGTIGT — koordinaterne gælder HVILETILSTANDEN, hvor figuren viser den
+ *  kanoniske SVG-poster. Vinke-videoen er en ANDEN positur, og robotten
+ *  bevæger sig i den (målt: antennekuglen svinger 68 enheder = 3x sin egen
+ *  bredde), så overlayet ville sidde ved siden af. Derfor slukkes det mens
+ *  videoen kører (.spiller) — se brand.css.
+ *
  *  Alt er sjældent og kort — figuren skal virke levende, ikke urolig. */
 function Liv({ klasse }: { klasse: string }) {
   const prikker = [0, 45, 90, 135, 180, 225, 270, 315];
   return (
     <svg class={klasse} viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
-      {/* Øjenlåg: gyldent som hovedet, klapper ned og op igen */}
-      <ellipse class="liv-laag" cx="389" cy="405" rx="56" ry="56" fill="#f7bd64" />
-      <ellipse class="liv-laag liv-laag-2" cx="634" cy="405" rx="56" ry="56" fill="#f7bd64" />
+      {/* Øjenlåg. Det gyldne dække ALENE var ikke et blink — det så ud som om
+          øjnene blev visket ud (målt på figuren 6/9). Buen ovenpå er det der
+          gør det til et lukket øje frem for et manglende. */}
+      {[389, 634].map((cx, i) => (
+        <g key={cx} class={i ? "liv-laag liv-laag-2" : "liv-laag"}>
+          <ellipse cx={cx} cy="405" rx="56" ry="56" fill="#f7bd64" />
+          <path d={`M ${cx - 40} 398 Q ${cx} 430 ${cx + 40} 398`} fill="none"
+            stroke="#030202" stroke-width="13" stroke-linecap="round" />
+        </g>
+      ))}
       {/* Hjulet: skiven dækkes og prikkerne tegnes igen, så de kan dreje */}
       <g class="liv-hjul">
         <circle cx="514" cy="717" r="64" fill="#ea8f1f" />

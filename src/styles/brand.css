@@ -2560,7 +2560,7 @@ a.pill.taglink:active {
 /* ── Liv i den stillestående figur (ejerens ønske 6/9) ─────────────────────
    Et overlay i figurens eget koordinatsystem, så øjne, hjul og antenne kan
    røre sig UDEN en ny video og UDEN at røre original-SVG'en. Positioner og
-   farver er målt i browseren på den rigtige fil.
+   farver er målt i browseren på den rigtige fil, i HVILETILSTANDEN.
    Alt er SJÆLDENT og KORT: levende, ikke uroligt. */
 .aidan-liv {
   position: absolute;
@@ -2568,6 +2568,14 @@ a.pill.taglink:active {
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+/* Overlayet gælder KUN stillbilledet (den kanoniske SVG-poster). Mens
+   vinke-videoen kører står robotten i en anden positur OG bevæger sig — målt
+   6/9: antennekuglen svinger 68 enheder af figurens 1024, altså 3x sin egen
+   bredde. Delene ville ligge synligt ved siden af netop i de sekunder man
+   først får øje på figuren. */
+.aidan-fab.spiller .aidan-liv {
+  opacity: 0;
 }
 /* Øjenlåg: normalt helt sammenklappet (usynligt), klapper ned og op igen. */
 .liv-laag {
