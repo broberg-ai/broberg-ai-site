@@ -2697,6 +2697,9 @@ a.pill.taglink:active {
 .aidan-msgs {
   flex: 1;
   overflow-y: auto;
+  /* Når chatten rammer top/bund må scrollen ikke kæde videre til siden
+     bagved — det var halvdelen af «scrolle kører omme bagved» (5/9). */
+  overscroll-behavior: contain;
   padding: 18px 16px;
   display: flex;
   flex-direction: column;
@@ -3118,9 +3121,33 @@ a.pill.taglink:active {
   outline-offset: 2px;
 }
 @media (max-width: 560px) {
+  /* Mobil: chatten ER skærmen (Christian 5/9) — fuldskærm, ingen ramme,
+     og siden bagved låses så intet ruller «omme bagved». */
   .aidan-panel {
-    right: 8px;
-    bottom: 8px;
+    inset: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+  html.aidan-aaben,
+  html.aidan-aaben body {
+    overflow: hidden;
+  }
+  /* Fuldskærms-knappen er meningsløs når chatten allerede ER fuldskærm —
+     og .fuld-klassens centrerings-transform ville KRYMPE panelet her. */
+  [data-testid="aidan-fuld"] {
+    display: none;
+  }
+  .aidan-panel.fuld {
+    inset: 0;
+    left: 0;
+    bottom: 0;
+    transform: none;
+    width: 100vw;
+    height: 100dvh;
   }
   .aidan-fab {
     right: 14px;

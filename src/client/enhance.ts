@@ -626,14 +626,26 @@ function aidan() {
     panel.hidden = false;
     fab.classList.add("aaben");
     boble.classList.remove("vis");
-    felt.focus();
+    // preventScroll: uden den scroller browseren SIDEN bagved for at «vise»
+    // feltet ved åbning (Christians «scrolle kører omme bagved»-rapport 5/9).
+    felt.focus({ preventScroll: true });
+    // Mobil: panelet er fuldskærm, så siden bagved låses (scroll-kæden stoppes
+    // i CSS via denne klasse — kun under 560px, desktop-siden skal kunne rulle).
+    document.documentElement.classList.add("aidan-aaben");
   };
   const lukPanel = () => {
     panel.hidden = true;
     fab.classList.remove("aaben");
+    document.documentElement.classList.remove("aidan-aaben");
   };
   fab.addEventListener("click", aabn);
   luk.addEventListener("click", lukPanel);
+  // En handlings-knap i et svar ([knap:]-CTA'en) navigerer — så dialogen skal
+  // af vejen med det samme, ellers dækker fuldskærms-chatten den side man
+  // lige har bedt om (Christian 5/9: «når der klikkes på en knap så luk»).
+  msgs.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).closest("a.aidan-cta")) lukPanel();
+  });
   // ESC lukker Aidan (Christian 4/9). I fuldskærm tager første ESC kun
   // fuldskærmen af — standard lag-adfærd — og andet ESC lukker panelet.
   addEventListener("keydown", (e: KeyboardEvent) => {
