@@ -5,6 +5,7 @@ import type { FeaturedItem } from "@/content/compose.ts";
 import type { CmsRef } from "@/content/types.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
 import { stripHtml } from "@/content/richtext.ts";
+import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 
 export function FeaturedBaand({ items, laes, maerke }: { items: FeaturedItem[]; laes: string; maerke: string }) {
   if (!items.length) return null;
@@ -37,9 +38,13 @@ function postRefOf(item: FeaturedItem): CmsRef {
   return { collection: "posts", slug: item.slug, locale: item.href.startsWith("/en") ? "en" : "da" };
 }
 
-/** Visual: artiklens eget STILLBILLEDE (en videos poster tæller med) → husets bølger. */
+/** Visual, i denne rækkefølge: artiklens eget STILLBILLEDE (en videos poster
+ *  tæller med) → artiklens EGEN illustration fra Illustrations.tsx (samme
+ *  tegning som artiklens top og nyhedslisten viser — ét sted, ingen drift) →
+ *  husets bølger som sidste udvej. */
 function FeaturedVisual({ item }: { item: FeaturedItem }) {
   if (item.visualImg) return <img class="f-visual-billede" src={item.visualImg} alt="" loading="lazy" />;
+  if (hasIllustration(item.slug)) return <div class="f-illu"><Illustration k={item.slug} /></div>;
   return <FeaturedAnimation />;
 }
 

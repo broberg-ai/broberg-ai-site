@@ -3049,6 +3049,14 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   max-width: 260px;
   overflow: visible;
 }
+.f-illu {
+  width: 100%;
+  max-width: 280px;
+}
+.f-illu svg {
+  width: 100%;
+  height: auto;
+}
 @media (prefers-reduced-motion: reduce) {
   /* Videoen bliver STÅENDE og viser sit poster-billede (enhance.ts pauser den).
      Den blev før sat til display:none, og da artiklens visual ER en video,

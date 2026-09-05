@@ -750,6 +750,68 @@ const trailAmbientClipper = wrap(
   </g>,
 );
 
+// Tre rå datakilder strømmer sammen og BLIVER dashboardet: søjler, kurve og
+// nøgletal snapper på plads inde i panelet, med en orange live-prik der siger
+// at tallene kommer lige nu. Nails: jeres egne realtidsdata, bygget fra bunden
+// til et færdigt billede — ikke en licens man venter på.
+const biDashboard = wrap(
+  <g fill="none">
+    {/* de tre rå kilder til venstre */}
+    <g opacity=".6" stroke="var(--blue)" stroke-width="1.4">
+      {[76, 128, 180].map((y, i) => (
+        <g key={i}>
+          <rect x="22" y={y} width="42" height="30" rx="7" fill="color-mix(in srgb,var(--blue) 8%,transparent)" />
+          <line x1="30" y1={y + 11} x2="56" y2={y + 11} />
+          <line x1="30" y1={y + 20} x2="48" y2={y + 20} />
+        </g>
+      ))}
+    </g>
+    {/* strømmen ind i dashboardet */}
+    <g class="illu-flow" stroke="var(--blue-light)" stroke-width="1.6" stroke-dasharray="3 5">
+      <path d="M64 91 C92 91 92 143 116 143" />
+      <path d="M64 143 H116" />
+      <path d="M64 195 C92 195 92 143 116 143" />
+    </g>
+    {/* selve dashboard-panelet */}
+    <rect x="116" y="48" width="228" height="184" rx="13" fill="color-mix(in srgb,var(--blue) 6%,transparent)" stroke="var(--blue)" stroke-width="1.8" />
+    {/* topbar: titel + live-prik (den ene orange accent) */}
+    <rect x="130" y="64" width="58" height="6" rx="3" fill="color-mix(in srgb,var(--blue) 40%,transparent)" />
+    <circle class="node" cx="322" cy="67" r="4.5" fill="#F3522C" />
+    <line x1="130" y1="86" x2="330" y2="86" stroke="color-mix(in srgb,var(--blue) 16%,transparent)" stroke-width="1" />
+    {/* søjlegraf — den sidste søjle snapper ind */}
+    <g>
+      <line x1="130" y1="158" x2="226" y2="158" stroke="color-mix(in srgb,var(--blue) 20%,transparent)" stroke-width="1" />
+      {[
+        { x: 134, h: 26 },
+        { x: 152, h: 44 },
+        { x: 170, h: 34 },
+        { x: 188, h: 58 },
+      ].map((b, i) => (
+        <rect key={i} x={b.x} y={158 - b.h} width="12" height={b.h} rx="3" fill="color-mix(in srgb,var(--blue) 16%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
+      ))}
+      <rect class="illu-snap" x="206" y="110" width="12" height="48" rx="3" fill="color-mix(in srgb,var(--blue) 22%,transparent)" stroke="var(--blue-light)" stroke-width="1.6" />
+    </g>
+    {/* kurven */}
+    <g>
+      <rect x="238" y="98" width="94" height="60" rx="8" fill="color-mix(in srgb,var(--blue) 4%,transparent)" stroke="color-mix(in srgb,var(--blue) 22%,transparent)" stroke-width="1.2" />
+      <path d="M246 146 L262 128 L278 134 L294 112 L310 120 L324 104" stroke="var(--blue-light)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+      <circle cx="324" cy="104" r="3.6" fill="var(--blue-light)" />
+    </g>
+    {/* nøgletallene nederst */}
+    {[
+      { x: 130, groen: false },
+      { x: 200, groen: false },
+      { x: 270, groen: true },
+    ].map((k, i) => (
+      <g key={i}>
+        <rect x={k.x} y="172" width="60" height="44" rx="8" fill="color-mix(in srgb,var(--blue) 8%,transparent)" stroke="color-mix(in srgb,var(--blue) 24%,transparent)" stroke-width="1.2" />
+        <rect x={k.x + 10} y="182" width="24" height="4" rx="2" fill="color-mix(in srgb,var(--blue) 30%,transparent)" />
+        <rect x={k.x + 10} y="194" width="34" height="8" rx="3" fill={k.groen ? "rgba(52,211,153,.5)" : "color-mix(in srgb,var(--blue) 45%,transparent)"} />
+      </g>
+    ))}
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -773,6 +835,9 @@ const REGISTRY: Record<string, JSX.Element> = {
   "chatgpt-ads": chatgptAnnoncer,
   "trail-ambient-og-web-clipper": trailAmbientClipper,
   "trail-ambient-and-web-clipper": trailAmbientClipper,
+  // Samme tegning på begge sprogudgaver — den bærer ingen tekst.
+  "bi-dashboards-fra-bunden": biDashboard,
+  "bi-dashboards-from-scratch": biDashboard,
 };
 
 export function hasIllustration(k: string): boolean {
