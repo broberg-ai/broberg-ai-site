@@ -2869,26 +2869,30 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   padding: 3px 9px;
   border-radius: 999px;
 }
-/* Båndet klæber under den faste topbjælke. Det stod før i flowet ved y=0 og
-   lå derfor HELT bag headeren (målt 6/9: bånd 0-46px, header 0-65px) — hele
-   fladen var usynlig. Fixed frem for sticky, fordi headeren selv er fixed og
-   altså ikke fylder i flowet: sticky ville stadig starte bag den. Højden
-   holdes i én variabel, så toppen af siden kan regne med den. */
+/* Båndet ligger i flowet lige under den faste topbjælke og RULLER VÆK med
+   indholdet (ejerens valg 6/9 — det fyldte 46px permanent som fixed).
+   margin-top er headerens højde: headeren er fixed og fylder ikke i flowet, så
+   uden den startede båndet ved y=0 og lå HELT bag den (målt: bånd 0-46,
+   header 0-65). Første sektion trækker båndets plads fra igen nedenfor, så
+   toppen ikke får dobbelt luft. */
 .f-baand {
-  position: fixed;
-  top: var(--header-h);
-  left: 0;
-  right: 0;
-  z-index: 199; /* under headerens 200 — headeren skal altid ligge øverst */
+  margin-top: var(--header-h);
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 8px 24px;
-  background: linear-gradient(90deg, var(--blue-glow), transparent 75%), var(--dark);
-  backdrop-filter: blur(14px);
+  background: linear-gradient(90deg, var(--blue-glow), transparent 75%);
   border-bottom: 1px solid var(--blue);
   font-size: 0.8rem;
   min-height: 38px;
+}
+/* Fladen lige efter båndet har allerede fået sin header-afstand af båndets
+   margin — dens egne 104/150px er kompensation for den samme header. Uden
+   dette trækkes toppen 111px længere ned end før. */
+.f-baand + section,
+.f-baand + .post,
+.f-baand + .hero {
+  padding-top: 40px;
 }
 .f-baand-spor {
   min-width: 0;
