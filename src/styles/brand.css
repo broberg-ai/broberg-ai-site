@@ -2557,6 +2557,63 @@ a.pill.taglink:active {
     animation: none;
   }
 }
+/* ── Liv i den stillestående figur (ejerens ønske 6/9) ─────────────────────
+   Et overlay i figurens eget koordinatsystem, så øjne, hjul og antenne kan
+   røre sig UDEN en ny video og UDEN at røre original-SVG'en. Positioner og
+   farver er målt i browseren på den rigtige fil.
+   Alt er SJÆLDENT og KORT: levende, ikke uroligt. */
+.aidan-liv {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+/* Øjenlåg: normalt helt sammenklappet (usynligt), klapper ned og op igen. */
+.liv-laag {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scaleY(0);
+  animation: liv-blink 7s ease-in-out infinite;
+}
+.liv-laag-2 {
+  animation-delay: 0.04s; /* det ene øje et hår efter — ellers ser det mekanisk ud */
+}
+@keyframes liv-blink {
+  0%, 92%, 100% { transform: scaleY(0); }
+  94% { transform: scaleY(1); }
+  96% { transform: scaleY(0); }
+  /* et dobbelt-blink af og til, som et rigtigt øje */
+  97.6% { transform: scaleY(1); }
+  99% { transform: scaleY(0); }
+}
+/* Hjulet drejer et par omgange og står stille igen. */
+.liv-hjul-drej {
+  transform-origin: 514px 717px;
+  animation: liv-drej 11s cubic-bezier(0.4, 0, 0.3, 1) infinite;
+}
+@keyframes liv-drej {
+  0%, 70% { transform: rotate(0deg); }
+  100% { transform: rotate(90deg); }
+}
+/* Antennekuglen blinker grønt. */
+.liv-antenne {
+  opacity: 0;
+  animation: liv-antenne 5.5s ease-in-out infinite;
+}
+@keyframes liv-antenne {
+  0%, 78%, 100% { opacity: 0; }
+  84% { opacity: 1; }
+  90% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .liv-laag,
+  .liv-hjul-drej,
+  .liv-antenne {
+    animation: none;
+  }
+  .liv-antenne { opacity: 0; }
+}
 .aidan-fab-figur,
 .aidan-avatar {
   position: absolute;

@@ -166,12 +166,48 @@ export function aidanTekster(
 /** Ét videopar (mørk+lys) i en rund maske. Poster = kanonisk SVG.
  *  BEGGE personaers figurer ligger i DOM'en; CSS viser den valgte
  *  (#aidan.persona-airina) — samme mønster som tema-klippene. */
+/** Liv i den stillestående figur UDEN en ny video og UDEN at røre original-SVG'en
+ *  (ejerens to krav, 6/9). Et overlay i figurens EGET koordinatsystem
+ *  (viewBox 0 0 1024 1024), så delene rammer præcis. Positioner og farver er
+ *  MÅLT i browseren på den rigtige fil, ikke gættet:
+ *
+ *    øjne     (389,405) + (634,405) r53   hovedet bagved: #f7bd64
+ *    hjul     (514,717) r65               skiven: #ea8f1f, mørk: #030202
+ *    antenne  (514,62)  r31               kuglen: #df5416
+ *
+ *  Alt er sjældent og kort — figuren skal virke levende, ikke urolig. */
+function Liv({ klasse }: { klasse: string }) {
+  const prikker = [0, 45, 90, 135, 180, 225, 270, 315];
+  return (
+    <svg class={klasse} viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+      {/* Øjenlåg: gyldent som hovedet, klapper ned og op igen */}
+      <ellipse class="liv-laag" cx="389" cy="405" rx="56" ry="56" fill="#f7bd64" />
+      <ellipse class="liv-laag liv-laag-2" cx="634" cy="405" rx="56" ry="56" fill="#f7bd64" />
+      {/* Hjulet: skiven dækkes og prikkerne tegnes igen, så de kan dreje */}
+      <g class="liv-hjul">
+        <circle cx="514" cy="717" r="64" fill="#ea8f1f" />
+        <circle cx="514" cy="717" r="64" fill="none" stroke="#030202" stroke-width="9" />
+        <g class="liv-hjul-drej">
+          {prikker.map((g) => (
+            <circle key={g} cx="514" cy="717" r="7.5" fill="#030202"
+              transform={`rotate(${g} 514 717) translate(0 -40)`} />
+          ))}
+        </g>
+        <circle cx="514" cy="717" r="15" fill="#030202" />
+      </g>
+      {/* Antennekuglen: grønt blink oven på den orange */}
+      <circle class="liv-antenne" cx="514" cy="62" r="30" fill="#34d399" />
+    </svg>
+  );
+}
+
 function Figur({ klasse }: { klasse: string }) {
   return (
     <>
       <span class={`${klasse} figur-aidan`} aria-hidden="true">
         <video class="aidan-v aidan-v-moerk" src={KLIP_MOERK} poster={STILL} muted playsinline preload="none" />
         <video class="aidan-v aidan-v-lys" src={KLIP_LYS} poster={STILL} muted playsinline preload="none" />
+        <Liv klasse="aidan-liv" />
       </span>
       <span class={`${klasse} figur-airina`} aria-hidden="true">
         <video class="aidan-v aidan-v-moerk" src={AIRINA_MOERK} poster={AIRINA_STILL} muted playsinline preload="none" />
