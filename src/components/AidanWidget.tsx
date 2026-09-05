@@ -15,7 +15,7 @@
  */
 import type { CmsRef } from "@/content/types.ts";
 import type { Locale } from "@/config.ts";
-import { cmsAttrs } from "@/components/sections.tsx";
+import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
 import { richtextBlock } from "@/content/richtext.ts";
 
 const STILL = "/uploads/aidan-kanonisk-rfjl.svg";
@@ -307,7 +307,7 @@ export function AidanWidget({
           <div class="aidan-om-krop">
             <p class="aidan-info-tekst" {...cmsAttrs(globalsRef, "aidanInfo")}>{t.info}</p>
             {/* Indholdet BOR i CMS'et (aidanOmMd, da+en) — koden render kun. */}
-            {t.omMd ? <div class="aidan-om-md" dangerouslySetInnerHTML={{ __html: richtextBlock(t.omMd) }} /> : null}
+            {t.omMd ? <div class="aidan-om-md" {...cmsHtmlAttrs(globalsRef, "aidanOmMd")} dangerouslySetInnerHTML={{ __html: richtextBlock(t.omMd) }} /> : null}
             <b class="aidan-info-hoved" {...cmsAttrs(globalsRef, "aidanVaelgStemme")}>{t.vaelgStemme}</b>
           <div class="aidan-personaer">
             <button type="button" class="aidan-persona" data-persona="aidan" data-testid="aidan-persona-aidan" {...cmsAttrs(globalsRef, "aidanStemmeAidan")}>
