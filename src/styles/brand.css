@@ -2607,6 +2607,17 @@ a.pill.taglink:active {
   transition: opacity 0.45s ease 0.55s, transform 0.45s ease 0.55s;
   pointer-events: none;
 }
+
+/* Inline-edit-pillen (Rediger/Log ud) tegnes af pakken med MAKSIMAL z-index
+   og stikker derfor igennem Aidan-fladen — fuldskærms-chat OG om-modalens
+   bagtæppe (Christians screenshot 5/9). Væk mens Aidan er åben; den kommer
+   igen når chatten lukkes, og redigering af selve siden sker alligevel
+   aldrig gennem chat-vinduet. */
+html.aidan-aaben [data-cms-inline-edit-idle],
+html.aidan-aaben [data-cms-inline-edit-badge] {
+  display: none !important;
+}
+
 .aidan-boble.vis {
   opacity: 1;
   transform: none;
