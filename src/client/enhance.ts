@@ -346,6 +346,14 @@ function reducedMotion() {
       const svg = s as unknown as SVGSVGElement;
       if (typeof svg.pauseAnimations === "function") svg.pauseAnimations();
     });
+    // Autoplay-video sættes på pause, så dens POSTER bliver stående. Den blev
+    // før skjult med display:none, hvilket efterlod et tomt felt der hvor en
+    // artikels visual er en video (målt på featured-boksen 5/9).
+    document.querySelectorAll<HTMLVideoElement>("video[autoplay]").forEach((v) => {
+      v.removeAttribute("autoplay");
+      v.pause();
+      v.currentTime = 0;
+    });
   }
 }
 

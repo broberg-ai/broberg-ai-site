@@ -2946,7 +2946,7 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 }
 .f-stak {
   display: grid;
-  grid-auto-rows: 1fr;
+  align-content: start;
   gap: 16px;
 }
 .f-lille {
@@ -2978,7 +2978,6 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.55;
-  flex: 1;
   margin: 0;
 }
 .f-lille-laes {
@@ -3051,9 +3050,9 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   overflow: visible;
 }
 @media (prefers-reduced-motion: reduce) {
-  .f-visual-video {
-    display: none;
-  }
+  /* Videoen bliver STÅENDE og viser sit poster-billede (enhance.ts pauser den).
+     Den blev før sat til display:none, og da artiklens visual ER en video,
+     efterlod det et helt tomt felt for enhver med reduceret bevægelse slået til. */
   .f-anim .wOut {
     animation: none;
   }
