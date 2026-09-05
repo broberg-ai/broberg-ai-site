@@ -1055,6 +1055,7 @@ export async function siteIndexGroups(
     { label: isEn ? "Solutions" : "Løsninger", href: withLocale(locale, `/${seg}`) },
     { label: isEn ? "Flagships" : "Flagskibe", href: withLocale(locale, `/${fseg}`) },
     { label: isEn ? "All news" : "Alle nyheder", href: withLocale(locale, isEn ? "/news" : "/nyheder") },
+    { label: "★ Featured", href: withLocale(locale, "/featured") },
     { label: "Tags", href: withLocale(locale, "/tags") },
     { label: isEn ? "Thank you" : "Tak", href: withLocale(locale, isEn ? "/thanks" : "/tak") },
   ];
