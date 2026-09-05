@@ -37,11 +37,8 @@ function postRefOf(item: FeaturedItem): CmsRef {
   return { collection: "posts", slug: item.slug, locale: item.href.startsWith("/en") ? "en" : "da" };
 }
 
-/** Visual: artiklens egen video → dens eget billede → husets bølger. */
+/** Visual: artiklens eget STILLBILLEDE (en videos poster tæller med) → husets bølger. */
 function FeaturedVisual({ item }: { item: FeaturedItem }) {
-  if (item.visualVideo) {
-    return <video class="f-visual-video" autoplay muted loop playsinline preload="metadata" poster={item.visualPoster} src={item.visualVideo}></video>;
-  }
   if (item.visualImg) return <img class="f-visual-billede" src={item.visualImg} alt="" loading="lazy" />;
   return <FeaturedAnimation />;
 }
