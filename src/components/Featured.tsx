@@ -5,7 +5,7 @@ import type { FeaturedItem } from "@/content/compose.ts";
 import type { CmsRef } from "@/content/types.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
 import { stripHtml } from "@/content/richtext.ts";
-import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
+import { Illustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
 
 export function FeaturedBaand({ items, laes, maerke }: { items: FeaturedItem[]; laes: string; maerke: string }) {
   if (!items.length) return null;
@@ -39,13 +39,18 @@ function postRefOf(item: FeaturedItem): CmsRef {
 }
 
 /** Visual, i denne rækkefølge: artiklens eget STILLBILLEDE (en videos poster
- *  tæller med) → artiklens EGEN illustration fra Illustrations.tsx (samme
- *  tegning som artiklens top og nyhedslisten viser — ét sted, ingen drift) →
- *  husets bølger som sidste udvej. */
+ *  tæller med) → artiklens illustration.
+ *
+ *  pickNewsIllustration og IKKE hasIllustration: den første er dét artiklens
+ *  egen top og nyhedslisten bruger, og den giver ALTID en tegning — er slug'en
+ *  ikke specialtegnet, vælges en fast flagskibs-tegning ud fra navnet.
+ *  hasIllustration svarer kun ja for de specialtegnede, så featured-boksen
+ *  faldt tilbage til husets bølger for en artikel der HAR en fin animation på
+ *  sin egen side (målt 6/9 på /ai-metode/selen-ikke-agenten). To flader der
+ *  spørger forskelligt om samme ting giver to forskellige svar. */
 function FeaturedVisual({ item }: { item: FeaturedItem }) {
   if (item.visualImg) return <img class="f-visual-billede" src={item.visualImg} alt="" loading="lazy" />;
-  if (hasIllustration(item.slug)) return <div class="f-illu"><Illustration k={item.slug} /></div>;
-  return <FeaturedAnimation />;
+  return <div class="f-illu"><Illustration k={pickNewsIllustration(item.slug)} /></div>;
 }
 
 export function FeaturedBoks({
@@ -67,7 +72,10 @@ export function FeaturedBoks({
 }) {
   if (!items.length) return null;
   const stor = items[0];
-  const smaa = items.slice(1, 3);
+  // ALLE resterende, ikke de to første. Loftet på 2 var en aflæsning af
+  // mockup'ens tre kasser, ikke et krav — ejeren taggede 4 og så kun 3
+  // (målt 6/9). Han styrer selv hvor mange der er featured; boksen viser dem.
+  const smaa = items.slice(1);
   const storRef = postRefOf(stor);
   return (
     <section class="f-sektion" data-testid="featured-boks">
@@ -103,7 +111,7 @@ export function FeaturedBoks({
             </div>
           ) : null}
         </div>
-        {items.length > 3 ? (
+        {items.length > 2 ? (
           <div class="f-flere">
             <a href={alleHref} data-testid="featured-alle" {...cmsAttrs(globalsRef, "featuredAlle")}>
               {alle} →
