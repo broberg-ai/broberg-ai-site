@@ -32,45 +32,82 @@ export function FeaturedBaand({ items, laes, maerke }: { items: FeaturedItem[]; 
   );
 }
 
+/** Postens eget CMS-anker, så titel + featuredText kan rettes direkte på forsiden. */
+function postRefOf(item: FeaturedItem): CmsRef {
+  return { collection: "posts", slug: item.slug, locale: item.href.startsWith("/en") ? "en" : "da" };
+}
+
+/** Visual: artiklens egen video → dens eget billede → husets bølger. */
+function FeaturedVisual({ item }: { item: FeaturedItem }) {
+  if (item.visualVideo) {
+    return <video class="f-visual-video" autoplay muted loop playsinline preload="metadata" poster={item.visualPoster} src={item.visualVideo}></video>;
+  }
+  if (item.visualImg) return <img class="f-visual-billede" src={item.visualImg} alt="" loading="lazy" />;
+  return <FeaturedAnimation />;
+}
+
 export function FeaturedBoks({
-  item,
+  items,
   eyebrow,
   laes,
   maerke,
+  alle,
+  alleHref,
   globalsRef,
 }: {
-  item: FeaturedItem;
+  items: FeaturedItem[];
   eyebrow: string;
   laes: string;
   maerke: string;
+  alle: string;
+  alleHref: string;
   globalsRef?: CmsRef;
 }) {
-  // Titel + featuredText ankres til POST-dokumentet, så de er inline-
-  // redigerbare på forsiden (Gate A.1 fangede de to som gaps).
-  const postRef: CmsRef = { collection: "posts", slug: item.slug, locale: item.href.startsWith("/en") ? "en" : "da" };
+  if (!items.length) return null;
+  const stor = items[0];
+  const smaa = items.slice(1, 3);
+  const storRef = postRefOf(stor);
   return (
     <section class="f-sektion" data-testid="featured-boks">
       <div class="wrap">
         <div class="eyebrow" {...cmsAttrs(globalsRef, "featuredEyebrow")}>{eyebrow}</div>
-        <div class="f-boks">
-          <div class="f-boks-tekst">
-            <span class="f-maerke">{maerke}</span>
-            <h2 {...cmsAttrs(postRef, "title")}>{stripHtml(item.title)}</h2>
-            <p {...cmsAttrs(postRef, "featuredText")}>{item.featuredText}</p>
-            <a class="btn" href={item.href} data-testid="featured-boks-laes">
-              {laes} →
+        <div class={smaa.length ? "f-grid" : "f-grid f-grid-en"}>
+          <div class="f-boks">
+            <div class="f-boks-tekst">
+              <span class="f-maerke">{maerke}</span>
+              <h2 {...cmsAttrs(storRef, "title")}>{stripHtml(stor.title)}</h2>
+              <p {...cmsAttrs(storRef, "featuredText")}>{stor.featuredText}</p>
+              <a class="btn" href={stor.href} data-testid="featured-boks-laes">
+                {laes} →
+              </a>
+            </div>
+            <div class="f-boks-visual" aria-hidden="true">
+              <FeaturedVisual item={stor} />
+            </div>
+          </div>
+          {smaa.length ? (
+            <div class="f-stak" data-testid="featured-stak">
+              {smaa.map((it) => {
+                const ref = postRefOf(it);
+                return (
+                  <a class="f-lille" href={it.href} key={it.slug} data-testid="featured-lille">
+                    <span class="f-maerke f-maerke-tynd">{maerke}</span>
+                    <b {...cmsAttrs(ref, "title")}>{stripHtml(it.title)}</b>
+                    <p {...cmsAttrs(ref, "featuredText")}>{it.featuredText}</p>
+                    <span class="f-lille-laes">{laes} →</span>
+                  </a>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+        {items.length > 3 ? (
+          <div class="f-flere">
+            <a href={alleHref} data-testid="featured-alle" {...cmsAttrs(globalsRef, "featuredAlle")}>
+              {alle} →
             </a>
           </div>
-          <div class="f-boks-visual" aria-hidden="true">
-            {item.visualVideo ? (
-              <video class="f-visual-video" autoplay muted loop playsinline preload="metadata" poster={item.visualPoster} src={item.visualVideo}></video>
-            ) : item.visualImg ? (
-              <img class="f-visual-billede" src={item.visualImg} alt="" loading="lazy" />
-            ) : (
-              <FeaturedAnimation />
-            )}
-          </div>
-        </div>
+        ) : null}
       </div>
     </section>
   );

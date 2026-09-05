@@ -2931,6 +2931,84 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 .f-laes:active {
   transform: translateY(1px);
 }
+/* F008.3 v2 — flere samtidige featured: den store historie + en stak på højst
+   to kompakte kort. Hvilken der er stor rulles pr. sidevisning (se
+   content/featured-rotation.ts). Med KUN én featured fylder den store hele
+   bredden, præcis som før. */
+.f-grid {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.f-grid-en {
+  grid-template-columns: 1fr;
+}
+.f-stak {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 16px;
+}
+.f-lille {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 22px;
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--light);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.f-lille:hover {
+  border-color: var(--blue);
+}
+.f-lille:active {
+  transform: translateY(1px);
+}
+.f-lille b {
+  font-family: var(--fd);
+  font-weight: 500;
+  font-size: 1.1rem;
+  line-height: 1.25;
+  color: var(--light);
+}
+.f-lille p {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  flex: 1;
+  margin: 0;
+}
+.f-lille-laes {
+  color: var(--blue-light);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.f-maerke-tynd {
+  background: transparent;
+  border: 1px solid var(--blue);
+  color: var(--blue-light);
+  align-self: flex-start;
+}
+.f-flere {
+  margin-top: 14px;
+  text-align: right;
+}
+.f-flere a {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+.f-flere a:hover {
+  color: var(--blue-light);
+}
+@media (max-width: 860px) {
+  .f-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .f-boks {
   display: grid;
   grid-template-columns: 1.4fr 1fr;

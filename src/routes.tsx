@@ -11,6 +11,7 @@ import { Platforms } from "@/components/sections.tsx";
 import { renderPage } from "@/render/html.tsx";
 import { resolveAssets } from "@/render/assets.ts";
 import { homeFallback } from "@/data/fallback.ts";
+import { roterFeatured } from "@/content/featured-rotation.ts";
 import { loadFeatured,
   loadHome,
   loadPlatform,
@@ -195,7 +196,9 @@ export async function renderHome(locale: Locale): Promise<string> {
     (typeof d[field] === "string" && d[field]) || (isEn ? en : da);
 
   const solutions = await loadSolutions(locale);
-  const featuredForside = await loadFeatured(locale);
+  // Rullende ved hver sidevisning (ejerens valg 5/9): alle featured-historier
+  // kommer i den store plads over tid. Se content/featured-rotation.ts.
+  const featuredForside = roterFeatured(await loadFeatured(locale), locale);
   const randomNews = await loadRandomNews(locale, 3);
   const casePosts = await loadCategoryPosts(locale, "cases");
   const homeModel = await loadHome(locale);
@@ -330,10 +333,12 @@ export async function renderHome(locale: Locale): Promise<string> {
 
       {featuredForside.length ? (
         <FeaturedBoks
-          item={featuredForside[0]}
+          items={featuredForside}
           eyebrow={(typeof globalsData.featuredEyebrow === "string" && (globalsData.featuredEyebrow as string)) || (isEn ? "Featured right now" : "Fremhævet lige nu")}
           laes={(typeof globalsData.featuredLaes === "string" && (globalsData.featuredLaes as string)) || (isEn ? "Read" : "Læs")}
           maerke={(typeof globalsData.featuredMaerke === "string" && (globalsData.featuredMaerke as string)) || "★ FEATURED"}
+          alle={(typeof globalsData.featuredAlle === "string" && (globalsData.featuredAlle as string)) || (isEn ? "See all featured" : "Se alle featured")}
+          alleHref={withLocale(locale, "/featured")}
           globalsRef={globalsRef}
         />
       ) : null}
