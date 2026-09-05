@@ -1253,8 +1253,8 @@ export async function renderFeaturedListe(locale: Locale): Promise<string> {
             {items.map((it) => (
               <a class="f-liste-kort" href={it.href} data-testid="featured-liste-kort">
                 <span class="f-maerke">★ {it.category.toUpperCase()}</span>
-                <b>{stripHtml(it.title)}</b>
-                <p>{it.featuredText}</p>
+                <b {...cmsAttrs({ collection: "posts", slug: it.slug, locale }, "title")}>{stripHtml(it.title)}</b>
+                <p {...cmsAttrs({ collection: "posts", slug: it.slug, locale }, "featuredText")}>{it.featuredText}</p>
                 <span class="f-liste-pil">{g("featuredLaes", isEn ? "Read" : "Læs")} →</span>
               </a>
             ))}

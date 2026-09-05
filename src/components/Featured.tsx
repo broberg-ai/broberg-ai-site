@@ -2,7 +2,6 @@
  * Bånd (B, roterer + Læs-KNAP) · Forside-boks (C, featuredText ≠ manchet) ·
  * Listeside (A, ét menupunkt → samlet liste). Data: loadFeatured (compose). */
 import type { FeaturedItem } from "@/content/compose.ts";
-import type { Locale } from "@/config.ts";
 import type { CmsRef } from "@/content/types.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
 import { stripHtml } from "@/content/richtext.ts";
@@ -46,6 +45,9 @@ export function FeaturedBoks({
   maerke: string;
   globalsRef?: CmsRef;
 }) {
+  // Titel + featuredText ankres til POST-dokumentet, så de er inline-
+  // redigerbare på forsiden (Gate A.1 fangede de to som gaps).
+  const postRef: CmsRef = { collection: "posts", slug: item.slug, locale: item.href.startsWith("/en") ? "en" : "da" };
   return (
     <section class="f-sektion" data-testid="featured-boks">
       <div class="wrap">
@@ -53,8 +55,8 @@ export function FeaturedBoks({
         <div class="f-boks">
           <div class="f-boks-tekst">
             <span class="f-maerke">{maerke}</span>
-            <h2>{stripHtml(item.title)}</h2>
-            <p>{item.featuredText}</p>
+            <h2 {...cmsAttrs(postRef, "title")}>{stripHtml(item.title)}</h2>
+            <p {...cmsAttrs(postRef, "featuredText")}>{item.featuredText}</p>
             <a class="btn" href={item.href} data-testid="featured-boks-laes">
               {laes} →
             </a>
