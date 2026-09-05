@@ -19,12 +19,8 @@ import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
 import { richtextBlock } from "@/content/richtext.ts";
 
 const STILL = "/uploads/aidan-kanonisk-rfjl.svg";
-const KLIP_MOERK = "/uploads/g2-aidan-moerk-s45h.mp4";
-const KLIP_LYS = "/uploads/g2-aidan-lys-6kty.mp4";
 // F007.8.2: Airina — Aidans kvindelige modstykke (figurerne fra supers Assets).
 const AIRINA_STILL = "/uploads/airina-klasser-77ms.svg";
-const AIRINA_MOERK = "/uploads/airina-tema-moerk-kdtq.mp4";
-const AIRINA_LYS = "/uploads/airina-tema-lys-656n.mp4";
 
 export interface AidanTekster {
   boble: string;
@@ -214,17 +210,46 @@ function Liv({ klasse }: { klasse: string }) {
   );
 }
 
+/** Airinas liv. Hun er en ANDEN figur i et ANDET koordinatsystem — hendes SVG
+ *  er 2048 hvor Aidans er 1024 — så intet af Aidans tal kan genbruges. Målt på
+ *  hendes egen fil 6/9 (klasserne a0-a10 er Illustrators, ikke vores):
+ *
+ *    øjne     (669,893) rx185 + (1124,893) rx212   ansigtet bagved: #eece94
+ *    antenne  (1396,151) r44                       kuglen: den orange på spidsen
+ *
+ *  INTET HJUL: hun har en glat maveknap, ikke Aidans prikke-skive, så der er
+ *  ingen prikker at dreje. En rotation ville ikke kunne ses. */
+function LivAirina({ klasse }: { klasse: string }) {
+  const oejne: Array<[number, number, number]> = [[669, 893, 185], [1124, 893, 212]];
+  return (
+    <svg class={klasse} viewBox="0 0 2048 2048" aria-hidden="true" focusable="false">
+      {oejne.map(([cx, cy, rx], i) => (
+        <g key={cx} class={i ? "liv-laag liv-laag-2" : "liv-laag"}>
+          <ellipse cx={cx} cy={cy} rx={rx} ry="199" fill="#eece94" />
+          <path d={`M ${cx - rx * 0.72} ${cy - 16} Q ${cx} ${cy + 62} ${cx + rx * 0.72} ${cy - 16}`}
+            fill="none" stroke="#0c0c0f" stroke-width="26" stroke-linecap="round" />
+        </g>
+      ))}
+      {/* Vipperne bliver stående — de hører til ansigtet, ikke til øjet. */}
+      <circle class="liv-antenne" cx="1396" cy="151" r="44" fill="#34d399" />
+    </svg>
+  );
+}
+
 function Figur({ klasse }: { klasse: string }) {
   return (
     <>
+      {/* Aidan er STILBILLEDET plus liv-laget — ejerens valg 6/9: «DIN er bedre
+          end videoen der heller ikke vises helt i samme størrelse». Vinke-klippene
+          er dermed ude af figuren; livet ligger nu i SVG'en hele tiden i stedet for
+          at vente på at en video bliver færdig. */}
       <span class={`${klasse} figur-aidan`} aria-hidden="true">
-        <video class="aidan-v aidan-v-moerk" src={KLIP_MOERK} poster={STILL} muted playsinline preload="none" />
-        <video class="aidan-v aidan-v-lys" src={KLIP_LYS} poster={STILL} muted playsinline preload="none" />
+        <img class="aidan-still" src={STILL} alt="" width="1024" height="1024" />
         <Liv klasse="aidan-liv" />
       </span>
       <span class={`${klasse} figur-airina`} aria-hidden="true">
-        <video class="aidan-v aidan-v-moerk" src={AIRINA_MOERK} poster={AIRINA_STILL} muted playsinline preload="none" />
-        <video class="aidan-v aidan-v-lys" src={AIRINA_LYS} poster={AIRINA_STILL} muted playsinline preload="none" />
+        <img class="aidan-still" src={AIRINA_STILL} alt="" width="2048" height="2048" />
+        <LivAirina klasse="aidan-liv" />
       </span>
     </>
   );

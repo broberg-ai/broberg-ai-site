@@ -2539,8 +2539,8 @@ a.pill.taglink:active {
   display: none !important;
 }
 
-/* F007.4.2: figuren nikker diskret når den står statisk — pauses mens
-   vinke-videoen kører (.spiller) og ved reduceret bevægelse. */
+/* F007.4.2: figuren nikker diskret. Vinke-videoen er ude (6/9), så der er
+   ikke længere en tilstand hvor nikket skal pauses — kun reduceret bevægelse. */
 @keyframes aidan-nik {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   30% { transform: translateY(-2px) rotate(-2deg); }
@@ -2548,9 +2548,6 @@ a.pill.taglink:active {
 }
 .aidan-fab.vis .aidan-fab-figur {
   animation: aidan-nik 4.5s ease-in-out infinite;
-}
-.aidan-fab.spiller .aidan-fab-figur {
-  animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .aidan-fab.vis .aidan-fab-figur {
@@ -2568,14 +2565,6 @@ a.pill.taglink:active {
   width: 100%;
   height: 100%;
   pointer-events: none;
-}
-/* Overlayet gælder KUN stillbilledet (den kanoniske SVG-poster). Mens
-   vinke-videoen kører står robotten i en anden positur OG bevæger sig — målt
-   6/9: antennekuglen svinger 68 enheder af figurens 1024, altså 3x sin egen
-   bredde. Delene ville ligge synligt ved siden af netop i de sekunder man
-   først får øje på figuren. */
-.aidan-fab.spiller .aidan-liv {
-  opacity: 0;
 }
 /* Øjenlåg: normalt helt sammenklappet (usynligt), klapper ned og op igen. */
 .liv-laag {
@@ -2609,10 +2598,19 @@ a.pill.taglink:active {
   opacity: 0;
   animation: liv-antenne 5.5s ease-in-out infinite;
 }
+/* En SERIE korte blink, ikke ét (ejeren 6/9: «lidt flere grønne blink i træk så
+   det ser ud som om den kommunikerer»). Længderne er MED VILJE ulige — fire lige
+   lange blink læses som en metronom, ulige som data der sendes. 1% = 55 ms. */
 @keyframes liv-antenne {
-  0%, 78%, 100% { opacity: 0; }
-  84% { opacity: 1; }
-  90% { opacity: 0; }
+  0%, 70%, 100% { opacity: 0; }
+  71%, 72.5% { opacity: 1; }
+  73.5%, 74.5% { opacity: 0; }
+  75.5%, 76.5% { opacity: 1; }
+  77.5%, 79% { opacity: 0; }
+  80%, 83% { opacity: 1; }
+  84%, 85% { opacity: 0; }
+  86%, 87% { opacity: 1; }
+  88%, 100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .liv-laag,
@@ -2639,21 +2637,15 @@ a.pill.taglink:active {
   border: 1.5px solid var(--blue);
   background: radial-gradient(circle at 50% 42%, var(--blue-glow), transparent 75%);
 }
-.aidan-v {
+/* Figuren er stillbilledet — den kanoniske SVG. Den er tema-uafhængig (begge
+   vinke-klip delte i sin tid samme poster), så der er intet mørk/lys-skifte at
+   lave her længere. */
+.aidan-still {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: none;
-}
-.aidan-v-moerk {
-  display: block;
-}
-[data-theme="light"] .aidan-v-moerk {
-  display: none;
-}
-[data-theme="light"] .aidan-v-lys {
+  object-fit: contain;
   display: block;
 }
 

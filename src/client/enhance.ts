@@ -598,8 +598,9 @@ function aidan() {
   // og lister i panelet) — testbar for sig, escaper alt, lukket formliste.
   const tilHtml = aidanTilHtml;
 
-  // ── Reveal ved første scroll — og ét vink. Vinket er det tema-bagte klip;
-  // med reduceret bevægelse står SVG-posteren stille, som designet foreskriver.
+  // ── Reveal ved første scroll. Vinke-klippet er ude af figuren (ejeren 6/9:
+  // SVG-udgaven er bedre og har den rigtige størrelse), så der er ingen video
+  // at starte her — livet ligger i SVG-laget og kører af sig selv.
   let vist = false;
   const visFab = () => {
     if (vist) return;
@@ -607,24 +608,6 @@ function aidan() {
     fab.classList.add("vis");
     boble.classList.add("vis");
     setTimeout(() => boble.classList.remove("vis"), 6000);
-    if (!roligt) {
-      const v = Array.from(fab.querySelectorAll<HTMLVideoElement>("video")).find(
-        (x) => x.offsetParent !== null,
-      );
-      if (v) {
-        const faerdig = () => {
-          v.removeEventListener("ended", faerdig);
-          v.currentTime = 0;
-          v.load(); // load() sætter posteren tilbage; pause() ville efterlade sidste billede.
-          fab.classList.remove("spiller"); // det diskrete nik genoptages på stillbilledet
-        };
-        v.addEventListener("ended", faerdig);
-        setTimeout(() => {
-          fab.classList.add("spiller");
-          void v.play().catch(() => faerdig());
-        }, 450);
-      }
-    }
   };
   addEventListener("scroll", () => scrollY > 120 && visFab(), { passive: true });
   if (scrollY > 120) visFab(); // landet midt på siden (anker/back-nav)
