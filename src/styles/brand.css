@@ -3006,6 +3006,54 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   color: var(--blue-light);
 }
 
+
+/* ── F007.14: handlingsrække under Aidan-svar (kopiér · 👍/👎 · tid) ── */
+.aidan-handlinger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: -6px 0 2px 4px;
+}
+.aidan-handling {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.66rem;
+  line-height: 0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.aidan-handling:hover {
+  color: var(--blue-light);
+  background: var(--card);
+}
+.aidan-handling:active {
+  transform: translateY(1px);
+}
+.aidan-handling.vend svg {
+  transform: rotate(180deg);
+}
+.aidan-handling.tommel-valgt {
+  color: var(--blue-light);
+}
+.aidan-handling.fejl {
+  color: var(--orange-text);
+}
+.aidan-tid {
+  margin-left: 4px;
+  font-size: 0.64rem;
+  color: var(--muted);
+}
+.aidan-hilsen-side {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .aidan-boble.vis {
   opacity: 1;
   transform: none;

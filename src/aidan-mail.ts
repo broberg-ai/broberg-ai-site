@@ -178,3 +178,29 @@ export async function handleAidanSendSvar(c: Context): Promise<Response> {
   return c.json({ ok: true, gated: !!resultat.skipped });
 }
 
+/** F007.14: 👍/👎 på et Aidan-svar (ejerens screenshot — handlingsrækken).
+ *  Ingen persondata: retning + et kort uddrag af svaret, til kvalitets-læsning. */
+const FEEDBACK_FIL = process.env.AIDAN_FEEDBACK ?? "/data/aidan-feedback.jsonl";
+export async function handleAidanFeedback(c: Context): Promise<Response> {
+  if (rateLimited(c)) return c.json({ error: "rate_limited" }, 429);
+  let retning = "";
+  let uddrag = "";
+  let locale = "da";
+  try {
+    const krop = await c.req.json();
+    retning = String(krop?.retning ?? "");
+    uddrag = String(krop?.uddrag ?? "").slice(0, 160);
+    if (krop?.locale === "en") locale = "en";
+  } catch {
+    return c.json({ error: "ugyldig_krop" }, 400);
+  }
+  if (retning !== "op" && retning !== "ned") return c.json({ error: "ugyldig_retning" }, 400);
+  try {
+    await mkdir(path.dirname(FEEDBACK_FIL), { recursive: true });
+    await appendFile(FEEDBACK_FIL, JSON.stringify({ retning, uddrag, locale, tidspunkt: new Date().toISOString() }) + "\n");
+  } catch (e) {
+    console.error("[aidan-feedback] kunne ikke gemme:", e);
+  }
+  return c.json({ ok: true });
+}
+

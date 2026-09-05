@@ -85,6 +85,7 @@ async function page(
           går udenom page(), så han optræder kun på de offentlige sider. */}
       {aidanConfigured() ? (
         <AidanWidget
+          sideTitel={meta.title.replace(/\s*[—–-]\s*broberg\.ai$/i, "")}
           t={aidanTekster(
             (f, fb) => (typeof globalsData[f] === "string" && (globalsData[f] as string)) || fb,
             meta.locale,

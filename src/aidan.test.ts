@@ -294,3 +294,27 @@ describe("F007.13 segl", () => {
   });
 });
 
+// F007.14-segl: 👍/👎-endpointet afviser alt der ikke er en gyldig retning.
+import { handleAidanFeedback, resetMailForTest } from "./aidan-mail.ts";
+
+describe("F007.14 feedback", () => {
+  test("ugyldig retning → 400; gyldig → ok", async () => {
+    const app = new Hono();
+    app.post("/api/aidan/feedback", handleAidanFeedback);
+    process.env.AIDAN_FEEDBACK = "/tmp/aidan-feedback-test.jsonl";
+    resetMailForTest(); // deler rate-limit-vindue med send-svar-testene ovenfor
+    const daarlig = await app.request("/api/aidan/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ retning: "sidelaens" }),
+    });
+    expect(daarlig.status).toBe(400);
+    const god = await app.request("/api/aidan/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ retning: "op", uddrag: "Et svar" }),
+    });
+    expect(god.status).toBe(200);
+  });
+});
+

@@ -632,6 +632,7 @@ function aidan() {
     // På mobil fokuseres SLET ikke: autofokus åbnede tastaturet oven i en
     // chat man endnu ikke har set, og skjulte skrivefeltet (IMG_9595, 5/9).
     if (!mobil()) felt.focus({ preventScroll: true });
+    udvidHilsen();
     // Mobil: panelet er fuldskærm, så siden bagved låses (scroll-kæden stoppes
     // i CSS via denne klasse — kun under 560px, desktop-siden skal kunne rulle).
     document.documentElement.classList.add("aidan-aaben");
@@ -928,10 +929,13 @@ function aidan() {
     for (const t of historik) {
       const d = boblEl(t.role === "user" ? "fra-mig" : "fra-aidan");
       if (t.role === "user") d.textContent = t.content;
-      else d.innerHTML = tilHtml(t.content);
+      else {
+        d.innerHTML = tilHtml(t.content);
+        handlingsRaekke(d, t.content, t.t);
+      }
     }
-    if (historik.length) foldChips(true);
-    else foldChips(false, false);
+    // F007.14: forslagene er FOLDET som default — brugeren folder selv ud.
+    foldChips(true);
     rulNed(true);
   };
   const nySamtale = () => {
@@ -1151,6 +1155,85 @@ function aidan() {
     if (vis) visPaaSiden(vis.dataset.anker ?? "");
   });
 
+  // ── F007.14: handlingsrække under hvert Aidan-svar (ejerens screenshot:
+  // kopiér · 👍/👎 · tidsstempel — INGEN retry). Tidsstemplet renderes i
+  // beskuerens egen zone (browser-side toLocaleTimeString er korrekt her).
+  const KOPI_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  const TOMMEL_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>';
+  const handlingsRaekke = (boble: HTMLElement, tekst: string, tid?: number) => {
+    if (boble.nextElementSibling?.classList.contains("aidan-handlinger")) return;
+    const ds = rod.dataset;
+    const rk = document.createElement("div");
+    rk.className = "aidan-handlinger";
+    const kop = document.createElement("button");
+    kop.type = "button";
+    kop.className = "aidan-handling";
+    kop.dataset.testid = "aidan-kopier";
+    kop.title = ds.kopier ?? "";
+    kop.setAttribute("aria-label", ds.kopier ?? "");
+    kop.innerHTML = KOPI_SVG;
+    kop.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(tekst);
+        kop.innerHTML = "";
+        kop.append(Object.assign(document.createElement("span"), { textContent: ds.kopieret ?? "" }));
+        setTimeout(() => (kop.innerHTML = KOPI_SVG), 1400);
+      } catch {
+        kop.classList.add("fejl");
+      }
+    });
+    rk.appendChild(kop);
+    for (const retning of ["op", "ned"] as const) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = `aidan-handling${retning === "ned" ? " vend" : ""}`;
+      b.dataset.testid = `aidan-tommel-${retning}`;
+      b.setAttribute("aria-label", retning === "op" ? "👍" : "👎");
+      b.innerHTML = TOMMEL_SVG;
+      b.addEventListener("click", async () => {
+        rk.querySelectorAll(".aidan-handling.tommel-valgt").forEach((x) => x.classList.remove("tommel-valgt"));
+        b.classList.add("tommel-valgt");
+        try {
+          await fetch("/api/aidan/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ retning, uddrag: tekst.slice(0, 160), locale: samtaleSprog }),
+          });
+        } catch {}
+      });
+      rk.appendChild(b);
+    }
+    if (tid) {
+      const ts = document.createElement("span");
+      ts.className = "aidan-tid";
+      ts.textContent = new Date(tid).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
+      rk.appendChild(ts);
+    }
+    boble.insertAdjacentElement("afterend", rk);
+  };
+  // (transskript-tilbuddet efter ≥4 brugerture — én gang pr. samtale)
+  let transTilbudt = false;
+  const transskript = () =>
+    historik.map((t) => `${t.role === "user" ? "Du" : "Aidan"}: ${t.content}`).join("\n\n").slice(0, 8000);
+  // Kontekst-hilsen (F007.14): første åbning UDEN samtale → hilsnen udvides
+  // med et par venlige linjer om den side der lige er læst. Bygget med
+  // textContent — sidens titel må aldrig blive til HTML.
+  let hilsenUdvidet = false;
+  const udvidHilsen = () => {
+    if (hilsenUdvidet || historik.length) return;
+    const ds = rod.dataset;
+    const titel = (ds.sideTitel ?? "").trim();
+    const skabelon = ds.hilsenSide ?? "";
+    if (!titel || !skabelon) return;
+    const h = hilsenEl();
+    if (!h) return;
+    hilsenUdvidet = true;
+    const linje = document.createElement("span");
+    linje.className = "aidan-hilsen-side";
+    linje.textContent = skabelon.replace("{titel}", titel);
+    h.append(document.createElement("br"), linje);
+  };
+
   let travl = false;
   // F007.13 (19): [sprog:]-markøren skifter samtalens sprog for de FØLGENDE
   // kald — sidens chrome beholder sidens locale (ærlig grænse; fuld
@@ -1165,7 +1248,7 @@ function aidan() {
     rulNed(true);
     if (!gentag) {
       boblEl("fra-mig").textContent = tekst;
-      historik.push({ role: "user", content: tekst });
+      historik.push({ role: "user", content: tekst, t: Date.now() });
       gem();
     }
 
@@ -1237,11 +1320,26 @@ function aidan() {
         }
       }
       if (svar) {
-        historik.push({ role: "assistant", content: svar });
+        historik.push({ role: "assistant", content: svar, t: Date.now() });
         gem();
         if (svarEl) {
           void tilbydOplaesning(svarEl);
           efterSvar(svarEl, svar);
+          handlingsRaekke(svarEl, svar, Date.now());
+          if (!transTilbudt && historik.filter((t) => t.role === "user").length >= 4) {
+            transTilbudt = true;
+            const tb = document.createElement("button");
+            tb.type = "button";
+            tb.className = "aidan-svar-mail";
+            tb.dataset.testid = "aidan-trans-tilbud";
+            tb.textContent = "✉ " + (rod!.dataset.transTilbud ?? "");
+            tb.addEventListener("click", () => {
+              tb.remove();
+              visMailTilbud(svarEl!, { tekst: transskript() }, rod!.dataset.transTilbud);
+            });
+            svarEl.parentElement?.appendChild(tb);
+            rulNed();
+          }
         }
       } else if (!svarEl) {
         fejl();

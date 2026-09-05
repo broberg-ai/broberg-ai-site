@@ -7,7 +7,7 @@
  * chatten, så falder vi bare tilbage til «ingen historik».
  */
 
-export type Tur = { role: "user" | "assistant"; content: string };
+export type Tur = { role: "user" | "assistant"; content: string; t?: number };
 export interface Samtale {
   id: string;
   titel: string;

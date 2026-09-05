@@ -8,7 +8,7 @@ import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
 import { handleAidanChat, handleAidanHealth, handleAidanStatus } from "@/aidan.ts";
 import { handleAidanIndsigter, handleAidanLaes } from "@/aidan-laes.ts";
-import { handleAidanSendLyd, handleAidanSendSvar } from "@/aidan-mail.ts";
+import { handleAidanSendLyd, handleAidanSendSvar, handleAidanFeedback } from "@/aidan-mail.ts";
 import { handleTrailIngest } from "@/trail-push.ts";
 import { handleAdminChat, handleAdminChatApi } from "@/chat-relay.ts";
 import { ensureRoot } from "@/content/store.ts";
@@ -118,6 +118,7 @@ app.get("/api/aidan/indsigter", handleAidanIndsigter);
 app.post("/api/aidan/laes", handleAidanLaes);
 app.post("/api/aidan/send-lyd", handleAidanSendLyd);
 app.post("/api/aidan/send-svar", handleAidanSendSvar);
+app.post("/api/aidan/feedback", handleAidanFeedback);
 
 app.post("/api/admin/chat", handleAdminChat);
 app.all("/api/admin/chat/*", handleAdminChatApi);

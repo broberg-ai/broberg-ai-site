@@ -58,6 +58,10 @@ export interface AidanTekster {
   statusOk: string;
   statusFejl: string;
   tidBesked: string;
+  hilsenSide: string;
+  kopier: string;
+  kopieret: string;
+  transTilbud: string;
   vaelgStemme: string;
   stemmeAidan: string;
   stemmeAirina: string;
@@ -124,6 +128,12 @@ export function aidanTekster(
     statusOk: g("aidanStatusOk", en ? "All systems running · response {ms} ms · data in the EU" : "Alle systemer kører · svartid {ms} ms · data i EU"),
     statusFejl: g("aidanStatusFejl", en ? "Status is unavailable right now" : "Status kan ikke hentes lige nu"),
     tidBesked: g("aidanTidBesked", en ? "Can we meet {tid}?" : "Kan vi mødes {tid}?"),
+    hilsenSide: g("aidanHilsenSide", en
+      ? "PS: I see you've been reading \u201c{titel}\u201d \u2014 great pick. Ask away if you'd like to hear what it could do for your business."
+      : "PS: Jeg kan se du har kigget p\u00e5 \u00ab{titel}\u00bb \u2014 godt valg. Sp\u00f8rg l\u00f8s, hvis du vil h\u00f8re hvad det kan g\u00f8re for jeres forretning."),
+    kopier: g("aidanKopier", en ? "Copy" : "Kopiér"),
+    kopieret: g("aidanKopieret", en ? "Copied" : "Kopieret"),
+    transTilbud: g("aidanTransTilbud", en ? "Get the whole conversation by email" : "Få hele samtalen tilsendt på mail"),
     vaelgStemme: g("aidanVaelgStemme", en ? "Who should read aloud?" : "Hvem skal læse højt?"),
     stemmeAidan: g("aidanStemmeAidan", en ? "Aidan — male voice" : "Aidan — mandlig stemme"),
     stemmeAirina: g("aidanStemmeAirina", en ? "Airina — female voice" : "Airina — kvindelig stemme"),
@@ -172,10 +182,12 @@ function Figur({ klasse }: { klasse: string }) {
 }
 
 export function AidanWidget({
+  sideTitel,
   t,
   globalsRef,
   locale,
 }: {
+  sideTitel?: string;
   t: AidanTekster;
   globalsRef: CmsRef | undefined;
   locale: Locale;
@@ -215,6 +227,11 @@ export function AidanWidget({
       data-status-ok={t.statusOk}
       data-status-fejl={t.statusFejl}
       data-tid-besked={t.tidBesked}
+      data-hilsen-side={t.hilsenSide}
+      data-side-titel={sideTitel ?? ""}
+      data-kopier={t.kopier}
+      data-kopieret={t.kopieret}
+      data-trans-tilbud={t.transTilbud}
     >
       <button
         type="button"
