@@ -754,6 +754,9 @@ function aidan() {
     infoPop.hidden = !infoPop.hidden;
     if (!infoPop.hidden) markerPersona();
   });
+  rod.querySelector<HTMLButtonElement>("[data-testid='aidan-om-luk']")?.addEventListener("click", () => {
+    infoPop.hidden = true;
+  });
   infoPop.querySelectorAll<HTMLButtonElement>(".aidan-persona").forEach((k) =>
     k.addEventListener("click", () => {
       // Christians eksplicitte valg: cookie (ikke localStorage) — 1 år.

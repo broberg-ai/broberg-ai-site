@@ -2948,6 +2948,98 @@ a.pill.taglink:active {
   padding: 14px;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
 }
+
+/* ── F007.8.1: info-popoveren er blevet en STOR modal — teknologi, EU-data,
+   chat-adskillelse, dogfooding + backstory (indholdet bor i CMS: aidanOmMd).
+   Skygge-tricket (0 0 0 200vmax) er bagtæppet: klik dér er «udenfor» og
+   lukker via den eksisterende klik-udenfor-lytter. */
+.aidan-info-popover.aidan-om {
+  position: fixed;
+  inset: 0;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(680px, calc(100dvh - 48px));
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 0 0 200vmax rgba(0, 0, 0, 0.55), 0 24px 70px rgba(0, 0, 0, 0.5);
+}
+.aidan-info-popover.aidan-om[hidden] {
+  display: none;
+}
+.aidan-om-hoved {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--card-border);
+  background: linear-gradient(135deg, var(--blue-glow), transparent 65%);
+}
+.aidan-om-titel {
+  font-size: 0.95rem;
+  color: var(--light);
+}
+.aidan-om-luk {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 8px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.aidan-om-luk:hover {
+  color: var(--light);
+  background: var(--card);
+}
+.aidan-om-luk:active {
+  transform: translateY(1px);
+}
+.aidan-om-krop {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 18px;
+}
+.aidan-om-md {
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--light);
+}
+.aidan-om-md h2 {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--blue-light);
+  margin: 18px 0 6px;
+}
+.aidan-om-md p {
+  margin: 0 0 10px;
+}
+.aidan-om-md a {
+  color: var(--blue-light);
+}
+@media (max-width: 560px) {
+  .aidan-info-popover.aidan-om {
+    left: 0;
+    top: 0;
+    transform: none;
+    width: 100vw;
+    max-height: none;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+}
+
 .aidan-info-tekst {
   margin: 0 0 10px;
   font-size: 0.78rem;

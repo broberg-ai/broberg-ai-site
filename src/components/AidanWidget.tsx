@@ -16,6 +16,7 @@
 import type { CmsRef } from "@/content/types.ts";
 import type { Locale } from "@/config.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
+import { richtextBlock } from "@/content/richtext.ts";
 
 const STILL = "/uploads/aidan-kanonisk-rfjl.svg";
 const KLIP_MOERK = "/uploads/g2-aidan-moerk-s45h.mp4";
@@ -48,6 +49,8 @@ export interface AidanTekster {
   laesVidere: string;
   laesFejl: string;
   info: string;
+  omTitel: string;
+  omMd: string;
   vaelgStemme: string;
   stemmeAidan: string;
   stemmeAirina: string;
@@ -105,6 +108,8 @@ export function aidanTekster(
         ? "Aidan is broberg.ai's own AI guide — built on the house components with this whole universe as its knowledge base. Answers may contain mistakes."
         : "Aidan er broberg.ai's egen AI-guide — bygget på husets komponenter og med hele universet her som vidensbase. Svar kan indeholde fejl.",
     ),
+    omTitel: g("aidanOmTitel", en ? "About Aidan & Airina" : "Om Aidan & Airina"),
+    omMd: g("aidanOmMd", ""),
     vaelgStemme: g("aidanVaelgStemme", en ? "Who should read aloud?" : "Hvem skal læse højt?"),
     stemmeAidan: g("aidanStemmeAidan", en ? "Aidan — male voice" : "Aidan — mandlig stemme"),
     stemmeAirina: g("aidanStemmeAirina", en ? "Airina — female voice" : "Airina — kvindelig stemme"),
@@ -294,9 +299,16 @@ export function AidanWidget({
           </button>
         </form>
         {/* F007.8: info + stemmevalg — popover over foden, valget bor i cookie. */}
-        <div class="aidan-info-popover" data-testid="aidan-info-popover" hidden>
-          <p class="aidan-info-tekst" {...cmsAttrs(globalsRef, "aidanInfo")}>{t.info}</p>
-          <b class="aidan-info-hoved" {...cmsAttrs(globalsRef, "aidanVaelgStemme")}>{t.vaelgStemme}</b>
+        <div class="aidan-info-popover aidan-om" data-testid="aidan-info-popover" hidden>
+          <div class="aidan-om-hoved">
+            <b class="aidan-om-titel" {...cmsAttrs(globalsRef, "aidanOmTitel")}>{t.omTitel}</b>
+            <button type="button" class="aidan-om-luk" data-testid="aidan-om-luk" aria-label={en ? "Close" : "Luk"}>×</button>
+          </div>
+          <div class="aidan-om-krop">
+            <p class="aidan-info-tekst" {...cmsAttrs(globalsRef, "aidanInfo")}>{t.info}</p>
+            {/* Indholdet BOR i CMS'et (aidanOmMd, da+en) — koden render kun. */}
+            {t.omMd ? <div class="aidan-om-md" dangerouslySetInnerHTML={{ __html: richtextBlock(t.omMd) }} /> : null}
+            <b class="aidan-info-hoved" {...cmsAttrs(globalsRef, "aidanVaelgStemme")}>{t.vaelgStemme}</b>
           <div class="aidan-personaer">
             <button type="button" class="aidan-persona" data-persona="aidan" data-testid="aidan-persona-aidan" {...cmsAttrs(globalsRef, "aidanStemmeAidan")}>
               {t.stemmeAidan}
@@ -304,6 +316,7 @@ export function AidanWidget({
             <button type="button" class="aidan-persona" data-persona="airina" data-testid="aidan-persona-airina" {...cmsAttrs(globalsRef, "aidanStemmeAirina")}>
               {t.stemmeAirina}
             </button>
+            </div>
           </div>
         </div>
         <div class="aidan-fod-raekke">
