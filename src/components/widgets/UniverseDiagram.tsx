@@ -37,18 +37,51 @@ const INFRA_SLOTS = [
   { cx: 91, cy: 249, tx: 91, ty: 267 },
   { cx: 117, cy: 138, tx: 117, ty: 121 },
 ];
-const CUSTOMER_SLOTS = [
-  { cx: 316, cy: 74, tx: 330, ty: 62 },
-  { cx: 392, cy: 336, tx: 380, ty: 354 },
-  { cx: 48, cy: 336, tx: 60, ty: 354 },
-  { cx: 112, cy: 62, tx: 108, ty: 50 },
-];
+// Kundepladserne var før en fast liste på FIRE, og en femte kunde forsvandt
+// tavst — `CUSTOMER_SLOTS.map` render kun de noder der havde en plads. Nu
+// regnes pladserne ud fra hvor mange kunder der er, jævnt fordelt på deres egen
+// ring (r=195, den orange stiplede), så der aldrig kan mangle plads til én mere.
+const CUST_R = 195;
+// Over dette bliver etiketterne for tætte til at læse: 2*195*sin(180/8) = 149 px
+// mellem naboer, og det længste kundenavn fylder ~85 px. Ejeren 6/9: er der
+// flere, «randomiserer vi bare kunderne» — se vaelgKunder().
+export const CUST_MAX = 8;
+
+export function kundePladser(antal: number) {
+  return Array.from({ length: antal }, (_, i) => {
+    // 36° som start giver et asymmetrisk mönster og holder den første væk fra
+    // toppen, hvor infra-ringen allerede har en node.
+    const rad = ((36 + (360 / antal) * i) * Math.PI) / 180;
+    const cx = Math.round(CENTER + CUST_R * Math.sin(rad));
+    const cy = Math.round(CENTER - CUST_R * Math.cos(rad));
+    return { cx, cy, tx: cx, ty: cy + (cy < CENTER ? -17 : 18) };
+  });
+}
+
+/** Er der flere kunder end der er plads til, vises et TILFÆLDIGT udsnit — så
+ *  ingen kunde er permanent usynlig, og udsnittet skifter ved hver sidevisning.
+ *  Ejerens valg 6/9. Under grænsen røres rækkefølgen ikke. */
+export function vaelgKunder(alle: DiagramNode[]): DiagramNode[] {
+  if (alle.length <= CUST_MAX) return alle;
+  const kopi = [...alle];
+  for (let i = kopi.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [kopi[i], kopi[j]] = [kopi[j]!, kopi[i]!];
+  }
+  return kopi.slice(0, CUST_MAX);
+}
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-function linkAttrs(node: DiagramNode, testid: string): Record<string, string> {
-  const attrs: Record<string, string> = { class: "unode", "data-testid": testid };
+function linkAttrs(node: DiagramNode, testid: string, blaa: boolean): Record<string, string> {
+  // Farven bæres som `color` på selve linket, så glow og skyggen under hover kan
+  // sige currentColor — én kilde til nodens farve, blå for motor, orange for kunde.
+  const attrs: Record<string, string> = {
+    class: "unode",
+    style: `color:${blaa ? "var(--blue)" : "#F3522C"}`,
+    "data-testid": testid,
+  };
   if (node.scroll) attrs["data-scroll"] = node.scroll;
   else if (node.href) {
     attrs.href = node.href;
@@ -75,9 +108,12 @@ function Node({
 }) {
   const fill = r >= 5 ? "var(--blue)" : "#F3522C";
   return (
-    <a {...linkAttrs(node, `universe-node-${slugify(node.label)}`)}>
+    <a {...linkAttrs(node, `universe-node-${slugify(node.label)}`, r >= 5)}>
       <g transform={`translate(${slot.cx} ${slot.cy})`}>
         <circle r={hit} fill="transparent" pointer-events="all" />
+        {/* Ringen der puster ud ved hover. Den ligger FØR traefferfeltet i
+            tegneorden, så den aldrig dækker planeten den kommer fra. */}
+        <circle class="glow" r={r} />
         <circle class="planet" r={r} fill={fill} />
         {/* Label welded to this dot: counter-rotate about (0,0) = the dot. */}
         <g>
@@ -174,9 +210,13 @@ export function UniverseDiagram({
           dur={CUST_DUR}
           repeatCount="indefinite"
         />
-        {CUSTOMER_SLOTS.map((s, i) =>
-          customers[i] ? <Node key={i} node={customers[i]} slot={s} dur={CUST_DUR} r={4} hit={14} /> : null,
-        )}
+        {(() => {
+          const vist = vaelgKunder(customers);
+          const pladser = kundePladser(vist.length);
+          return vist.map((c, i) => (
+            <Node key={i} node={c} slot={pladser[i]!} dur={CUST_DUR} r={4} hit={14} />
+          ));
+        })()}
       </g>
 
       {/* Core — the broberg.ai brand mark ("b."), on top, does not orbit; the

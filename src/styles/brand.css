@@ -819,13 +819,46 @@ section {
   cursor: pointer;
 }
 .unode .planet {
-  transition: r 0.15s ease;
+  transition: r 0.15s ease, filter 0.15s ease;
+}
+/* Glow-ringen er usynlig indtil man peger på noden. Farven er nodens egen
+   (currentColor, sat på linket), så en motor gløder blåt og en kunde orange. */
+.unode .glow {
+  fill: currentColor;
+  opacity: 0;
+  transform-origin: center;
+  transform-box: fill-box;
+  pointer-events: none;
+}
+.unode:hover .glow {
+  animation: unode-puls 1.5s cubic-bezier(0.22, 0.8, 0.3, 1) infinite;
+}
+@keyframes unode-puls {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(3.6);
+  }
 }
 .unode:hover .planet {
   r: 8;
+  /* To lag: et tæt, skarpt skær og et bredt, blødt — ét alene ser enten
+     hårdt eller udvasket ud på en 4 px prik. */
+  filter: drop-shadow(0 0 5px currentColor) drop-shadow(0 0 12px currentColor);
 }
 .unode:hover .lbl {
   fill: #f0f4f8;
+}
+@media (prefers-reduced-motion: reduce) {
+  .unode:hover .glow {
+    animation: none;
+    opacity: 0.28;
+    transform: scale(2.4);
+  }
 }
 .flow {
   display: flex;
