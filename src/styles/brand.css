@@ -40,6 +40,8 @@
      (the brand #f3522c is 4.28:1; this hits ≥4.5:1). Graphics keep --orange. */
   --orange-text: #ff6a45;
   --orange-soft: rgba(243, 82, 44, 0.12);
+  /* Topbjælkens højde — ÉN kilde. Båndet klæber under den. */
+  --header-h: 65px;
   --fd: "Cormorant Garamond", Georgia, serif;
   --fb: "DM Sans", -apple-system, sans-serif;
 }
@@ -2867,12 +2869,23 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   padding: 3px 9px;
   border-radius: 999px;
 }
+/* Båndet klæber under den faste topbjælke. Det stod før i flowet ved y=0 og
+   lå derfor HELT bag headeren (målt 6/9: bånd 0-46px, header 0-65px) — hele
+   fladen var usynlig. Fixed frem for sticky, fordi headeren selv er fixed og
+   altså ikke fylder i flowet: sticky ville stadig starte bag den. Højden
+   holdes i én variabel, så toppen af siden kan regne med den. */
 .f-baand {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  z-index: 199; /* under headerens 200 — headeren skal altid ligge øverst */
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 8px 24px;
-  background: linear-gradient(90deg, var(--blue-glow), transparent 75%);
+  background: linear-gradient(90deg, var(--blue-glow), transparent 75%), var(--dark);
+  backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--blue);
   font-size: 0.8rem;
   min-height: 38px;
