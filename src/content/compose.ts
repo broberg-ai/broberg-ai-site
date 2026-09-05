@@ -944,3 +944,33 @@ export async function buildTagCloud(locale: Locale): Promise<TagCount[]> {
   for (const p of forLocale(await list("platforms"), locale)) tally(dataOf(p).tags);
   return [...map.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
+
+/** F008: alle featured dokumenter (artikler OG sider — på dette site er alle
+ *  indholdssider posts). featuredText er den korte salgstekst (F008.1),
+ *  BEVIDST forskellig fra manchetten. Nyeste først. */
+export type FeaturedItem = {
+  href: string;
+  title: string;
+  featuredText: string;
+  category: string;
+  slug: string;
+};
+export async function loadFeatured(locale: Locale): Promise<FeaturedItem[]> {
+  const en = locale === "en";
+  return forLocale(await list("posts"), locale)
+    .filter((p) => p.status === "published" && dataOf(p).featured === true)
+    .sort((a, b) => String(dataOf(b).date ?? "").localeCompare(String(dataOf(a).date ?? "")))
+    .map((p) => {
+      const d = dataOf(p);
+      const slug = String(p.slug);
+      const category = typeof d.category === "string" ? d.category : "indsigter";
+      return {
+        href: `${en ? "/en" : ""}/${category}/${slug}`,
+        title: typeof d.title === "string" ? d.title.replace(/<[^>]+>/g, "") : slug,
+        featuredText: typeof d.featuredText === "string" ? d.featuredText : "",
+        category,
+        slug,
+      };
+    });
+}
+

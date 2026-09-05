@@ -44,10 +44,12 @@ function inline(t: string, knapBudget: { tilbage: number }): string {
         // (målt på Christians E2E-screenshot 4/9). På et rent link hører det med.
         return `<a class="aidan-cta" data-testid="aidan-cta" href="${href}">${tekst}</a>`;
       }
-      return `<a href="${href}">${tekst}</a>${tegn}`;
+      // Over budgettet: stadig GRAFIK, aldrig et tekst-link (Christian 5/9:
+      // «der må IKKE være tekst links i chat resultatet»).
+      return `<a class="aidan-lenke" href="${href}">${tekst} <i>→</i></a>${tegn}`;
     })
-    .replace(/\[[a-zæøå]{2,12}:\s*([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
-    .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\[[a-zæøå]{2,12}:\s*([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a class="aidan-lenke" href="$2">$1 <i>→</i></a>')
+    .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a class="aidan-lenke" href="$2">$1 <i>→</i></a>')
     .replace(/\*\*([^\n]+?)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[\s>])\*([^*\n]+)\*(?=[\s.,!?:;<]|$)/g, "$1<em>$2</em>");
   return ud.replace(/\u0000K(\d+)\u0000/g, (_alt, i: string) => `<code>${koder[Number(i)]}</code>`);
@@ -97,7 +99,7 @@ function markoer(linje: string, knapBudget: { tilbage: number }): string | null 
   if ((m = KILDER_RE.exec(linje))) {
     const led = m[1].split(";").map((k) => {
       const [sti, titel] = k.split("|").map((x) => x.trim());
-      return sti?.startsWith("/") && titel ? `<a href="${sti}">${titel}</a>` : null;
+      return sti?.startsWith("/") && titel ? `<a class="aidan-lenke lille" href="${sti}">${titel} <i>→</i></a>` : null;
     }).filter(Boolean);
     return led.length ? `<div class="aidan-kilder" data-testid="aidan-kilder">Kilder: ${led.join(" · ")}</div>` : null;
   }

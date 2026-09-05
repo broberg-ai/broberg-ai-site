@@ -33,6 +33,8 @@ const COPY = {
     sadanByggerViDet: "Sådan bygger vi det",
     cases: "Cases",
     ressourcer: "Indsigter",
+    featured: "Featured",
+    featuredSub: "Det vi synes du skal se først",
     indsigter: "Tanker",
     indsigterSub: "Blog om AI-native byg",
     aiMetode: "AI & Metode",
@@ -64,6 +66,8 @@ const COPY = {
     sadanByggerViDet: "How we build it",
     cases: "Cases",
     ressourcer: "Insights",
+    featured: "Featured",
+    featuredSub: "What we think you should see first",
     indsigter: "Thoughts",
     indsigterSub: "Blog on AI-native building",
     aiMetode: "AI & Method",
@@ -195,6 +199,10 @@ export function Nav({
               <span {...g("ressourcer")}>{t.ressourcer}</span> <span class="car">▾</span>
             </button>
             <div class="dd">
+              <a href={withLocale(locale, "/featured")} data-testid="dd-featured" class="dd-featured">
+                <b {...g("featured")}>★ {t.featured}</b>
+                <span {...g("featuredSub")}>{t.featuredSub}</span>
+              </a>
               <a href={withLocale(locale, "/indsigter")} data-testid="dd-indsigter">
                 <b {...g("indsigter")}>{t.indsigter}</b>
                 <span {...g("indsigterSub")}>{t.indsigterSub}</span>

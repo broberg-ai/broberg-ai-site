@@ -22,7 +22,7 @@ describe("formerne", () => {
   test("afsnit + fed + kursiv + link", () => {
     const html = aidanTilHtml("Se **cases** her: [Cases](/cases).\n\nDet er *hurtigt*.");
     expect(html).toBe(
-      '<p>Se <strong>cases</strong> her: <a href="/cases">Cases</a>.</p><p>Det er <em>hurtigt</em>.</p>',
+      '<p>Se <strong>cases</strong> her: <a class="aidan-lenke" href="/cases">Cases <i>→</i></a>.</p><p>Det er <em>hurtigt</em>.</p>',
     );
   });
 
@@ -74,7 +74,7 @@ describe("handlings-knapper (Eir-mønstret)", () => {
   test("loft på 2: tredje knap degraderer til almindeligt link", () => {
     const html = aidanTilHtml("[knap:En](/a) [knap:To](/b) [knap:Tre](/c)");
     expect(html.split('class="aidan-cta"').length - 1).toBe(2);
-    expect(html).toContain('<a href="/c">Tre</a>');
+    expect(html).toContain('<a class="aidan-lenke" href="/c">Tre <i>→</i></a>');
   });
   test("et almindeligt link bliver ALDRIG til en knap", () => {
     expect(aidanTilHtml("Se [casen](/cases).")).not.toContain("aidan-cta");
@@ -85,7 +85,7 @@ describe("handlings-knapper (Eir-mønstret)", () => {
     expect(html).not.toContain("</a>.");
     // Degraderet knap (over loftet) er et rent inline-link — dér hører punktummet med.
     const tre = aidanTilHtml("[knap:En](/a) [knap:To](/b) [knap:Tre](/c).");
-    expect(tre).toContain('<a href="/c">Tre</a>.');
+    expect(tre).toContain('<a class="aidan-lenke" href="/c">Tre <i>→</i></a>.');
   });
 });
 
@@ -103,15 +103,15 @@ describe("skillelinjer (E2E-screenshot 4/9 aften)", () => {
 describe("fremad-tolerance — gamle faner må aldrig se maskineri", () => {
   test("et UKENDT fremtidigt token renderes som rent link uden præfiks", () => {
     const html = aidanTilHtml("Se her: [kort:Læs casen](/cases)");
-    expect(html).toContain('<a href="/cases">Læs casen</a>');
+    expect(html).toContain('aidan-lenke');
     expect(html).not.toContain("kort:");
   });
   test("[Knap:…] med stort K virker også som knap", () => {
     expect(aidanTilHtml("[Knap:Book](/kontakt)")).toContain('class="aidan-cta"');
   });
   test("prosa med kolon i link-tekst klippes IKKE (store bogstaver/lange ord)", () => {
-    expect(aidanTilHtml("[NB: vigtigt](/x)")).toContain(">NB: vigtigt</a>");
-    expect(aidanTilHtml("[Sådan bygger vi: metoden](/metode)")).toContain(">Sådan bygger vi: metoden</a>");
+    expect(aidanTilHtml("[NB: vigtigt](/x)")).toContain(">NB: vigtigt <i>→</i></a>");
+    expect(aidanTilHtml("[Sådan bygger vi: metoden](/metode)")).toContain(">Sådan bygger vi: metoden <i>→</i></a>");
   });
 });
 
@@ -208,3 +208,13 @@ describe("F007.13 markører", () => {
     expect(h).not.toContain("[case:");
   });
 });
+
+// Christian 5/9: «der må IKKE være tekst links i chat resultatet» — hvert
+// link i et svar bærer en grafisk klasse. Seglet fanger et nøgent <a href.
+describe("ingen tekst-links i chatten", () => {
+  test("alle renderede links bærer cta/lenke-klasse", () => {
+    const h = aidanTilHtml("Se [Cases](/cases) og [knap:Kontakt](/#kontakt) og [Trail](/flagskibe/trail) og [Docs](/docs)\n\n[kilder:/indsigter/x|X]");
+    expect(h.match(/<a (?!class="aidan-(cta|lenke))/g)).toBeNull();
+  });
+});
+

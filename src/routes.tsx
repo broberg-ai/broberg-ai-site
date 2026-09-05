@@ -4,13 +4,14 @@
    When cms is wired, each handler builds its model from the local store. */
 import type { Locale } from "@/config.ts";
 import { Nav, AdminNav } from "@/components/Nav.tsx";
+import { FeaturedBaand, FeaturedBoks } from "@/components/Featured.tsx";
 import { Footer } from "@/components/Footer.tsx";
 import { RenderSections } from "@/render/blocks.tsx";
 import { Platforms } from "@/components/sections.tsx";
 import { renderPage } from "@/render/html.tsx";
 import { resolveAssets } from "@/render/assets.ts";
 import { homeFallback } from "@/data/fallback.ts";
-import {
+import { loadFeatured,
   loadHome,
   loadPlatform,
   loadPlatforms,
@@ -72,9 +73,12 @@ async function page(
   const navLabels = (globalsData.nav && typeof globalsData.nav === "object" ? globalsData.nav : undefined) as
     | Record<string, string>
     | undefined;
+  const featured = await loadFeatured(meta.locale);
+  const laesLabel = (typeof globalsData.featuredLaes === "string" && (globalsData.featuredLaes as string)) || (meta.locale === "en" ? "Read" : "Læs");
   return renderPage(
     <>
       <Nav locale={meta.locale} altHref={meta.altHref} nav={navLabels} globalsRef={globalsRef} />
+      <FeaturedBaand items={featured} laes={laesLabel} />
       {children}
       <Footer data={footerData} cmsRef={globalsRef} />
       {/* Aidan — kun når chatten faktisk kan svare (ship-dark). Admin-fladerne
@@ -190,6 +194,7 @@ export async function renderHome(locale: Locale): Promise<string> {
     (typeof d[field] === "string" && d[field]) || (isEn ? en : da);
 
   const solutions = await loadSolutions(locale);
+  const featuredForside = await loadFeatured(locale);
   const randomNews = await loadRandomNews(locale, 3);
   const casePosts = await loadCategoryPosts(locale, "cases");
   const homeModel = await loadHome(locale);
@@ -322,6 +327,14 @@ export async function renderHome(locale: Locale): Promise<string> {
         </div>
       </section>
 
+      {featuredForside.length ? (
+        <FeaturedBoks
+          item={featuredForside[0]}
+          eyebrow={(typeof globalsData.featuredEyebrow === "string" && (globalsData.featuredEyebrow as string)) || (isEn ? "Featured right now" : "Fremhævet lige nu")}
+          laes={(typeof globalsData.featuredLaes === "string" && (globalsData.featuredLaes as string)) || (isEn ? "Read" : "Læs")}
+          globalsRef={globalsRef}
+        />
+      ) : null}
       <section style="background:var(--dark2)">
         <div class="wrap" style="max-width:720px">
           <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsHtmlAttrs(landingRef, "problemHeading")} dangerouslySetInnerHTML={{ __html: d.problemHeading }} />
@@ -1218,3 +1231,45 @@ export async function renderGenericPage(locale: Locale, slug: string): Promise<s
     { title: `${slug} — broberg.ai`, description: "broberg.ai", locale },
   );
 }
+
+// F008.4 — ★ Featured: samlet liste over alle featured artikler + sider (note A:
+// «et enkelt menupunkt der har stjernen og Featured, der viser en liste»).
+export async function renderFeaturedListe(locale: Locale): Promise<string> {
+  const isEn = locale === "en";
+  const { ref, g } = await globalsChrome(locale);
+  const items = await loadFeatured(locale);
+  const titel = g("featuredListeTitel", isEn ? "Featured" : "Featured");
+  const intro = g("featuredListeIntro", isEn
+    ? "Hand-picked articles and pages we think you should see first."
+    : "Håndplukkede artikler og sider vi synes du skal se først.");
+  return page(
+    <section>
+      <div class="wrap" style="max-width:860px">
+        <div class="eyebrow" {...cmsAttrs(ref, "featuredListeTitel")}>★ {titel}</div>
+        <p class="lead" {...cmsAttrs(ref, "featuredListeIntro")}>{intro}</p>
+        {items.length ? (
+          <div class="f-liste" data-testid="featured-liste">
+            {items.map((it) => (
+              <a class="f-liste-kort" href={it.href} data-testid="featured-liste-kort">
+                <span class="f-maerke">★ {it.category.toUpperCase()}</span>
+                <b>{stripHtml(it.title)}</b>
+                <p>{it.featuredText}</p>
+                <span class="f-liste-pil">{g("featuredLaes", isEn ? "Read" : "Læs")} →</span>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p class="lead" data-testid="featured-liste-tom">{g("featuredListeTom", isEn ? "Nothing featured right now — check back soon." : "Intet fremhævet lige nu — kig forbi igen snart.")}</p>
+        )}
+      </div>
+    </section>,
+    {
+      title: isEn ? "Featured — broberg.ai" : "Featured — broberg.ai",
+      description: intro,
+      locale,
+      canonical: isEn ? "/en/featured" : "/featured",
+      altHref: isEn ? "/featured" : "/en/featured",
+    },
+  );
+}
+

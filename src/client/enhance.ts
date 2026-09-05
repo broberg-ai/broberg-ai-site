@@ -1266,6 +1266,24 @@ function aidan() {
   );
 }
 
+
+// F008.2 — featured-båndet roterer roligt mellem alle featured (ejer-note B).
+function featuredBaand() {
+  const baand = document.querySelector<HTMLElement>("[data-testid='featured-baand']");
+  if (!baand) return;
+  const punkter = Array.from(baand.querySelectorAll<HTMLAnchorElement>(".f-baand-punkt"));
+  const prikker = Array.from(baand.querySelectorAll<HTMLElement>(".f-prikker i"));
+  const laes = baand.querySelector<HTMLAnchorElement>("[data-testid='featured-baand-laes']");
+  if (punkter.length < 2) return;
+  let akt = 0;
+  setInterval(() => {
+    akt = (akt + 1) % punkter.length;
+    punkter.forEach((p, i) => p.classList.toggle("akt", i === akt));
+    prikker.forEach((p, i) => p.classList.toggle("akt", i === akt));
+    if (laes) laes.href = punkter[akt].href;
+  }, 6000);
+}
+
 function safe(fn: () => void) {
   try {
     fn();
@@ -1274,6 +1292,7 @@ function safe(fn: () => void) {
   }
 }
 safe(mobileNav);
+  safe(featuredBaand);
 safe(smoothScroll);
 safe(countUps);
 safe(heroSlides);
