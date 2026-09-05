@@ -1,0 +1,47 @@
+<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>F008 B — Tyndt featured-bånd under menuen</title><style>
+:root{--blue:#00b2ff;--blue-light:#40c8ff;--blue-glow:rgba(0,178,255,.13);--dark:#23282f;--dark2:#1c2027;--card:rgba(255,255,255,.04);--card-border:rgba(255,255,255,.08);--light:#f0f4f8;--muted:rgba(240,244,248,.5);--orange:#f3522c;--fd:Georgia,'Times New Roman',serif;--fb:'DM Sans',-apple-system,sans-serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--dark);color:var(--light);font-family:var(--fb);min-height:100vh}
+.nav{display:flex;align-items:center;gap:26px;padding:16px 40px;border-bottom:1px solid var(--card-border);background:var(--dark2)}
+.logo{font-family:var(--fd);font-size:1.25rem;font-style:italic}
+.logo b{color:var(--blue)}
+.nav a{color:var(--muted);text-decoration:none;font-size:.85rem}
+.nav a.akt{color:var(--light)}
+.note{max-width:860px;margin:26px auto 0;padding:0 40px;font-size:.78rem;color:var(--muted);line-height:1.6}
+.note b{color:var(--blue-light)}
+.fab{position:fixed;left:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;z-index:50}
+.fab .vaerktoej{background:var(--dark2);border:1px solid var(--card-border);border-radius:12px;padding:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:6px;min-width:220px}
+.fab .vaerktoej b{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 4px}
+.fab .vk{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--card-border);border-radius:9px;padding:8px 10px;font-size:.8rem;color:var(--light);cursor:pointer}
+.fab .vk.akt{border-color:var(--blue);color:var(--blue-light);background:var(--blue-glow)}
+.fab .pille{display:inline-flex;border-radius:999px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:.8rem;font-weight:600}
+.fab .pille span{padding:9px 15px;background:#1c2027;color:#fff}
+.fab .pille span.sek{color:var(--muted);border-left:1px solid var(--card-border)}
+
+.baand{display:flex;align-items:center;gap:14px;padding:9px 40px;background:linear-gradient(90deg,var(--blue-glow),transparent 75%);border-bottom:1px solid var(--blue);font-size:.8rem}
+.baand .maerke{background:var(--blue);color:#04222f;font-weight:700;font-size:.64rem;letter-spacing:.08em;padding:3px 9px;border-radius:999px;flex:none}
+.baand a{color:var(--light);text-decoration:none}
+.baand a b{color:var(--blue-light)}
+.baand .pil{margin-left:auto;color:var(--blue-light);flex:none}
+.baand .prikker{display:flex;gap:5px;flex:none}
+.baand .prikker i{width:6px;height:6px;border-radius:50%;background:var(--card-border)}
+.baand .prikker i.akt{background:var(--blue)}
+.helt{max-width:860px;margin:60px auto;padding:0 40px}
+.helt h1{font-family:var(--fd);font-size:2.6rem;font-weight:500;line-height:1.15}
+.helt h1 em{color:var(--blue);font-style:italic}
+</style></head><body>
+<nav class="nav"><span class="logo">broberg<b>.ai</b></span><a href="#">Flagskibe</a><a href="#">Indsigter</a><a href="#">Cases</a><a href="#">Platform</a><a href="#">Kontakt</a></nav>
+<div class="baand"><span class="maerke">★ FEATURED</span><a href="#">Byg jeres BI-dashboard <b>fra bunden</b> — hurtigere end at tæmme Power BI</a><span class="prikker"><i class="akt"></i><i></i><i></i></span><span class="pil">Læs →</span></div>
+<div class="helt"><h1>Maskinen bygger <em>sig selv</em>.</h1></div>
+<p class="note"><b>Forslag B — tyndt farvet bånd lige under hovedmenuen.</b> Ét featured-indslag ad gangen; prikkerne skifter mellem flere featured (roterer roligt). Båndet følger med på ALLE sider, er 38px højt og forsvinder når intet er featured. Nederst til venstre: samme FAB-værktøjer.</p>
+
+<div class="fab">
+  <div class="vaerktoej">
+    <b>Side-værktøjer</b>
+    <div class="vk akt">★&nbsp; Featured — denne side ER featured</div>
+    <div class="vk">#&nbsp; Tags: BI · Dashboards · Realtidsdata &nbsp;+</div>
+  </div>
+  <div class="pille"><span>✎ Redigerer…</span><span class="sek">Værktøjer ▴</span><span class="sek">Log ud</span></div>
+</div>
+
+</body></html>

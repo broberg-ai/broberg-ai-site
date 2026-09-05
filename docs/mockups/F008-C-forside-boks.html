@@ -1,0 +1,62 @@
+<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>F008 C — Featured-boks på forsiden</title><style>
+:root{--blue:#00b2ff;--blue-light:#40c8ff;--blue-glow:rgba(0,178,255,.13);--dark:#23282f;--dark2:#1c2027;--card:rgba(255,255,255,.04);--card-border:rgba(255,255,255,.08);--light:#f0f4f8;--muted:rgba(240,244,248,.5);--orange:#f3522c;--fd:Georgia,'Times New Roman',serif;--fb:'DM Sans',-apple-system,sans-serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--dark);color:var(--light);font-family:var(--fb);min-height:100vh}
+.nav{display:flex;align-items:center;gap:26px;padding:16px 40px;border-bottom:1px solid var(--card-border);background:var(--dark2)}
+.logo{font-family:var(--fd);font-size:1.25rem;font-style:italic}
+.logo b{color:var(--blue)}
+.nav a{color:var(--muted);text-decoration:none;font-size:.85rem}
+.nav a.akt{color:var(--light)}
+.note{max-width:860px;margin:26px auto 0;padding:0 40px;font-size:.78rem;color:var(--muted);line-height:1.6}
+.note b{color:var(--blue-light)}
+.fab{position:fixed;left:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;z-index:50}
+.fab .vaerktoej{background:var(--dark2);border:1px solid var(--card-border);border-radius:12px;padding:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:6px;min-width:220px}
+.fab .vaerktoej b{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 4px}
+.fab .vk{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--card-border);border-radius:9px;padding:8px 10px;font-size:.8rem;color:var(--light);cursor:pointer}
+.fab .vk.akt{border-color:var(--blue);color:var(--blue-light);background:var(--blue-glow)}
+.fab .pille{display:inline-flex;border-radius:999px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:.8rem;font-weight:600}
+.fab .pille span{padding:9px 15px;background:#1c2027;color:#fff}
+.fab .pille span.sek{color:var(--muted);border-left:1px solid var(--card-border)}
+
+.sektion{max-width:960px;margin:48px auto;padding:0 40px}
+.eyebrow{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--blue-light);margin-bottom:12px}
+.fboks{display:grid;grid-template-columns:1.4fr 1fr;gap:0;border:1px solid var(--blue);border-radius:18px;overflow:hidden;background:linear-gradient(120deg,var(--blue-glow),var(--card))}
+.fboks .tekst{padding:30px 34px}
+.fboks .maerke{display:inline-block;background:var(--blue);color:#04222f;font-weight:700;font-size:.64rem;letter-spacing:.08em;padding:3px 9px;border-radius:999px;margin-bottom:14px}
+.fboks h2{font-family:var(--fd);font-weight:500;font-size:1.7rem;line-height:1.2;margin-bottom:12px}
+.fboks h2 em{color:var(--blue);font-style:italic}
+.fboks p{font-size:.86rem;line-height:1.6;color:var(--muted);margin-bottom:18px}
+.fboks .cta{display:inline-block;background:var(--blue);color:#04222f;font-weight:600;font-size:.82rem;padding:10px 18px;border-radius:10px;text-decoration:none}
+.fboks .visual{background:var(--dark2);display:grid;place-items:center;border-left:1px solid var(--card-border);padding:20px}
+.graf{width:100%;max-width:260px}
+.naeste{max-width:960px;margin:56px auto 40px;padding:34px 40px 60px;border-top:1px solid var(--card-border)}
+.naeste h2{font-family:var(--fd);font-weight:500;font-size:2rem}
+.naeste h2 em{color:var(--orange);font-style:italic}
+.naeste p{color:var(--muted);font-size:.85rem;margin-top:8px}
+</style></head><body>
+<nav class="nav"><span class="logo">broberg<b>.ai</b></span><a href="#">Flagskibe</a><a href="#">Indsigter</a><a href="#">Cases</a><a href="#">Platform</a><a href="#">Kontakt</a></nav>
+<div class="sektion">
+  <div class="eyebrow">Fremhævet lige nu</div>
+  <div class="fboks">
+    <div class="tekst">
+      <span class="maerke">★ FEATURED</span>
+      <h2>Byg jeres BI-dashboard <em>fra bunden</em> — hurtigere end at tæmme Power BI</h2>
+      <p>Standard-BI kan alt — og derfor er det tungt. Et 100 % skræddersyet dashboard på realtidsdata er nu hurtigere at bygge end at tilpasse et licensværktøj. Og det kan køre helt internt, uden at røre internettet.</p>
+      <a class="cta" href="#">Læs indsigten →</a>
+    </div>
+    <div class="visual"><svg class="graf" viewBox="0 0 260 140" aria-hidden="true"><rect x="10" y="90" width="30" height="40" rx="4" fill="#00b2ff" opacity=".35"/><rect x="50" y="60" width="30" height="70" rx="4" fill="#00b2ff" opacity=".55"/><rect x="90" y="75" width="30" height="55" rx="4" fill="#00b2ff" opacity=".45"/><rect x="130" y="35" width="30" height="95" rx="4" fill="#00b2ff"/><rect x="170" y="50" width="30" height="80" rx="4" fill="#00b2ff" opacity=".7"/><polyline points="15,70 65,45 105,55 145,20 185,32 230,14" fill="none" stroke="#40c8ff" stroke-width="3" stroke-linecap="round"/><circle cx="230" cy="14" r="5" fill="#40c8ff"/></svg></div>
+  </div>
+</div>
+<div class="naeste"><h2>De fleste hjemmesider <em>dør stille.</em></h2><p>(eksisterende sektion — featured-boksen ligger LIGE FØR denne)</p></div>
+<p class="note"><b>Forslag C — Featured-boks på forsiden</b>, placeret som egen sektion umiddelbart før «De fleste hjemmesider dør stille». Viser nyeste featured (artikel ELLER side) med stjerne-mærke, uddrag og CTA. Nederst til venstre: FAB-værktøjerne (Featured-toggle + tags), bygget på venstre-pillen så Aidan i højre side aldrig dækkes.</p>
+
+<div class="fab">
+  <div class="vaerktoej">
+    <b>Side-værktøjer</b>
+    <div class="vk akt">★&nbsp; Featured — denne side ER featured</div>
+    <div class="vk">#&nbsp; Tags: BI · Dashboards · Realtidsdata &nbsp;+</div>
+  </div>
+  <div class="pille"><span>✎ Redigerer…</span><span class="sek">Værktøjer ▴</span><span class="sek">Log ud</span></div>
+</div>
+
+</body></html>

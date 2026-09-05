@@ -1,0 +1,48 @@
+<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>F008 A — Featured i Indsigter-menuen</title><style>
+:root{--blue:#00b2ff;--blue-light:#40c8ff;--blue-glow:rgba(0,178,255,.13);--dark:#23282f;--dark2:#1c2027;--card:rgba(255,255,255,.04);--card-border:rgba(255,255,255,.08);--light:#f0f4f8;--muted:rgba(240,244,248,.5);--orange:#f3522c;--fd:Georgia,'Times New Roman',serif;--fb:'DM Sans',-apple-system,sans-serif}
+*{box-sizing:border-box;margin:0}
+body{background:var(--dark);color:var(--light);font-family:var(--fb);min-height:100vh}
+.nav{display:flex;align-items:center;gap:26px;padding:16px 40px;border-bottom:1px solid var(--card-border);background:var(--dark2)}
+.logo{font-family:var(--fd);font-size:1.25rem;font-style:italic}
+.logo b{color:var(--blue)}
+.nav a{color:var(--muted);text-decoration:none;font-size:.85rem}
+.nav a.akt{color:var(--light)}
+.note{max-width:860px;margin:26px auto 0;padding:0 40px;font-size:.78rem;color:var(--muted);line-height:1.6}
+.note b{color:var(--blue-light)}
+.fab{position:fixed;left:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;z-index:50}
+.fab .vaerktoej{background:var(--dark2);border:1px solid var(--card-border);border-radius:12px;padding:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:6px;min-width:220px}
+.fab .vaerktoej b{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 4px}
+.fab .vk{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--card-border);border-radius:9px;padding:8px 10px;font-size:.8rem;color:var(--light);cursor:pointer}
+.fab .vk.akt{border-color:var(--blue);color:var(--blue-light);background:var(--blue-glow)}
+.fab .pille{display:inline-flex;border-radius:999px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:.8rem;font-weight:600}
+.fab .pille span{padding:9px 15px;background:#1c2027;color:#fff}
+.fab .pille span.sek{color:var(--muted);border-left:1px solid var(--card-border)}
+
+.dropdown{position:absolute;top:54px;left:300px;background:var(--dark2);border:1px solid var(--card-border);border-radius:14px;width:390px;padding:10px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.dd-sek{font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:8px 10px 4px}
+.dd-feat{display:block;border:1px solid var(--blue);background:var(--blue-glow);border-radius:10px;padding:10px 12px;margin:2px 0;text-decoration:none}
+.dd-feat b{display:block;color:var(--light);font-size:.84rem;line-height:1.35}
+.dd-feat i{font-style:normal;font-size:.7rem;color:var(--blue-light)}
+.dd-alm{display:block;padding:8px 12px;color:var(--muted);text-decoration:none;font-size:.82rem;border-radius:8px}
+.dd-alm:hover{background:var(--card)}
+</style></head><body>
+<nav class="nav"><span class="logo">broberg<b>.ai</b></span><a href="#">Flagskibe</a><a href="#" class="akt">Indsigter ▾</a><a href="#">Cases</a><a href="#">Platform</a><a href="#">Kontakt</a></nav>
+<div class="dropdown">
+  <div class="dd-sek">★ Featured</div>
+  <a class="dd-feat" href="#"><i>★ FEATURED · INDSIGT</i><b>Byg jeres BI-dashboard fra bunden — hurtigere end at tæmme Power BI</b></a>
+  <a class="dd-feat" href="#" style="border-color:var(--card-border);background:var(--card)"><i style="color:var(--muted)">★ FEATURED · SIDE</i><b>Chat med dit eget site — Aidan-platformen</b></a>
+  <div class="dd-sek">Kategorier</div>
+  <a class="dd-alm" href="#">AI-metode</a><a class="dd-alm" href="#">Bag om</a><a class="dd-alm" href="#">Alle indsigter →</a>
+</div>
+<p class="note"><b>Forslag A — Featured som top-menupunkt i Indsigter.</b> Featured-artikler (og alm. sider markeret som featured) løftes op ØVERST i Indsigter-dropdownen med stjerne og blå kant — synligt fra alle sider, uden at optage plads på selve siderne. Nederst til venstre: inline-edit-FAB'en med de nye side-værktøjer (Featured-toggle + tags) — bygget videre på Rediger-pillen i venstre side, så den aldrig kolliderer med Aidan i højre.</p>
+
+<div class="fab">
+  <div class="vaerktoej">
+    <b>Side-værktøjer</b>
+    <div class="vk akt">★&nbsp; Featured — denne side ER featured</div>
+    <div class="vk">#&nbsp; Tags: BI · Dashboards · Realtidsdata &nbsp;+</div>
+  </div>
+  <div class="pille"><span>✎ Redigerer…</span><span class="sek">Værktøjer ▴</span><span class="sek">Log ud</span></div>
+</div>
+
+</body></html>
