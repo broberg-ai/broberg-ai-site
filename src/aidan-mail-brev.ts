@@ -56,3 +56,39 @@ export function renderOplaesningsMail(input: {
 }
 
 export const _escapeHtml = escapeHtml;
+
+/** F007.13 (14): «Send dette svar til mig» — chattens svar som pæn mail.
+ *  svarHtml SKAL komme fra aidanTilHtml (escape-først), aldrig rå modeltekst. */
+export function renderSvarMail(input: {
+  svarHtml: string;
+  persona: "aidan" | "airina";
+  en: boolean;
+}): { subject: string; html: string; text: string } {
+  const { svarHtml, en } = input;
+  const navn = input.persona === "airina" ? "Airina" : "Aidan";
+  const subject = en ? `Your answer from ${navn} at broberg.ai` : `Dit svar fra ${navn} på broberg.ai`;
+  const body =
+    eyebrow(en ? "YOUR ANSWER" : "DIT SVAR", { accentColor: BRAND.accentColor }) +
+    heading(en ? "From our chat" : "Fra vores samtale", { accentColor: BRAND.accentColor }) +
+    `<div style="font-size:14px;line-height:1.65">${svarHtml}</div>` +
+    cta("https://broberg.ai", en ? "Continue the conversation" : "Fortsæt samtalen", { accentColor: BRAND.accentColor }) +
+    signOff(`— ${navn}`, en ? "AI guide at broberg.ai" : "AI-guide på broberg.ai", "");
+  return {
+    subject,
+    html: renderShell({
+      subject,
+      preheader: en ? "The answer you asked to have sent" : "Svaret du bad om at få tilsendt",
+      lang: en ? "en" : "da",
+      bodyHtml: body,
+      accentColor: BRAND.accentColor,
+      fontSans: BRAND.fontSans,
+      footerLines: [en ? "Sent by broberg.ai's AI guide at your request" : "Sendt af broberg.ai's AI-guide på din anmodning"],
+      footerHref: "https://broberg.ai",
+      footerLabel: "broberg.ai",
+    }),
+    text: en
+      ? `Hi!\n\nHere is the chat answer you asked to have sent. Read it in your mail client — and continue at https://broberg.ai\n\n— ${navn}, AI guide at broberg.ai`
+      : `Hej!\n\nHer er chat-svaret du bad om at få tilsendt. Læs det i din mailklient — og fortsæt på https://broberg.ai\n\n— ${navn}, AI-guide på broberg.ai`,
+  };
+}
+

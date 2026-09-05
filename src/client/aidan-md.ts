@@ -57,6 +57,76 @@ const PUNKT = /^\s*[-•]\s+/;
 const NUMMER = /^\s*\d+[.)]\s+/;
 const STREG = /^\s*[-–—_*]{3,}\s*$/; // modellens ---/___-skillelinjer
 
+/* ── F007.13: blok-markører (resultat-tilstande 3-20). Kontrakten er den samme
+ * som [knap:]: et TOKEN med kendt form på sin egen linje. Alt er allerede
+ * escaped når vi ser det, og hvert felt indsættes som TEKST — aldrig som HTML.
+ * Stier valideres (kun relative /stier), så en markør ikke kan pege ud af
+ * huset. [video:] tager KUN /uploads/*.mp4. */
+const CASE_RE = /^\[case:(\/[^\]|\s]*)\|([^\]|]+)(?:\|([^\]]+))?\]$/;
+const GRAF_RE = /^\[graf:([\d.,\s]+)\]$/;
+const KILDER_RE = /^\[kilder:([^\]]+)\]$/;
+const TIDER_RE = /^\[tider\]$/;
+const VIS_RE = /^\[vis:([^\]]+)\]$/;
+const VALG_RE = /^\[valg:([^\]]+)\]$/;
+const VIDEO_RE = /^\[video:(\/uploads\/[a-zA-Z0-9._\/-]+\.mp4)\]$/;
+const STATUS_RE = /^\[status\]$/;
+const FEJR_RE = /^\[fejr\]$/;
+const SPROG_RE = /^\[sprog:(da|en)\]$/;
+const TABELLINJE = /^\s*\|.+\|\s*$/;
+
+function sparkline(tal: number[]): string {
+  const mx = Math.max(...tal), mn = Math.min(...tal);
+  const spnd = mx - mn || 1;
+  const pts = tal.map((v, i) => `${(i / (tal.length - 1 || 1)) * 196 + 2},${34 - ((v - mn) / spnd) * 30}`).join(" ");
+  const sidste = pts.split(" ").pop();
+  return `<svg class="aidan-graf" viewBox="0 0 200 38" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="${sidste?.split(",")[0]}" cy="${sidste?.split(",")[1]}" r="4" fill="currentColor"/></svg>`;
+}
+
+/** Én markør-linje → blok-HTML, eller null hvis linjen ikke er en markør.
+ *  Input er ESCAPED tekst; felterne indsættes som den tekst de er. */
+function markoer(linje: string, knapBudget: { tilbage: number }): string | null {
+  let m: RegExpExecArray | null;
+  if ((m = CASE_RE.exec(linje))) {
+    const mono = m[2].trim().slice(0, 2).toUpperCase();
+    return `<a class="aidan-case" data-testid="aidan-case" href="${m[1]}"><span class="aidan-case-mono">${mono}</span><span><b>${m[2].trim()}</b>${m[3] ? `<i>${m[3].trim()}</i>` : ""}</span><span class="aidan-case-pil">→</span></a>`;
+  }
+  if ((m = GRAF_RE.exec(linje))) {
+    const tal = m[1].split(",").map((t) => Number(t.trim())).filter((n) => Number.isFinite(n));
+    return tal.length >= 2 ? `<div class="aidan-grafboks">${sparkline(tal)}</div>` : null;
+  }
+  if ((m = KILDER_RE.exec(linje))) {
+    const led = m[1].split(";").map((k) => {
+      const [sti, titel] = k.split("|").map((x) => x.trim());
+      return sti?.startsWith("/") && titel ? `<a href="${sti}">${titel}</a>` : null;
+    }).filter(Boolean);
+    return led.length ? `<div class="aidan-kilder" data-testid="aidan-kilder">Kilder: ${led.join(" · ")}</div>` : null;
+  }
+  if (TIDER_RE.test(linje)) return `<div class="aidan-tider" data-testid="aidan-tider"></div>`;
+  if ((m = VIS_RE.exec(linje)))
+    return `<button type="button" class="aidan-vis" data-testid="aidan-vis" data-anker="${m[1].trim()}">✨ Vis mig det på siden</button>`;
+  if ((m = VALG_RE.exec(linje))) {
+    const valg = m[1].split("|").map((v) => v.trim()).filter(Boolean).slice(0, 4);
+    return valg.length >= 2
+      ? `<div class="aidan-valg" data-testid="aidan-valg">${valg.map((v) => `<button type="button" class="aidan-valg-chip" data-testid="aidan-valg-chip">${v}</button>`).join("")}</div>`
+      : null;
+  }
+  if ((m = VIDEO_RE.exec(linje)))
+    return `<video class="aidan-video" data-testid="aidan-video" controls preload="metadata" src="${m[1]}"></video>`;
+  if (STATUS_RE.test(linje)) return `<div class="aidan-status" data-testid="aidan-status">…</div>`;
+  if (FEJR_RE.test(linje)) return `<div class="aidan-fejr" data-testid="aidan-fejr" aria-hidden="true"></div>`;
+  if ((m = SPROG_RE.exec(linje))) return `<span class="aidan-sprogskifte" data-sprog="${m[1]}" hidden></span>`;
+  return null;
+}
+
+/** Markdown-tabellinjer → <table>. Skillerækken (|---|---|) springes over. */
+function tabel(linjer: string[], knapBudget: { tilbage: number }): string {
+  const rk = linjer
+    .filter((l) => !/^\s*\|[\s:|-]+\|\s*$/.test(l))
+    .map((l) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim()));
+  const [hoved, ...krop] = rk;
+  return `<div class="aidan-tabel"><table><thead><tr>${hoved.map((c) => `<th>${inline(c, knapBudget)}</th>`).join("")}</tr></thead><tbody>${krop.map((r) => `<tr>${r.map((c) => `<td>${inline(c, knapBudget)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
 /** Modelsvar → sikker HTML. Input er RÅ modeltekst; escaping sker her. */
 export function aidanTilHtml(raa: string): string {
   const knapBudget = { tilbage: 2 };
@@ -84,9 +154,16 @@ export function aidanTilHtml(raa: string): string {
           // 4/9 aften) — nu en tynd skillelinje.
           dele.push('<hr class="aidan-hr">');
           i++;
+        } else if (markoer(linjer[i], knapBudget) !== null) {
+          dele.push(markoer(linjer[i], knapBudget)!);
+          i++;
+        } else if (TABELLINJE.test(linjer[i])) {
+          const run: string[] = [];
+          while (i < linjer.length && TABELLINJE.test(linjer[i])) run.push(linjer[i++]);
+          dele.push(tabel(run, knapBudget));
         } else {
           const run: string[] = [];
-          while (i < linjer.length && !PUNKT.test(linjer[i]) && !NUMMER.test(linjer[i]) && !STREG.test(linjer[i])) {
+          while (i < linjer.length && !PUNKT.test(linjer[i]) && !NUMMER.test(linjer[i]) && !STREG.test(linjer[i]) && markoer(linjer[i], { tilbage: 0 }) === null && !TABELLINJE.test(linjer[i])) {
             // ### Overskrift → fremhævet linje (modellen skriver dem af sig selv)
             const h = /^#{1,4}\s+(.+)$/.exec(linjer[i]);
             run.push(h ? `<strong class="aidan-h">${inline(h[1], knapBudget)}</strong>` : inline(linjer[i], knapBudget));

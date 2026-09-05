@@ -137,3 +137,69 @@ describe("Christians screenshot 4/9 kl. 21 — rå markdown i svaret", () => {
     expect(aidanTilHtml("`**ikke fed**`")).toContain("<code>**ikke fed**</code>");
   });
 });
+
+// ── F007.13: markør-protokollen (resultat-tilstande 3-20). Hver markør har en
+// FORM-test og en ESCAPE-test: ondsindet indhold i felterne må aldrig nå DOM'en
+// som HTML. Escape-først-princippet er hele sikkerhedsmodellen.
+describe("F007.13 markører", () => {
+  test("[case:] → kort med monogram, titel og pil", () => {
+    const h = aidanTilHtml("[case:/cases/sanne-andersen|Sanne Andersen|Booking på 14 dage]");
+    expect(h).toContain('class="aidan-case"');
+    expect(h).toContain('href="/cases/sanne-andersen"');
+    expect(h).toContain("<b>Sanne Andersen</b>");
+    expect(h).toContain("SA");
+  });
+  test("[case:] med scriptet titel er ufarlig", () => {
+    const h = aidanTilHtml('[case:/x|<script>alert(1)</script>|y]');
+    expect(h).not.toContain("<script>");
+  });
+  test("[case:] afviser ekstern/skæv sti", () => {
+    expect(aidanTilHtml("[case:https://ondt.dk|T|x]")).not.toContain("aidan-case");
+  });
+  test("markdown-tabel → <table>, skillerække droppes", () => {
+    const h = aidanTilHtml("| Ting | Pris |\n|---|---|\n| Byg | 0 kr |");
+    expect(h).toContain("<table>");
+    expect(h).toContain("<th>Ting</th>");
+    expect(h).toContain("<td>0 kr</td>");
+    expect(h).not.toContain("---");
+  });
+  test("[graf:] → sparkline; under 2 tal renderes intet", () => {
+    expect(aidanTilHtml("[graf:1, 5, 3, 8]")).toContain("aidan-graf");
+    expect(aidanTilHtml("[graf:7]")).not.toContain("aidan-graf");
+  });
+  test("[kilder:] → kun relative stier kommer med", () => {
+    const h = aidanTilHtml("[kilder:/indsigter/x|Indsigten;https://ondt.dk|Ond]");
+    expect(h).toContain('href="/indsigter/x"');
+    expect(h).not.toContain("ondt.dk");
+  });
+  test("[tider], [status], [fejr] → tomme værts-elementer klienten fylder", () => {
+    expect(aidanTilHtml("[tider]")).toContain("aidan-tider");
+    expect(aidanTilHtml("[status]")).toContain("aidan-status");
+    expect(aidanTilHtml("[fejr]")).toContain("aidan-fejr");
+  });
+  test("[vis:] → knap med data-anker, escaped", () => {
+    const h = aidanTilHtml('[vis:Dine data i EU]');
+    expect(h).toContain('data-anker="Dine data i EU"');
+    expect(aidanTilHtml('[vis:"><img onerror=x>]')).not.toContain("<img");
+  });
+  test("[valg:] → chips, loft på 4, kræver mindst 2", () => {
+    const h = aidanTilHtml("[valg:Website|Interne værktøjer]");
+    expect(h.match(/<button/g)?.length).toBe(2);
+    expect(aidanTilHtml("[valg:Kun én]")).not.toContain("aidan-valg");
+    expect(aidanTilHtml("[valg:a|b|c|d|e|f]").match(/<button/g)?.length).toBe(4);
+  });
+  test("[video:] tager KUN /uploads/*.mp4", () => {
+    expect(aidanTilHtml("[video:/uploads/trail-90s.mp4]")).toContain("aidan-video");
+    expect(aidanTilHtml("[video:https://ondt.dk/x.mp4]")).not.toContain("aidan-video");
+    expect(aidanTilHtml("[video:/etc/passwd]")).not.toContain("aidan-video");
+  });
+  test("[sprog:] → skjult skifte-node, kun da/en", () => {
+    expect(aidanTilHtml("[sprog:en]")).toContain('data-sprog="en"');
+    expect(aidanTilHtml("[sprog:tysk]")).not.toContain("data-sprog");
+  });
+  test("markør-linje sluges ikke af et afsnit", () => {
+    const h = aidanTilHtml("Se casen her:\n[case:/cases/x|X|y]");
+    expect(h).toContain("aidan-case");
+    expect(h).not.toContain("[case:");
+  });
+});

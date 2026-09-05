@@ -2618,6 +2618,209 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   display: none !important;
 }
 
+
+/* ── F007.13: rige resultat-tilstande i chatten ── */
+.aidan-msg .aidan-case {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--blue);
+  border-radius: 12px;
+  background: var(--blue-glow);
+  text-decoration: none;
+  color: var(--light);
+  transition: background 0.15s ease;
+}
+.aidan-msg .aidan-case:hover {
+  background: var(--blue-glow2);
+}
+.aidan-case-mono {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--blue);
+  color: #04222f;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: grid;
+  place-items: center;
+}
+.aidan-case b {
+  display: block;
+  font-size: 0.82rem;
+}
+.aidan-case i {
+  display: block;
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.aidan-case-pil {
+  margin-left: auto;
+  color: var(--blue-light);
+}
+.aidan-tabel {
+  overflow-x: auto;
+  margin-top: 6px;
+}
+.aidan-tabel table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.76rem;
+}
+.aidan-tabel th,
+.aidan-tabel td {
+  border: 1px solid var(--card-border);
+  padding: 5px 8px;
+  text-align: left;
+}
+.aidan-tabel th {
+  color: var(--blue-light);
+  background: var(--card);
+}
+.aidan-grafboks {
+  margin-top: 6px;
+  color: var(--blue-light);
+}
+.aidan-graf {
+  width: 100%;
+  max-width: 260px;
+  display: block;
+}
+.aidan-kilder {
+  margin-top: 8px;
+  padding-left: 8px;
+  border-left: 2px solid var(--blue);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.aidan-kilder a {
+  color: var(--blue-light);
+}
+.aidan-tider,
+.aidan-valg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.aidan-tid-chip,
+.aidan-valg-chip {
+  border: 1px solid var(--blue);
+  background: transparent;
+  color: var(--blue-light);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.aidan-tid-chip:hover,
+.aidan-valg-chip:hover {
+  background: var(--blue);
+  color: #04222f;
+}
+.aidan-tid-chip:active,
+.aidan-valg-chip:active {
+  transform: translateY(1px);
+}
+.aidan-vis {
+  display: inline-block;
+  margin-top: 8px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--light);
+  border-radius: 10px;
+  padding: 0.45rem 0.8rem;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.aidan-vis:hover {
+  border-color: var(--blue);
+  color: var(--blue-light);
+}
+.aidan-vis:active {
+  transform: translateY(1px);
+}
+.aidan-video {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 8px;
+  border: 1px solid var(--card-border);
+}
+.aidan-status {
+  margin-top: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--card);
+  font-size: 0.74rem;
+  color: var(--light);
+}
+.aidan-fejr {
+  position: relative;
+  height: 2px;
+  overflow: visible;
+}
+.aidan-fejr i {
+  position: absolute;
+  top: -6px;
+  width: 7px;
+  height: 10px;
+  border-radius: 2px;
+  animation: aidan-konfetti 1.6s ease-in forwards;
+}
+@keyframes aidan-konfetti {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(90px) rotate(340deg); opacity: 0; }
+}
+.aidan-trin {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-right: 6px;
+}
+.aidan-svar-mail {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color 0.15s ease;
+}
+.aidan-svar-mail:hover {
+  color: var(--blue-light);
+}
+.aidan-svar-mail:active {
+  transform: translateY(1px);
+}
+/* (10) fremhævningen på SIDEN bagved når Aidan «viser» noget */
+.aidan-fremhaev {
+  animation: aidan-fremhaev 2.6s ease;
+  border-radius: 6px;
+}
+@keyframes aidan-fremhaev {
+  0%, 70% { background: var(--blue-glow); box-shadow: 0 0 0 6px var(--blue-glow); }
+  100% { background: transparent; box-shadow: none; }
+}
+/* (13) persona-håndover: figurerne krydsfader i stedet for at klippe */
+#aidan .aidan-figur video,
+#aidan .aidan-figur img {
+  transition: opacity 0.4s ease;
+}
+#aidan.haandover .aidan-figur video,
+#aidan.haandover .aidan-figur img {
+  opacity: 0.15;
+}
+
 .aidan-boble.vis {
   opacity: 1;
   transform: none;

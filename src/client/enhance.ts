@@ -765,6 +765,9 @@ function aidan() {
       // Et valg ER en afslutning (Christian 4/9: «Den skal lukke når jeg
       // vælger Airina») — kort pause så man når at SE markeringen flytte sig.
       anvendPersona();
+      // F007.13 (13): håndover som SCENE — figurerne krydsfader.
+      rod.classList.add("haandover");
+      setTimeout(() => rod.classList.remove("haandover"), 900);
       setTimeout(() => {
         infoPop.hidden = true;
       }, 350);
@@ -792,14 +795,14 @@ function aidan() {
   let lyd: HTMLAudioElement | null = null;
   // F007.9: når afspilningen er i gang, tilbydes «få den tilsendt på mail».
   // Samtykket håndhæves på serveren — fluebenet her er kun UI.
-  const visMailTilbud = (efter: HTMLElement, sti: string) => {
+  const visMailTilbud = (efter: HTMLElement, last: { sti?: string; tekst?: string }, overskrift?: string) => {
     if (rod.querySelector("[data-testid='aidan-mail-form']")) return;
     const d = rod.dataset;
     const form = document.createElement("form");
     form.className = "aidan-mail";
     form.dataset.testid = "aidan-mail-form";
     const hoved = document.createElement("b");
-    hoved.textContent = d.mailTilbud ?? "";
+    hoved.textContent = overskrift ?? d.mailTilbud ?? "";
     const felt = document.createElement("input");
     felt.type = "email";
     felt.required = true;
@@ -830,10 +833,10 @@ function aidan() {
       status.textContent = "…";
       status.classList.remove("fejl");
       try {
-        const res = await fetch("/api/aidan/send-lyd", {
+        const res = await fetch(last.tekst ? "/api/aidan/send-svar" : "/api/aidan/send-lyd", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sti, persona: persona(), email: felt.value.trim(), samtykke: boks.checked }),
+          body: JSON.stringify({ ...last, locale: samtaleSprog, persona: persona(), email: felt.value.trim(), samtykke: boks.checked }),
         });
         if (!res.ok) throw new Error(String(res.status));
         form.replaceChildren(Object.assign(document.createElement("b"), { textContent: d.mailSendt ?? "" }));
@@ -893,7 +896,7 @@ function aidan() {
           await lyd.play();
           tilstand = "spiller";
           knap.textContent = `\u23F8 ${d.laesPause ?? ""}`;
-          visMailTilbud(knap, sti);
+          visMailTilbud(knap, { sti });
         } catch {
           tilstand = "klar";
           knap.textContent = d.laesFejl ?? "";
@@ -1050,16 +1053,121 @@ function aidan() {
     panel.classList.toggle("fuld");
   });
 
+  // ── F007.13: dynamiske blokke + tilbud efter hvert svar ──────────────────
+  const fyldTider = (host: HTMLElement) => {
+    const en = samtaleSprog === "en";
+    const dage = en ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] : ["søn", "man", "tir", "ons", "tor", "fre", "lør"];
+    const tider: string[] = [];
+    const d0 = new Date();
+    for (let i = 1; tider.length < 3 && i < 10; i++) {
+      const d = new Date(d0.getTime() + i * 86400000);
+      if (d.getDay() === 0 || d.getDay() === 6) continue;
+      tider.push(`${dage[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1} kl. ${tider.length === 1 ? "14:00" : "10:00"}`);
+    }
+    host.replaceChildren(...tider.map((t) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "aidan-tid-chip";
+      b.dataset.testid = "aidan-tid-chip";
+      b.textContent = t;
+      return b;
+    }));
+  };
+  const fyldStatus = async (host: HTMLElement) => {
+    const ds = rod.dataset;
+    try {
+      const t0 = performance.now();
+      const res = await fetch("/api/aidan/status");
+      const ms = Math.round(performance.now() - t0);
+      if (!res.ok) throw new Error();
+      host.textContent = "🟢 " + (ds.statusOk ?? "").replace("{ms}", String(ms));
+    } catch {
+      host.textContent = ds.statusFejl ?? "";
+    }
+  };
+  const konfetti = (host: HTMLElement) => {
+    for (let i = 0; i < 14; i++) {
+      const bit = document.createElement("i");
+      bit.style.left = `${Math.random() * 100}%`;
+      bit.style.animationDelay = `${Math.random() * 0.4}s`;
+      bit.style.background = ["var(--blue)", "var(--blue-light)", "var(--orange)", "#f7bb2e"][i % 4];
+      host.appendChild(bit);
+    }
+    setTimeout(() => host.replaceChildren(), 2200);
+  };
+  const visPaaSiden = (anker: string) => {
+    const noeg = anker.trim().toLowerCase();
+    const kandidat = Array.from(document.querySelectorAll<HTMLElement>("main h1, main h2, main h3, main h4, main p, main li"))
+      .find((el) => (el.textContent ?? "").toLowerCase().includes(noeg));
+    if (!kandidat) return;
+    if (matchMedia("(max-width: 560px)").matches) lukPanel();
+    kandidat.scrollIntoView({ behavior: "smooth", block: "center" });
+    kandidat.classList.add("aidan-fremhaev");
+    setTimeout(() => kandidat.classList.remove("aidan-fremhaev"), 2600);
+  };
+  const efterSvar = (svarBoble: HTMLElement, tekst: string) => {
+    const ds = rod.dataset;
+    // Dynamiske værts-elementer markøren efterlod:
+    svarBoble.querySelectorAll<HTMLElement>(".aidan-tider").forEach(fyldTider);
+    svarBoble.querySelectorAll<HTMLElement>(".aidan-status").forEach((h) => void fyldStatus(h));
+    svarBoble.querySelectorAll<HTMLElement>(".aidan-fejr").forEach(konfetti);
+    const sprog = svarBoble.querySelector<HTMLElement>(".aidan-sprogskifte");
+    if (sprog?.dataset.sprog === "en" || sprog?.dataset.sprog === "da") samtaleSprog = sprog.dataset.sprog;
+    // (14) «Send dette svar til mig» — diskret linje under svaret.
+    const mailKnap = document.createElement("button");
+    mailKnap.type = "button";
+    mailKnap.className = "aidan-svar-mail";
+    mailKnap.dataset.testid = "aidan-svar-mail";
+    mailKnap.textContent = "✉ " + (ds.svarMail ?? "");
+    mailKnap.addEventListener("click", () => {
+      mailKnap.remove();
+      visMailTilbud(svarBoble, { tekst }, ds.svarMail);
+    });
+    svarBoble.insertAdjacentElement("afterend", mailKnap);
+    // (17) opsummerings-chip efter 3+ brugerture — én gang pr. samtale.
+    if (!opsummerVist && historik.filter((t) => t.role === "user").length >= 3) {
+      opsummerVist = true;
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "aidan-chip";
+      chip.dataset.testid = "aidan-opsummer";
+      chip.textContent = ds.opsummer ?? "";
+      chip.addEventListener("click", () => {
+        chip.remove();
+        void spoerg(samtaleSprog === "en" ? "Summarise our conversation in 3 short bullets" : "Opsummér vores samtale i 3 korte punkter");
+      });
+      mailKnap.insertAdjacentElement("afterend", chip);
+    }
+    rulNed();
+  };
+  // Delegation: valg-chips, tid-chips og vis-knapper inde i svarene.
+  msgs.addEventListener("click", (e) => {
+    const t = e.target as HTMLElement;
+    const valg = t.closest<HTMLElement>(".aidan-valg-chip");
+    if (valg) return void spoerg(valg.textContent?.trim() ?? "");
+    const tid = t.closest<HTMLElement>(".aidan-tid-chip");
+    if (tid) return void spoerg((rod.dataset.tidBesked ?? "{tid}").replace("{tid}", tid.textContent?.trim() ?? ""));
+    const vis = t.closest<HTMLElement>(".aidan-vis");
+    if (vis) visPaaSiden(vis.dataset.anker ?? "");
+  });
+
   let travl = false;
-  async function spoerg(tekst: string) {
+  // F007.13 (19): [sprog:]-markøren skifter samtalens sprog for de FØLGENDE
+  // kald — sidens chrome beholder sidens locale (ærlig grænse; fuld
+  // flade-skifte er en sidenavigation til /en).
+  let samtaleSprog = locale;
+  let opsummerVist = false;
+  async function spoerg(tekst: string, gentag = false) {
     if (travl || !tekst.trim()) return;
     travl = true;
     send.disabled = true;
     foldChips(true);
     rulNed(true);
-    boblEl("fra-mig").textContent = tekst;
-    historik.push({ role: "user", content: tekst });
-    gem();
+    if (!gentag) {
+      boblEl("fra-mig").textContent = tekst;
+      historik.push({ role: "user", content: tekst });
+      gem();
+    }
 
     const taenker = document.createElement("div");
     taenker.className = "aidan-taenker";
@@ -1069,21 +1177,35 @@ function aidan() {
 
     let svar = "";
     let svarEl: HTMLElement | null = null;
-    const fejl = () => {
+    // F007.13 (18): venlig fejl-tilstand med Prøv igen — aldrig en død chat.
+    const fejl = (status?: number) => {
       taenker.remove();
+      const ds = rod!.dataset;
       const d = boblEl("fra-aidan");
       d.textContent =
-        locale === "en"
-          ? "Something went wrong on my end — try again in a moment."
-          : "Noget gik galt i min ende — prøv igen om lidt.";
+        status === 429
+          ? (ds.travlt ?? "")
+          : locale === "en"
+            ? "Something went wrong on my end — try again in a moment."
+            : "Noget gik galt i min ende — prøv igen om lidt.";
+      const igen = document.createElement("button");
+      igen.type = "button";
+      igen.className = "aidan-cta";
+      igen.dataset.testid = "aidan-fejl-retry";
+      igen.textContent = ds.fejlRetry ?? "";
+      igen.addEventListener("click", () => {
+        d.remove();
+        void spoerg(tekst, true);
+      });
+      d.append(document.createElement("br"), igen);
     };
     try {
       const res = await fetch("/api/aidan/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: historik.slice(-20), locale, persona: persona() }),
+        body: JSON.stringify({ messages: historik.slice(-20), locale: samtaleSprog, persona: persona() }),
       });
-      if (!res.ok || !res.body) return fejl();
+      if (!res.ok || !res.body) return fejl(res.status);
       const laeser = res.body.getReader();
       const dek = new TextDecoder();
       let buffer = "";
@@ -1104,6 +1226,11 @@ function aidan() {
             if (!svarEl) svarEl = boblEl("fra-aidan");
             svarEl.innerHTML = tilHtml(svar);
             rulNed();
+          } else if (ev === "status" && data) {
+            // F007.13 (11): navngivne tænke-skridt i stedet for anonyme prikker.
+            const trin = String(JSON.parse(data).trin ?? "");
+            taenker.replaceChildren(Object.assign(document.createElement("span"), { className: "aidan-trin", textContent: trin }));
+            for (let k = 0; k < 3; k++) taenker.appendChild(document.createElement("i"));
           } else if (ev === "error") {
             if (!svar) fejl();
           }
@@ -1112,7 +1239,10 @@ function aidan() {
       if (svar) {
         historik.push({ role: "assistant", content: svar });
         gem();
-        if (svarEl) void tilbydOplaesning(svarEl);
+        if (svarEl) {
+          void tilbydOplaesning(svarEl);
+          efterSvar(svarEl, svar);
+        }
       } else if (!svarEl) {
         fejl();
       }

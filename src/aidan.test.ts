@@ -251,3 +251,46 @@ describe("tools-seglet", () => {
     for (const k of kald) expect(k.includes("tools")).toBe(false);
   });
 });
+
+// ── F007.13-segl: markør-protokollen er dokumenteret i primeren (begge sprog),
+// og send-svar håndhæver samtykket på serveren — et flueben i browseren er en
+// høflighed, ikke en kontrol.
+import { handleAidanSendSvar } from "./aidan-mail.ts";
+
+describe("F007.13 segl", () => {
+  test("primeren dokumenterer markørerne (da + en)", async () => {
+    const da = await aidanSystemPrompt("da");
+    const en = await aidanSystemPrompt("en");
+    for (const m of ["[case:", "[graf:", "[kilder:", "[tider]", "[vis:", "[valg:", "[video:", "[status]", "[sprog:", "[fejr]"]) {
+      expect(da).toContain(m);
+      expect(en).toContain(m);
+    }
+    expect(da).toContain("RIGE SVAR-BLOKKE");
+    expect(en).toContain("RICH ANSWER BLOCKS");
+  });
+
+  test("send-svar uden samtykke → 400, intet sendes", async () => {
+    const app = new Hono();
+    app.post("/api/aidan/send-svar", handleAidanSendSvar);
+    process.env.RESEND_API_KEY ??= "re_test_dummy";
+    const res = await app.request("/api/aidan/send-svar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tekst: "Et svar", email: "x@y.dk", samtykke: false }),
+    });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe("samtykke_kraevet");
+  });
+
+  test("send-svar med ugyldig mail → 400", async () => {
+    const app = new Hono();
+    app.post("/api/aidan/send-svar", handleAidanSendSvar);
+    const res = await app.request("/api/aidan/send-svar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tekst: "Et svar", email: "ikke-en-mail", samtykke: true }),
+    });
+    expect(res.status).toBe(400);
+  });
+});
+

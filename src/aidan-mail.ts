@@ -18,7 +18,8 @@ import path from "node:path";
 import type { Context } from "hono";
 import { createMailerFromEnv, type Mailer } from "@broberg/mail";
 import { hentLyd, laesKonfigureret, LydFejl, type Persona } from "@/aidan-laes.ts";
-import { renderOplaesningsMail } from "@/aidan-mail-brev.ts";
+import { renderOplaesningsMail, renderSvarMail } from "@/aidan-mail-brev.ts";
+import { aidanTilHtml } from "@/client/aidan-md.ts";
 
 const LEADS_FIL = process.env.AIDAN_LEADS ?? "/data/aidan-leads.jsonl";
 
@@ -124,3 +125,56 @@ export async function handleAidanSendLyd(c: Context): Promise<Response> {
     throw e;
   }
 }
+
+/** F007.13 (14): «Send dette svar til mig». Samme kontrakt som send-lyd:
+ *  samtykke håndhævet på serveren, bcc cb@webhouse.dk, lead-JSONL. Teksten er
+ *  RÅ modeltekst fra klientens historik og går gennem aidanTilHtml (escape-
+ *  først), så en ondsindet besked aldrig bliver til HTML i en mail. */
+export async function handleAidanSendSvar(c: Context): Promise<Response> {
+  if (!mailKonfigureret()) return c.json({ error: "ikke_konfigureret" }, 503);
+  if (rateLimited(c)) return c.json({ error: "rate_limited" }, 429);
+
+  let tekst = "";
+  let email = "";
+  let samtykke = false;
+  let en = false;
+  let persona: "aidan" | "airina" = "aidan";
+  try {
+    const krop = await c.req.json();
+    tekst = String(krop?.tekst ?? "").slice(0, 8000);
+    email = String(krop?.email ?? "").trim();
+    samtykke = krop?.samtykke === true;
+    en = krop?.locale === "en";
+    if (krop?.persona === "airina") persona = "airina";
+  } catch {
+    return c.json({ error: "ugyldig_krop" }, 400);
+  }
+  if (!tekst.trim()) return c.json({ error: "tom_tekst" }, 400);
+  if (!EMAIL_RE.test(email)) return c.json({ error: "ugyldig_email" }, 400);
+  if (!samtykke) return c.json({ error: "samtykke_kraevet" }, 400);
+
+  const brev = renderSvarMail({ svarHtml: aidanTilHtml(tekst), persona, en });
+  const resultat = await mailer().send({
+    to: email,
+    bcc: "cb@webhouse.dk",
+    from: `${persona === "airina" ? "Airina" : "Aidan"} fra broberg.ai <aidan@broberg.ai>`,
+    subject: brev.subject,
+    html: brev.html,
+    text: brev.text,
+    tags: [{ name: "kilde", value: "aidan-svar" }],
+  });
+  if (!resultat.ok) {
+    console.error("[aidan-mail] send-svar fejlede:", resultat.error);
+    return c.json({ error: "send_fejlede" }, 502);
+  }
+  await gemLead({
+    email,
+    kilde: "svar",
+    persona,
+    samtykke: true,
+    tidspunkt: new Date().toISOString(),
+    leveret: !resultat.skipped,
+  });
+  return c.json({ ok: true, gated: !!resultat.skipped });
+}
+

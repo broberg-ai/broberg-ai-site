@@ -51,6 +51,13 @@ export interface AidanTekster {
   info: string;
   omTitel: string;
   omMd: string;
+  svarMail: string;
+  opsummer: string;
+  fejlRetry: string;
+  travlt: string;
+  statusOk: string;
+  statusFejl: string;
+  tidBesked: string;
   vaelgStemme: string;
   stemmeAidan: string;
   stemmeAirina: string;
@@ -110,6 +117,13 @@ export function aidanTekster(
     ),
     omTitel: g("aidanOmTitel", en ? "About Aidan & Airina" : "Om Aidan & Airina"),
     omMd: g("aidanOmMd", ""),
+    svarMail: g("aidanSvarMail", en ? "Send this answer to me" : "Send dette svar til mig"),
+    opsummer: g("aidanOpsummer", en ? "Get a summary of our chat" : "Få en opsummering af samtalen"),
+    fejlRetry: g("aidanFejlRetry", en ? "Try again" : "Prøv igen"),
+    travlt: g("aidanTravlt", en ? "I'm still thinking — try again in a moment" : "Jeg tænker stadig — prøv igen om et øjeblik"),
+    statusOk: g("aidanStatusOk", en ? "All systems running · response {ms} ms · data in the EU" : "Alle systemer kører · svartid {ms} ms · data i EU"),
+    statusFejl: g("aidanStatusFejl", en ? "Status is unavailable right now" : "Status kan ikke hentes lige nu"),
+    tidBesked: g("aidanTidBesked", en ? "Can we meet {tid}?" : "Kan vi mødes {tid}?"),
     vaelgStemme: g("aidanVaelgStemme", en ? "Who should read aloud?" : "Hvem skal læse højt?"),
     stemmeAidan: g("aidanStemmeAidan", en ? "Aidan — male voice" : "Aidan — mandlig stemme"),
     stemmeAirina: g("aidanStemmeAirina", en ? "Airina — female voice" : "Airina — kvindelig stemme"),
@@ -194,6 +208,13 @@ export function AidanWidget({
       data-disclaimer-airina={t.airinaDisclaimer}
       data-placeholder-aidan={t.placeholder}
       data-placeholder-airina={t.airinaPlaceholder}
+      data-svar-mail={t.svarMail}
+      data-opsummer={t.opsummer}
+      data-fejl-retry={t.fejlRetry}
+      data-travlt={t.travlt}
+      data-status-ok={t.statusOk}
+      data-status-fejl={t.statusFejl}
+      data-tid-besked={t.tidBesked}
     >
       <button
         type="button"
