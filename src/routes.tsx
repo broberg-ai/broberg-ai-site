@@ -35,6 +35,7 @@ import { loadFeatured,
   loadAllNews,
   loadFooter,
   loadGlobals,
+  loadFlagshipArtikler,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline, stripHtml } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
@@ -590,7 +591,10 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
     const flagshipRef: CmsRef | undefined = fromCms
       ? { collection: "platforms", slug: locale === "en" ? `en-${slug}` : slug, locale }
       : undefined;
-    return await page(<FlagshipSlides page={fp} locale={locale} cmsRef={flagshipRef} />, {
+    // Artikler der handler om DETTE flagskib, koblet på tag-slug (se
+    // loadFlagshipArtikler). Tom liste → afsnittet renderes slet ikke.
+    const artikler = await loadFlagshipArtikler(locale, slug);
+    return await page(<FlagshipSlides page={fp} locale={locale} cmsRef={flagshipRef} artikler={artikler} />, {
       title: `${fp.slug} — broberg.ai`,
       description: fp.description,
       locale,

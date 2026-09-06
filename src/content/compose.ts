@@ -578,6 +578,43 @@ export async function categoryMeta(
 }
 
 // All published posts in a category for the given locale, newest first.
+/**
+ * Artikler der handler om ET flagskib — til listen i bunden af flagskibssiden.
+ *
+ * KOBLINGEN ER TAGGET, og den matcher på SLUG frem for på visningsnavn. Et
+ * flagskib kan omdøbes i CMS'et («hosting» hedder «drift», «pitch-vault» hedder
+ * «pitch vault»), og en kobling på navnet ville briste ved den omdøbning UDEN
+ * at noget fejlede — listen ville bare blive tom. slugifyTag("Pitch Vault") og
+ * dokumentets slug "pitch-vault" mødes derimod altid.
+ *
+ * VALGT FREM FOR AT SØGE I TEKSTEN, og det er målt: ordet «drift» står i 11 af
+ * 27 artikler, næsten alle som vendingen «i drift» og ikke som platformen.
+ * Samme for «cms» og «docs». En liste bygget på omtale ville fylde siden med
+ * falske træf som ingen ville opdage var falske.
+ */
+export async function loadFlagshipArtikler(
+  locale: Locale,
+  flagshipSlug: string,
+): Promise<{ slug: string; title: string; excerpt: string; href: string; date: string }[]> {
+  const noegle = stripLocalePrefix(flagshipSlug, locale).toLowerCase();
+  const posts = forLocale(await list("posts"), locale).filter((p) =>
+    arr<unknown>(dataOf(p).tags).some((t) => slugifyTag(String(t)) === noegle),
+  );
+  return posts
+    .sort((a, b) => str(dataOf(b).date).localeCompare(str(dataOf(a).date)))
+    .map((p) => {
+      const d = dataOf(p);
+      return {
+        slug: String(p.slug),
+        title: str(d.title),
+        excerpt: str(d.excerpt),
+        // samme sti-form som resten af sitet: /<kategori>/<slug>
+        href: withLocale(locale, `/${str(d.category)}/${String(p.slug)}`),
+        date: str(d.date),
+      };
+    });
+}
+
 export async function loadCategoryPosts(locale: Locale, category: string): Promise<StoredDoc[]> {
   const posts = forLocale(await list("posts"), locale);
   const cat = await categoryBySlug(category);

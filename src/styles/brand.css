@@ -1295,11 +1295,22 @@ footer {
   color: var(--blue);
   line-height: 1;
 }
-/* Word/phrase stat values stay on one line at a smaller size (numbers keep 38px). */
+/* Word/phrase stat values stay on one line at a smaller size (numbers keep 38px).
+   OG DE SKAL HAVE EN MØRKERE BLÅ END TALLENE. WCAG kræver kun 3:1 af STOR tekst
+   (>=24px), og 38px-tallene klarer den på var(--blue) med 3,29:1. De 23px gør
+   ikke — de er "normal" tekst og skal have 4,5:1. Samme farve, to forskellige
+   krav, fordi de har hver sin størrelse. Målt af kontrast-kritikeren 6/9 på
+   «8 cent»: 3,29:1. #0a6d9e giver 5,68:1 og holder kuløren. */
 .stat-card .stat-num-word {
   font-size: 23px;
   white-space: nowrap;
   letter-spacing: -0.01em;
+  color: #0a6d9e;
+}
+[data-theme="dark"] .stat-card .stat-num-word,
+:root:not([data-theme="light"]) .stat-card .stat-num-word {
+  /* på mørk bund er det den LYSE ende der bærer kontrasten */
+  color: var(--blue-light);
 }
 .stat-card .stat-cap {
   font-size: 12.5px;

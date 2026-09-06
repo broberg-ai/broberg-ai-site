@@ -6,6 +6,7 @@
    quote/cards/stats/chat/callout) are all optional, so one template serves every
    flagship. v1 copy is bespoke here (can move to cms fields later). */
 import type { JSX } from "preact";
+import { stripHtml } from "@/content/richtext.ts";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import { Icon } from "@/components/Icons.tsx";
@@ -1483,13 +1484,41 @@ export function validateFlagshipPage(slug: string, data: unknown): FlagshipPage 
   };
 }
 
-export function FlagshipSlides({ page, locale, cmsRef }: { page: FlagshipPage; locale?: string; cmsRef?: CmsRef }): JSX.Element {
+/** En artikel der handler om dette flagskib. Koblingen laves på TAG-slug i
+ *  compose.loadFlagshipArtikler — ikke på omtale i teksten. */
+export interface FlagshipArtikel {
+  slug: string;
+  title: string;
+  excerpt: string;
+  href: string;
+  date: string;
+}
+
+export function FlagshipSlides({ page, locale, cmsRef, artikler }: { page: FlagshipPage; locale?: string; cmsRef?: CmsRef; artikler?: FlagshipArtikel[] }): JSX.Element {
   const loc = locale === "en" ? "en" : "da";
   return (
     <>
       {page.slides.map((slide, i) => (
         <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} locale={locale} cmsRef={cmsRef} />
       ))}
+      {artikler?.length ? (
+        <section data-testid="flagship-artikler">
+          <div class="wrap reveal">
+            <div class="eyebrow">{loc === "en" ? "Articles" : "Artikler"}</div>
+            <h2 class="h2">
+              {loc === "en" ? `What we have written about ${page.slug}` : `Det vi har skrevet om ${page.slug}`}
+            </h2>
+            <div class="case-grid" style="margin-top:22px">
+              {artikler.map((a) => (
+                <a class="card case-card" key={a.slug} href={a.href} data-testid={`flagship-artikel-${a.slug}`}>
+                  <div class="case-h">{stripHtml(a.title)}</div>
+                  <p class="case-p">{a.excerpt}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
       {page.tags?.length ? (
         <section>
           <div class="wrap">
