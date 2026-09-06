@@ -59,4 +59,25 @@ describe("tilTekst — data-cms-slice hører ikke til i KB'en", () => {
     const html = `<main><p>Se <a href="/flagskibe/lens">Lens</a> her.</p></main>`;
     expect(tilTekst(html)).toContain("[Lens](/flagskibe/lens)");
   });
+
+  it("POSITIV KONTROL fra drift: ankeret der udløste hændelsen 6/9 kl. 19.19", () => {
+    // Ikke opdigtet. Præcis den form artiklen fik da den blev omskrevet — trail
+    // har hændelsen med tidsstempel (optaget 19.21, 5.770 bytes, artiklen
+    // dubleret), og indtil 17.55 var udtrækket rent UDEN at nogen regel var
+    // rigtig: der fandtes bare intet anker i slicen endnu. Fælden lå latent
+    // hele dagen og blev udløst af én sætning.
+    //
+    // Målt på den rigtige side med og uden beskyttelsen:
+    //   med  3.659 tegn · afsnittet 1 gang · ingen rester
+    //   uden 5.707 tegn · afsnittet 2 gange · «cardmem</a>» midt i teksten
+    const slice =
+      "Han orkestrerer 15+ AI agenter via " +
+      '<a href=&quot;/flagskibe/cardmem&quot; data-cms-ref=&quot;platforms:cardmem&quot; ' +
+      'data-cms-ref-label=&quot;auto&quot;>cardmem&lt;/a>.\n\n## Hvad der er anderledes\n\nVi bygger ikke hurtigere.';
+    const html = `<div class="richtext" data-cms-slice="${slice}"><p>Den synlige tekst.</p></div>`;
+    const ud = tilTekst(html);
+    expect(ud).toBe("Den synlige tekst.");
+    expect(ud).not.toContain("cardmem</a>");
+    expect(ud).not.toContain("Hvad der er anderledes");
+  });
 });
