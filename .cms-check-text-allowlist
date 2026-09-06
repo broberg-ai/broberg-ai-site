@@ -2,8 +2,10 @@
 # Alt her er brand/nav/aria/loading/redaktoer-vaerktoej — IKKE offentligt kundeindhold.
 # NY hardcodet prosa staar IKKE her → gaten fejler → flyt til CMS eller tilfoej bevidst.
 # En linje = praecis en accepteret literal.
-— jeg kender dit skema, dit indhold og dine indstillinger, og kan bygge, rette og udgive for dig.
-— organiseret efter funktion.
+# De tre ord i agent-hukommelses-tegningen (Illustrations.tsx). De er STREGER,
+# ikke redaktionel tekst: de navngiver tre kasser i en SVG og kan ikke ændres
+# uden at tegningen skal tegnes om. Samme slags som de andre illustrationers
+# etiketter, der kun slipper forbi gaten fordi de står i et objekt-litteral.
 .ai
 Admin
 AI-chat
@@ -21,6 +23,8 @@ Exit
 Flagskib ·
 Forlad →
 Forstærker — frekvens
+handl
+hent
 Her er et komplet overblik over alt, jeg kan hjælpe dig med på
 Hukommelse
 Indlæser chat…
@@ -30,6 +34,7 @@ Ingen samtaler endnu.
 Inline editing
 Ja
 Klik-til-redigér direkte på sitet
+kompilér
 Luk
 Menu
 monogram
@@ -50,3 +55,5 @@ Spørg om hvad som helst på
 Stockholm
 Tænker…
 Værktøjer
+— jeg kender dit skema, dit indhold og dine indstillinger, og kan bygge, rette og udgive for dig.
+— organiseret efter funktion.
