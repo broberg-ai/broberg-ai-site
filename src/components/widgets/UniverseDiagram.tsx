@@ -26,17 +26,36 @@ const B_PATH =
 const DOT_PATH =
   "M119.03564453125 -5Q85.345458984375 -5 64.0865478515625 15.8450927734375Q42.82763671875 36.690185546875 42.82763671875 66.483642578125Q42.82763671875 97.104736328125 64.0865478515625 117.9498291015625Q85.345458984375 138.794921875 119.03564453125 138.794921875Q152.31201171875 138.794921875 173.27783203125 117.9498291015625Q194.24365234375 97.104736328125 194.24365234375 66.483642578125Q194.24365234375 36.690185546875 173.27783203125 15.8450927734375Q152.31201171875 -5 119.03564453125 -5Z";
 
-// Fixed start positions — 7 evenly-spaced points (≈ a ring around the centre).
-// dot = (cx,cy); the label sits at (tx,ty), offset onto the dot's local frame.
-const INFRA_SLOTS = [
-  { cx: 220, cy: 88, tx: 220, ty: 71 },
-  { cx: 323, cy: 138, tx: 323, ty: 121 },
-  { cx: 349, cy: 249, tx: 349, ty: 267 },
-  { cx: 277, cy: 339, tx: 277, ty: 357 },
-  { cx: 163, cy: 339, tx: 163, ty: 357 },
-  { cx: 91, cy: 249, tx: 91, ty: 267 },
-  { cx: 117, cy: 138, tx: 117, ty: 121 },
-];
+// Motorernes ring. Var en fast liste på SYV mens der lå 13 platforme i CMS'et,
+// så seks af dem blev aldrig tegnet — samme tavse fejl som kunderingen havde.
+// Pladserne regnes nu ud af antallet, så en ny platform dukker op af sig selv.
+export const INFRA_R = 132;
+// Ved 13 noder er der 2*132*sin(180/13) = 63 px mellem naboer, og det længste
+// navn ("components") fylder ~55 px. Det er grænsen for hvad der kan læses.
+export const INFRA_MAX = 13;
+
+export function ringPladser(antal: number, r: number, startGrader: number) {
+  return Array.from({ length: antal }, (_, i) => {
+    const rad = ((startGrader + (360 / antal) * i) * Math.PI) / 180;
+    const cx = Math.round(CENTER + r * Math.sin(rad));
+    const cy = Math.round(CENTER - r * Math.cos(rad));
+    return { cx, cy, tx: cx, ty: cy + (cy < CENTER ? -17 : 18) };
+  });
+}
+
+/** Egerne skal pege på de noder der FAKTISK er der. De var syv hardkodede
+ *  linjer, så de passede kun så længe der var præcis syv motorer. */
+export function egeLinjer(antal: number, startGrader: number) {
+  return Array.from({ length: antal }, (_, i) => {
+    const rad = ((startGrader + (360 / antal) * i) * Math.PI) / 180;
+    const [sx, sy] = [Math.sin(rad), Math.cos(rad)];
+    return {
+      x1: +(CENTER + 40 * sx).toFixed(1), y1: +(CENTER - 40 * sy).toFixed(1),
+      x2: +(CENTER + (INFRA_R - 8) * sx).toFixed(1),
+      y2: +(CENTER - (INFRA_R - 8) * sy).toFixed(1),
+    };
+  });
+}
 // Kundepladserne var før en fast liste på FIRE, og en femte kunde forsvandt
 // tavst — `CUSTOMER_SLOTS.map` render kun de noder der havde en plads. Nu
 // regnes pladserne ud fra hvor mange kunder der er, jævnt fordelt på deres egen
@@ -58,18 +77,20 @@ export function kundePladser(antal: number) {
   });
 }
 
-/** Er der flere kunder end der er plads til, vises et TILFÆLDIGT udsnit — så
- *  ingen kunde er permanent usynlig, og udsnittet skifter ved hver sidevisning.
+/** Er der flere noder end der er plads til, vises et TILFÆLDIGT udsnit — så
+ *  ingen er permanent usynlig, og udsnittet skifter ved hver sidevisning.
  *  Ejerens valg 6/9. Under grænsen røres rækkefølgen ikke. */
-export function vaelgKunder(alle: DiagramNode[]): DiagramNode[] {
-  if (alle.length <= CUST_MAX) return alle;
+export function vaelgNoder(alle: DiagramNode[], maks: number): DiagramNode[] {
+  if (alle.length <= maks) return alle;
   const kopi = [...alle];
   for (let i = kopi.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [kopi[i], kopi[j]] = [kopi[j]!, kopi[i]!];
   }
-  return kopi.slice(0, CUST_MAX);
+  return kopi.slice(0, maks);
 }
+
+export const vaelgKunder = (alle: DiagramNode[]) => vaelgNoder(alle, CUST_MAX);
 
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -141,6 +162,9 @@ export function UniverseDiagram({
   infra: DiagramNode[];
   customers: DiagramNode[];
 }) {
+  // Ét udtræk, brugt af BÅDE egerne og noderne — regnes de hver for sig, kan et
+  // tilfældigt udsnit give eger der peger på en node der ikke blev tegnet.
+  const visInfra = vaelgNoder(infra, INFRA_MAX);
   return (
     <svg
       class="svg-wrap"
@@ -187,17 +211,13 @@ export function UniverseDiagram({
           repeatCount="indefinite"
         />
         <g class="signal" stroke="color-mix(in srgb,var(--blue) 30%,transparent)" stroke-width="1.2">
-          <line x1="220" y1="180" x2="220" y2="96" />
-          <line x1="251.3" y1="195.1" x2="316.9" y2="142.7" />
-          <line x1="259" y1="228.9" x2="340.9" y2="247.6" />
-          <line x1="237.4" y1="256" x2="273.8" y2="331.7" />
-          <line x1="202.6" y1="256" x2="166.2" y2="331.7" />
-          <line x1="181" y1="228.9" x2="99.1" y2="247.6" />
-          <line x1="188.7" y1="195.1" x2="123.1" y2="142.7" />
+          {egeLinjer(visInfra.length, 0).map((l, i) => (
+            <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} />
+          ))}
         </g>
-        {INFRA_SLOTS.map((s, i) =>
-          infra[i] ? <Node key={i} node={infra[i]} slot={s} dur={INFRA_DUR} r={5} hit={16} /> : null,
-        )}
+        {ringPladser(visInfra.length, INFRA_R, 0).map((s, i) => (
+          <Node key={i} node={visInfra[i]!} slot={s} dur={INFRA_DUR} r={5} hit={16} />
+        ))}
       </g>
 
       {/* Customer solutions — a bit faster orbit. */}

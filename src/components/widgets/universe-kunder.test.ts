@@ -1,5 +1,5 @@
 import { describe, test as it, expect } from "bun:test";
-import { kundePladser, vaelgKunder, CUST_MAX } from "./UniverseDiagram.tsx";
+import { kundePladser, vaelgKunder, vaelgNoder, ringPladser, egeLinjer, CUST_MAX, INFRA_MAX, INFRA_R } from "./UniverseDiagram.tsx";
 import type { DiagramNode } from "@/content/types.ts";
 
 /**
@@ -69,6 +69,51 @@ describe("universets kundering", () => {
     for (const p of kundePladser(6)) {
       if (p.cy < 220) expect(p.ty).toBeLessThan(p.cy);
       else expect(p.ty).toBeGreaterThan(p.cy);
+    }
+  });
+});
+
+/**
+ * Motorernes ring havde nøjagtig samme fejl som kunderingen, og den var
+ * STØRRE: en fast liste på syv pladser mens CMS'et holdt 13 platforme, så seks
+ * af dem — cardmem, buddy, cms, components, ai-sdk, consulting — aldrig blev
+ * tegnet. Ejeren bad 6/9 om at få «upmetrics» med; den var bare den ene han
+ * lagde mærke til.
+ */
+describe("universets motorring", () => {
+  it("giver plads til alle 13 platforme der ligger i CMS'et", () => {
+    expect(ringPladser(13, INFRA_R, 0)).toHaveLength(13);
+    expect(vaelgNoder(kunder(13), INFRA_MAX)).toHaveLength(13);
+  });
+
+  it("taber ingen platform op til grænsen", () => {
+    const ind = kunder(INFRA_MAX);
+    expect(vaelgNoder(ind, INFRA_MAX).map((k) => k.label)).toEqual(ind.map((k) => k.label));
+  });
+
+  it("der er præcis én ege pr. node — aldrig en ege der peger på ingenting", () => {
+    for (const n of [3, 7, 13]) {
+      expect(egeLinjer(n, 0)).toHaveLength(ringPladser(n, INFRA_R, 0).length);
+    }
+  });
+
+  it("hver ege peger UD mod sin egen node, fra kernen og næsten til prikken", () => {
+    const n = 9;
+    const eger = egeLinjer(n, 0);
+    const noder = ringPladser(n, INFRA_R, 0);
+    eger.forEach((e, i) => {
+      const nodeVinkel = Math.atan2(noder[i]!.cx - 220, 220 - noder[i]!.cy);
+      const egeVinkel = Math.atan2(e.x2 - 220, 220 - e.y2);
+      expect(Math.abs(nodeVinkel - egeVinkel)).toBeLessThan(0.02);
+      // starter uden for kernen (r=40) og stopper lige før prikken
+      expect(Math.hypot(e.x1 - 220, e.y1 - 220)).toBeCloseTo(40, 0);
+      expect(Math.hypot(e.x2 - 220, e.y2 - 220)).toBeCloseTo(INFRA_R - 8, 0);
+    });
+  });
+
+  it("motorerne ligger inden for kundernes ring, så de to ikke blandes", () => {
+    for (const p of ringPladser(13, INFRA_R, 0)) {
+      expect(Math.hypot(p.cx - 220, p.cy - 220)).toBeLessThan(195 - 17);
     }
   });
 });
