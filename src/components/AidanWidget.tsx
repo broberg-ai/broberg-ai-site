@@ -124,9 +124,13 @@ export function aidanTekster(
     statusOk: g("aidanStatusOk", en ? "All systems running · response {ms} ms · data in the EU" : "Alle systemer kører · svartid {ms} ms · data i EU"),
     statusFejl: g("aidanStatusFejl", en ? "Status is unavailable right now" : "Status kan ikke hentes lige nu"),
     tidBesked: g("aidanTidBesked", en ? "Can we meet {tid}?" : "Kan vi mødes {tid}?"),
-    hilsenSide: g("aidanHilsenSide", en
-      ? "PS: I see you've been reading \u201c{titel}\u201d \u2014 great pick. Ask away if you'd like to hear what it could do for your business."
-      : "PS: Jeg kan se du har kigget p\u00e5 \u00ab{titel}\u00bb \u2014 godt valg. Sp\u00f8rg l\u00f8s, hvis du vil h\u00f8re hvad det kan g\u00f8re for jeres forretning."),
+    // TOM RESERVETEKST MED VILJE — den her linje er en TILVALG, ikke en del af
+    // produktet. Christian, 6/9: den «virker lidt for overvågende». Med en
+    // reservetekst i koden kunne den ikke slukkes: at tømme feltet i CMS falder
+    // tilbage på fallbacken, så CMS ville se tom ud mens siden stadig sagde
+    // «jeg kan se du har kigget på …». Teksten bor derfor KUN i CMS: står der
+    // noget, vises den; er feltet tomt, findes linjen ikke.
+    hilsenSide: g("aidanHilsenSide", ""),
     kopier: g("aidanKopier", en ? "Copy" : "Kopiér"),
     kopieret: g("aidanKopieret", en ? "Copied" : "Kopieret"),
     transTilbud: g("aidanTransTilbud", en ? "Get the whole conversation by email" : "Få hele samtalen tilsendt på mail"),
