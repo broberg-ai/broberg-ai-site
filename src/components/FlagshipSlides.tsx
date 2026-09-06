@@ -151,7 +151,7 @@ const Chips = ({ items, cmsRef, base }: { items: string[]; cmsRef?: CmsRef; base
   <div class="flowchips" style="margin-top:26px">
     {items.map((c, i) => (
       <>
-        <span class="flowchip" key={i} {...seg(cmsRef, base, "items", i)}>
+        <span class="flowchip" key={i} data-cms-list-add {...seg(cmsRef, base, "items", i)}>
           {c}
         </span>
         {i < items.length - 1 ? <span class="flowchip-arrow">·</span> : null}
@@ -1521,12 +1521,14 @@ export function FlagshipSlides({ page, locale, cmsRef, artikler, artiklerTekst }
         <section>
           <div class="wrap">
             <div class="post-tags">
-              {page.tags.map((t) => (
+              {page.tags.map((t, i) => (
                 <a
                   class="pill taglink"
                   key={t}
                   href={withLocale(loc, `/tags/${slugifyTag(t)}`)}
                   data-testid={`flagship-tag-${slugifyTag(t)}`}
+                  data-cms-list-add
+                  {...cmsAttrs(cmsRef, `tags.${i}`)}
                 >
                   {t}
                 </a>
