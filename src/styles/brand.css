@@ -26,6 +26,10 @@
 
 :root {
   --blue: #00b2ff;
+  /* Darker blue for TEXT so it clears WCAG AA in the LIGHT theme (the brand
+     #0096db is 3.06:1 on #f5f7fa; the light value below hits 5.30:1). Dark is
+     already fine at 6.22:1, so here it IS --blue. Graphics/borders keep --blue. */
+  --blue-text: #00b2ff;
   --blue-light: #40c8ff;
   --blue-glow: rgba(0, 178, 255, 0.13);
   --blue-glow2: rgba(0, 178, 255, 0.06);
@@ -52,6 +56,7 @@
    the rules below cover surfaces a token swap can't reach. F001.8. */
 [data-theme="light"] {
   --blue: #0096db;
+  --blue-text: #0a6d9e;
   --blue-light: #007bb8;
   --blue-glow: rgba(0, 150, 219, 0.1);
   --blue-glow2: rgba(0, 150, 219, 0.05);
@@ -166,7 +171,7 @@ h2 {
 }
 em {
   font-style: italic;
-  color: var(--blue);
+  color: var(--blue-text);
 }
 em.o {
   color: var(--orange-text);
@@ -176,7 +181,7 @@ em.o {
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--blue);
+  color: var(--blue-text);
   margin-bottom: 18px;
   display: flex;
   align-items: center;
@@ -338,7 +343,7 @@ header {
 }
 .btn-ghost {
   background: transparent;
-  color: var(--blue);
+  color: var(--blue-text);
   border: 1px solid rgba(0, 178, 255, 0.4);
 }
 .btn-ghost:hover {
@@ -577,7 +582,7 @@ section {
   font-family: var(--fd);
   font-size: 34px;
   font-weight: 600;
-  color: var(--blue);
+  color: var(--blue-text);
   line-height: 1;
 }
 .stat .l {
@@ -822,9 +827,11 @@ section {
   transition: r 0.15s ease, filter 0.15s ease;
 }
 /* Glow-ringen er usynlig indtil man peger på noden. Farven er nodens egen
-   (currentColor, sat på linket), så en motor gløder blåt og en kunde orange. */
+   (--node-glow, sat på linket), så en motor gløder blåt og en kunde orange.
+   Fallback = currentColor: --node-glow er en PER-NODE værdi, ikke et tema-token,
+   og en var() uden fallback falder tavst tilbage til arvet farve. */
 .unode .glow {
-  fill: currentColor;
+  fill: var(--node-glow, currentColor);
   opacity: 0;
   transform-origin: center;
   transform-box: fill-box;
@@ -848,7 +855,8 @@ section {
   r: 8;
   /* To lag: et tæt, skarpt skær og et bredt, blødt — ét alene ser enten
      hårdt eller udvasket ud på en 4 px prik. */
-  filter: drop-shadow(0 0 5px currentColor) drop-shadow(0 0 12px currentColor);
+  filter: drop-shadow(0 0 5px var(--node-glow, currentColor))
+    drop-shadow(0 0 12px var(--node-glow, currentColor));
 }
 .unode:hover .lbl {
   fill: #f0f4f8;
@@ -1027,7 +1035,7 @@ footer {
   margin-bottom: 10px;
 }
 .foot-col a:hover {
-  color: var(--blue);
+  color: var(--blue-text);
 }
 .foot-legal {
   border-top: 1px solid var(--card-border);
@@ -1066,12 +1074,12 @@ footer {
   text-decoration: none;
 }
 .foot-ticker-dot {
-  color: var(--blue);
+  color: var(--blue-text);
   opacity: 0.5;
 }
 /* Tags actually in use on the site light up + link to their /tags page. */
 .foot-ticker-tag {
-  color: var(--blue);
+  color: var(--blue-text);
   opacity: 0.9;
   cursor: pointer;
   transition: opacity 0.2s, text-shadow 0.2s;
@@ -1256,7 +1264,7 @@ footer {
   font-weight: 500;
 }
 .ctable-win {
-  color: var(--blue) !important;
+  color: var(--blue-text) !important;
 }
 /* Responsive header label: a too-wide token (e.g. "@webhouse/cms") shows its
    short phone form only on narrow columns; full label everywhere else. */
@@ -1292,7 +1300,7 @@ footer {
   font-family: var(--fd);
   font-size: 38px;
   font-weight: 600;
-  color: var(--blue);
+  color: var(--blue-text);
   line-height: 1;
 }
 /* Word/phrase stat values stay on one line at a smaller size (numbers keep 38px).
@@ -1300,12 +1308,14 @@ footer {
    (>=24px), og 38px-tallene klarer den på var(--blue) med 3,29:1. De 23px gør
    ikke — de er "normal" tekst og skal have 4,5:1. Samme farve, to forskellige
    krav, fordi de har hver sin størrelse. Målt af kontrast-kritikeren 6/9 på
-   «8 cent»: 3,29:1. #0a6d9e giver 5,68:1 og holder kuløren. */
+   «8 cent»: 3,29:1. --blue-text (#0a6d9e i lyst tema) giver 5,68:1 og holder
+   kuløren. Den var hardkodet her indtil token'en fandtes — samme værdi to
+   steder er præcis den drift der gør at kun det ene sted bliver rettet. */
 .stat-card .stat-num-word {
   font-size: 23px;
   white-space: nowrap;
   letter-spacing: -0.01em;
-  color: #0a6d9e;
+  color: var(--blue-text);
 }
 [data-theme="dark"] .stat-card .stat-num-word,
 :root:not([data-theme="light"]) .stat-card .stat-num-word {
@@ -1343,7 +1353,7 @@ footer {
   border-radius: 50%;
   background: var(--blue-glow);
   border: 1px solid rgba(0, 178, 255, 0.3);
-  color: var(--blue);
+  color: var(--blue-text);
   font-weight: 700;
 }
 .worksteps > li::after {
@@ -1400,7 +1410,7 @@ footer {
   border-radius: 50%;
   background: var(--dark);
   border: 1px solid rgba(0, 178, 255, 0.3);
-  color: var(--blue);
+  color: var(--blue-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1444,7 +1454,7 @@ footer {
   flex-shrink: 0;
 }
 .type-pill.website {
-  color: var(--blue);
+  color: var(--blue-text);
   background: var(--blue-glow);
   border: 1px solid rgba(0, 178, 255, 0.32);
 }
@@ -1494,7 +1504,7 @@ footer {
   display: block;
 }
 .faq-item.open .faq-q {
-  color: var(--blue);
+  color: var(--blue-text);
 }
 .faq-chev {
   flex-shrink: 0;
@@ -1919,7 +1929,7 @@ footer {
   color: var(--light);
 }
 .richtext a {
-  color: var(--blue);
+  color: var(--blue-text);
   border-bottom: 1px solid rgba(0, 178, 255, 0.3);
 }
 .richtext a:hover {
@@ -1976,7 +1986,7 @@ footer {
   font-size: 10.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--blue);
+  color: var(--blue-text);
   font-weight: 600;
   background: color-mix(in srgb, var(--blue) 8%, transparent);
 }
@@ -2041,7 +2051,7 @@ footer {
   border-radius: 50%;
   background: var(--blue-glow);
   border: 1px solid rgba(0, 178, 255, 0.3);
-  color: var(--blue);
+  color: var(--blue-text);
   font-family: var(--fb);
   font-weight: 700;
   font-size: 14px;
@@ -2113,7 +2123,7 @@ footer {
 }
 .post-title em {
   font-style: italic;
-  color: var(--blue);
+  color: var(--blue-text);
 }
 .post-meta {
   margin-top: 14px;
@@ -2141,7 +2151,7 @@ footer {
   color: var(--muted);
 }
 .post-attr a {
-  color: var(--blue);
+  color: var(--blue-text);
   border-bottom: 1px solid rgba(0, 178, 255, 0.3);
 }
 
@@ -2520,7 +2530,7 @@ a.pill.taglink:active {
    saa linkene blev sorte uden en fejl nogen steder. Se proeven i
    src/css-tokens.test.ts. */
 .post-outro a {
-  color: var(--blue);
+  color: var(--blue-text);
   border-bottom: 1px solid rgba(0, 178, 255, 0.3);
 }
 .post-outro a:hover {
@@ -3450,7 +3460,7 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   margin-bottom: 0;
 }
 .aidan-msg a {
-  color: var(--blue);
+  color: var(--blue-text);
   text-decoration: none;
   border-bottom: 1px solid rgba(0, 178, 255, 0.3);
 }
@@ -4185,7 +4195,7 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   margin: 0.3em 0;
 }
 .aidan-msg li::marker {
-  color: var(--blue);
+  color: var(--blue-text);
 }
 .aidan-msg code {
   font-family: ui-monospace, "SF Mono", Menlo, monospace;

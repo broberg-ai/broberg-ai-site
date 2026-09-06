@@ -96,11 +96,15 @@ const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 function linkAttrs(node: DiagramNode, testid: string, blaa: boolean): Record<string, string> {
-  // Farven bæres som `color` på selve linket, så glow og skyggen under hover kan
-  // sige currentColor — én kilde til nodens farve, blå for motor, orange for kunde.
+  // To roller, to værdier: `color` er nodens TEKST (etiketten), --node-glow er
+  // dens GRAFIK (glow-ringen og skyggen under hover). Tekstvarianterne er de
+  // mørkere/lysere --*-text, så etiketten klarer WCAG AA i begge temaer; glowet
+  // beholder den rene brandfarve, så animationen ser ud præcis som før.
   const attrs: Record<string, string> = {
     class: "unode",
-    style: `color:${blaa ? "var(--blue)" : "#F3522C"}`,
+    style: blaa
+      ? "color:var(--blue-text);--node-glow:var(--blue)"
+      : "color:var(--orange-text);--node-glow:var(--orange)",
     "data-testid": testid,
   };
   if (node.scroll) attrs["data-scroll"] = node.scroll;
