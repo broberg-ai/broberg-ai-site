@@ -42,3 +42,49 @@ describe("tag → flagskib", () => {
     expect(slugifyTag("Kvalitet")).toBe("kvalitet");
   });
 });
+
+/**
+ * Link-signalet. Et LINK til /flagskibe/<slug> kobler artiklen til flagskibet
+ * på lige fod med et tag.
+ *
+ * Målt 6/9-2026 på de 27 artikler: tags gav 21 koblinger, links gav 14, og de
+ * overlapper ikke. Drift-siden (slug «hosting») havde NUL tags og to artikler
+ * der linker til den — uden link-signalet stod den side tom for altid.
+ *
+ * Grunden til at links tør bruges hvor fritekst ikke gør: et link er en bevidst
+ * handling. Ordet «drift» står i 11 af 27 artikler, næsten alle som vendingen
+ * «i drift» — ingen af dem linker til siden.
+ */
+describe("link → flagskib", () => {
+  // samme udtryk som loadFlagshipArtikler bygger
+  const linkRe = (n: string) =>
+    new RegExp(`\\]\\((?:/en)?/(?:flagskibe|flagships)/${n}(?:[)/#?]|$)`);
+
+  it("fanger et markdown-link til flagskibssiden, på begge sprog", () => {
+    for (const md of [
+      "Vi har et værktøj, [Lens](/flagskibe/lens), der åbner sider.",
+      "We have a tool, [Lens](/en/flagships/lens), that opens pages.",
+      "se [her](/flagskibe/lens#hvordan) og [her](/flagskibe/lens/)",
+    ]) {
+      expect(linkRe("lens").test(md)).toBe(true);
+    }
+  });
+
+  it("et link til et ANDET flagskib tæller ikke med", () => {
+    expect(linkRe("lens").test("[cms](/flagskibe/cms)")).toBe(false);
+    // og et længere slug der starter med det samme må ikke smitte
+    expect(linkRe("cms").test("[x](/flagskibe/cms-noget-andet)")).toBe(false);
+  });
+
+  it("OMTALE uden link tæller ikke — det er hele forskellen", () => {
+    for (const md of [
+      "systemet er i drift hos tre kunder",
+      "vi kalder det lens, men det er ikke et link",
+      "en artikel om cms-motoren uden reference",
+    ]) {
+      expect(linkRe("hosting").test(md)).toBe(false);
+      expect(linkRe("lens").test(md)).toBe(false);
+      expect(linkRe("cms").test(md)).toBe(false);
+    }
+  });
+});

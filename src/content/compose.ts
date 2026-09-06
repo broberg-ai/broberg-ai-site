@@ -597,9 +597,21 @@ export async function loadFlagshipArtikler(
   flagshipSlug: string,
 ): Promise<{ slug: string; title: string; excerpt: string; href: string; date: string }[]> {
   const noegle = stripLocalePrefix(flagshipSlug, locale).toLowerCase();
-  const posts = forLocale(await list("posts"), locale).filter((p) =>
-    arr<unknown>(dataOf(p).tags).some((t) => slugifyTag(String(t)) === noegle),
+  // ET LINK TIL SIDEN TÆLLER SOM ET TAG. Måling 6/9 på de 27 artikler: tags gav
+  // 21 koblinger, links gav 14 — og de OVERLAPPER ikke fuldt ud. Drift-siden
+  // (slug "hosting") havde nul tags og to artikler der linker til den.
+  //
+  // Et link er en BEVIDST handling; et ord er ikke. Derfor er dette signalet vi
+  // tør stole på, hvor fritekst-søgning ikke er: ordet «drift» står i 11 af 27
+  // artikler, næsten alle som vendingen «i drift».
+  const linkTilSiden = new RegExp(
+    `\\]\\((?:/en)?/(?:flagskibe|flagships)/${noegle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:[)/#?]|$)`,
   );
+  const posts = forLocale(await list("posts"), locale).filter((p) => {
+    const d = dataOf(p);
+    const tagget = arr<unknown>(d.tags).some((t) => slugifyTag(String(t)) === noegle);
+    return tagget || linkTilSiden.test(str(d.content));
+  });
   return posts
     .sort((a, b) => str(dataOf(b).date).localeCompare(str(dataOf(a).date)))
     .map((p) => {
