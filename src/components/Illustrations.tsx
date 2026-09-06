@@ -951,6 +951,81 @@ const lensVideo = wrap(
   </g>,
 );
 
+// To baner maalt med SAMME lineal: oeverst det aarsprojekt der stadig kryber mod
+// et fjernt maal, nederst de otte uger hvor platformen blev bygget OG begge apps
+// var ude hos rigtige brugere. Nails: ikke "lidt hurtigere" — en anden stoerrelsesorden.
+const OU_X0 = 42;
+const OU_X1 = 320;
+const OU_UGE = (OU_X1 - OU_X0) / 52;
+const OU_SLUT = OU_X0 + OU_UGE * 8;
+const otteUger = wrap(
+  <g>
+    {/* faelles tidsakse — 12 maaneder, saa de to baner ikke kan sammenlignes skaevt */}
+    <g stroke="var(--blue)" opacity=".32" stroke-width="1.2">
+      <path d={`M${OU_X0} 58 H${OU_X1}`} />
+      {Array.from({ length: 13 }, (_, i) => {
+        const x = OU_X0 + ((OU_X1 - OU_X0) / 12) * i;
+        return <path key={i} d={`M${x} ${i % 3 === 0 ? 50 : 53} V64`} />;
+      })}
+    </g>
+
+    {/* lodret hjaelpelinje ved uge 8 — binder aksen til det sted baanet stopper */}
+    <path d={`M${OU_SLUT} 64 V214`} stroke="#F3522C" stroke-width="1.2" stroke-dasharray="2 4" opacity=".5" />
+
+    {/* BANE 1 — aarsprojektet: kryber hele vejen, leverer intet undervejs */}
+    <g>
+      <path
+        class="illu-flow"
+        d={`M${OU_X0} 112 H${OU_X1 - 16}`}
+        stroke="var(--blue)"
+        stroke-width="2"
+        stroke-dasharray="4 7"
+        opacity=".45"
+      />
+      <circle cx={OU_X0} cy="112" r="4" fill="var(--blue)" opacity=".5" />
+      {/* fjernt maalflag */}
+      <g opacity=".45">
+        <path d={`M${OU_X1 - 14} 112 V88`} stroke="var(--blue)" stroke-width="1.6" />
+        <path d={`M${OU_X1 - 14} 89 L${OU_X1 + 4} 95 L${OU_X1 - 14} 101 Z`} fill="color-mix(in srgb,var(--blue) 22%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
+      </g>
+    </g>
+
+    {/* BANE 2 — otte uger: massiv, kort, faerdig */}
+    <g>
+      <rect
+        x={OU_X0}
+        y="176"
+        width={OU_SLUT - OU_X0}
+        height="16"
+        rx="8"
+        fill="color-mix(in srgb,var(--blue) 20%,transparent)"
+        stroke="var(--blue)"
+        stroke-width="1.8"
+      />
+      {/* de otte uger som ticks inde i baandet */}
+      <g stroke="var(--blue)" stroke-width="1" opacity=".55">
+        {Array.from({ length: 7 }, (_, i) => {
+          const x = OU_X0 + OU_UGE * (i + 1);
+          return <path key={i} d={`M${x} 180 V188`} />;
+        })}
+      </g>
+      {/* maalstregen — hér var vi faerdige */}
+      <path d={`M${OU_SLUT} 168 V200`} stroke="#F3522C" stroke-width="2.4" stroke-linecap="round" />
+    </g>
+
+    {/* de to apps, ude og i drift */}
+    <g transform={`translate(${OU_SLUT + 22} 0)`}>
+      {[0, 34].map((dx, i) => (
+        <g key={i} class="illu-glow" style={`animation-delay:${i * 0.7}s`}>
+          <rect x={dx} y="158" width="24" height="42" rx="5" fill="color-mix(in srgb,var(--blue) 14%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
+          <path d={`M${dx + 8} 164 H${dx + 16}`} stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" opacity=".7" />
+          <circle cx={dx + 12} cy="192" r="2.6" fill="#2ecc71" />
+        </g>
+      ))}
+    </g>
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -984,6 +1059,9 @@ const REGISTRY: Record<string, JSX.Element> = {
   // Lens Video — begge sprogudgaver. De tre ord i tegningen står i allowlisten.
   "vaerktoejet-der-kunne-se-det": lensVideo,
   "the-instrument-that-could-see-it": lensVideo,
+  // Otte uger — begge sprogudgaver. Tegningen baerer ingen tekst.
+  "otte-uger-til-en-sundhedsplatform": otteUger,
+  "eight-weeks-to-a-healthcare-platform": otteUger,
 };
 
 export function hasIllustration(k: string): boolean {
