@@ -12,6 +12,7 @@ AI-chat
 ai-sdk
 Alle flagskibe
 auto
+bevægelse
 broberg
 broberg.ai
 broberg.ai-universet
@@ -32,6 +33,7 @@ Indlæser…
 Ingen hukommelse endnu. Ting du beder om huskes automatisk fra dine samtaler.
 Ingen samtaler endnu.
 Inline editing
+input
 Ja
 Klik-til-redigér direkte på sitet
 kompilér
@@ -54,6 +56,7 @@ Snart
 Spørg om hvad som helst på
 Stockholm
 Tænker…
+uden input = fund
 Værktøjer
 — jeg kender dit skema, dit indhold og dine indstillinger, og kan bygge, rette og udgive for dig.
 — organiseret efter funktion.

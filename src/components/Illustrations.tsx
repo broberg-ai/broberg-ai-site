@@ -895,6 +895,62 @@ const agentHukommelse = wrap(
   </g>,
 );
 
+/* Lens Video. Den ene idé: MÅLINGEN er detektoren, billederne er illustrationen.
+   Øverst løber visningens position som en kurve — den står stille, vipper otte
+   gange, og springer så. Nedenunder står de øjeblikke hvor nogen faktisk RØRTE
+   noget. Et fund er dér hvor kurven bevæger sig og rækken under er tom; først
+   derefter klippes billederne. Derfor er det målesporet der er orange, ikke
+   filmstrimlen. */
+const lensVideo = wrap(
+  <g fill="none">
+    {/* måleruden */}
+    <rect x="20" y="30" width="320" height="104" rx="10"
+      fill="color-mix(in srgb,var(--blue) 5%,transparent)"
+      stroke="color-mix(in srgb,var(--blue) 22%,transparent)" stroke-width="1.2" />
+    {/* nullinje */}
+    <line x1="32" y1="112" x2="328" y2="112" stroke="color-mix(in srgb,var(--blue) 18%,transparent)"
+      stroke-width="1" stroke-dasharray="2 4" />
+
+    {/* positionskurven: rolig · otte svingninger på 32 px · ét spring */}
+    <path
+      d="M32 112 H104 L110 84 L116 112 L122 84 L128 112 L134 84 L140 112 L146 84 L152 112
+         L158 84 L164 112 L170 84 L176 112 L182 84 L188 112 H236 L242 46 H328"
+      stroke="var(--blue-light)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" />
+
+    {/* de to fund — det er MÅLINGEN der er markeret */}
+    <rect class="illu-glow" x="104" y="40" width="86" height="88" rx="6"
+      fill="rgba(243,82,44,.10)" stroke="#F3522C" stroke-width="1.3" />
+    <rect x="230" y="40" width="18" height="88" rx="5"
+      fill="rgba(243,82,44,.10)" stroke="#F3522C" stroke-width="1.3" />
+
+    {/* inputsporet: hvor nogen FAKTISK rørte noget — tomt under begge fund */}
+    <g stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" opacity=".8">
+      {[40, 52, 64, 78, 92, 262, 286, 308].map((x) => (
+        <line key={x} x1={x} y1="146" x2={x} y2="156" />
+      ))}
+    </g>
+    <line x1="32" y1="151" x2="328" y2="151" stroke="color-mix(in srgb,var(--blue) 14%,transparent)" stroke-width="1" />
+
+    {/* først NU klippes billederne — og kun omkring det målte øjeblik */}
+    <g stroke="color-mix(in srgb,var(--blue) 34%,transparent)" stroke-width="1.2">
+      <path d="M147 158 V178" stroke="#F3522C" stroke-dasharray="3 3" />
+      {[0, 1, 2].map((i) => (
+        <rect key={i} x={96 + i * 52} y="182" width="46" height="34" rx="4"
+          fill="color-mix(in srgb,var(--blue) 7%,transparent)"
+          stroke={i === 1 ? "#F3522C" : "color-mix(in srgb,var(--blue) 30%,transparent)"}
+          stroke-width={i === 1 ? "1.6" : "1.2"} />
+      ))}
+    </g>
+
+    {/* etiketterne står VED deres eget spor — ellers skal man gætte hvad de mærker */}
+    <g font-family="'DM Sans',sans-serif" font-size="9.5" fill="var(--muted)" letter-spacing=".04em">
+      <text x="20" y="24">bevægelse</text>
+      <text x="20" y="170" fill="color-mix(in srgb,var(--muted) 70%,transparent)">input</text>
+      <text x="147" y="232" text-anchor="middle" fill="#F3522C">uden input = fund</text>
+    </g>
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -925,6 +981,9 @@ const REGISTRY: Record<string, JSX.Element> = {
   // de samme tre mønstre (retrieve / compile / act) og læses fint med dem.
   "tre-arkitekturer-agent-hukommelse": agentHukommelse,
   "three-architectures-of-agent-memory": agentHukommelse,
+  // Lens Video — begge sprogudgaver. De tre ord i tegningen står i allowlisten.
+  "vaerktoejet-der-kunne-se-det": lensVideo,
+  "the-instrument-that-could-see-it": lensVideo,
 };
 
 export function hasIllustration(k: string): boolean {
