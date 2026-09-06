@@ -72,3 +72,62 @@ test("en variabel der kun NÆVNES i en kommentar tæller ikke", () => {
   const ukendteRaa = brugte(medKommentar).filter((b) => !b.harFallback && !definerede(medKommentar).has(b.navn)).map((b) => b.navn);
   expect(ukendteRaa).toEqual(["--vaek"]);
 });
+
+// ── Kontrast på TEKST-tokens ───────────────────────────────────────────────
+//
+// Farverne blev målt op til WCAG AA 6/9-2026 (blå tekst stod på 3,06:1 i lyst
+// tema, orange på 4,47:1). Et tal som 4,47 er farligt netop fordi det SER
+// rigtigt ud — det er 0,03 fra kravet, og ingen opdager forskellen ved at
+// kigge. Derfor regnes det her i stedet for at blive husket.
+//
+// Kun TEKST-tokens. --blue og --orange er grafik (streger, planeter, glow) og
+// har med vilje ikke et kontrastkrav; en regel der også omfattede dem ville
+// tvinge brandfarven mørkere for at bestå en test der ikke gælder den.
+
+/** WCAG 2.1 relativ luminans. */
+function luminans(hex: string): number {
+  const h = hex.replace("#", "");
+  const kanal = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const [r, g, b] = [0, 2, 4].map((i) => kanal(parseInt(h.slice(i, i + 2), 16)));
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+}
+function kontrast(a: string, b: string): number {
+  const [x, y] = [luminans(a), luminans(b)];
+  return (Math.max(x!, y!) + 0.05) / (Math.min(x!, y!) + 0.05);
+}
+/** Værdien af et token inde i en bestemt regel-blok. */
+function token(blok: string, navn: string): string {
+  const b = CSS.slice(CSS.indexOf(blok));
+  const m = b.slice(0, b.indexOf("}")).match(new RegExp(`${navn}:\\s*(#[0-9a-fA-F]{6})`));
+  if (!m) throw new Error(`fandt ikke ${navn} i ${blok}`);
+  return m[1]!;
+}
+
+test("tekst-tokens klarer WCAG AA (4,5:1) mod deres eget temas baggrund", () => {
+  const sager = [
+    { tema: ":root {", navn: "--blue-text", bg: "#23282f", som: "mørkt" },
+    { tema: ":root {", navn: "--orange-text", bg: "#23282f", som: "mørkt" },
+    { tema: '[data-theme="light"] {', navn: "--blue-text", bg: "#f5f7fa", som: "lyst" },
+    { tema: '[data-theme="light"] {', navn: "--orange-text", bg: "#f5f7fa", som: "lyst" },
+  ];
+  for (const s of sager) {
+    const farve = token(s.tema, s.navn);
+    const r = kontrast(farve, s.bg);
+    // Meldingen bærer BEGGE tal, så en rød kørsel siger hvad der skal rettes
+    // til — ikke bare at noget er galt.
+    expect(`${s.navn} ${s.som} ${farve}: ${r.toFixed(2)}:1`).toBe(
+      `${s.navn} ${s.som} ${farve}: ${Math.max(r, 4.5).toFixed(2)}:1`,
+    );
+  }
+});
+
+test(".lead viser linjeskift som redaktøren skriver dem i CMS'et", () => {
+  // Uden white-space:pre-line kollapser browseren et linjeskift til et
+  // mellemrum, og så kan Christian ikke styre sine egne afsnit uden at en
+  // agent ændrer koden. Reglen er hele mekanismen bag det.
+  const blok = CSS.slice(CSS.indexOf(".lead {"));
+  expect(blok.slice(0, blok.indexOf("}"))).toContain("white-space: pre-line");
+});

@@ -67,7 +67,7 @@
   --light: #161b22;
   --muted: rgba(22, 29, 40, 0.6);
   --orange: #ec4e27;
-  --orange-text: #cf3f1b;
+  --orange-text: #c93a16;
   --orange-soft: rgba(236, 78, 39, 0.1);
 }
 [data-theme="light"] body::after {
@@ -211,6 +211,12 @@ em.o {
   line-height: 1.75;
   color: var(--muted);
   max-width: 640px;
+  /* Et linjeskift skrevet i CMS-feltet skal OGSAA vaere et linjeskift paa
+     siden. Uden dette kollapser browseren det til et mellemrum, og redaktoeren
+     kan ikke styre sine egne afsnit uden at en agent aendrer koden. pre-line
+     bevarer linjeskift og kollapser almindelige mellemrum som hidtil, saa
+     eksisterende tekster uden linjeskift ser praecis ud som foer. */
+  white-space: pre-line;
 }
 .orange {
   color: var(--orange-text);
