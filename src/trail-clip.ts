@@ -9,8 +9,58 @@ import { erAlleredeSendt, noterSendt } from "@/trail-sendt.ts";
 
 /** HTML → læsbar markdown-agtig tekst. Bevidst simpel: overskrifter, afsnit,
  *  lister og links overlever; alt chrome (nav/footer/scripts/Aidan) ryger. */
+/**
+ * Gør «>» inde i en attributværdi harmløs, FØR nogen af reglerne nedenfor
+ * leder efter enden på en tag.
+ *
+ * Alle tag-reglerne herunder er skrevet som `[^>]*>` — de standser ved det
+ * FØRSTE «>». Et «>» i en attributværdi er lovlig HTML, og så klipper de midt
+ * i taggen og efterlader resten af attributten som brødtekst. Målt 6/9-2026:
+ * artiklens `data-cms-slice` (2.988 tegn, inline-editorens kilde) indeholdt to
+ * «>», og resterne — `">` og `cardmem</a>.` — endte i vidensbasen mellem
+ * artiklens sætninger. Rapporteret af trail-sessionen.
+ *
+ * En scanner frem for en regex, fordi «hvor slutter denne tag» ikke kan
+ * afgøres uden at holde styr på om man står inde i et citat.
+ */
+export function beskytTagGraenser(html: string): string {
+  let ud = "";
+  let i = 0;
+  while (i < html.length) {
+    const start = html.indexOf("<", i);
+    if (start === -1) {
+      ud += html.slice(i);
+      break;
+    }
+    ud += html.slice(i, start);
+    let j = start + 1;
+    let citat: string | null = null;
+    let tag = "<";
+    while (j < html.length) {
+      const c = html[j]!;
+      if (citat) {
+        tag += c === ">" ? "&gt;" : c;
+        if (c === citat) citat = null;
+      } else if (c === '"' || c === "'") {
+        citat = c;
+        tag += c;
+      } else if (c === ">") {
+        tag += ">";
+        j++;
+        break;
+      } else {
+        tag += c;
+      }
+      j++;
+    }
+    ud += tag;
+    i = j;
+  }
+  return ud;
+}
+
 export function tilTekst(html: string): string {
-  let s = html
+  let s = beskytTagGraenser(html)
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<header[\s\S]*?<\/header>/gi, "")
