@@ -105,7 +105,13 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
   // Christian wants it shown as a node too — "broberg.ai universet" has the brand
   // at the centre and every platform (cardmem included) orbiting it. Each links
   // to its INTERNAL flagship detail page (not the external site).
-  const infra: DiagramNode[] = platforms.map((p) => {
+  // Universet viser MOTORERNE, ikke hele flagskibslisten. Ejeren 6/9: docs,
+  // consulting, contracts, drift og pitch vault hører ikke til i solsystemet —
+  // de er ydelser og sideprodukter, ikke byggeklodser. Valget ligger i CMS'et
+  // (feltet «Vis i universet»), ikke som en liste her: en ny platform kommer
+  // MED af sig selv, og skal aktivt slås fra. Den vej rundt fordi den modsatte
+  // netop kostede seks usynlige platforme.
+  const infra: DiagramNode[] = platforms.filter((p) => dataOf(p).iUniverset !== false).map((p) => {
     const d = dataOf(p);
     // href keyed by the stable slug, not the editable display name — a name
     // edit (e.g. "hosting" -> "drift") must never turn this into a dead link.

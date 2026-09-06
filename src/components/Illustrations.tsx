@@ -812,6 +812,89 @@ const biDashboard = wrap(
   </g>,
 );
 
+/* Tre arkitekturer for agent-hukommelse. Den ene idé: ALLE TRE får den samme
+   bunke løse noter, og det er kun hvad der BLIVER TILBAGE der adskiller dem.
+   Hent låner og lægger på plads (hylden er lige så tom bagefter), Kompilér
+   presser bunken sammen til ét varigt lag, Handl sender den ud som opgaver.
+   Midten bærer den orange ramme, fordi Trail valgte den — bevidst. */
+const agentHukommelse = wrap(
+  <g fill="none">
+    {[0, 1, 2].map((k) => {
+      const x = 16 + k * 112;
+      const valgt = k === 1;
+      return (
+        <g key={k}>
+          {/* sporets ramme — kun det valgte er orange */}
+          <rect
+            x={x} y="34" width="104" height="212" rx="12"
+            fill={valgt ? "rgba(243,82,44,.04)" : "color-mix(in srgb,var(--blue) 4%,transparent)"}
+            stroke={valgt ? "rgba(243,82,44,.55)" : "color-mix(in srgb,var(--blue) 22%,transparent)"}
+            stroke-width={valgt ? "1.5" : "1.2"}
+          />
+          {/* den SAMME bunke løse noter i toppen af alle tre */}
+          <g stroke="var(--blue)" stroke-width="1.3" opacity=".75">
+            {[0, 1, 2].map((i) => (
+              <rect key={i} x={x + 26 + i * 5} y={50 + i * 5} width="44" height="15" rx="4"
+                fill="color-mix(in srgb,var(--blue) 8%,transparent)" />
+            ))}
+          </g>
+        </g>
+      );
+    })}
+
+    {/* ── HENT: ned og op igen. Låner en note, lægger den tilbage, og hylden
+           nederst står lige så tom som før — agenten genlæser hver gang. */}
+    <g stroke="var(--blue)" stroke-width="1.5">
+      <path d="M56 92 C40 122 40 150 56 178" stroke-linecap="round" />
+      <path d="M84 92 C100 122 100 150 84 178" stroke-linecap="round" opacity=".45" />
+      <path d="M80 174 l4 6 l-7 2" stroke-linecap="round" stroke-linejoin="round" opacity=".45" />
+      <path d="M60 96 l-4 -6 l7 -2" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+    <rect x="38" y="188" width="64" height="34" rx="7" fill="none"
+      stroke="color-mix(in srgb,var(--blue) 26%,transparent)" stroke-width="1.3" stroke-dasharray="4 4" />
+
+    {/* ── KOMPILÉR: gennem tragten, og det der kommer ud BLIVER liggende. */}
+    <g class="illu-flow" stroke="var(--blue-light)" stroke-width="1.6" stroke-dasharray="3 5" opacity=".85">
+      <path d="M152 96 L168 132" />
+      <path d="M180 96 V132" />
+      <path d="M208 96 L192 132" />
+    </g>
+    <path d="M150 134 H210 L192 156 H168 Z" fill="color-mix(in srgb,var(--blue) 12%,transparent)" stroke="var(--blue)" stroke-width="1.6"
+      stroke-linejoin="round" />
+    <g class="illu-snap">
+      <rect x="146" y="176" width="68" height="46" rx="8" fill="rgba(243,82,44,.16)" stroke="#F3522C" stroke-width="1.8" />
+      {[0, 1, 2].map((i) => (
+        <line key={i} x1="156" y1={190 + i * 11} x2={204 - i * 12} y2={190 + i * 11}
+          stroke="#F3522C" stroke-width="1.5" stroke-linecap="round" opacity=".85" />
+      ))}
+    </g>
+
+    {/* ── HANDL: bunken bliver til opgaver der kører af sig selv. */}
+    <g stroke="var(--blue)" stroke-width="1.5">
+      <path d="M282 92 V126" stroke-linecap="round" />
+      <path d="M278 120 l4 7 l4 -7" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+    <g stroke="var(--blue)" stroke-width="1.4">
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <rect x="250" y={136 + i * 30} width="64" height="22" rx="6"
+            fill="color-mix(in srgb,var(--blue) 10%,transparent)" />
+          <circle class="node" cx="262" cy={147 + i * 30} r="3.4" fill="var(--blue-light)" stroke="none"
+            style={`animation-delay:${i * 0.45}s`} />
+          <line x1="272" y1={147 + i * 30} x2={304 - i * 8} y2={147 + i * 30} stroke-linecap="round" opacity=".7" />
+        </g>
+      ))}
+    </g>
+
+    {/* etiketterne — kun de tre ord, så tegningen kan læses uden artiklen */}
+    <g font-family="'DM Sans',sans-serif" font-size="10.5" text-anchor="middle" letter-spacing=".04em">
+      <text x="68" y="240" fill="var(--muted)">hent</text>
+      <text x="180" y="240" fill="#F3522C" font-weight="600">kompilér</text>
+      <text x="292" y="240" fill="var(--muted)">handl</text>
+    </g>
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -838,6 +921,10 @@ const REGISTRY: Record<string, JSX.Element> = {
   // Samme tegning på begge sprogudgaver — den bærer ingen tekst.
   "bi-dashboards-fra-bunden": biDashboard,
   "bi-dashboards-from-scratch": biDashboard,
+  // Begge sprogudgaver. Etiketterne er danske; den engelske artikel handler om
+  // de samme tre mønstre (retrieve / compile / act) og læses fint med dem.
+  "tre-arkitekturer-agent-hukommelse": agentHukommelse,
+  "three-architectures-of-agent-memory": agentHukommelse,
 };
 
 export function hasIllustration(k: string): boolean {
