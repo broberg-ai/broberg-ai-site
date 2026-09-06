@@ -951,75 +951,76 @@ const lensVideo = wrap(
   </g>,
 );
 
-// To baner maalt med SAMME lineal: oeverst det aarsprojekt der stadig kryber mod
-// et fjernt maal, nederst de otte uger hvor platformen blev bygget OG begge apps
-// var ude hos rigtige brugere. Nails: ikke "lidt hurtigere" — en anden stoerrelsesorden.
-const OU_X0 = 42;
-const OU_X1 = 320;
+// To baner maalt med SAMME lineal, og med vilje SAMME form — et aarsprojekt der
+// stadig kryber mod et fjernt maal, og de otte uger hvor platformen var faerdig og
+// begge apps ude. Nails: ikke "lidt hurtigere" — en anden stoerrelsesorden.
+const OU_X0 = 40;
+const OU_X1 = 318;
 const OU_UGE = (OU_X1 - OU_X0) / 52;
 const OU_SLUT = OU_X0 + OU_UGE * 8;
+const OU_H = 26;
 const otteUger = wrap(
   <g>
-    {/* faelles tidsakse — 12 maaneder, saa de to baner ikke kan sammenlignes skaevt */}
-    <g stroke="var(--blue)" opacity=".32" stroke-width="1.2">
-      <path d={`M${OU_X0} 58 H${OU_X1}`} />
-      {Array.from({ length: 13 }, (_, i) => {
-        const x = OU_X0 + ((OU_X1 - OU_X0) / 12) * i;
-        return <path key={i} d={`M${x} ${i % 3 === 0 ? 50 : 53} V64`} />;
-      })}
+    {/* faelles tidsakse — uden den er to baand bare to baand */}
+    <g stroke="var(--blue)" opacity=".3" stroke-width="1.3">
+      <path d={`M${OU_X0} 60 H${OU_X1}`} />
+      {Array.from({ length: 13 }, (_, i) => (
+        <path key={i} d={`M${OU_X0 + ((OU_X1 - OU_X0) / 12) * i} 54 V66`} />
+      ))}
     </g>
 
-    {/* lodret hjaelpelinje ved uge 8 — binder aksen til det sted baanet stopper */}
-    <path d={`M${OU_SLUT} 64 V214`} stroke="#F3522C" stroke-width="1.2" stroke-dasharray="2 4" opacity=".5" />
+    {/* uge 8 loeber ned gennem begge baner og binder dem sammen */}
+    <path d={`M${OU_SLUT} 66 V186`} stroke="#F3522C" stroke-width="1.3" stroke-dasharray="2 5" opacity=".55" />
 
-    {/* BANE 1 — aarsprojektet: kryber hele vejen, leverer intet undervejs */}
-    <g>
-      <path
-        class="illu-flow"
-        d={`M${OU_X0} 112 H${OU_X1 - 16}`}
-        stroke="var(--blue)"
-        stroke-width="2"
-        stroke-dasharray="4 7"
-        opacity=".45"
-      />
-      <circle cx={OU_X0} cy="112" r="4" fill="var(--blue)" opacity=".5" />
-      {/* fjernt maalflag */}
-      <g opacity=".45">
-        <path d={`M${OU_X1 - 14} 112 V88`} stroke="var(--blue)" stroke-width="1.6" />
-        <path d={`M${OU_X1 - 14} 89 L${OU_X1 + 4} 95 L${OU_X1 - 14} 101 Z`} fill="color-mix(in srgb,var(--blue) 22%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
-      </g>
-    </g>
-
-    {/* BANE 2 — otte uger: massiv, kort, faerdig */}
+    {/* BANE 1 — aarsprojektet: samme baand-form, men tomt hele vejen */}
     <g>
       <rect
         x={OU_X0}
-        y="176"
-        width={OU_SLUT - OU_X0}
-        height="16"
-        rx="8"
-        fill="color-mix(in srgb,var(--blue) 20%,transparent)"
+        y="100"
+        width={OU_X1 - OU_X0}
+        height={OU_H}
+        rx={OU_H / 2}
+        fill="none"
         stroke="var(--blue)"
-        stroke-width="1.8"
+        stroke-width="1.6"
+        stroke-dasharray="6 6"
+        opacity=".42"
       />
-      {/* de otte uger som ticks inde i baandet */}
-      <g stroke="var(--blue)" stroke-width="1" opacity=".55">
-        {Array.from({ length: 7 }, (_, i) => {
-          const x = OU_X0 + OU_UGE * (i + 1);
-          return <path key={i} d={`M${x} 180 V188`} />;
-        })}
+      <path class="illu-flow" d={`M${OU_X0 + 14} 113 H${OU_X1 - 20}`} stroke="var(--blue)" stroke-width="2" stroke-dasharray="3 9" opacity=".4" />
+      {/* fjernt maalflag, plantet i baandets ende */}
+      <g opacity=".5">
+        <path d={`M${OU_X1} 100 V72`} stroke="var(--blue)" stroke-width="1.6" />
+        <path d={`M${OU_X1} 73 L${OU_X1 + 20} 79.5 L${OU_X1} 86 Z`} fill="color-mix(in srgb,var(--blue) 20%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
       </g>
-      {/* maalstregen — hér var vi faerdige */}
-      <path d={`M${OU_SLUT} 168 V200`} stroke="#F3522C" stroke-width="2.4" stroke-linecap="round" />
     </g>
 
-    {/* de to apps, ude og i drift */}
-    <g transform={`translate(${OU_SLUT + 22} 0)`}>
-      {[0, 34].map((dx, i) => (
+    {/* BANE 2 — otte uger: samme form, kort og fyldt helt ud */}
+    <g>
+      <rect
+        x={OU_X0}
+        y="190"
+        width={OU_SLUT - OU_X0}
+        height={OU_H}
+        rx={OU_H / 2}
+        fill="color-mix(in srgb,var(--blue) 22%,transparent)"
+        stroke="var(--blue)"
+        stroke-width="2"
+      />
+      <g stroke="var(--blue)" stroke-width="1" opacity=".5">
+        {Array.from({ length: 7 }, (_, i) => (
+          <path key={i} d={`M${OU_X0 + OU_UGE * (i + 1)} 195 V221`} />
+        ))}
+      </g>
+      <path d={`M${OU_SLUT} 180 V236`} stroke="#F3522C" stroke-width="2.6" stroke-linecap="round" />
+    </g>
+
+    {/* de to apps — ude, i drift, lige efter maalstregen */}
+    <g>
+      {[0, 40].map((dx, i) => (
         <g key={i} class="illu-glow" style={`animation-delay:${i * 0.7}s`}>
-          <rect x={dx} y="158" width="24" height="42" rx="5" fill="color-mix(in srgb,var(--blue) 14%,transparent)" stroke="var(--blue)" stroke-width="1.6" />
-          <path d={`M${dx + 8} 164 H${dx + 16}`} stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round" opacity=".7" />
-          <circle cx={dx + 12} cy="192" r="2.6" fill="#2ecc71" />
+          <rect x={OU_SLUT + 20 + dx} y="182" width="28" height="48" rx="6" fill="color-mix(in srgb,var(--blue) 16%,transparent)" stroke="var(--blue)" stroke-width="1.8" />
+          <path d={`M${OU_SLUT + 30 + dx} 189 H${OU_SLUT + 38 + dx}`} stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" opacity=".7" />
+          <circle cx={OU_SLUT + 34 + dx} cy="220" r="3" fill="#2ecc71" />
         </g>
       ))}
     </g>
