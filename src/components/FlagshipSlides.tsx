@@ -1494,7 +1494,7 @@ export interface FlagshipArtikel {
   date: string;
 }
 
-export function FlagshipSlides({ page, locale, cmsRef, artikler }: { page: FlagshipPage; locale?: string; cmsRef?: CmsRef; artikler?: FlagshipArtikel[] }): JSX.Element {
+export function FlagshipSlides({ page, locale, cmsRef, artikler, artiklerTekst }: { page: FlagshipPage; locale?: string; cmsRef?: CmsRef; artikler?: FlagshipArtikel[]; artiklerTekst?: { eyebrow: string; titel: string } }): JSX.Element {
   const loc = locale === "en" ? "en" : "da";
   return (
     <>
@@ -1504,10 +1504,8 @@ export function FlagshipSlides({ page, locale, cmsRef, artikler }: { page: Flags
       {artikler?.length ? (
         <section data-testid="flagship-artikler">
           <div class="wrap reveal">
-            <div class="eyebrow">{loc === "en" ? "Articles" : "Artikler"}</div>
-            <h2 class="h2">
-              {loc === "en" ? `What we have written about ${page.slug}` : `Det vi har skrevet om ${page.slug}`}
-            </h2>
+            <div class="eyebrow" data-cms-field="flagshipArtiklerEyebrow">{artiklerTekst?.eyebrow}</div>
+            <h2 class="h2" data-cms-field="flagshipArtiklerTitel">{artiklerTekst?.titel}</h2>
             <div class="case-grid" style="margin-top:22px">
               {artikler.map((a) => (
                 <a class="card case-card" key={a.slug} href={a.href} data-testid={`flagship-artikel-${a.slug}`}>

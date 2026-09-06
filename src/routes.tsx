@@ -594,7 +594,16 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
     // Artikler der handler om DETTE flagskib, koblet på tag-slug (se
     // loadFlagshipArtikler). Tom liste → afsnittet renderes slet ikke.
     const artikler = await loadFlagshipArtikler(locale, slug);
-    return await page(<FlagshipSlides page={fp} locale={locale} cmsRef={flagshipRef} artikler={artikler} />, {
+    // Overskrifterne bor i CMS'et, ikke her. Reservteksten er en NØDBREMSE så
+    // afsnittet ikke går i stykker hvis feltet slettes — ikke tekstens hjem.
+    const g = ((await loadGlobals(locale))?.data ?? {}) as Record<string, unknown>;
+    const gtxt = (k: string, fb: string) => (typeof g[k] === "string" && (g[k] as string)) || fb;
+    const artiklerTekst = {
+      eyebrow: gtxt("flagshipArtiklerEyebrow", locale === "en" ? "Articles" : "Artikler"),
+      titel: gtxt("flagshipArtiklerTitel", locale === "en" ? "What we have written about {navn}" : "Det vi har skrevet om {navn}")
+        .replace("{navn}", fp.slug),
+    };
+    return await page(<FlagshipSlides page={fp} locale={locale} cmsRef={flagshipRef} artikler={artikler} artiklerTekst={artiklerTekst} />, {
       title: `${fp.slug} — broberg.ai`,
       description: fp.description,
       locale,
