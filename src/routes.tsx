@@ -4,7 +4,7 @@
    When cms is wired, each handler builds its model from the local store. */
 import type { Locale } from "@/config.ts";
 import { Nav, AdminNav } from "@/components/Nav.tsx";
-import { FeaturedBaand, FeaturedBoks } from "@/components/Featured.tsx";
+import { FeaturedBaand, FeaturedBoks, FeaturedEmblem } from "@/components/Featured.tsx";
 import { Footer } from "@/components/Footer.tsx";
 import { RenderSections } from "@/render/blocks.tsx";
 import { Platforms } from "@/components/sections.tsx";
@@ -603,7 +603,13 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
       titel: gtxt("flagshipArtiklerTitel", locale === "en" ? "What we have written about {navn}" : "Det vi har skrevet om {navn}")
         .replace("{navn}", fp.slug),
     };
-    return await page(<FlagshipSlides page={fp} locale={locale} cmsRef={flagshipRef} artikler={artikler} artiklerTekst={artiklerTekst} />, {
+    // F008.6 — `featured` bor på DOKUMENTET, og loadFlagship returnerer en
+    // valideret FlagshipPage hvor feltet er filtreret fra. Læs derfor doc'et
+    // selv. Det er DENNE vej de flagskibe går som ejeren faktisk kigger på
+    // (/flagskibe/trail m.fl.); den klassiske vej nedenfor er reserven.
+    const fsDoc = fromCms ? await loadPlatform(locale, slug) : null;
+    const fsFeatured = ((fsDoc?.data ?? {}) as Record<string, unknown>).featured === true;
+    return await page(<FlagshipSlides page={fp} locale={locale} cmsRef={flagshipRef} artikler={artikler} artiklerTekst={artiklerTekst} featured={fsFeatured} featuredEmblem={gtxt("featuredEmblem", "★ Featured")} />, {
       title: `${fp.slug} — broberg.ai`,
       description: fp.description,
       locale,
@@ -613,6 +619,7 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
   const doc = await loadPlatform(locale, slug);
   if (!doc) return null;
   const d = (doc.data ?? {}) as Record<string, unknown>;
+  const platformEmblem = (await globalsChrome(locale)).g("featuredEmblem", "★ Featured");
   const str = (v: unknown) => (typeof v === "string" ? v : "");
   const name = str(d.name) || slug;
   const status = str(d.status) || "live";
@@ -629,6 +636,7 @@ export async function renderFlagshipDetail(locale: Locale, slug: string): Promis
             <div class="logot logot-lg">
               <Logo k={slug.toLowerCase()} />
             </div>
+            <FeaturedEmblem featured={d.featured === true} tekst={platformEmblem} />
             <div class="eyebrow">Flagskib · {status}</div>
             <h2 {...cmsAttrs(platformRef, "name")}>{name}</h2>
             {tagline ? <p class="lead" {...cmsAttrs(platformRef, "tagline")}>{tagline}</p> : null}
@@ -745,7 +753,7 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
     proofEyebrow: gv("solProofEyebrow", isEnSol ? "The proof" : "Beviset"),
   };
 
-  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} bookLabel={bookLabel} globalsRef={globalsRef} labels={labels} />, {
+  return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} bookLabel={bookLabel} globalsRef={globalsRef} labels={labels} featured={(doc.data as Record<string, unknown>)?.featured === true} featuredEmblem={gv("featuredEmblem", "★ Featured")} />, {
     title: `${data.name} — broberg.ai`,
     description: stripHtml(data.lead),
     locale,
@@ -826,6 +834,7 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
       <div class="wrap reveal">
         <div class="plat-detail-head">
           <div class="plat-detail-text sec-head">
+            <FeaturedEmblem featured={d.featured === true} tekst={g("featuredEmblem", "★ Featured")} />
             <div class="eyebrow" {...cmsAttrs(catRef, "name")}>{catLabel}</div>
             <h1 class="post-title" {...cmsHtmlAttrs(postRef, "title")} dangerouslySetInnerHTML={{ __html: titleToHtml(title, str(d.titleHighlight)) }} />
             {(str(d.author) || d.date || str(d.readTime)) ? (

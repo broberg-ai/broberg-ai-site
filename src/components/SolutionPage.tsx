@@ -4,6 +4,7 @@
    new (added to brand.css — no equivalent horizontal-step or coloured-pill
    component existed before this page type). */
 import { Icon } from "@/components/Icons.tsx";
+import { FeaturedEmblem } from "@/components/Featured.tsx";
 import type { Locale } from "@/config.ts";
 import type { CmsRef } from "@/content/types.ts";
 import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
@@ -79,6 +80,8 @@ export function SolutionPage({
   locale,
   secondaryCta,
   cmsRef,
+  featured,
+  featuredEmblem,
   bookLabel,
   globalsRef,
   labels,
@@ -87,6 +90,8 @@ export function SolutionPage({
   locale: Locale;
   secondaryCta: { label: string; href: string };
   cmsRef?: CmsRef;
+  featured?: boolean;
+  featuredEmblem?: string;
   bookLabel: string;
   globalsRef?: CmsRef;
   labels: SolutionLabels;
@@ -101,6 +106,7 @@ export function SolutionPage({
       <section id="top">
         <div class="wrap plat-detail-head" style="padding-top:150px">
           <div>
+            <FeaturedEmblem featured={featured === true} tekst={featuredEmblem ?? "★ Featured"} />
             <div class="eyebrow">
               <span {...cmsAttrs(globalsRef, "solLosningerPrefix")}>{labels.losningerPrefix}</span> · <span {...cmsAttrs(cmsRef, "name")}>{data.name}</span>
             </div>

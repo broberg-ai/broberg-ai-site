@@ -6,6 +6,7 @@
    quote/cards/stats/chat/callout) are all optional, so one template serves every
    flagship. v1 copy is bespoke here (can move to cms fields later). */
 import type { JSX } from "preact";
+import { FeaturedEmblem } from "@/components/Featured.tsx";
 import { stripHtml } from "@/content/richtext.ts";
 import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
@@ -291,6 +292,8 @@ function SlideView({
   page,
   slide,
   idx,
+  featured,
+  featuredEmblem,
   total,
   locale,
   cmsRef,
@@ -298,6 +301,8 @@ function SlideView({
   page: FlagshipPage;
   slide: Slide;
   idx: number;
+  featured?: boolean;
+  featuredEmblem?: string;
   total: number;
   locale?: string;
   cmsRef?: CmsRef;
@@ -319,6 +324,7 @@ function SlideView({
               <div class="logot logot-lg">
                 <Logo k={page.slug} />
               </div>
+              <FeaturedEmblem featured={featured === true} tekst={featuredEmblem ?? "★ Featured"} />
               <Eyebrow slide={slide} cmsRef={cmsRef} idx={idx} />
               <H s={slide} cmsRef={cmsRef} idx={idx} />
               {head.map(({ b, i }) => (
@@ -1494,12 +1500,12 @@ export interface FlagshipArtikel {
   date: string;
 }
 
-export function FlagshipSlides({ page, locale, cmsRef, artikler, artiklerTekst }: { page: FlagshipPage; locale?: string; cmsRef?: CmsRef; artikler?: FlagshipArtikel[]; artiklerTekst?: { eyebrow: string; titel: string } }): JSX.Element {
+export function FlagshipSlides({ page, locale, cmsRef, artikler, artiklerTekst, featured, featuredEmblem }: { page: FlagshipPage; locale?: string; cmsRef?: CmsRef; artikler?: FlagshipArtikel[]; artiklerTekst?: { eyebrow: string; titel: string }; featured?: boolean; featuredEmblem?: string }): JSX.Element {
   const loc = locale === "en" ? "en" : "da";
   return (
     <>
       {page.slides.map((slide, i) => (
-        <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} locale={locale} cmsRef={cmsRef} />
+        <SlideView key={i} page={page} slide={slide} idx={i} total={page.slides.length} locale={locale} cmsRef={cmsRef} featured={featured} featuredEmblem={featuredEmblem} />
       ))}
       {artikler?.length ? (
         <section data-testid="flagship-artikler">

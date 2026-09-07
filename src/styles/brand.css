@@ -4217,3 +4217,10 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   margin: 0.2em 0 0.1em;
   font-size: 0.95rem;
 }
+
+/* F008.6 — «denne side er featured». Genbruger .f-maerke's udseende; her skal
+   den blot stå som sin egen linje over eyebrow'en i sidehovedet. */
+.f-emblem {
+  display: inline-flex;
+  margin-bottom: 10px;
+}

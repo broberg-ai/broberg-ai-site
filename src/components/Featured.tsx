@@ -142,3 +142,27 @@ export function FeaturedAnimation() {
   );
 }
 
+/**
+ * F008.6 — «DENNE side er featured».
+ *
+ * Til forskel fra FeaturedBaand, som viser de ANDRE featured-artikler og
+ * roterer: båndet siger intet om den side man står på, så der fandtes ingen
+ * måde at se at siden selv var fremhævet.
+ *
+ * Læser sidens EGET dokument og ikke loadFeatured(). Målt 7/9-2026: ★-knappen i
+ * redigerings-FAB'en tilbydes på enhver side med et primært dokument og sætter
+ * `featured` på hvad end samlingen er — mens loadFeatured() kun kender `posts`.
+ * Spurgte emblemet dén, ville en stjerne på et flagskib blive ved med at være
+ * virkningsløs: knappen siger ja, feltet gemmes, siden viser ingenting.
+ *
+ * Skjuler sig selv frem for at lade hvert kaldested gentage betingelsen — så
+ * findes den negative kontrol ét sted i stedet for tre.
+ */
+export function FeaturedEmblem({ featured, tekst }: { featured: boolean; tekst: string }) {
+  if (!featured) return null;
+  return (
+    <span class="f-maerke f-emblem" data-testid="featured-emblem">
+      {tekst}
+    </span>
+  );
+}
