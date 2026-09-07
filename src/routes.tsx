@@ -50,6 +50,7 @@ import { AidanWidget, aidanTekster } from "@/components/AidanWidget.tsx";
 import { aidanConfigured } from "@/aidan.ts";
 import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
+import { Podcast, type PodcastData } from "@/components/Podcast.tsx";
 import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
 import type { StoredDoc } from "@/content/store.ts";
 import { flagshipsSegment, withLocale, formatDate } from "@/i18n.ts";
@@ -1303,3 +1304,65 @@ export async function renderFeaturedListe(locale: Locale): Promise<string> {
   );
 }
 
+/* F012 — podcast-siden. Al brugervendt tekst hentes fra globals; reserverne er
+ * en nødbremse, ikke et hjem (værdierne ER skrevet i CMS på begge sprog).
+ *
+ * `afsnit: []` er ikke en forglemmelse: podcasten er under produktion, og et
+ * tomt arkiv med en forklaring er sandt, hvor et gitter med opdigtede afsnit
+ * ikke ville være. Når første afsnit lander, fyldes listen her. */
+export async function renderPodcast(locale: Locale): Promise<string> {
+  const isEn = locale !== "da";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+
+  const trin = (n: number, maerkeDa: string, maerkeEn: string, titelDa: string, titelEn: string, tekstDa: string, tekstEn: string) => ({
+    maerke: g(`podcastTrin${n}Maerke`, isEn ? maerkeEn : maerkeDa),
+    titel: g(`podcastTrin${n}Titel`, isEn ? titelEn : titelDa),
+    tekst: g(`podcastTrin${n}Tekst`, isEn ? tekstEn : tekstDa),
+  });
+
+  const data: PodcastData = {
+    eyebrow: g("podcastEyebrow", isEn ? "Podcast · in production" : "Podcast · under produktion"),
+    heading: g("podcastHeading", isEn ? "Two people talking about one article at a time." : "To der taler om én artikel ad gangen."),
+    lead: g(
+      "podcastLead",
+      isEn
+        ? "Aidan explains. Airina asks what a listener would. One episode, one article, and nobody pretending to agree when they don't."
+        : "Aidan forklarer. Airina spørger som lytteren ville. Ét afsnit, én artikel, og ingen der lader som om de er enige når de ikke er det.",
+    ),
+    vaerter: [
+      { initialer: "A", navn: g("podcastAidanNavn", "Aidan"), rolle: g("podcastAidanKort", isEn ? "explains" : "forklarer") },
+      { initialer: "Ai", navn: g("podcastAirinaNavn", "Airina"), rolle: g("podcastAirinaKort", isEn ? "asks on your behalf" : "spørger på din vegne") },
+    ],
+    statusTitel: g("podcastStatusTitel", isEn ? "The first episode is in production" : "Første afsnit er under produktion"),
+    statusTekst: g("podcastStatusTekst", isEn ? "The engine is built and tested end to end." : "Motoren er bygget og afprøvet hele vejen igennem."),
+    introTitel: g("podcastIntroTitel", isEn ? "Who are Aidan and Airina?" : "Hvem er Aidan og Airina?"),
+    introTekst: g("podcastIntroTekst", isEn ? "Two AI agents at broberg.ai." : "To AI-agenter hos broberg.ai."),
+    manuskriptTitel: g("podcastManuskriptTitel", isEn ? "Everything said — and written" : "Alt bliver sagt — og skrevet"),
+    manuskriptTekst: g("podcastManuskriptTekst", isEn ? "The script is not subtitles made afterwards." : "Manuskriptet er ikke undertekster lavet bagefter."),
+    arkivTitel: g("podcastArkivTitel", isEn ? "The archive" : "Arkivet"),
+    arkivTom: g("podcastArkivTom", isEn ? "The first episode is on its way." : "Første afsnit er på vej."),
+    afsnit: [],
+    trinEyebrow: g("podcastTrinEyebrow", isEn ? "How an episode comes about" : "Sådan bliver et afsnit til"),
+    trinTitel: g("podcastTrinTitel", isEn ? "Five steps, one human" : "Fem trin, ét menneske"),
+    trin: [
+      trin(1, "1 · auto", "1 · auto", "Artiklen vælges", "The article is picked", "Næste artikel foreslås fra CMS.", "The next article is proposed from the CMS."),
+      trin(2, "2 · auto", "2 · auto", "Manuskriptet skrives", "The script is written", "Artiklen bliver til replikker mellem de to værter.", "The article becomes lines between the two hosts."),
+      trin(3, "3 · menneske", "3 · human", "Du læser og retter", "You read and correct", "Manuskriptet ligger i CMS. Intet indspilles før du siger ja.", "The script lives in the CMS. Nothing is recorded until you say yes."),
+      trin(4, "4 · auto", "4 · auto", "Indspilning", "Recording", "Én samtale-motor, to stemmer, omkring fem kroner.", "One dialogue engine, two voices, about five kroner."),
+      trin(5, "5 · auto", "5 · auto", "Udgivelse", "Publishing", "Side, afspiller og feed — abonnenter får den selv.", "Page, player and feed — subscribers get it automatically."),
+    ],
+    lytTitel: g("podcastLytTitel", isEn ? "Where you usually listen" : "Hvor du plejer at lytte"),
+    lytTekst: g("podcastLytTekst", isEn ? "The feed opens with the first episode." : "Feedet åbner sammen med første afsnit."),
+    nytMaerke: g("podcastNytMaerke", isEn ? "New" : "Nyt"),
+  };
+
+  return await page(<Podcast data={data} cmsRef={globalsRef} />, {
+    title: isEn ? "Podcast — broberg.ai" : "Podcast — broberg.ai",
+    description: isEn
+      ? "Two AI agents talking about one broberg.ai article at a time. In production."
+      : "To AI-agenter der taler om én broberg.ai-artikel ad gangen. Under produktion.",
+    locale,
+    canonical: isEn ? "/en/podcast" : "/podcast",
+    altHref: isEn ? "/podcast" : "/en/podcast",
+  });
+}

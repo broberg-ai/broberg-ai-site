@@ -4234,3 +4234,74 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 }
 .f-maerke-link:hover { filter: brightness(1.08); }
 .f-maerke-link:active { transform: translateY(1px); filter: brightness(0.94); }
+
+/* ── F012 · podcast-siden ──────────────────────────────────────────────────
+   Bygget efter den godkendte mockup. Bruger husets tokens frem for literale
+   farver, så siden følger med når temaet ændres. */
+.pod { max-width: 68rem; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+.pod-hero { padding: 1rem 0 2.5rem; }
+.pod-eyebrow {
+  font-size: .78rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--orange-text); margin: 0 0 .75rem;
+}
+.pod-h1 { font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.08; margin: 0 0 1rem; }
+.pod-lead { font-size: 1.15rem; line-height: 1.6; color: var(--muted); max-width: 44rem; margin: 0; }
+
+.pod-vaerter { display: flex; flex-wrap: wrap; gap: 1.5rem; list-style: none; padding: 0; margin: 2rem 0 0; }
+.pod-vaert { display: flex; align-items: center; gap: .7rem; }
+.pod-avatar {
+  display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  background: var(--blue-light); color: var(--blue-text); font-weight: 700; font-size: .95rem;
+}
+.pod-vaert-tekst { display: flex; flex-direction: column; line-height: 1.3; }
+.pod-vaert-tekst span { color: var(--muted); font-size: .9rem; }
+
+.pod-status {
+  display: flex; gap: .9rem; align-items: flex-start;
+  border: 1px solid var(--card-border); background: var(--card);
+  border-radius: 14px; padding: 1.25rem 1.4rem; margin: 0 0 3rem;
+}
+.pod-status-prik {
+  flex: none; width: .6rem; height: .6rem; margin-top: .5rem; border-radius: 50%;
+  background: var(--orange); box-shadow: 0 0 0 4px var(--orange-soft);
+}
+.pod-status-h { margin: 0 0 .35rem; font-size: 1.05rem; }
+.pod-status p { margin: 0; color: var(--muted); line-height: 1.55; }
+
+.pod-blok { padding: 0 0 3rem; }
+.pod-blok h2 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 0 0 .9rem; }
+.pod-brod { line-height: 1.7; color: var(--muted); max-width: 46rem; margin: 0; }
+.pod-tom {
+  color: var(--muted); line-height: 1.6; border: 1px dashed var(--card-border);
+  border-radius: 12px; padding: 1.5rem; margin: 0;
+}
+
+.pod-arkiv { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; }
+.pod-kort {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center;
+  border: 1px solid var(--card-border); background: var(--card);
+  border-radius: 12px; padding: .9rem 1.1rem; text-decoration: none; color: inherit;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.pod-kort:hover { border-color: var(--blue); transform: translateY(-1px); }
+.pod-kort:active { transform: translateY(0); }
+.pod-nr { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .9rem; }
+.pod-kort-tekst { display: flex; flex-direction: column; gap: .15rem; min-width: 0; }
+.pod-kort-tekst span { color: var(--muted); font-size: .9rem; }
+.pod-nyt {
+  font-style: normal; font-size: .7rem; margin-left: .5rem; padding: .1rem .4rem;
+  border-radius: 4px; background: var(--orange-soft); color: var(--orange-text);
+}
+.pod-laengde { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+
+.pod-trin { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: .8rem; }
+@media (min-width: 62rem) { .pod-trin { grid-template-columns: repeat(5, 1fr); } }
+.pod-trin-punkt {
+  display: flex; flex-direction: column; gap: .4rem;
+  border: 1px solid var(--card-border); background: var(--card);
+  border-radius: 12px; padding: 1rem;
+}
+.pod-trin-maerke {
+  font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--blue-text);
+}
+.pod-trin-punkt span:last-child { color: var(--muted); font-size: .9rem; line-height: 1.5; }

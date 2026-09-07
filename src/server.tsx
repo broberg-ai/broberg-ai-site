@@ -31,6 +31,7 @@ import {
   renderFeaturedListe,
   renderAdmin,
   renderAdminChat,
+  renderPodcast,
 } from "@/routes.tsx";
 import { renderSitemapXml } from "@/sitemap.ts";
 import { renderLlmsTxt } from "@/llms.ts";
@@ -232,6 +233,10 @@ app.get(`/en/${flagshipsSegment("en")}/:slug`, async (c) => {
   const r = await renderFlagshipDetail("en", c.req.param("slug"));
   return r ? html(r) : notFound(await renderGenericPage("en", "not-found"));
 });
+
+// F012 — podcast (samme segment på begge sprog; ordet oversættes ikke).
+app.get("/podcast", async () => html(await renderPodcast("da")));
+app.get("/en/podcast", async () => html(await renderPodcast("en")));
 
 // Tags — cloud (/tags) + per-tag page (/tags/:tag), DA + EN. Registered BEFORE the
 // catch-all blog/page routes so they win over /:slug and /:category/:slug.
