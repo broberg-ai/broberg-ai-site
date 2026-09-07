@@ -33,9 +33,13 @@ export function FeaturedBaand({ items, laes, maerke }: { items: FeaturedItem[]; 
   );
 }
 
-/** Postens eget CMS-anker, så titel + featuredText kan rettes direkte på forsiden. */
-function postRefOf(item: FeaturedItem): CmsRef {
-  return { collection: "posts", slug: item.slug, locale: item.href.startsWith("/en") ? "en" : "da" };
+/** Elementets eget CMS-anker, så titel + manchet kan rettes direkte på forsiden.
+ *
+ *  F008.7: hed postRefOf og hardkodede "posts". Nu hvor listen også rummer
+ *  flagskibe og løsninger, ville det have skrevet en redigering af et
+ *  flagskib-kort ind i posts-samlingen — tavst, i det forkerte dokument. */
+function refOf(item: FeaturedItem): CmsRef {
+  return { collection: item.collection, slug: item.slug, locale: item.href.startsWith("/en") ? "en" : "da" };
 }
 
 /** Visual, i denne rækkefølge: artiklens eget STILLBILLEDE (en videos poster
@@ -76,7 +80,7 @@ export function FeaturedBoks({
   // mockup'ens tre kasser, ikke et krav — ejeren taggede 4 og så kun 3
   // (målt 6/9). Han styrer selv hvor mange der er featured; boksen viser dem.
   const smaa = items.slice(1);
-  const storRef = postRefOf(stor);
+  const storRef = refOf(stor);
   return (
     <section class="f-sektion" data-testid="featured-boks">
       <div class="wrap">
@@ -98,7 +102,7 @@ export function FeaturedBoks({
           {smaa.length ? (
             <div class="f-stak" data-testid="featured-stak">
               {smaa.map((it) => {
-                const ref = postRefOf(it);
+                const ref = refOf(it);
                 return (
                   <a class="f-lille" href={it.href} key={it.slug} data-testid="featured-lille">
                     <span class="f-maerke f-maerke-tynd">{maerke}</span>

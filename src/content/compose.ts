@@ -1000,42 +1000,109 @@ export async function buildTagCloud(locale: Locale): Promise<TagCount[]> {
   return [...map.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
 
-/** F008: alle featured dokumenter (artikler OG sider — på dette site er alle
- *  indholdssider posts). featuredText er den korte salgstekst (F008.1),
- *  BEVIDST forskellig fra manchetten. Nyeste først. */
+/** F008: alle featured dokumenter — artikler OG sider.
+ *
+ *  featuredText er den korte salgstekst (F008.1), BEVIDST forskellig fra
+ *  manchetten. Nyeste først.
+ *
+ *  F008.7: kommentaren her sagde tidligere «på dette site er alle indholdssider
+ *  posts». Det passede ikke: ★-knappen i redigerings-FAB'en tilbydes på ENHVER
+ *  side med et primært dokument og skriver `featured` på hvad end samlingen er,
+ *  mens dette opslag kun læste `posts`. En stjerne på et flagskib blev altså
+ *  gemt og gjorde ingenting — og listesidens egen tekst lovede «artikler og
+ *  sider». */
 export type FeaturedItem = {
   href: string;
   title: string;
   featuredText: string;
   category: string;
   slug: string;
+  /** Dokumentets EGEN samling. Kortene byggede før deres inline-edit-anker med
+   *  et hardkodet "posts"; med flere samlinger i listen ville en redigering af
+   *  et flagskib-kort skrive ind i posts — tavst, i det forkerte dokument. */
+  collection: string;
   /** Artiklens egen visual — første video/billede i indholdet (kun /uploads).
    *  Mangler begge, render fladen forsidens fælles animation i stedet. */
   visualImg?: string;
 };
+/**
+ * Hver samling svarer forskelligt på de tre spørgsmål et featured-kort stiller —
+ * hvor peger det hen, hvad hedder det, og hvad står der under. Derfor en tabel
+ * frem for en if-kæde: en ny samling er én række, ikke en ny gren.
+ *
+ * `sections` står med vilje IKKE på listen. sections/universet bærer
+ * `featured: true` (feltet er ikke engang i sections' skema — efter alt at dømme
+ * en rest fra en test af knappen), men en sektion er ikke en side man kan linke
+ * til. Kom den med, ville båndet have en post med en URL der ikke findes, og et
+ * dødt link i båndet er værre end ingen post.
+ */
+const FEATURED_KILDER: {
+  collection: string;
+  /** Offentlig sti for et dokument i denne samling. */
+  href: (slug: string, d: Record<string, unknown>, locale: Locale) => string;
+  titel: (d: Record<string, unknown>, slug: string) => string;
+  /** Kun posts har featuredText; de øvrige falder tilbage til deres egen
+   *  manchet frem for at stå tomme — et kort uden tekst ser ud som om noget
+   *  mangler. */
+  manchet: (d: Record<string, unknown>) => string;
+  kategori: (d: Record<string, unknown>, locale: Locale) => string;
+}[] = [
+  {
+    collection: "posts",
+    href: (slug, d, locale) =>
+      `${locale === "en" ? "/en" : ""}/${str(d.category) || "indsigter"}/${slug}`,
+    titel: (d, slug) => (str(d.title) ? str(d.title).replace(/<[^>]+>/g, "") : slug),
+    manchet: (d) => str(d.featuredText),
+    kategori: (d) => str(d.category) || "indsigter",
+  },
+  {
+    collection: "platforms",
+    // Segmentet kommer fra i18n'ens egen tabel, ikke fra en ny streng: en fjerde
+    // kopi af «flagskibe» er forkert den dag én af dem rettes.
+    href: (slug, _d, locale) => `${locale === "en" ? "/en" : ""}/${flagshipsSegment(locale)}/${slug}`,
+    titel: (d, slug) => str(d.name) || slug,
+    manchet: (d) => str(d.tagline) || str(d.description),
+    kategori: (_d, locale) => (locale === "en" ? "flagship" : "flagskib"),
+  },
+  {
+    collection: "solutions",
+    href: (slug, _d, locale) => `${locale === "en" ? "/en" : ""}/${locale === "en" ? "solutions" : "losninger"}/${slug}`,
+    titel: (d, slug) => str(d.name) || slug,
+    manchet: (d) => str(d.blurb) || str(d.lead),
+    kategori: (_d, locale) => (locale === "en" ? "solution" : "løsning"),
+  },
+];
+
 export async function loadFeatured(locale: Locale): Promise<FeaturedItem[]> {
-  const en = locale === "en";
-  return forLocale(await list("posts"), locale)
-    .filter((p) => p.status === "published" && dataOf(p).featured === true)
-    .sort((a, b) => String(dataOf(b).date ?? "").localeCompare(String(dataOf(a).date ?? "")))
-    .map((p) => {
-      const d = dataOf(p);
-      const slug = String(p.slug);
-      const category = typeof d.category === "string" ? d.category : "indsigter";
-      const indhold = typeof d.content === "string" ? d.content : "";
+  const alle: { item: FeaturedItem; dato: string }[] = [];
+
+  for (const kilde of FEATURED_KILDER) {
+    const docs = forLocale(await list(kilde.collection), locale).filter(
+      (p) => p.status === "published" && dataOf(p).featured === true,
+    );
+    for (const p of docs) {
+      const d = dataOf(p) as Record<string, unknown>;
+      const slug = stripLocalePrefix(String(p.slug ?? ""), locale);
+      const indhold = str(d.content);
       const poster = /<video[^>]+poster="(\/uploads\/[^"]+)"/.exec(indhold)?.[1];
       const billede = /<img[^>]+src="(\/uploads\/[^"]+)"/.exec(indhold)?.[1];
-      // Featured-boksen er et visitkort, ikke en afspiller: er artiklens visual
-      // en video, bruger vi dens POSTER som stillbillede (ejerens valg 5/9 —
-      // et <video> tegner sin egen mørke firkant bag figuren). Kun /uploads.
-      return {
-        href: `${en ? "/en" : ""}/${category}/${slug}`,
-        title: typeof d.title === "string" ? d.title.replace(/<[^>]+>/g, "") : slug,
-        featuredText: typeof d.featuredText === "string" ? d.featuredText : "",
-        category,
-        slug,
-        ...(poster ?? billede ? { visualImg: poster ?? billede } : {}),
-      };
-    });
+      alle.push({
+        dato: str(d.date),
+        item: {
+          href: kilde.href(slug, d, locale),
+          title: kilde.titel(d, slug),
+          featuredText: kilde.manchet(d),
+          category: kilde.kategori(d, locale),
+          slug,
+          collection: kilde.collection,
+          ...(poster ?? billede ? { visualImg: poster ?? billede } : {}),
+        },
+      });
+    }
+  }
+
+  // Nyeste først, som før. Sider uden dato ryger bagest frem for at blande sig
+  // ind mellem artiklerne i en tilfældig orden.
+  return alle.sort((a, b) => b.dato.localeCompare(a.dato)).map((x) => x.item);
 }
 
