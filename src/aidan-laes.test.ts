@@ -25,7 +25,17 @@ describe("tilTale — det man gider høre", () => {
 
 describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5/9)", () => {
   test("teksten forvanskes IKKE længere — udtalen bor i pronunciations-feltet", () => {
-    expect(tilTale("vores AI-assistent på broberg.ai")).toBe("vores AI-assistent på broberg.ai");
+    // PRINCIPPET STÅR, MEN ER INDSNÆVRET 7/9: udtalen bor stadig i
+    // pronunciations-feltet, og tale-teksten omskrives ALDRIG for at ændre
+    // hvordan et ord LYDER. Den ene undtagelse er bindestregen — og den er der
+    // fordi ordbogen beviseligt ikke kan nå forbi den (ai-sdk matcher
+    // `(?<![\w-])ord(?![\w-])`), ikke fordi vi foretrak en tekst-omskrivning.
+    // Sikkert netop her: `tale` har ét kaldested og går udelukkende til
+    // ai().tts — den når aldrig et menneske som tekst (mailen sender lydfilen).
+    expect(tilTale("vores AI-assistent på broberg.ai")).toBe("vores AI assistent på broberg.ai");
+    // Domænet er urørt — det er ordbogens arbejde, ikke tekstens.
+    expect(tilTale("vores AI-assistent på broberg.ai")).toContain("broberg.ai");
+    // Små bogstaver er ikke en forkortelse: «ai-native» er ét ord, ikke A I.
     expect(tilTale("en ai-native webhook")).toBe("en ai-native webhook");
   });
   test("udtaleFor: dansk får lydreglerne, engelsk får kun de fælles", () => {
@@ -39,6 +49,20 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
     expect(en.find((r) => r.word === "broberg.ai")).toBeUndefined();
     expect(en.find((r) => r.word === "AI")).toBeUndefined();
     expect(en.find((r) => r.word === "webhook")).toBeUndefined();
+  });
+  test("en forkortelse foran en bindestreg når ordbogen — «AI-agenter» blev aldrig rørt", () => {
+    // ai-sdk'ens substitution er `(?<![\w-])(ord)(?![\w-])` — et hele-ord-match
+    // der udtrykkeligt afviser en bindestreg efter. Målt 7/9: 60+ forekomster i
+    // vores danske artikler stod uden for ordbogens rækkevidde, «AI-agenter» 13
+    // gange alene. Bindestregen fjernes derfor i tale-teksten, og så gør
+    // ordbogen resten.
+    expect(tilTale("15+ AI-agenter")).toBe("15+ AI agenter");
+    expect(tilTale("en AI-native platform")).toBe("en AI native platform");
+    expect(tilTale("ret HTML-filen")).toBe("ret HTML filen");
+    // NEGATIVE KONTROLLER: kun foran et bogstav, og aldrig et ord vi ikke staver.
+    expect(tilTale("AI-2 modellen")).toBe("AI-2 modellen");
+    expect(tilTale("en fine-tuning af modellen")).toBe("en fine-tuning af modellen");
+    expect(tilTale("SaaS-produktet")).toBe("SaaS-produktet");
   });
   test("forkortelser siges bogstav for bogstav — Jeppe læste «HTML» som ordet «HTLM»", () => {
     // Christian hørte den 7/9. Stemmen forsøger at udtale bogstavrækken som ét

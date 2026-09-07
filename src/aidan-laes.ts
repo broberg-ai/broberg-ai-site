@@ -63,6 +63,16 @@ export function resetLaesForTest(client?: AiClient): void {
  *  adapteren (injektions-værnet er pakkens, ikke vores).
  *  `sprog: "da"` holder danske lydregler væk fra Andrew/Ava, der udtaler de
  *  engelske ord rigtigt. Nyt galt-udtalt ord = én række her. */
+/** Forkortelser der SKAL siges bogstav for bogstav på dansk. ÉN liste, læst
+ *  både af ordbogen nedenfor og af bindestregs-reglen i tilTale — ellers ville
+ *  et nyt ord skulle huskes to steder, og det ene ville blive glemt.
+ *
+ *  SaaS står IKKE her: den udtales som et ord, og at stave den ville gøre den
+ *  værre. Den har sin egen række. */
+export const FORKORTELSER = [
+  "AI", "HTML", "CSS", "CMS", "API", "URL", "SEO", "GDPR", "SDK", "MCP", "PWA", "UI", "UX",
+] as const;
+
 const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" | "da" }> = [
   // Christians princip 5/9: engelsk tale håndterer engelske ord og domæner
   // out-of-the-box — så NÆSTEN alt er da-scoped, og domæner siges med
@@ -127,8 +137,20 @@ export function ordbogNoegle(locale: Locale): string {
  *  over — og UDTALE-ORDBOGEN sikrer at navnet og «AI» siges rigtigt.
  *  Ordbogens rækkefølge bærer: broberg.ai-reglen SKAL køre før AI-reglen,
  *  ellers bliver navnet til «broberg.A I». */
+const BINDESTREG = new RegExp(`\\b(${FORKORTELSER.join("|")})-(?=[a-zA-ZæøåÆØÅ])`, "g");
+
 export function tilTale(md: string): string {
   return md
+    // «AI-agenter» → «AI agenter». Ordbogen kan IKKE nå den selv: ai-sdk'ens
+    // substitution er `(?<![\w-])(ord)(?![\w-])`, altså et hele-ord-match der
+    // udtrykkeligt afviser en bindestreg efter. Målt 7/9 — og på dansk er det
+    // netop dér forkortelser står: 60+ forekomster i vores egne artikler,
+    // «AI-agenter» 13 gange, «AI-native» 12.
+    //
+    // En liste over sammensætningerne ville drive fra virkeligheden ved næste
+    // artikel. Bindestregen fjernes derfor generelt, og så gør ordbogen resten.
+    // Kun foran et BOGSTAV, så «AI-2» eller en tankestreg ikke rammes.
+    .replace(BINDESTREG, "$1 ")
     // BÆLTE (Christians fund 5/9: rå <em> i en titel blev læst højt som
     // «mindre end...»): HTML-tags når ALDRIG stemmen, uanset hvor de sniger
     // sig ind i et felt. Dataen rettes altid også — dette er nødbremsen.
