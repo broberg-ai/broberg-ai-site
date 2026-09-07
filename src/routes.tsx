@@ -80,7 +80,7 @@ async function page(
   return renderPage(
     <>
       <Nav locale={meta.locale} altHref={meta.altHref} nav={navLabels} globalsRef={globalsRef} />
-      <FeaturedBaand items={featured} laes={laesLabel} maerke={(typeof globalsData.featuredMaerke === "string" && (globalsData.featuredMaerke as string)) || "★ FEATURED"} />
+      <FeaturedBaand items={featured} laes={laesLabel} maerke={(typeof globalsData.featuredMaerke === "string" && (globalsData.featuredMaerke as string)) || "★ FEATURED"} alleHref={withLocale(meta.locale, "/featured")} />
       {children}
       <Footer data={footerData} cmsRef={globalsRef} />
       {/* Aidan — kun når chatten faktisk kan svare (ship-dark). Admin-fladerne

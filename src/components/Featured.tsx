@@ -7,11 +7,23 @@ import { cmsAttrs } from "@/components/sections.tsx";
 import { stripHtml } from "@/content/richtext.ts";
 import { Illustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
 
-export function FeaturedBaand({ items, laes, maerke }: { items: FeaturedItem[]; laes: string; maerke: string }) {
+export function FeaturedBaand({ items, laes, maerke, alleHref }: { items: FeaturedItem[]; laes: string; maerke: string; alleHref: string }) {
   if (!items.length) return null;
   return (
     <div class="f-baand" data-testid="featured-baand">
-      <span class="f-maerke">{maerke}</span>
+      {/* F008.8 — mærket ligner en knap, så det skal opføre sig som én. Titlen og
+          «Læs →» er begge links; mærket var det eneste i båndet der ikke
+          reagerede. Adressen kommer fra withLocale, ikke fra en skrevet
+          "/featured": den ville føre til den DANSKE liste fra en engelsk side,
+          og gøre det i tavshed.
+
+          KUN her. De to andre f-maerke på forsiden lades urørt — det ene sidder
+          INDE I <a class="f-lille">, og et link i et link er ugyldigt: browseren
+          reparerer det ved at bryde det ydre op, så hele kortet holdt op med at
+          virke for at give mærket et link ingen bad om. */}
+      <a class="f-maerke f-maerke-link" href={alleHref} data-testid="featured-baand-maerke">
+        {maerke}
+      </a>
       <span class="f-baand-spor">
         {items.map((it, i) => (
           <a class={`f-baand-punkt${i === 0 ? " akt" : ""}`} href={it.href} data-testid="featured-baand-titel">
