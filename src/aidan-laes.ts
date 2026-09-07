@@ -68,6 +68,23 @@ const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" 
   // out-of-the-box — så NÆSTEN alt er da-scoped, og domæner siges med
   // «punktum» på dansk (ikke «dot»).
   { word: "AI", alias: "A I", sprog: "da" },
+  // FORKORTELSER SIGES BOGSTAV FOR BOGSTAV. Jeppe læste «HTML» som ordet
+  // «HTLM» — han forsøger at udtale bogstavrækken som et ord, og bytter om på
+  // dem der ikke danner en stavelse. Skrevet ud som bogstaver på dansk kan det
+  // ikke ske. Christian hørte den 7/9.
+  { word: "HTML", alias: "H T M L", sprog: "da" },
+  { word: "CSS", alias: "C S S", sprog: "da" },
+  { word: "CMS", alias: "C M S", sprog: "da" },
+  { word: "API", alias: "A P I", sprog: "da" },
+  { word: "URL", alias: "U R L", sprog: "da" },
+  { word: "SEO", alias: "S E O", sprog: "da" },
+  { word: "GDPR", alias: "G D P R", sprog: "da" },
+  { word: "SaaS", alias: "sas", sprog: "da" },
+  { word: "SDK", alias: "S D K", sprog: "da" },
+  { word: "MCP", alias: "M C P", sprog: "da" },
+  { word: "PWA", alias: "P W A", sprog: "da" },
+  { word: "UI", alias: "U I", sprog: "da" },
+  { word: "UX", alias: "U X", sprog: "da" },
   { word: "broberg.ai", alias: "broberg punktum A I", sprog: "da" },
   { word: "trailmem.com", alias: "trail mem punktum com", sprog: "da" },
   { word: "trailmem", alias: "trail mem", sprog: "alle" },

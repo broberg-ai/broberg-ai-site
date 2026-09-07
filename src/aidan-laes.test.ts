@@ -40,6 +40,24 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
     expect(en.find((r) => r.word === "AI")).toBeUndefined();
     expect(en.find((r) => r.word === "webhook")).toBeUndefined();
   });
+  test("forkortelser siges bogstav for bogstav — Jeppe læste «HTML» som ordet «HTLM»", () => {
+    // Christian hørte den 7/9. Stemmen forsøger at udtale bogstavrækken som ét
+    // ord og bytter om på dem der ikke danner en stavelse. Skrevet ud som
+    // bogstaver kan det ikke ske.
+    const da = udtaleFor("da");
+    expect(da).toContainEqual({ word: "HTML", alias: "H T M L" });
+    // Ikke kun HTML: samme form ramte hele familien, så de er taget med nu
+    // frem for én ad gangen når han hører den næste.
+    for (const w of ["CSS", "CMS", "API", "URL", "SEO", "GDPR", "SDK", "MCP", "PWA", "UI", "UX"]) {
+      expect(da.find((r) => r.word === w)?.alias).toBe(w.split("").join(" "));
+    }
+    // SaaS er IKKE en bogstavrække — den udtales som et ord, og at stave den
+    // ville gøre den værre. Den negative kontrol på reglen.
+    expect(da).toContainEqual({ word: "SaaS", alias: "sas" });
+    // Engelsk siger dem selv rigtigt; en dansk lydregel ville skade dem.
+    const en = udtaleFor("en");
+    expect(en.find((r) => r.word === "HTML")).toBeUndefined();
+  });
   test("en ændret udtale giver en NY lyd-nøgle (ellers serverer lageret den gamle lyd for evigt)", () => {
     expect(ordbogNoegle("da")).toMatch(/^[0-9a-f]{8}$/);
     expect(ordbogNoegle("da")).not.toBe(ordbogNoegle("en")); // forskellige ordbøger → forskellige nøgler
