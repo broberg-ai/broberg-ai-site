@@ -117,6 +117,38 @@ describe("udvælgelsen — det er HER adaptiviteten enten findes eller ikke", ()
   });
 });
 
+describe("F007.19 — kortets krop vælges af de samme regler", () => {
+  // Kortet tager ÉT svar, ikke tre. Prøven måler at det er det RIGTIGE ene.
+  const H = laesRegler(`
+/podcast | Du er ved podcasten — spørg mig om afsnittene.
+/flagskibe | Du kigger på flagskibene. Skal jeg fortælle hvad de koster?
+* | Jeg er Aidan. Hvordan kan jeg hjælpe dig?
+`);
+
+  it("siden man er på vinder", () => {
+    expect(vaelgPills(H, "/podcast", ["/podcast"], 1)).toEqual([
+      "Du er ved podcasten — spørg mig om afsnittene.",
+    ]);
+  });
+
+  it("en anden side giver en ANDEN sætning", () => {
+    // Kontrolprøven mod hele meldingen: «den skriver stadig kun Hej - jeg er Aidan».
+    const a = vaelgPills(H, "/podcast", ["/podcast"], 1)[0];
+    const b = vaelgPills(H, "/flagskibe", ["/flagskibe"], 1)[0];
+    expect(a).not.toBe(b);
+  });
+
+  it("en side uden regel falder til den generelle — aldrig til ingenting", () => {
+    expect(vaelgPills(H, "/en-side-uden-regel", [], 1)).toEqual([
+      "Jeg er Aidan. Hvordan kan jeg hjælpe dig?",
+    ]);
+  });
+
+  it("ingen regler → intet valgt, så den hidtidige tekst bliver stående", () => {
+    expect(vaelgPills([], "/podcast", ["/podcast"], 1)).toEqual([]);
+  });
+});
+
 describe("ruten gemmes", () => {
   beforeEach(() => sessionStorage.clear());
 

@@ -662,6 +662,22 @@ function aidan() {
 
   /** Bygger stakken. Ingen regler i CMS'et → ingenting, og feltet bliver
    *  stående skjult (ship-dark, ikke en tom stribe over chat-knappen). */
+  /** F007.19 — kortets KROP skifter med siden, af samme regler som forslagene.
+   *
+   *  Christian, da F007.18 var ude: «Aidan er slet ikke adaptiv den skriver
+   *  stadig kun Hej - jeg er Aidan». Han så kortet, ikke knapperne under det —
+   *  og kortet er det første øjet lander på. Tre valgte forslag hjælper ikke
+   *  hvis overskriften lige har sagt at intet her ved hvor man står.
+   *
+   *  Intet match → den hidtidige tekst bliver stående. En side uden regel må
+   *  aldrig blive til en tom hilsen. */
+  const tilpasHilsen = () => {
+    const krop = rod.querySelector<HTMLElement>(".aidan-hilsen-krop");
+    if (!krop) return;
+    const valgt = vaelgPills(laesRegler(rod.dataset.hilsenSider ?? ""), location.pathname, spor, 1);
+    if (valgt[0]) krop.textContent = valgt[0];
+  };
+
   const visPills = () => {
     if (!pillsEl) return;
     const regler = laesRegler(rod.dataset.pills ?? "");
@@ -743,6 +759,7 @@ function aidan() {
         // Den lille scroll-boble og kortet må ikke stå oven i hinanden.
         boble.classList.remove("vis");
         // Forslagene kommer sammen med kortet — som i Intercom-eksemplet.
+        tilpasHilsen();
         visPills();
         if (ur) clearInterval(ur);
         ur = null;

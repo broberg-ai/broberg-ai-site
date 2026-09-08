@@ -38,6 +38,9 @@ export interface AidanTekster {
   /** F007.18 — de adaptive forslag UDEN FOR chatten. Én regel pr. linje,
    *  «ruter | tekst». Tom = ingen pills (ship-dark). */
   pills: string;
+  /** F007.19 — hilsen-kortets KROP, pr. side. Samme format som pills.
+   *  Intet match → hilsenKrop står. Tom = kortet er som før. */
+  hilsenSider: string;
   placeholder: string;
   disclaimer: string;
   velkommen: string;
@@ -129,6 +132,7 @@ export function aidanTekster(
     nytSvar: g("aidanNytSvar", en ? "New reply" : "Nyt svar"),
     forslag: g("aidanForslag", en ? "Suggestions" : "Forslag"),
     pills: g("aidanPills", ""),
+    hilsenSider: g("aidanHilsenSider", ""),
     laesTilbud: g("aidanLaesTilbud", en ? "Want me to read the article aloud?" : "Skal jeg læse artiklen højt for dig?"),
     laesHenter: g("aidanLaesHenter", en ? "Fetching the reading…" : "Henter oplæsningen…"),
     laesPause: g("aidanLaesPause", en ? "Pause" : "Pause"),
@@ -246,6 +250,7 @@ export function AidanWidget({
       data-kopieret={t.kopieret}
       data-trans-tilbud={t.transTilbud}
       data-pills={t.pills}
+      data-hilsen-sider={t.hilsenSider}
     >
       <button
         type="button"
