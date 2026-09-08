@@ -37,6 +37,7 @@ import {
   loadFooter,
   loadGlobals,
   loadFlagshipArtikler,
+  loadUniversetSurface,
 } from "@/content/compose.ts";
 import { richtextBlock, richtextInline, stripHtml } from "@/content/richtext.ts";
 import { PostBody, extractBlockSlugs } from "@/render/postBody.tsx";
@@ -166,13 +167,42 @@ export async function renderUniverset(locale: Locale): Promise<string> {
   // until the first ICD pushes / backfill land.
   const model = (await loadHome(locale)) ?? homeFallback;
   const sections = model.sections.filter((s) => s.kind !== "about");
-  return await page(<RenderSections sections={sections} />, {
-    title: model.title,
-    description: model.description,
-    locale,
-    altHref: locale === "en" ? "/universet" : "/en/universe",
-    canonical: locale === "en" ? "/en/universe" : "/universet",
-  });
+  // F014 — sidens egne tags, nederst. Samme markup som flagskibenes tags, så de
+  // ser ud som tags gør alle andre steder på sitet. Ingen tags i cms = ingen
+  // sektion; en tom kasse ville se ud som om noget manglede at loade.
+  const universet = await loadUniversetSurface(locale);
+  return await page(
+    <>
+      <RenderSections sections={sections} />
+      {universet.tags.length ? (
+        <section>
+          <div class="wrap">
+            <div class="post-tags">
+              {universet.tags.map((t, i) => (
+                <a
+                  class="pill taglink"
+                  key={t}
+                  href={withLocale(locale, `/tags/${slugifyTag(t)}`)}
+                  data-testid={`universet-tag-${slugifyTag(t)}`}
+                  data-cms-list-add
+                  {...cmsAttrs(universet.ref, `universetTags.${i}`)}
+                >
+                  {t}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+    </>,
+    {
+      title: model.title,
+      description: model.description,
+      locale,
+      altHref: locale === "en" ? "/universet" : "/en/universe",
+      canonical: locale === "en" ? "/en/universe" : "/universet",
+    },
+  );
 }
 
 // New sales landing (F156.3) — Hero → Problem → Løsninger grid → Sådan

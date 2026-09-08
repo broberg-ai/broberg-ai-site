@@ -854,6 +854,52 @@ export interface SearchEntry {
   keywords?: string;
 }
 
+// ── /universet som tag- og søgeflade (F014) ──────────────────────────────────
+//
+// /universet er en RUTE, ikke et dokument: den samles af loadHome() ud af mange
+// sections-docs og har derfor ingen record med et tags-felt. Den faldt derfor
+// ud af BÅDE tag-systemet og ⌘K — ikke ved en beslutning, men fordi grænsen gik
+// ved «er det et dokument», og hver side der var et dokument kom med af sig
+// selv. Målt 8/9 2026: 44 poster i søgeindekset, ingen af dem /universet;
+// /tags/agentic-orkestration svarede 404.
+//
+// Hjemmet er globals, som allerede ejer sidernes chrome-tekster
+// (tagCloudHeading, thanksLead, aidanPills). Tre felter, alle redigerbare i
+// cms — og med VILJE uden reservetekst i koden: en fallback ville rendere en
+// tekst der ikke findes i CMS'et, og dermed hverken kunne søges frem eller
+// rettes i admin.
+const UNIVERSET_HREF: Record<Locale, string> = {
+  da: "/universet",
+  en: "/en/universe",
+};
+
+export interface UniversetSurface {
+  /** Listen der renderes i bunden af siden, og som tag-siderne indekserer. */
+  tags: string[];
+  /** Titel på tag-sidens kort og i ⌘K. Tom → fladen udelades helt. */
+  title: string;
+  blurb: string;
+  href: string;
+  ref: CmsRef | undefined;
+}
+
+export async function loadUniversetSurface(locale: Locale): Promise<UniversetSurface> {
+  const doc = await loadGlobals(locale);
+  const d = (doc?.data ?? {}) as Record<string, unknown>;
+  return {
+    // Kun strenge er tags. `.map(String)` ville lave et null i listen om til
+    // et chip der hedder «null» og linker til /tags/null — fanget af prøven.
+    tags: arr<unknown>(d.universetTags)
+      .filter((t): t is string => typeof t === "string")
+      .map((t) => t.trim())
+      .filter(Boolean),
+    title: str(d.universetCardTitle),
+    blurb: str(d.universetCardBlurb),
+    href: UNIVERSET_HREF[locale],
+    ref: doc ? { collection: "globals", slug: String(doc.slug), locale } : undefined,
+  };
+}
+
 export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
   const seg = flagshipsSegment(locale);
   const out: SearchEntry[] = [];
@@ -895,6 +941,29 @@ export async function buildSearchIndex(locale: Locale): Promise<SearchEntry[]> {
     });
   }
 
+  // Statiske flader. Bevidst en KORT, eksplicit liste og ikke en rute-crawler:
+  // en crawler ville trække /admin, /chat og omdirigerings-stubbene med ind i
+  // paletten. I dag er der præcis én.
+  //
+  // Ordene der gør siden findbar kommer fra dens tags i cms — ikke fra en
+  // streng her. Det er dét der gør «Agentic orkestration» til noget der kan
+  // rettes uden et deploy, og det er samtidig grunden til at søgningen og det
+  // der står i bunden af siden ikke kan drifte fra hinanden.
+  const universet = await loadUniversetSurface(locale);
+  out.push({
+    id: "side:universet",
+    title: universet.title,
+    subtitle: universet.blurb,
+    badge: locale === "en" ? "PAGE" : "SIDE",
+    badgeTone: "neutral",
+    data: universet.href,
+    keywords: [...universet.tags, universet.href.split("/").pop() ?? ""]
+      .filter(Boolean)
+      .join(" "),
+  });
+
+  // Tom titel = fladen findes ikke i cms endnu → den udelades her, som alt
+  // andet uden titel. Ingen halv post i paletten.
   return out.filter((e) => e.title);
 }
 
@@ -976,7 +1045,29 @@ export async function loadPostsByTag(
       };
     });
 
-  return { hits: [...postHits, ...flagshipHits], label };
+  // F014 — /universet er hverken et post eller en platform, men den bærer tags.
+  // Uden den her ville hvert chip i bunden af siden pege på en tag-side med nul
+  // hits, altså en 404. Et dødt tag-link ser fuldstændig færdigt ud på siden:
+  // man ser en pæn række tags, opgaven ligner løst, og linket virker ikke.
+  const universet = await loadUniversetSurface(locale);
+  const universetHits: TagHit[] =
+    universet.title && matchTag(universet.tags)
+      ? [
+          {
+            title: universet.title,
+            excerpt: universet.blurb,
+            href: universet.href,
+            meta: locale === "en" ? "Page" : "Side",
+            slug: "universet",
+            illustrationKey: null,
+            cmsRef: universet.ref,
+            titleField: "universetCardTitle",
+            excerptField: "universetCardBlurb",
+          },
+        ]
+      : [];
+
+  return { hits: [...postHits, ...flagshipHits, ...universetHits], label };
 }
 
 // Every distinct tag across the locale's posts + flagship platforms, with
@@ -999,6 +1090,9 @@ export async function buildTagCloud(locale: Locale): Promise<TagCount[]> {
   };
   for (const p of forLocale(await list("posts"), locale)) tally(dataOf(p).tags);
   for (const p of forLocale(await list("platforms"), locale)) tally(dataOf(p).tags);
+  // F014 — samme kilde som tag-siden bruger, så skyen og siderne ikke kan
+  // drifte: et tag der findes på en tag-side skal også kunne findes i skyen.
+  tally((await loadUniversetSurface(locale)).tags);
   return [...map.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
 
