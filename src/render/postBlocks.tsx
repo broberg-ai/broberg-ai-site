@@ -4,11 +4,13 @@
      - comparison {label, less[], more[]}  → Før/Efter two-column (reuse .ctable)
      - notice     {label, text(md), variant: info|warning|tip} → .callout
      - carousel   {label, images[{url,alt}], caption} → image gallery
+     - diagram    {label, diagram: <tegningens nøgle>, caption} → Illustration
    0 hardcoded copy — every field comes from the cms doc. Unknown type → null
    (skip gracefully) so a new block kind never crashes a published post. */
 import type { StoredDoc } from "@/content/store.ts";
 import { richtextBlock } from "@/content/richtext.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
+import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import type { CmsRef } from "@/content/types.ts";
 
 const str = (v: unknown): string => (typeof v === "string" ? v : "");
@@ -70,6 +72,26 @@ export function PostBlock({ doc }: { doc: StoredDoc }) {
             />
           ) : null}
         </div>
+      );
+    }
+    // F015 — en tegning inde i en artikel. Tegningen selv bor i koden som alle
+    // vores andre (Illustrations.tsx: "et renderings-aktiv som logoet, ikke et
+    // cms-felt"); CMS'et ejer det der ER redaktionelt: overskriften og
+    // billedteksten. En ukendt nøgle rendrer ingenting frem for en tom kasse —
+    // en tegning der ikke findes, må ikke efterlade et hul der ligner et
+    // element der ikke nåede at loade.
+    case "diagram": {
+      const key = str(d.diagram);
+      if (!hasIllustration(key)) return null;
+      const caption = str(d.caption);
+      return (
+        <figure class="card postblock postblock-diagram" style="min-width:0">
+          {label ? <div class="eyebrow" {...cmsAttrs(ref, "label")}>{label}</div> : null}
+          <Illustration k={key} />
+          {caption ? (
+            <figcaption {...cmsAttrs(ref, "caption")}>{caption}</figcaption>
+          ) : null}
+        </figure>
       );
     }
     case "carousel": {

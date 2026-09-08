@@ -1095,6 +1095,129 @@ const helpdesk = wrap(
   </g>,
 );
 
+// F015 — de otte led i kæden, som artiklen om agentic orkestration gennemgår.
+// Bredere format end flagskibs-tegningerne (880×400 mod 360×280), fordi den
+// sidder INDE i en artikel og skal kunne læses, ikke pynte i en hero.
+//
+// Kredsløbet er med vilje LUKKET: strømmen løber til højre på øverste række,
+// vender ned ad højre side, løber tilbage til venstre på nederste — og lukker
+// op ad venstre side ind i led 1 igen. Det er ikke pynt: det Supporten lærer
+// bliver den næste Beslutning, og en kæde der bare stopper ved led 8 ville
+// tegne den pointe væk.
+//
+// ORANGE = hvor et MENNESKE afgør noget. Præcis to steder, og de er de to
+// ender af løkken: ejeren der beslutter, og brugeren der bekræfter at hun blev
+// hjulpet. Alt derimellem er blåt, fordi det er maskineri.
+// Signaturforklaringen. Samme form som de andre tegningers etiketter: et
+// objekt-litteral, fordi det er STREGER i en SVG og ikke redaktionel tekst —
+// de kan ikke ændres uden at tegningen skal tegnes om.
+const AO_FORKLARING = {
+  menneske: "Et menneske afgør",
+  maskine: "Maskineri",
+};
+const AO_KORT = 190;
+const AO_H = 78;
+const AO_R1 = 40;
+const AO_R2 = 222;
+const AO_X = [24, 236, 448, 660];
+const AO_LED = [
+  { n: "1", titel: "Beslutningen", ejer: "Beslutningsregister", menneske: true },
+  { n: "2", titel: "Planen", ejer: "Cardmem" },
+  { n: "3", titel: "Bygningen", ejer: "Cardmem" },
+  { n: "4", titel: "Verifikationen", ejer: "Cardmem Lens" },
+  { n: "5", titel: "Porten", ejer: "CI" },
+  { n: "6", titel: "Hukommelsen", ejer: "Trail" },
+  { n: "7", titel: "Driften", ejer: "Upmetrics" },
+  { n: "8", titel: "Supporten", ejer: "HelpDesk", menneske: true },
+];
+// Led 1-4 løber mod højre på øverste række; 5-8 mod venstre på nederste, så
+// led 5 lander LIGE under led 4 og løkken kan lukke på venstre side.
+const AO_POS = AO_LED.map((led, i) => ({
+  ...led,
+  x: i < 4 ? AO_X[i] : AO_X[3 - (i - 4)],
+  y: i < 4 ? AO_R1 : AO_R2,
+}));
+const aoOtteSkridt = (
+  <svg class="svg-wrap svg-wide" viewBox="0 0 880 378" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+    <defs>
+      <marker id="ao-pil" markerWidth="7" markerHeight="7" refX="5.6" refY="3" orient="auto">
+        <path d="M0 0 L6 3 L0 6 z" fill="var(--blue)" />
+      </marker>
+      <marker id="ao-pil-svag" markerWidth="7" markerHeight="7" refX="5.6" refY="3" orient="auto">
+        <path d="M0 0 L6 3 L0 6 z" fill="#F3522C" opacity=".55" />
+      </marker>
+    </defs>
+    <g font-family="'DM Sans',sans-serif">
+      {/* løkken lukker op ad venstre side: det supporten lærer, bliver næste beslutning */}
+      <path
+        class="illu-flow"
+        d={`M114 ${AO_R2} V ${AO_R1 + AO_H + 10}`}
+        stroke="#F3522C"
+        stroke-width="1.6"
+        stroke-dasharray="4 6"
+        opacity=".5"
+        marker-end="url(#ao-pil-svag)"
+      />
+      {/* videre til næste led, række for række */}
+      <g class="illu-flow" stroke="var(--blue)" stroke-width="1.8" stroke-dasharray="4 6" opacity=".7" marker-end="url(#ao-pil)">
+        {[0, 1, 2].map((i) => (
+          <path key={`r1-${i}`} d={`M${AO_X[i] + AO_KORT} ${AO_R1 + AO_H / 2} H ${AO_X[i + 1] - 8}`} />
+        ))}
+        {[0, 1, 2].map((i) => (
+          <path key={`r2-${i}`} d={`M${AO_X[3 - i]} ${AO_R2 + AO_H / 2} H ${AO_X[2 - i] + AO_KORT + 8}`} />
+        ))}
+        {/* vendingen ned ad højre side, fra led 4 til led 5 */}
+        <path d={`M${AO_X[3] + AO_KORT / 2} ${AO_R1 + AO_H} V ${AO_R2 - 8}`} />
+      </g>
+
+      {AO_POS.map((led) => {
+        const accent = led.menneske ? "#F3522C" : "var(--blue)";
+        return (
+          <g key={led.n}>
+            <rect
+              x={led.x}
+              y={led.y}
+              width={AO_KORT}
+              height={AO_H}
+              rx="12"
+              fill={led.menneske ? "rgba(243,82,44,.07)" : "color-mix(in srgb,var(--blue) 8%,transparent)"}
+              stroke={accent}
+              stroke-width="1.6"
+              opacity={led.menneske ? 1 : 0.9}
+            />
+            <circle
+              class={led.menneske ? "pulse-core" : undefined}
+              cx={led.x + 28}
+              cy={led.y + AO_H / 2}
+              r="15"
+              fill={led.menneske ? "rgba(243,82,44,.16)" : "color-mix(in srgb,var(--blue) 16%,transparent)"}
+              stroke={accent}
+              stroke-width="1.5"
+            />
+            <text x={led.x + 28} y={led.y + AO_H / 2 + 5} text-anchor="middle" font-size="15" font-weight="600" fill={accent}>
+              {led.n}
+            </text>
+            <text x={led.x + 54} y={led.y + 33} font-size="17" font-weight="600" fill="var(--light)">
+              {led.titel}
+            </text>
+            <text x={led.x + 54} y={led.y + 56} font-size="13.5" fill="var(--muted)">
+              {led.ejer}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* de to orange er de to menneskelige ender af løkken */}
+      <g font-size="13.5" fill="var(--muted)">
+        <circle cx="34" cy="352" r="5" fill="rgba(243,82,44,.2)" stroke="#F3522C" stroke-width="1.4" />
+        <text x="48" y="356">{AO_FORKLARING.menneske}</text>
+        <circle cx="392" cy="352" r="5" fill="color-mix(in srgb,var(--blue) 16%,transparent)" stroke="var(--blue)" stroke-width="1.4" />
+        <text x="406" y="356">{AO_FORKLARING.maskine}</text>
+      </g>
+    </g>
+  </svg>
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -1109,6 +1232,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   consulting,
   docs,
   helpdesk,
+  "ao-otte-skridt": aoOtteSkridt,
   "fysio-dk-sport": fysioDkSport,
   "fysio-dk-aalborg": fysioDkAalborg,
   "x-rt-platform": xrtPlatform,

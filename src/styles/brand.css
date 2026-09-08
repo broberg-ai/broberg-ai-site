@@ -2175,6 +2175,19 @@ footer {
 .postblock-notice.notice-tip {
   border-color: rgba(0, 178, 255, 0.3);
 }
+/* F015 — en tegning inde i en artikel. Bredere end .postblock's 760px, fordi
+   otte led ved siden af hinanden bliver ulæselige når de klemmes sammen; på en
+   telefon skalerer SVG'en selv ned via viewBox, så den bryder ikke ud. */
+.postblock-diagram {
+  max-width: 880px;
+  margin: 34px 0;
+}
+.postblock-diagram figcaption {
+  margin-top: 12px;
+  font-size: 0.86rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
 .postblock-carousel .block-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

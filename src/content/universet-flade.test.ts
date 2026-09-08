@@ -102,6 +102,17 @@ describe("søgeposten for /universet", () => {
   });
 });
 
+/**
+ * Påstandene her handler om ÉN ting: er /universet med blandt hits eller ej.
+ *
+ * De målte oprindeligt `hits` totale længde, og de bestod kun så længe ingen
+ * ARTIKEL bar det samme tag. Den 9/9 fik artiklen om agentic orkestration
+ * netop det tag, og prøven gik rød uden at der var noget galt med koden — den
+ * målte lagerets øvrige indhold i stedet for det den handlede om.
+ *
+ * Samme fejlform som CONTENT_DIR-rækkefølgen længere oppe: et grønt der
+ * afhang af hvad der tilfældigvis lå ved siden af.
+ */
 describe("tag-siden må ikke give 404 på et chip siden selv viser", () => {
   it("/universet tælles med på en tag-side den bærer tagget for", async () => {
     seedGlobals({
@@ -115,20 +126,20 @@ describe("tag-siden må ikke give 404 på et chip siden selv viser", () => {
     expect(label).toBe("Agentic orkestration");
   });
 
-  it("et tag siden ikke bærer giver stadig nul hits", async () => {
+  it("et tag siden ikke bærer giver den ikke som hit", async () => {
     seedGlobals({
       universetTags: TAGS,
       universetCardTitle: "Universet — sådan bygger vi det",
       universetCardBlurb: "Motorerne bag broberg.ai.",
     });
     const { hits } = await compose.loadPostsByTag("da", "findes-ikke");
-    expect(hits).toHaveLength(0);
+    expect(hits.map((h) => h.href)).not.toContain("/universet");
   });
 
   it("uden titel i CMS tælles den ikke med — et kort uden overskrift er værre end intet", async () => {
     seedGlobals({ universetTags: TAGS });
     const { hits } = await compose.loadPostsByTag("da", "agentic-orkestration");
-    expect(hits).toHaveLength(0);
+    expect(hits.map((h) => h.href)).not.toContain("/universet");
   });
 
   it("tag-skyen viser tagget, så siden og skyen ikke drifter", async () => {
