@@ -1147,9 +1147,6 @@ const aoOtteSkridt = (
       <marker id="ao-pil-svag" markerWidth="7" markerHeight="7" refX="5.6" refY="3" orient="auto">
         <path d="M0 0 L6 3 L0 6 z" fill="#F3522C" opacity=".55" />
       </marker>
-      <marker id="ao-pil-fin" markerWidth="6" markerHeight="6" refX="4.8" refY="2.6" orient="auto">
-        <path d="M0 0 L5 2.6 L0 5.2 z" fill="var(--blue)" opacity=".6" />
-      </marker>
     </defs>
     <g font-family="'DM Sans',sans-serif">
       {/* løkken lukker op ad venstre side: det supporten lærer, bliver næste beslutning */}
@@ -1172,32 +1169,27 @@ const aoOtteSkridt = (
         ))}
         {/* vendingen ned ad højre side, fra led 4 til led 5 */}
         <path d={`M${AO_X[3] + AO_KORT / 2} ${AO_R1 + AO_H} V ${AO_R2 - 8}`} />
+        {/* byggedata fra Bygningen ned i Hukommelsen. Den ligger i SAMME gruppe
+            som de øvrige pile med vilje: så arver den stregtykkelse, stiplet
+            mønster, opacitet og pilespids, og kan ikke drifte fra dem. To
+            lodrette streger med hver sit udseende lige ved siden af hinanden
+            ligner en fejl, uanset hvor god begrundelsen for forskellen er —
+            og det var præcis hvad den gjorde. Meningen bæres af ETIKETTEN og
+            af billedteksten, ikke af en tyndere streg. */}
+        <path d={`M${AO_X[2] + AO_KORT / 2} ${AO_R1 + AO_H} V ${AO_R2 - 8}`} />
       </g>
 
-      {/* SIDE-KANAL, ikke et led i rækkefølgen: byggedata fra led 3 ned i
-          hukommelsen på led 6. De to står i forvejen lodret over hinanden, så
-          forbindelsen er en kort streg ned gennem midten.
-          Bevidst TYNDERE og svagere end sekvenspilene: det er ikke arbejdet der
-          går videre, det er et aftryk der falder af undervejs. Ville den se ud
-          som de andre, ville den læses som «arbejdet går denne vej», og det gør
-          det ikke — bygningen fortsætter til verifikationen.
-          At kanalen endnu bliver koblet på, står i BILLEDTEKSTEN (som ligger i
-          cms og kan rettes uden en udrulning) frem for i tegningen, hvor et
-          «snart» ville blive stående længe efter det holdt op med at passe. */}
-      <g font-family="'DM Sans',sans-serif">
-        <path
-          class="illu-flow"
-          d={`M${AO_X[2] + AO_KORT / 2} ${AO_R1 + AO_H} V ${AO_R2 - 7}`}
-          stroke="var(--blue)"
-          stroke-width="1.2"
-          stroke-dasharray="2 5"
-          opacity=".55"
-          marker-end="url(#ao-pil-fin)"
-        />
-        <text x={AO_X[2] + AO_KORT / 2 + 11} y={(AO_R1 + AO_H + AO_R2) / 2 + 4} font-size="12" fill="var(--muted)">
-          {AO_FORKLARING.sidekanal}
-        </text>
-      </g>
+      {/* Etiketten på byggedata-stregen. Kun teksten står her — selve stregen
+          ligger oppe i pile-gruppen, så den ser ud PRÆCIS som de andre. */}
+      <text
+        x={AO_X[2] + AO_KORT / 2 + 12}
+        y={(AO_R1 + AO_H + AO_R2) / 2 + 4}
+        font-family="'DM Sans',sans-serif"
+        font-size="12.5"
+        fill="var(--muted)"
+      >
+        {AO_FORKLARING.sidekanal}
+      </text>
 
       {AO_POS.map((led) => {
         const accent = led.menneske ? "#F3522C" : "var(--blue)";
