@@ -3321,7 +3321,10 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 .aidan-hilsen {
   position: fixed;
   right: 24px;
-  bottom: 104px;
+  /* F007.18: hilsenen står OVEN PÅ forslags-stakken. --aidan-pills-h sættes af
+     enhance.ts som en MÅLING af stakkens højde — ikke et gættet tal — så et
+     forslag der bryder over to linjer ikke skubber kortet ind under sig. */
+  bottom: calc(var(--aidan-bund, 104px) + var(--aidan-pills-h, 0px));
   z-index: 61;
   display: flex;
   align-items: flex-start;
@@ -3397,10 +3400,60 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 .aidan-hilsen-luk:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 /* Kortet dækker ikke chat-knappen: den sidder nederst til højre, kortet ovenover. */
 @media (max-width: 560px) {
-  .aidan-hilsen { right: 12px; left: 12px; bottom: 96px; max-width: none; }
+  .aidan-hilsen { right: 12px; left: 12px; max-width: none; }
+  [data-aidan] { --aidan-bund: 96px; }
+  .aidan-pills { right: 12px; left: 12px; align-items: flex-end; }
 }
 @media (prefers-reduced-motion: reduce) {
   .aidan-hilsen { transition: none; }
+  .aidan-pills { transition: none; }
+}
+
+/* F007.18 — de adaptive forslag, uden for chatten.
+   Christian, 8/9, med Intercoms Fin som forlæg: forslagene skal stå ude ved
+   chat-knappen, ikke inde i panelet, «for når brugeren vælger en af de
+   retninger der kan vises så er samtalen jo allerede i gang». */
+.aidan-pills {
+  position: fixed;
+  right: 24px;
+  bottom: var(--aidan-bund, 104px);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: min(380px, calc(100vw - 48px));
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.aidan-pills.vis { opacity: 1; transform: none; }
+/* `display: flex` ovenfor slår browserens egen [hidden]-regel ihjel — en klasse
+   vinder over UA-stilarket. Uden denne linje fylder stakken i layoutet fra
+   sidens start. Samme fælde som hilsenen selv gik i. */
+.aidan-pills[hidden] { display: none !important; }
+
+.aidan-pill {
+  display: block;
+  text-align: left;
+  padding: 11px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--dark2);
+  color: var(--light);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+.aidan-pill:hover { border-color: var(--blue); transform: translateY(-1px); }
+.aidan-pill:active { transform: translateY(1px) scale(0.985); }
+.aidan-pill:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .aidan-pill { transition: none; }
+  .aidan-pill:hover, .aidan-pill:active { transform: none; }
 }
 
 

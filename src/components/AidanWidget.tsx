@@ -35,6 +35,9 @@ export interface AidanTekster {
   hilsen: string;
   /** Én chip pr. linje. */
   chips: string;
+  /** F007.18 — de adaptive forslag UDEN FOR chatten. Én regel pr. linje,
+   *  «ruter | tekst». Tom = ingen pills (ship-dark). */
+  pills: string;
   placeholder: string;
   disclaimer: string;
   velkommen: string;
@@ -125,6 +128,7 @@ export function aidanTekster(
     ingenSamtaler: g("aidanIngenSamtaler", en ? "No previous conversations yet" : "Ingen tidligere samtaler endnu"),
     nytSvar: g("aidanNytSvar", en ? "New reply" : "Nyt svar"),
     forslag: g("aidanForslag", en ? "Suggestions" : "Forslag"),
+    pills: g("aidanPills", ""),
     laesTilbud: g("aidanLaesTilbud", en ? "Want me to read the article aloud?" : "Skal jeg læse artiklen højt for dig?"),
     laesHenter: g("aidanLaesHenter", en ? "Fetching the reading…" : "Henter oplæsningen…"),
     laesPause: g("aidanLaesPause", en ? "Pause" : "Pause"),
@@ -241,6 +245,7 @@ export function AidanWidget({
       data-kopier={t.kopier}
       data-kopieret={t.kopieret}
       data-trans-tilbud={t.transTilbud}
+      data-pills={t.pills}
     >
       <button
         type="button"
@@ -254,6 +259,16 @@ export function AidanWidget({
       <div class="aidan-boble" data-testid="aidan-boble" {...cmsAttrs(globalsRef, "aidanBoble")}>
         {t.boble}
       </div>
+
+      {/* F007.18 — de adaptive forslag. De står UDEN FOR panelet med vilje
+          (Christian, 8/9): et forslag inde i chatten læser man EFTER man har
+          besluttet at skrive; et forslag herude ER beslutningen — klikker man
+          det, er samtalen begyndt med et emne.
+
+          Tom fra serveren og fyldt af enhance.ts, fordi valget afhænger af
+          ruten gennem sitet, som kun browseren kender. Ingen regler i CMS'et
+          → den bliver stående tom og skjult. */}
+      <div class="aidan-pills" data-testid="aidan-pills" hidden />
 
       {/* F007.17 — den proaktive hilsen. Skjult indtil enhance.ts har målt 10
           sekunders SYNLIG tid uden at brugeren selv har åbnet chatten. Den bor

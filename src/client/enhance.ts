@@ -15,6 +15,7 @@ import {
   laesSynligMs,
   gemSynligMs,
 } from "./aidan-hilsen.ts";
+import { noterSide, laesRegler, vaelgPills } from "@/client/aidan-spor.ts";
 import { listSamtaler, hentSamtale, gemAktiv, sletSamtale, aktivId, saetAktiv, relativTid, erNaerBunden, type Tur } from "@/client/aidan-samtaler.ts";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
@@ -648,6 +649,63 @@ function aidan() {
   const hilsenKlik = rod.querySelector<HTMLButtonElement>(".aidan-hilsen-klik");
   const hilsenLuk = rod.querySelector<HTMLButtonElement>(".aidan-hilsen-luk");
   let panelHarVaeretAabent = false;
+
+  // F007.18 — de adaptive forslag UDEN FOR chatten.
+  //
+  // Ruten noteres på HVER sidevisning, også når der aldrig vises en pill:
+  // lag 2 i udvælgelsen er «sider du har SET tidligere», og den viden skal
+  // være samlet op før den skal bruges. Noteres den først når pills vises,
+  // ved vi kun hvor brugeren står nu — altså præcis den halvdel Christian
+  // bad om at komme UD over.
+  const spor = noterSide(location.pathname);
+  const pillsEl = rod.querySelector<HTMLElement>(".aidan-pills");
+
+  /** Bygger stakken. Ingen regler i CMS'et → ingenting, og feltet bliver
+   *  stående skjult (ship-dark, ikke en tom stribe over chat-knappen). */
+  const visPills = () => {
+    if (!pillsEl) return;
+    const regler = laesRegler(rod.dataset.pills ?? "");
+    const valgte = vaelgPills(regler, location.pathname, spor);
+    if (!valgte.length) return;
+    pillsEl.replaceChildren(
+      ...valgte.map((tekst, i) => {
+        const k = document.createElement("button");
+        k.type = "button";
+        k.className = "aidan-pill";
+        k.dataset.testid = `aidan-pill-${i + 1}`;
+        k.textContent = tekst;
+        // Klikket ÅBNER OG SPØRGER. Det er hele pointen med at flytte
+        // forslagene herud: samtalen er i gang, ikke bare åbnet.
+        k.addEventListener("click", () => {
+          skjulPills();
+          // Kortet skjules direkte: hilsenens egen skjul-funktion bor inde i
+          // dens blok og er ikke synlig herfra.
+          if (hilsen) {
+            hilsen.hidden = true;
+            hilsen.classList.remove("vis");
+          }
+          aabn();
+          void spoerg(tekst);
+        });
+        return k;
+      }),
+    );
+    pillsEl.hidden = false;
+    requestAnimationFrame(() => {
+      pillsEl.classList.add("vis");
+      // MÅL stakken frem for at gætte den. Et forslag der bryder over to
+      // linjer gør stakken højere, og uden målingen ville hilsenen lægge sig
+      // oven i den. +10 er luften mellem kortet og øverste pill.
+      rod.style.setProperty("--aidan-pills-h", `${pillsEl.offsetHeight + 10}px`);
+    });
+  };
+
+  const skjulPills = () => {
+    if (!pillsEl) return;
+    pillsEl.hidden = true;
+    pillsEl.classList.remove("vis");
+    rod.style.removeProperty("--aidan-pills-h");
+  };
   if (hilsen && hilsenKlik && hilsenLuk) {
     let synligMs = laesSynligMs();
     let sidst = Date.now();
@@ -684,6 +742,8 @@ function aidan() {
         visFab();
         // Den lille scroll-boble og kortet må ikke stå oven i hinanden.
         boble.classList.remove("vis");
+        // Forslagene kommer sammen med kortet — som i Intercom-eksemplet.
+        visPills();
         if (ur) clearInterval(ur);
         ur = null;
       }
@@ -697,6 +757,7 @@ function aidan() {
 
     hilsenKlik.addEventListener("click", () => {
       skjulHilsen();
+      skjulPills();
       // Klik åbner chatten. Ikke markerAfvist: han bad om den, han afviste den
       // ikke — og en åbnet chat lukker den alligevel af sig selv fremover.
       aabn();
@@ -704,6 +765,7 @@ function aidan() {
     hilsenLuk.addEventListener("click", (e) => {
       e.stopPropagation();
       skjulHilsen();
+      skjulPills();
       // ÉN AFVISNING HOLDER. Uden denne linje er kortet en nag på hver side.
       markerAfvist();
     });
