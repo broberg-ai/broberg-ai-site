@@ -1108,3 +1108,57 @@ export async function loadFeatured(locale: Locale): Promise<FeaturedItem[]> {
   return alle.sort((a, b) => b.dato.localeCompare(a.dato)).map((x) => x.item);
 }
 
+
+/* F012.1 — podcast-afsnittene.
+ *
+ * Christian 8/9: «gør så hele oplevelse på /podcast færdig med et demo afsnit
+ * hvor reklamen er stitched ind et sted midt i.»
+ *
+ * Afsnittene bor i CMS'ets `podcast`-samling — samme dokument redaktøren
+ * godkender og indspiller fra. Siden læser altså det RIGTIGE dokument, ikke en
+ * kopi: rettes en replik i admin, står den rettet her.
+ *
+ * Kun UDGIVNE afsnit vises. Et afsnit i «kladde» eller «indspillet» er ikke
+ * offentligt endnu, og at vise det ville udgive det ved et uheld.
+ */
+export type PodcastReplik = { speaker: string; text: string; t?: number };
+export type PodcastAfsnitDoc = {
+  slug: string;
+  nummer?: number;
+  saeson?: number;
+  titel: string;
+  undertitel: string;
+  udgivet: string;
+  sekunder: number;
+  lydUrl: string;
+  replikker: PodcastReplik[];
+  sponsorStart?: number;
+  sponsorSekunder?: number;
+  sponsorEfterReplik?: number;
+};
+
+export async function podcastAfsnit(): Promise<PodcastAfsnitDoc[]> {
+  const docs = (await list("podcast")).filter(isPub);
+  return docs
+    .map((d) => {
+      const x = dataOf(d);
+      return {
+        slug: str(d.slug),
+        nummer: typeof x.nummer === "number" ? x.nummer : undefined,
+        saeson: typeof x.saeson === "number" ? x.saeson : undefined,
+        titel: str(x.titel),
+        undertitel: str(x.undertitel),
+        udgivet: str(x.udgivet),
+        sekunder: typeof x.sekunder === "number" ? x.sekunder : 0,
+        lydUrl: str(x.lydUrl),
+        replikker: Array.isArray(x.replikker) ? (x.replikker as PodcastReplik[]) : [],
+        sponsorStart: typeof x.sponsorStart === "number" ? x.sponsorStart : undefined,
+        sponsorSekunder: typeof x.sponsorSekunder === "number" ? x.sponsorSekunder : undefined,
+        sponsorEfterReplik: typeof x.sponsorEfterReplik === "number" ? x.sponsorEfterReplik : undefined,
+      };
+    })
+    // UDEN LYD ER DET IKKE ET AFSNIT. Et kort i arkivet man ikke kan trykke på
+    // er værre end ingen kort: man tror det er i stykker.
+    .filter((a) => a.lydUrl !== "" && a.titel !== "")
+    .sort((a, b) => (b.nummer ?? 0) - (a.nummer ?? 0));
+}

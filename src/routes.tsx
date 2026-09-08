@@ -12,7 +12,8 @@ import { renderPage } from "@/render/html.tsx";
 import { resolveAssets } from "@/render/assets.ts";
 import { homeFallback } from "@/data/fallback.ts";
 import { roterFeatured } from "@/content/featured-rotation.ts";
-import { loadFeatured,
+import {
+  podcastAfsnit, loadFeatured,
   loadHome,
   loadPlatform,
   loadPlatforms,
@@ -1314,6 +1315,59 @@ export async function renderPodcast(locale: Locale): Promise<string> {
   const isEn = locale !== "da";
   const { ref: globalsRef, g } = await globalsChrome(locale);
 
+  // F012.1 — afsnittene kommer fra CMS'ets egen podcast-samling. Kun udgivne.
+  const afsnitDocs = await podcastAfsnit();
+  const nyeste = afsnitDocs[0];
+
+  const mmss = (sek: number) => {
+    const m = Math.floor(sek / 60);
+    const s = Math.round(sek % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
+  const dansk = (iso: string) => {
+    // Dansk tid, navngivet — containeren kører UTC, og en dato uden zone
+    // læses i læserens egen. Se husets tidsregel.
+    const d = new Date(`${iso}T12:00:00Z`);
+    return Number.isNaN(d.getTime())
+      ? iso
+      : d.toLocaleDateString(isEn ? "en-GB" : "da-DK",
+          { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Copenhagen" });
+  };
+  const navne: Record<string, string> = {
+    aidan: g("podcastAidanNavn", "Aidan"),
+    airina: g("podcastAirinaNavn", "Airina"),
+  };
+
+  const aktuelt = nyeste
+    ? {
+        slug: nyeste.slug,
+        nr: String(nyeste.nummer ?? 1).padStart(2, "0"),
+        titel: nyeste.titel,
+        undertitel: nyeste.undertitel,
+        dato: dansk(nyeste.udgivet),
+        laengde: mmss(nyeste.sekunder),
+        sekunder: nyeste.sekunder,
+        lydUrl: nyeste.lydUrl,
+        replikker: nyeste.replikker.map((r) => ({
+          hvem: r.speaker === "aidan" ? "a" : "b",
+          navn: navne[r.speaker] ?? r.speaker,
+          tekst: r.text,
+          tid: mmss(r.t ?? 0),
+          sek: r.t ?? 0,
+        })),
+        sponsorFra:
+          nyeste.sponsorStart !== undefined && nyeste.sekunder
+            ? Math.round((nyeste.sponsorStart / nyeste.sekunder) * 1000) / 10
+            : undefined,
+        sponsorTil:
+          nyeste.sponsorStart !== undefined && nyeste.sponsorSekunder !== undefined && nyeste.sekunder
+            ? Math.round(((nyeste.sponsorStart + nyeste.sponsorSekunder) / nyeste.sekunder) * 1000) / 10
+            : undefined,
+        sponsorEfterReplik: nyeste.sponsorEfterReplik,
+        sponsorMaerke: g("podcastSponsorMaerke", isEn ? "Sponsor break" : "Sponsorpause"),
+      }
+    : undefined;
+
   const trin = (n: number, maerkeDa: string, maerkeEn: string, titelDa: string, titelEn: string, tekstDa: string, tekstEn: string) => ({
     maerke: g(`podcastTrin${n}Maerke`, isEn ? maerkeEn : maerkeDa),
     titel: g(`podcastTrin${n}Titel`, isEn ? titelEn : titelDa),
@@ -1341,7 +1395,14 @@ export async function renderPodcast(locale: Locale): Promise<string> {
     manuskriptTekst: g("podcastManuskriptTekst", isEn ? "The script is not subtitles made afterwards." : "Manuskriptet er ikke undertekster lavet bagefter."),
     arkivTitel: g("podcastArkivTitel", isEn ? "The archive" : "Arkivet"),
     arkivTom: g("podcastArkivTom", isEn ? "The first episode is on its way." : "Første afsnit er på vej."),
-    afsnit: [],
+    afsnit: afsnitDocs.map((a, i) => ({
+      nr: String(a.nummer ?? afsnitDocs.length - i).padStart(2, "0"),
+      titel: a.titel,
+      manchet: a.undertitel,
+      laengde: mmss(a.sekunder),
+      href: isEn ? "/en/podcast" : "/podcast",
+      nyt: i === 0,
+    })),
     trinEyebrow: g("podcastTrinEyebrow", isEn ? "How an episode comes about" : "Sådan bliver et afsnit til"),
     trinTitel: g("podcastTrinTitel", isEn ? "Five steps, one human" : "Fem trin, ét menneske"),
     trin: [
@@ -1354,6 +1415,12 @@ export async function renderPodcast(locale: Locale): Promise<string> {
     lytTitel: g("podcastLytTitel", isEn ? "Where you usually listen" : "Hvor du plejer at lytte"),
     lytTekst: g("podcastLytTekst", isEn ? "The feed opens with the first episode." : "Feedet åbner sammen med første afsnit."),
     nytMaerke: g("podcastNytMaerke", isEn ? "New" : "Nyt"),
+    aktuelt,
+    spolTilbage: g("podcastSpolTilbage", isEn ? "Back 15 seconds" : "15 sekunder tilbage"),
+    afspil: g("podcastAfspil", isEn ? "Play" : "Afspil"),
+    pause: g("podcastPause", isEn ? "Pause" : "Pause"),
+    spolFrem: g("podcastSpolFrem", isEn ? "Forward 15 seconds" : "15 sekunder frem"),
+    hastighed: g("podcastHastighed", isEn ? "Playback speed" : "Afspilningshastighed"),
   };
 
   return await page(<Podcast data={data} cmsRef={globalsRef} />, {

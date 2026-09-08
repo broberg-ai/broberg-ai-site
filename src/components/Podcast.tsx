@@ -27,6 +27,27 @@ export type PodcastAfsnit = {
 
 export type PodcastTrin = { maerke: string; titel: string; tekst: string };
 
+/** Det afsnit der ligger i afspilleren. Undefined = intet udgivet endnu, og så
+ *  står den ærlige «under produktion»-status i stedet. */
+export type PodcastAktuelt = {
+  slug: string;
+  nr: string;
+  titel: string;
+  undertitel: string;
+  dato: string;
+  laengde: string;
+  sekunder: number;
+  lydUrl: string;
+  replikker: { hvem: string; navn: string; tekst: string; tid: string; sek: number }[];
+  /** Hvor reklamen ligger, i procent af afsnittet — tegnes som et mærke på
+   *  søjlen. Lytteren kan se den komme i stedet for at blive overrasket. */
+  sponsorFra?: number;
+  sponsorTil?: number;
+  /** Replikken reklamen ligger EFTER (0-indekseret). */
+  sponsorEfterReplik?: number;
+  sponsorMaerke: string;
+};
+
 export type PodcastData = {
   eyebrow: string;
   heading: string;
@@ -49,6 +70,13 @@ export type PodcastData = {
   /* Mærket på det nyeste afsnit. Eget felt frem for en streng i koden:
      gate:text fangede den, og den har ret — det er brugervendt tekst. */
   nytMaerke: string;
+  /** F012.1 — afspilleren. */
+  aktuelt?: PodcastAktuelt;
+  spolTilbage: string;
+  afspil: string;
+  pause: string;
+  spolFrem: string;
+  hastighed: string;
 };
 
 export function Podcast({
@@ -97,8 +125,74 @@ export function Podcast({
         </ul>
       </section>
 
-      {/* Under produktion — står hvor afspilleren skal stå, så siden er ærlig
-          om at der endnu ikke er noget at trykke på. */}
+      {/* F012.1 — AFSPILLEREN, når der er et udgivet afsnit. Er der ingen,
+          står den ærlige «under produktion»-status i stedet. De to udelukker
+          hinanden: en afspiller uden lyd og en status oven på et udgivet afsnit
+          er begge løgne, bare i hver sin retning. */}
+      {data.aktuelt ? (
+        <section
+          class="pod-afspiller"
+          data-testid="podcast-afspiller"
+          data-lyd={data.aktuelt.lydUrl}
+          data-sekunder={String(data.aktuelt.sekunder)}
+        >
+          <div class="pod-cover" aria-hidden="true">
+            <span>{data.aktuelt.nr}</span>
+          </div>
+          <div class="pod-afspiller-midt">
+            <h2 class="pod-afspiller-titel" data-testid="podcast-afspiller-titel">
+              {data.aktuelt.titel}
+            </h2>
+            <p class="pod-afspiller-sub" data-testid="podcast-afspiller-sub">
+              {data.aktuelt.dato} · {data.aktuelt.laengde}
+            </p>
+            {/* Søjlen er en KNAP, ikke pynt: man skal kunne springe. Reklamens
+                plads tegnes ovenpå, så den ikke kommer bag på nogen. */}
+            <button
+              type="button"
+              class="pod-soejle"
+              data-testid="podcast-soejle"
+              aria-label={data.spolFrem}
+            >
+              <span class="pod-soejle-fyld" data-rolle="fyld" />
+              <span class="pod-soejle-greb" data-rolle="greb" />
+              {data.aktuelt.sponsorFra !== undefined && data.aktuelt.sponsorTil !== undefined ? (
+                <span
+                  class="pod-soejle-sponsor"
+                  data-testid="podcast-soejle-sponsor"
+                  title={data.aktuelt.sponsorMaerke}
+                  style={`left:${data.aktuelt.sponsorFra}%;width:${data.aktuelt.sponsorTil - data.aktuelt.sponsorFra}%`}
+                />
+              ) : null}
+            </button>
+            <div class="pod-tider">
+              <span data-rolle="nu" data-testid="podcast-tid-nu">0:00</span>
+              <span data-rolle="rest">{data.aktuelt.laengde}</span>
+            </div>
+          </div>
+          <div class="pod-knapper">
+            <button type="button" class="pod-rund" data-testid="podcast-tilbage" aria-label={data.spolTilbage}>
+              <span aria-hidden="true">15</span>
+            </button>
+            <button
+              type="button"
+              class="pod-rund pod-afspil"
+              data-testid="podcast-afspil"
+              aria-label={data.afspil}
+              data-afspil={data.afspil}
+              data-pause={data.pause}
+            >
+              <span aria-hidden="true" data-rolle="ikon">▶</span>
+            </button>
+            <button type="button" class="pod-rund" data-testid="podcast-frem" aria-label={data.spolFrem}>
+              <span aria-hidden="true">15</span>
+            </button>
+            <button type="button" class="pod-fart" data-testid="podcast-fart" aria-label={data.hastighed}>
+              1,0×
+            </button>
+          </div>
+        </section>
+      ) : (
       <section class="pod-status" data-testid="podcast-status">
         <span class="pod-status-prik" aria-hidden="true" />
         <div>
@@ -110,6 +204,7 @@ export function Podcast({
           </p>
         </div>
       </section>
+      )}
 
       <section class="pod-blok" data-testid="podcast-intro">
         <h2 {...cmsAttrs(cmsRef, "podcastIntroTitel")} data-testid="podcast-intro-titel">
@@ -127,6 +222,40 @@ export function Podcast({
         <p class="pod-brod" {...cmsAttrs(cmsRef, "podcastManuskriptTekst")} data-testid="podcast-manuskript-tekst">
           {data.manuskriptTekst}
         </p>
+
+        {/* Replikkerne. Hver er en KNAP: trykker man på en, springer afspilleren
+            derhen. Det er den ene ting der gør et manuskript til mere end en
+            udskrift — man kan finde stedet i stedet for at spole efter det. */}
+        {data.aktuelt ? (
+          <ol class="pod-replikker" data-testid="podcast-replikker">
+            {data.aktuelt.replikker.map((r, i) => (
+              <>
+                {/* Reklamens plads MARKERES i manuskriptet. Uden den springer
+                    tidsstemplet et helt minut uden forklaring, og en læser der
+                    kigger efter en replik tror der mangler noget. */}
+                {data.aktuelt && data.aktuelt.sponsorEfterReplik === i ? (
+                  <li class="pod-pause" data-testid="podcast-manuskript-pause">
+                    <span>{data.aktuelt.sponsorMaerke}</span>
+                  </li>
+                ) : null}
+                <li class={`pod-replik pod-replik-${r.hvem}`}>
+                <button
+                  type="button"
+                  class="pod-replik-knap"
+                  data-testid="podcast-replik"
+                  data-sek={String(r.sek)}
+                >
+                  <span class="pod-replik-hvem">
+                    {r.navn}
+                    <i class="pod-replik-tid">{r.tid}</i>
+                  </span>
+                  <span class="pod-replik-tekst">{r.tekst}</span>
+                </button>
+                </li>
+              </>
+            ))}
+          </ol>
+        ) : null}
       </section>
 
       <section class="pod-blok" data-testid="podcast-arkiv">

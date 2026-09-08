@@ -4368,6 +4368,131 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   overflow: hidden;
 }
 .pod-vaert-tekst { display: flex; flex-direction: column; line-height: 1.3; }
+
+/* ── F012.1: afspilleren ──────────────────────────────────────────────────
+   Fra den godkendte mockup (cardmem 01a07acf v2). Tallene er dens, ikke mine —
+   en «næsten som mockup'en» er en tredje udgave ingen har set. */
+.pod-afspiller {
+  display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 18px; padding: 22px; margin: 26px 0 3rem;
+}
+.pod-cover {
+  width: 104px; height: 104px; border-radius: 14px; flex: 0 0 auto;
+  display: grid; place-items: center; overflow: hidden;
+  background: linear-gradient(145deg, var(--blue) 0%, #0a4c72 55%, var(--orange) 130%);
+}
+.pod-cover span {
+  font-family: var(--fd, "Cormorant Garamond", Georgia, serif);
+  font-size: 34px; color: #fff; text-shadow: 0 2px 14px rgba(0, 0, 0, .4);
+  /* Cormorant bruger gamle taltegn som standard, og «01» blev til «OI» —
+     læst som bogstaver, ikke som afsnitsnummer. Målt på skærmen 8/9. */
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}
+.pod-afspiller-midt { flex: 1; min-width: 220px; }
+.pod-afspiller-titel {
+  font-family: var(--fd, "Cormorant Garamond", Georgia, serif);
+  font-size: 21px; line-height: 1.25; margin: 0 0 2px; font-weight: 600;
+}
+.pod-afspiller-sub { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+/* Søjlen ER en knap (man skal kunne springe), så den nulstilles som en. */
+.pod-soejle {
+  display: block; width: 100%; height: 5px; border: 0; padding: 0;
+  border-radius: 99px; background: rgba(128, 128, 128, .22);
+  margin: 13px 0 8px; position: relative; cursor: pointer;
+}
+.pod-soejle-fyld {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  background: var(--blue); border-radius: 99px;
+}
+.pod-soejle-greb {
+  position: absolute; left: 0; top: 50%; width: 12px; height: 12px;
+  margin: -6px 0 0 -6px; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 0 4px var(--blue-glow);
+}
+/* Reklamens plads. Lytteren kan SE den komme frem for at blive overrasket —
+   og det er samtidig beviset på skærmen for at den ligger midt i. */
+.pod-soejle-sponsor {
+  position: absolute; top: -2px; bottom: -2px;
+  background: var(--orange); opacity: .55; border-radius: 2px;
+}
+.pod-tider {
+  display: flex; justify-content: space-between;
+  font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.pod-knapper { display: flex; gap: 9px; align-items: center; margin-left: auto; flex: 0 0 auto; }
+.pod-rund {
+  width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--card-border);
+  background: transparent; color: var(--text, inherit); cursor: pointer;
+  display: grid; place-items: center; font-size: 13px; transition: .15s;
+}
+.pod-rund:hover { border-color: var(--blue); color: var(--blue-text); }
+.pod-rund:active { transform: scale(.94); }
+.pod-rund:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.pod-afspil {
+  width: 56px; height: 56px; background: var(--blue); border-color: var(--blue);
+  color: #04212f; font-size: 19px;
+}
+.pod-afspil:hover { background: var(--blue-text); color: #04212f; }
+.pod-fart {
+  font-size: 11.5px; color: var(--muted); border: 1px solid var(--card-border);
+  border-radius: 99px; padding: 4px 9px; cursor: pointer; background: transparent;
+  font-variant-numeric: tabular-nums;
+}
+.pod-fart:hover { border-color: var(--blue); color: var(--blue-text); }
+.pod-fart:active { transform: scale(.96); }
+
+/* ── manuskriptet ── */
+.pod-replikker {
+  list-style: none; margin: 30px 0 0; padding: 0 0 0 20px;
+  border-left: 2px solid var(--card-border);
+}
+.pod-replik { position: relative; margin-bottom: 19px; }
+.pod-replik::before {
+  content: ""; position: absolute; left: -25px; top: 9px;
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.pod-replik-a::before { background: var(--blue); }
+.pod-replik-b::before { background: var(--orange); }
+.pod-replik-knap {
+  display: block; width: 100%; text-align: left; background: none; border: 0;
+  padding: 2px 4px; margin: -2px -4px; border-radius: 8px; cursor: pointer;
+  color: inherit; font: inherit;
+}
+.pod-replik-knap:hover { background: var(--card); }
+.pod-replik-knap:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.pod-replik-hvem {
+  display: block; font-size: 11px; letter-spacing: .11em; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 2px;
+}
+.pod-replik-a .pod-replik-hvem { color: var(--blue-text); }
+.pod-replik-b .pod-replik-hvem { color: var(--orange-text); }
+.pod-replik-tid {
+  font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums;
+  margin-left: 8px; font-weight: 400; letter-spacing: 0; font-style: normal;
+}
+.pod-replik-tekst { display: block; font-size: 14.5px; line-height: 1.7; }
+/* Sponsorpausen i manuskriptet — samme orange som mærket på søjlen, så de to
+   læses som det samme sted i afsnittet. */
+.pod-pause {
+  position: relative; margin: 24px 0; display: flex; align-items: center; gap: 12px;
+  font-size: 11px; letter-spacing: .11em; text-transform: uppercase;
+  font-weight: 700; color: var(--orange-text);
+}
+.pod-pause::before {
+  content: ""; position: absolute; left: -25px; top: 50%; margin-top: -4px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--orange);
+}
+.pod-pause::after { content: ""; flex: 1; height: 1px; background: var(--card-border); }
+
+@media (max-width: 620px) {
+  .pod-afspiller { gap: 14px; }
+  .pod-knapper { margin-left: 0; width: 100%; justify-content: center; }
+  .pod-cover { width: 72px; height: 72px; }
+  .pod-cover span { font-size: 24px; }
+}
 .pod-vaert-tekst span { color: var(--muted); font-size: .9rem; }
 
 .pod-status {

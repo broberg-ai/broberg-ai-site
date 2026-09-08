@@ -1502,3 +1502,113 @@ safe(inlineEdit);
 safe(adminPanel);
 safe(mountAdminChat);
 safe(aidan);
+safe(podcastAfspiller);
+
+/* F012.1 — podcast-afspilleren.
+ *
+ * Christian 8/9: «gør så hele oplevelse på /podcast færdig».
+ *
+ * Lyden er et <audio> vi laver i JS frem for i markuppen. Grunden er ikke
+ * smag: browserens EGEN afspiller er en native kontrol vi ikke kan style, og
+ * huset har en regel mod dem. Elementet findes, men vises aldrig — knapperne
+ * herunder er fladen.
+ *
+ * ALT DER VISES, LÆSES AF LYDEN. Der er ingen tæller der løber ved siden af og
+ * gætter: tiden, søjlen og knappens tilstand kommer fra `currentTime`,
+ * `duration` og `paused`. En afspiller hvor visningen og lyden er to kilder,
+ * driver fra hinanden i det øjeblik nogen spoler.
+ */
+function podcastAfspiller() {
+  const rod = document.querySelector<HTMLElement>('[data-testid="podcast-afspiller"]');
+  if (!rod) return;
+  const url = rod.dataset.lyd;
+  if (!url) return;
+
+  const lyd = new Audio(url);
+  lyd.preload = "metadata";
+
+  const knapAfspil = rod.querySelector<HTMLButtonElement>('[data-testid="podcast-afspil"]')!;
+  const ikon = knapAfspil.querySelector<HTMLElement>('[data-rolle="ikon"]')!;
+  const tilbage = rod.querySelector<HTMLButtonElement>('[data-testid="podcast-tilbage"]')!;
+  const frem = rod.querySelector<HTMLButtonElement>('[data-testid="podcast-frem"]')!;
+  const fart = rod.querySelector<HTMLButtonElement>('[data-testid="podcast-fart"]')!;
+  const soejle = rod.querySelector<HTMLButtonElement>('[data-testid="podcast-soejle"]')!;
+  const fyld = soejle.querySelector<HTMLElement>('[data-rolle="fyld"]')!;
+  const greb = soejle.querySelector<HTMLElement>('[data-rolle="greb"]')!;
+  const nu = rod.querySelector<HTMLElement>('[data-rolle="nu"]')!;
+  const rest = rod.querySelector<HTMLElement>('[data-rolle="rest"]')!;
+
+  // Varigheden fra dokumentet bruges INDTIL lyden selv kan svare. Metadata kan
+  // være sekunder om at komme, og en søjle der står stille imens ser i stykker
+  // ud — men det målte tal vinder så snart det findes.
+  const fraDok = Number(rod.dataset.sekunder) || 0;
+  const varighed = () => (Number.isFinite(lyd.duration) && lyd.duration > 0 ? lyd.duration : fraDok);
+
+  const mmss = (s: number) => {
+    if (!Number.isFinite(s) || s < 0) s = 0;
+    return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  };
+
+  const tegn = () => {
+    const v = varighed();
+    const p = v ? Math.min(100, (lyd.currentTime / v) * 100) : 0;
+    fyld.style.width = `${p}%`;
+    greb.style.left = `${p}%`;
+    nu.textContent = mmss(lyd.currentTime);
+    rest.textContent = mmss(v);
+    const spiller = !lyd.paused && !lyd.ended;
+    ikon.textContent = spiller ? "❚❚" : "▶";
+    knapAfspil.setAttribute(
+      "aria-label",
+      (spiller ? knapAfspil.dataset.pause : knapAfspil.dataset.afspil) ?? "",
+    );
+    rod.dataset.spiller = spiller ? "ja" : "nej";
+  };
+
+  lyd.addEventListener("timeupdate", tegn);
+  lyd.addEventListener("loadedmetadata", tegn);
+  lyd.addEventListener("play", tegn);
+  lyd.addEventListener("pause", tegn);
+  lyd.addEventListener("ended", tegn);
+  tegn();
+
+  knapAfspil.addEventListener("click", () => {
+    if (lyd.paused) void lyd.play().catch(() => { rod.dataset.fejl = "afspilning"; });
+    else lyd.pause();
+  });
+  const spring = (d: number) => {
+    lyd.currentTime = Math.max(0, Math.min(varighed(), lyd.currentTime + d));
+    tegn();
+  };
+  tilbage.addEventListener("click", () => spring(-15));
+  frem.addEventListener("click", () => spring(15));
+
+  // Hastighederne er dem man faktisk bruger til tale. 2× er med fordi nogen
+  // lytter sådan; 0,5× er ikke, fordi ingen gør.
+  const farter = [1, 1.25, 1.5, 2];
+  let fartNr = 0;
+  fart.addEventListener("click", () => {
+    fartNr = (fartNr + 1) % farter.length;
+    lyd.playbackRate = farter[fartNr]!;
+    fart.textContent = `${String(farter[fartNr]).replace(".", ",")}×`;
+  });
+
+  soejle.addEventListener("click", (e) => {
+    const r = soejle.getBoundingClientRect();
+    if (!r.width) return;
+    const andel = Math.max(0, Math.min(1, ((e as MouseEvent).clientX - r.left) / r.width));
+    lyd.currentTime = andel * varighed();
+    tegn();
+  });
+
+  // Manuskriptet springer. Det er det ene der gør en udskrift til et redskab.
+  document.querySelectorAll<HTMLButtonElement>('[data-testid="podcast-replik"]').forEach((b) => {
+    b.addEventListener("click", () => {
+      const s = Number(b.dataset.sek);
+      if (!Number.isFinite(s)) return;
+      lyd.currentTime = s;
+      if (lyd.paused) void lyd.play().catch(() => { rod.dataset.fejl = "afspilning"; });
+      tegn();
+    });
+  });
+}

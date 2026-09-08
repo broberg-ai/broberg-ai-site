@@ -3,6 +3,7 @@
    serving so `bun run dev` is self-sufficient. In prod, built assets are served
    statically from dist/client. */
 import { Hono } from "hono";
+import { beregnUdsnit } from "@/range.ts";
 import { serveStatic } from "hono/bun";
 import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
@@ -194,11 +195,48 @@ app.get("/uploads/*", async (c) => {
     // Buffer to a sized body so the response carries a real Content-Length —
     // a streamed res.body left it at 0, which browsers honour → empty image.
     const buf = await res.arrayBuffer();
-    const headers = new Headers();
     const ct = res.headers.get("content-type");
-    if (ct) headers.set("content-type", ct);
-    headers.set("content-length", String(buf.byteLength));
-    return new Response(buf, { status: 200, headers });
+
+    // SPOLING (F012.1). Uden Range-svar kan en browser ikke springe i en
+    // lydfil: «15 sekunder frem» og et klik i manuskriptet gør INGENTING, og
+    // hele filen skal hentes før man kan flytte sig. Målt 8/9 med Lens —
+    // afspilningen stod på 0,09 sekund efter tre sekunder, og et spring
+    // landede tilbage på nul. Både her og i drift.
+    //
+    // Billeder mærkede det ikke, fordi et billede aldrig spoles. Derfor har
+    // hullet ligget her siden ruten blev skrevet uden at nogen så det — det
+    // er først en podcast der stiller spørgsmålet.
+    const total = buf.byteLength;
+    const svarHoved = (extra?: Record<string, string>) => {
+      const h = new Headers();
+      if (ct) h.set("content-type", ct);
+      // Uden dette hoved spørger browseren slet ikke om et udsnit.
+      h.set("accept-ranges", "bytes");
+      for (const [k, v] of Object.entries(extra ?? {})) h.set(k, v);
+      return h;
+    };
+
+    const u = beregnUdsnit(c.req.header("range"), total);
+    if (u.slags === "ugyldigt") {
+      return new Response(null, {
+        status: 416,
+        headers: svarHoved({ "content-range": `bytes */${total}` }),
+      });
+    }
+    if (u.slags === "udsnit") {
+      const del = buf.slice(u.start, u.slut + 1);
+      return new Response(del, {
+        status: 206,
+        headers: svarHoved({
+          "content-range": `bytes ${u.start}-${u.slut}/${total}`,
+          "content-length": String(del.byteLength),
+        }),
+      });
+    }
+    return new Response(buf, {
+      status: 200,
+      headers: svarHoved({ "content-length": String(total) }),
+    });
   } catch {
     return c.text("Upstream error", 502);
   }
