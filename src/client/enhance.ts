@@ -339,10 +339,24 @@ function heroSlides() {
   start();
 }
 
-// Respect prefers-reduced-motion: pause the SVG SMIL orbit animations.
+// Respect prefers-reduced-motion: pause the SVG SMIL animations.
+//
+// UNDTAGEN dem der er markeret data-motion="essential". Christian meldte 8/9
+// at universet ikke længere roterede; målt i browseren var siden helt rask —
+// det var DENNE funktion der stoppede den, fordi hans maskine rapporterer
+// «Reducér bevægelse». Sådan som den var skrevet, var der intet på siden der
+// røbede det, og et diagram hvis eneste indhold er bevægelse blev til et
+// stillbillede.
+//
+// Afvejningen, sagt højt frem for gemt: kredsløbet tager 104 sekunder om en
+// omgang. Det er ikke den slags hurtige, store bevægelse indstillingen findes
+// for. Alt det der ER: konfetti, slideshow og autoplay-video, adlyder den
+// stadig — så accessibility-signalet er ikke sat ud af kraft, det er gjort
+// præcist.
 function reducedMotion() {
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     document.querySelectorAll("svg").forEach((s) => {
+      if (s.getAttribute("data-motion") === "essential") return;
       const svg = s as unknown as SVGSVGElement;
       if (typeof svg.pauseAnimations === "function") svg.pauseAnimations();
     });

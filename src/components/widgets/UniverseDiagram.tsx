@@ -10,7 +10,13 @@
    translated onto its dot and rotates the opposite way about (0,0) = the dot,
    at the SAME duration, so the tag stays welded + upright. Geometry + motion
    are code; all TEXT (core / infra[] / customers[]) comes from cms.
-   (enhance.ts pauses these animations under prefers-reduced-motion.) */
+   MOTION: kredsløbet er markeret data-motion="essential" og sættes derfor
+   IKKE på pause under prefers-reduced-motion. Det er et bevidst valg, ikke en
+   forglemmelse: en omgang tager 104 sekunder (3,5 grader i sekundet), altså
+   langsommere end det meste af det reduced-motion findes for at dæmpe — og
+   uden bevægelse er diagrammet ikke et univers, det er et stillbillede. Alt
+   det HURTIGE på sitet (konfetti, slideshow, autoplay-video) adlyder stadig
+   indstillingen. Se reducedMotion() i client/enhance.ts. */
 import type { JSX } from "preact";
 import type { DiagramNode } from "@/content/types.ts";
 
@@ -178,6 +184,8 @@ export function UniverseDiagram({
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label="broberg.ai-universet"
+      data-testid="universe-diagram"
+      data-motion="essential"
     >
       <defs>
         <radialGradient id="ug" cx="50%" cy="50%" r="50%">

@@ -14,43 +14,16 @@
  *
  * Målt 31/8: fem felter i afslutningen på 34 artikler manglede alle i
  * globals-dokumentet, mens sitet så færdigt ud.
+ *
+ * Selve målingen bor i gate-cms-text.lib.mjs, så den kan prøves uden netværk.
  */
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, extname } from "node:path";
+import { felterMedReservetekst, manglendeFelter } from "./gate-cms-text.lib.mjs";
 
 const SITE = process.env.CMS_SITE || "broberg-ai";
 const BASE = process.env.CMS_API_BASE || "https://webhouse.app";
 const TOKEN = process.env.CMS_ADMIN_TOKEN;
 
-// Kommentarer ud først: en kommentar der FORKLARER mønsteret er ikke et kald.
-// (Samme fælde som deploy-vagten og css-token-prøven faldt i samme dag.)
-const afKommentarer = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-
-function filer(dir, ud = []) {
-  for (const n of readdirSync(dir)) {
-    const p = join(dir, n);
-    if (statSync(p).isDirectory()) filer(p, ud);
-    else if ([".ts", ".tsx"].includes(extname(p)) && !p.endsWith(".test.ts")) ud.push(p);
-  }
-  return ud;
-}
-
-/** `g("felt", …)` — feltnavne der har en reservetekst i koden. */
-function felterMedReservetekst() {
-  const fundet = new Map();
-  for (const f of filer("src")) {
-    const src = afKommentarer(readFileSync(f, "utf-8"));
-    // Feltnavnet maa IKKE begraenses til et taegn-saet: foerste udgave tillod kun
-    // [A-Za-z0-9_.], saa et navn med bindestreg var USYNLIGT for porten — og
-    // mutationstesten gik groen med fejlen indsat. Fanget af netop den test.
-    for (const m of src.matchAll(/\bg\(\s*["'`]([^"'`]+)["'`]\s*,/g)) {
-      if (!fundet.has(m[1])) fundet.set(m[1], f);
-    }
-  }
-  return fundet;
-}
-
-const felter = felterMedReservetekst();
+const felter = felterMedReservetekst("src");
 if (felter.size === 0) {
   // POSITIV KONTROL: finder scanneren ingenting, er det næsten altid fordi den
   // kigger forkert — ikke fordi koden er ren. "0 fund" og "virker ikke" ser ens ud.
@@ -74,10 +47,7 @@ if (!svar.ok) {
 }
 const data = (await svar.json()).data ?? {};
 
-const mangler = [...felter].filter(([navn]) => {
-  const v = navn.split(".").reduce((o, k) => (o == null ? undefined : o[k]), data);
-  return typeof v !== "string" || v.trim() === "";
-});
+const mangler = manglendeFelter(felter, data);
 
 if (mangler.length) {
   console.error(`✗ ${mangler.length} af ${felter.size} tekster findes KUN i koden — ikke i CMS'et:\n`);

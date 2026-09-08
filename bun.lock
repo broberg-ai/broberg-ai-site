@@ -7,7 +7,7 @@
       "dependencies": {
         "@broberg/ai-sdk": "0.39.0",
         "@broberg/cms-chat-client": "^0.4.16",
-        "@broberg/cms-inline-edit": "0.9.2",
+        "@broberg/cms-inline-edit": "0.10.3",
         "@broberg/forms-turnstile": "^0.1.0",
         "@broberg/mail": "0.10.1",
         "@broberg/mail-core": "0.7.0",
@@ -34,7 +34,7 @@
 
     "@broberg/cms-chat-client": ["@broberg/cms-chat-client@0.4.16", "", {}, "sha512-R6r1bnHf/DAm8S+1vAQWPUtnopiSHqJs1ffMBUQ/fzAAqi6h9m7jHdViuDDsVLE1SmFLa9eWsH/0Z9Pfwt1w0Q=="],
 
-    "@broberg/cms-inline-edit": ["@broberg/cms-inline-edit@0.9.2", "", {}, "sha512-W6rCeyrry09MCRCLtqi0M/UYkxoABi+8v45IO8zMrCtiIHN35ytsWt96a+itF1kvJ7rjCx7SL4nDxy+vEHOfsA=="],
+    "@broberg/cms-inline-edit": ["@broberg/cms-inline-edit@0.10.3", "", {}, "sha512-mJZOiQA21xrRspGU03CKdgqXohA4GT0TRJYzfR8gpaRn0ItyvqqteawVBeZaswHTvGH1yzK+lMz/4EFsWb8b7g=="],
 
     "@broberg/forms-turnstile": ["@broberg/forms-turnstile@0.1.0", "", { "peerDependencies": { "hono": ">=4", "preact": ">=10.0.0" }, "optionalPeers": ["hono", "preact"] }, "sha512-6E3kS6MzGE+Q0ry8LWr6ZYeCAUyiGJjrBv3xpHrP6abHldc0uZdVJf31t7W95aO51S3PP6d6DStRXonLmS5ZJg=="],
 
