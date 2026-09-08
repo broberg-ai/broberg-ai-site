@@ -1017,6 +1017,84 @@ const otteUger = wrap(
   </g>,
 );
 
+// helpdesk — support som infrastruktur. Rammen er KUNDENS egen flade (vi sender
+// ingen widget), og inde i den står de fem eskalationsniveauer som en pyramide:
+// bredest nederst, fordi niveau 1 besvarer langt de fleste. Spørgsmålet kommer
+// ind i boblen nederst til venstre, og det tykke ORANGE svar vender ud igen fra
+// niveau 1 — det er hele pointen. Opad bliver eskalationen tyndere og svagere.
+// Nails: fem niveauer, de færreste når toppen, alt sammen i din egen ramme.
+const HD_TIERS = [
+  { x: 84, w: 212, y: 192, n: "1" },
+  { x: 98, w: 184, y: 166, n: "2" },
+  { x: 112, w: 156, y: 140, n: "3" },
+  { x: 126, w: 128, y: 114, n: "4" },
+  { x: 140, w: 100, y: 88, n: "5" },
+];
+const helpdesk = wrap(
+  <g font-family="'DM Sans',sans-serif" font-size="10">
+    {/* kundens egen flade — browserrammen. Vi sender ingenting synligt. */}
+    <rect x="26" y="34" width="308" height="212" rx="13" fill="color-mix(in srgb,var(--blue) 5%,transparent)" stroke="var(--blue)" stroke-width="1.6" opacity=".7" />
+    <path d="M26 60 H334" stroke="var(--blue)" stroke-width="1.2" opacity=".4" />
+    <g opacity=".45">
+      <circle cx="41" cy="47" r="3" fill="var(--blue)" />
+      <circle cx="52" cy="47" r="3" fill="var(--blue)" />
+      <circle cx="63" cy="47" r="3" fill="var(--blue)" />
+    </g>
+
+    {/* de fem niveauer — bredest nederst */}
+    {HD_TIERS.map((t, i) => (
+      <g key={t.n}>
+        <rect
+          class={i === 0 ? "illu-glow" : undefined}
+          x={t.x}
+          y={t.y}
+          width={t.w}
+          height="19"
+          rx="6"
+          fill={`color-mix(in srgb,var(--blue) ${17 - i * 3}%,transparent)`}
+          stroke={i === 0 ? "var(--blue-light)" : "var(--blue)"}
+          stroke-width="1.5"
+          opacity={1 - i * 0.12}
+        />
+        <text x={t.x + 10} y={t.y + 13.5} fill="var(--muted)">{t.n}</text>
+      </g>
+    ))}
+
+    {/* eskalationen opad: tyndere og svagere for hvert hak */}
+    <g class="illu-flow" stroke="var(--blue)" stroke-dasharray="3 5" fill="none">
+      {HD_TIERS.slice(0, 4).map((t, i) => (
+        <path key={t.n} d={`M190 ${t.y} V ${HD_TIERS[i + 1].y + 19}`} stroke-width={1.6 - i * 0.3} opacity={0.7 - i * 0.15} />
+      ))}
+    </g>
+
+    {/* spørgsmålet ind i boblen, og det tykke orange svar retur fra niveau 1 */}
+    <g fill="none" stroke-linecap="round">
+      <path class="illu-flow" d="M62 184 C 70 185, 76 192, 82 196" stroke="var(--blue)" stroke-width="1.6" stroke-dasharray="3 5" />
+      <path class="illu-flow" d="M82 207 C 76 208, 70 202, 62 198" stroke="#F3522C" stroke-width="3" stroke-dasharray="4 6" />
+    </g>
+    <g>
+      <path
+        class="pulse-core"
+        d="M34 182 a7 7 0 0 1 7-7 h14 a7 7 0 0 1 7 7 v11 a7 7 0 0 1-7 7 h-9 l-8 6 v-6 a7 7 0 0 1-4-6 z"
+        fill="rgba(243,82,44,.14)"
+        stroke="#F3522C"
+        stroke-width="1.6"
+      />
+      <g stroke="#F3522C" stroke-width="1.4" stroke-linecap="round" opacity=".8">
+        <path d="M41 183 H55" />
+        <path d="M41 189 H50" />
+      </g>
+    </g>
+
+    {/* niveau 4 er et menneske hos kunden — niveau 5 er os */}
+    <g transform="translate(236,116)">
+      <circle class="node" cx="0" cy="-1.5" r="3.2" fill="var(--blue-light)" />
+      <path d="M-5 7 a5 5 0 0 1 10 0" fill="none" stroke="var(--blue-light)" stroke-width="1.4" />
+    </g>
+    <circle class="node" cx="222" cy="97" r="4.5" fill="#F3522C" style="animation-delay:.9s" />
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   components,
   cardmem,
@@ -1030,6 +1108,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   hosting,
   consulting,
   docs,
+  helpdesk,
   "fysio-dk-sport": fysioDkSport,
   "fysio-dk-aalborg": fysioDkAalborg,
   "x-rt-platform": xrtPlatform,

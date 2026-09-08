@@ -147,6 +147,26 @@ const logos: Record<string, JSX.Element> = {
       <circle cx="11" cy="24" r="1.1" fill="#fbbf24" />
     </svg>
   ),
+  /* helpdesk — en samtale-boble hvis indhold er en trappe: spørgsmålet kommer
+     ind, og de fleste stopper på det første trin. Det orange trin nederst er
+     niveau 1, hvor svaret bliver givet; de to blå ovenover er eskalationen.
+     Faste farver som cardmems mærke: et logo der skifter farve med temaet er
+     ikke længere det samme logo. */
+  helpdesk: (
+    <svg viewBox="0 0 32 32" width="24" height="24">
+      <path
+        d="M5 9.5A3.5 3.5 0 0 1 8.5 6h15A3.5 3.5 0 0 1 27 9.5v10a3.5 3.5 0 0 1-3.5 3.5H13.5L8 27.2V23h.5A3.5 3.5 0 0 1 5 19.5Z"
+        fill="none"
+        stroke="#38bdf8"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+        opacity="0.9"
+      />
+      <rect x="9.5" y="17" width="13" height="2.6" rx="1.3" fill="#f3522c" />
+      <rect x="12" y="12.8" width="10.5" height="2.6" rx="1.3" fill="#7dd3fc" />
+      <rect x="14.5" y="8.6" width="8" height="2.6" rx="1.3" fill="#7dd3fc" opacity="0.6" />
+    </svg>
+  ),
   "pitch-vault": (
     <svg viewBox="0 0 472.57 691.83" width="18" height="25">
       <path fill="#3438a8" d="M222.21.84c45.82-4.83,101.86,11.59,140.29,36.59,53.71,34.85,91.3,89.66,104.48,152.31,7.29,34.84,5.36,70.6,5.36,106.19l.03,117.89.03,89.71c-.02,17.37.64,41.96-1.74,58.51-3.24,22.1-11.28,43.22-23.57,61.87-22.93,34.97-55.79,55.28-96.17,63.69l-.07-278.93-.06-119.64c-.1-20.59.84-55.83-3.18-74.99-3.45-15.72-10.1-30.57-19.52-43.62-17.69-24.95-44.78-41.62-75.02-46.19-28.79-4.28-58.1,2.97-81.58,20.18-27.51,20.1-43.05,48.39-48.18,81.69-.83.14-1.65.28-2.48.43C70.08,235.75,29.31,262.99.22,305.22c-.03-24.71-.91-58.07,1.02-81.93,4.14-52.52,24.98-102.33,59.48-142.14C102.66,32.67,158.54,5.42,222.21.84Z" />
