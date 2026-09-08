@@ -24,6 +24,12 @@ import { Figur } from "@/components/Figur.tsx";
 
 export interface AidanTekster {
   boble: string;
+  /** F007.17 — den proaktive hilsen efter 10 sekunder. */
+  hilsenTitel: string;
+  hilsenKrop: string;
+  airinaHilsenKrop: string;
+  hilsenNu: string;
+  hilsenLuk: string;
   navn: string;
   rolle: string;
   hilsen: string;
@@ -81,6 +87,21 @@ export function aidanTekster(
   const en = locale === "en";
   return {
     boble: g("aidanBoble", en ? "Hi — I'm Aidan" : "Hej — jeg er Aidan"),
+    hilsenTitel: g("aidanHilsenTitel", en ? "Hi there 👋" : "Hej der 👋"),
+    hilsenKrop: g(
+      "aidanHilsenKrop",
+      en
+        ? "You're now talking to Aidan. How can I help?"
+        : "Du taler nu med Aidan. Hvordan kan jeg hjælpe?",
+    ),
+    airinaHilsenKrop: g(
+      "airinaHilsenKrop",
+      en
+        ? "You're now talking to Airina. How can I help?"
+        : "Du taler nu med Airina. Hvordan kan jeg hjælpe?",
+    ),
+    hilsenNu: g("aidanHilsenNu", en ? "Just now" : "Lige nu"),
+    hilsenLuk: g("aidanHilsenLuk", en ? "Dismiss" : "Luk"),
     navn: g("aidanNavn", "Aidan"),
     rolle: g("aidanRolle", en ? "AI guide at broberg.ai" : "AI-guide på broberg.ai"),
     hilsen: g(
@@ -200,6 +221,8 @@ export function AidanWidget({
       data-navn-airina={t.airinaNavn}
       data-boble-aidan={t.boble}
       data-boble-airina={t.airinaBoble}
+      data-hilsen-krop-aidan={t.hilsenKrop}
+      data-hilsen-krop-airina={t.airinaHilsenKrop}
       data-hilsen-aidan={t.hilsen}
       data-hilsen-airina={t.airinaHilsen}
       data-disclaimer-aidan={t.disclaimer}
@@ -230,6 +253,50 @@ export function AidanWidget({
       </button>
       <div class="aidan-boble" data-testid="aidan-boble" {...cmsAttrs(globalsRef, "aidanBoble")}>
         {t.boble}
+      </div>
+
+      {/* F007.17 — den proaktive hilsen. Skjult indtil enhance.ts har målt 10
+          sekunders SYNLIG tid uden at brugeren selv har åbnet chatten. Den bor
+          i DOM'en fra start (og ikke bygget i JS) så teksten er inline-redigerbar
+          og læsbar for en crawler — som resten af fladen. */}
+      <div class="aidan-hilsen" data-testid="aidan-hilsen" hidden>
+        <button
+          type="button"
+          class="aidan-hilsen-klik"
+          data-testid="aidan-hilsen-klik"
+          aria-label={en ? "Open chat" : "Åbn chat"}
+        >
+          <Figur klasse="aidan-hilsen-avatar" />
+          <span class="aidan-hilsen-tekst">
+            <span
+              class="aidan-hilsen-titel"
+              data-testid="aidan-hilsen-titel"
+              {...cmsAttrs(globalsRef, "aidanHilsenTitel")}
+            >
+              {t.hilsenTitel}
+            </span>
+            <span
+              class="aidan-hilsen-krop"
+              data-testid="aidan-hilsen-krop"
+              {...cmsAttrs(globalsRef, "aidanHilsenKrop")}
+            >
+              {t.hilsenKrop}
+            </span>
+            <span class="aidan-hilsen-byline" data-testid="aidan-hilsen-byline">
+              <span class="aidan-hilsen-navn">{t.navn}</span>
+              {" · "}
+              <span {...cmsAttrs(globalsRef, "aidanHilsenNu")}>{t.hilsenNu}</span>
+            </span>
+          </span>
+        </button>
+        <button
+          type="button"
+          class="aidan-hilsen-luk"
+          data-testid="aidan-hilsen-luk"
+          aria-label={t.hilsenLuk}
+        >
+          ×
+        </button>
       </div>
 
       <div class="aidan-bagtaeppe" data-testid="aidan-bagtaeppe" hidden></div>

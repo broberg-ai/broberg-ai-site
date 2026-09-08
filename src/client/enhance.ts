@@ -5,6 +5,16 @@ import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
 import { mountAdminChat } from "@/client/admin-chat.tsx";
 import { aidanTilHtml } from "@/client/aidan-md.ts";
+import {
+  skalVises as hilsenSkalVises,
+  harTidligereSamtaler,
+  erAfvist,
+  markerAfvist,
+  erVistIDetteBesoeg,
+  markerVist,
+  laesSynligMs,
+  gemSynligMs,
+} from "./aidan-hilsen.ts";
 import { listSamtaler, hentSamtale, gemAktiv, sletSamtale, aktivId, saetAktiv, relativTid, erNaerBunden, type Tur } from "@/client/aidan-samtaler.ts";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
@@ -626,11 +636,86 @@ function aidan() {
   addEventListener("scroll", () => scrollY > 120 && visFab(), { passive: true });
   if (scrollY > 120) visFab(); // landet midt på siden (anker/back-nav)
 
+  // ── F007.17: den proaktive hilsen efter 10 sekunders SYNLIG tid.
+  //
+  // Reglerne — de fire nej'er — bor i aidan-hilsen.ts og er forseglet der.
+  // Her er kun måleren og ledningen.
+  //
+  // Tiden BÆRES MED over et sideskifte: «været på broberg.ai i mere end 10
+  // sekunder» er ikke det samme som 10 sekunder på én side, og broberg.ai er
+  // hurtig at klikke rundt i.
+  const hilsen = rod.querySelector<HTMLElement>(".aidan-hilsen");
+  const hilsenKlik = rod.querySelector<HTMLButtonElement>(".aidan-hilsen-klik");
+  const hilsenLuk = rod.querySelector<HTMLButtonElement>(".aidan-hilsen-luk");
+  let panelHarVaeretAabent = false;
+  if (hilsen && hilsenKlik && hilsenLuk) {
+    let synligMs = laesSynligMs();
+    let sidst = Date.now();
+    let ur: ReturnType<typeof setInterval> | null = null;
+
+    const skjulHilsen = () => {
+      hilsen.hidden = true;
+      hilsen.classList.remove("vis");
+    };
+
+    const tick = () => {
+      const nu = Date.now();
+      // Et faneblad i baggrunden tæller IKKE. Ti sekunder bag en anden fane er
+      // ikke et menneske der kigger.
+      if (!document.hidden) synligMs += nu - sidst;
+      sidst = nu;
+      gemSynligMs(synligMs);
+      if (
+        hilsenSkalVises({
+          synligMs,
+          panelHarVaeretAabent,
+          harTidligereSamtaler: harTidligereSamtaler(),
+          afvistFoer: erAfvist(),
+          vistIDetteBesoeg: erVistIDetteBesoeg(),
+        })
+      ) {
+        markerVist();
+        hilsen.hidden = false;
+        // Én frame før klassen, ellers når overgangen ikke at køre fra
+        // udgangspunktet — samme mønster som resten af fladen.
+        requestAnimationFrame(() => hilsen.classList.add("vis"));
+        // Chat-knappen skal frem sammen med kortet. Uden den svæver hilsenen
+        // over ingenting, og lukker man den er der intet at klikke på.
+        visFab();
+        // Den lille scroll-boble og kortet må ikke stå oven i hinanden.
+        boble.classList.remove("vis");
+        if (ur) clearInterval(ur);
+        ur = null;
+      }
+    };
+    // Nulstil måleren når fanen bliver synlig igen, så pausen ikke tælles med.
+    addEventListener("visibilitychange", () => { sidst = Date.now(); });
+    ur = setInterval(tick, 1000);
+    // Ét tick med det samme: er de 10 sekunder allerede brugt på en tidligere
+    // side i samme besøg, skal kortet ikke vente et helt sekund mere.
+    tick();
+
+    hilsenKlik.addEventListener("click", () => {
+      skjulHilsen();
+      // Klik åbner chatten. Ikke markerAfvist: han bad om den, han afviste den
+      // ikke — og en åbnet chat lukker den alligevel af sig selv fremover.
+      aabn();
+    });
+    hilsenLuk.addEventListener("click", (e) => {
+      e.stopPropagation();
+      skjulHilsen();
+      // ÉN AFVISNING HOLDER. Uden denne linje er kortet en nag på hver side.
+      markerAfvist();
+    });
+  }
+
   // ── Åbn/luk
   const mobil = () => matchMedia("(max-width: 560px)").matches;
   const bagtaeppe = rod.querySelector<HTMLElement>("[data-testid='aidan-bagtaeppe']");
   const aabn = () => {
     panel.hidden = false;
+    // F007.17: hilsenen må ikke komme til en der selv har åbnet chatten.
+    panelHarVaeretAabent = true;
     if (bagtaeppe) bagtaeppe.hidden = false;
     fab.classList.add("aaben");
     boble.classList.remove("vis");

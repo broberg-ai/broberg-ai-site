@@ -3313,6 +3313,96 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   transform: none;
 }
 
+/* ── F007.17: den proaktive hilsen ────────────────────────────────────────
+   Christian 8/9 med Intercoms Fin-kort som reference: et mørkt kort nede til
+   højre med afsender-figur, hilsen, én linje tekst og en byline. Større og
+   mere personligt end .aidan-boble, som er et værktøjstip ved siden af en
+   knap. De to kan ikke stå fremme samtidig (enhance.ts skjuler boblen). */
+.aidan-hilsen {
+  position: fixed;
+  right: 24px;
+  bottom: 104px;
+  z-index: 61;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  max-width: min(360px, calc(100vw - 48px));
+  background: var(--dark2);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.aidan-hilsen.vis {
+  opacity: 1;
+  transform: none;
+}
+/* `display: flex` ovenfor slår browserens egen [hidden]-regel ihjel — en
+   klasse vinder over UA-stilarket. Uden denne linje ligger kortet på siden fra
+   første øjeblik: usynligt (opacity 0), men i layoutet og klikbart, og
+   Playwright kalder det «visible» fordi det har en kasse. Fanget af Lens 8/9;
+   øjet ville aldrig have set det. */
+.aidan-hilsen[hidden] {
+  display: none;
+}
+.aidan-hilsen-klik {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 6px 14px 16px;
+  background: none;
+  border: 0;
+  border-radius: 18px;
+  text-align: left;
+  color: var(--light);
+  cursor: pointer;
+  font: inherit;
+}
+.aidan-hilsen-klik:hover .aidan-hilsen-titel { text-decoration: underline; }
+.aidan-hilsen-klik:active { transform: scale(0.995); }
+.aidan-hilsen-klik:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.aidan-hilsen-avatar {
+  position: relative;
+  inset: auto;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid var(--blue);
+  background: radial-gradient(circle at 50% 42%, var(--blue-glow), transparent 75%);
+}
+.aidan-hilsen-tekst { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.aidan-hilsen-titel { font-weight: 600; font-size: 0.95rem; }
+.aidan-hilsen-krop { font-size: 0.92rem; line-height: 1.4; }
+.aidan-hilsen-byline { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+.aidan-hilsen-luk {
+  flex: none;
+  margin: 8px 8px 0 0;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.aidan-hilsen-luk:hover { background: var(--card-border); color: var(--light); }
+.aidan-hilsen-luk:active { transform: scale(0.92); }
+.aidan-hilsen-luk:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+/* Kortet dækker ikke chat-knappen: den sidder nederst til højre, kortet ovenover. */
+@media (max-width: 560px) {
+  .aidan-hilsen { right: 12px; left: 12px; bottom: 96px; max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aidan-hilsen { transition: none; }
+}
+
 
 /* F007.14.1 — glas-bagtæppe bag panelet (ejer 5/9): frostet glas dæmper
    siden bagved så chatten får fokus; klik på glasset lukker. Ikke på mobil,
