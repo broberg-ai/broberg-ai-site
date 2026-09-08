@@ -729,6 +729,7 @@ const FOOTER_FALLBACK: Record<Locale, Omit<FooterData, "techTicker" | "legal"> &
           { label: "Webshops", href: "/losninger/webshops" },
           { label: "Platforme", href: "/losninger/platforme" },
           { label: "AI Integration", href: "/losninger/ai-integration" },
+          { label: "Consulting", href: "/flagskibe/consulting" },
         ],
       },
       {
@@ -773,6 +774,7 @@ const FOOTER_FALLBACK: Record<Locale, Omit<FooterData, "techTicker" | "legal"> &
           { label: "Webshops", href: "/en/solutions/webshops" },
           { label: "Platforms", href: "/en/solutions/platforme" },
           { label: "AI Integration", href: "/en/solutions/ai-integration" },
+          { label: "Consulting", href: "/en/flagships/consulting" },
         ],
       },
       {

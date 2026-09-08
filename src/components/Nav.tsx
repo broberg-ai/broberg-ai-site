@@ -16,7 +16,7 @@
    homepage's own #om section (About moved there off /universet). */
 import type { Locale } from "@/config.ts";
 import type { CmsRef } from "@/content/types.ts";
-import { withLocale } from "@/i18n.ts";
+import { withLocale, flagshipsSegment } from "@/i18n.ts";
 import { cmsAttrs } from "@/components/sections.tsx";
 
 const COPY = {
@@ -30,6 +30,8 @@ const COPY = {
     platformeSub: "Skræddersyet — det vi selv bygger på",
     aiIntegration: "AI Integration",
     aiIntegrationSub: "Rådgivning + integration i det I har",
+    consulting: "Consulting",
+    consultingSub: "Rådgivning fra en der selv bygger",
     sadanByggerViDet: "Sådan bygger vi det",
     cases: "Cases",
     ressourcer: "Indsigter",
@@ -63,6 +65,8 @@ const COPY = {
     platformeSub: "Custom-built — what we run on ourselves",
     aiIntegration: "AI Integration",
     aiIntegrationSub: "Advisory + integration into what you have",
+    consulting: "Consulting",
+    consultingSub: "Advice from someone who builds it too",
     sadanByggerViDet: "How we build it",
     cases: "Cases",
     ressourcer: "Insights",
@@ -154,6 +158,7 @@ export function Nav({
   const switchHref = altHref ?? withLocale(otherLocale, "/");
   const universetHref = locale === "en" ? "/en/universe" : "/universet";
   const solutionsSeg = SOLUTIONS_SEGMENT[locale];
+  const flagshipsSeg = flagshipsSegment(locale);
 
   return (
     <header>
@@ -185,6 +190,13 @@ export function Nav({
               <a href={`/${solutionsSeg}/ai-integration`} data-testid="dd-ai-integration">
                 <b {...g("aiIntegration")}>{t.aiIntegration}</b>
                 <span {...g("aiIntegrationSub")}>{t.aiIntegrationSub}</span>
+              </a>
+              {/* Christian 8/9: consulting skal med under Løsninger. Siden er en
+                  FLAGSKIBS-node og ikke en /losninger/-side, så stien bygges af
+                  flagskibs-segmentet — ellers ville linket 404'e på engelsk. */}
+              <a href={`/${flagshipsSeg}/consulting`} data-testid="dd-consulting">
+                <b {...g("consulting")}>{t.consulting}</b>
+                <span {...g("consultingSub")}>{t.consultingSub}</span>
               </a>
             </div>
           </div>
