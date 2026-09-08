@@ -1330,8 +1330,8 @@ export async function renderPodcast(locale: Locale): Promise<string> {
         : "Aidan forklarer. Airina spørger som lytteren ville. Ét afsnit, én artikel, og ingen der lader som om de er enige når de ikke er det.",
     ),
     vaerter: [
-      { initialer: "A", navn: g("podcastAidanNavn", "Aidan"), rolle: g("podcastAidanKort", isEn ? "explains" : "forklarer") },
-      { initialer: "Ai", navn: g("podcastAirinaNavn", "Airina"), rolle: g("podcastAirinaKort", isEn ? "asks on your behalf" : "spørger på din vegne") },
+      { initialer: "A", navn: g("podcastAidanNavn", "Aidan"), rolle: g("podcastAidanKort", isEn ? "explains" : "forklarer"), portraet: "/uploads/aidan-kanonisk-rfjl.svg" },
+      { initialer: "Ai", navn: g("podcastAirinaNavn", "Airina"), rolle: g("podcastAirinaKort", isEn ? "asks on your behalf" : "spørger på din vegne"), portraet: "/uploads/airina-klasser-77ms.svg" },
     ],
     statusTitel: g("podcastStatusTitel", isEn ? "The first episode is in production" : "Første afsnit er under produktion"),
     statusTekst: g("podcastStatusTekst", isEn ? "The engine is built and tested end to end." : "Motoren er bygget og afprøvet hele vejen igennem."),

@@ -4253,6 +4253,38 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%;
   background: var(--blue-light); color: var(--blue-text); font-weight: 700; font-size: .95rem;
 }
+
+/* Aidan og Airinas rigtige ansigter — KUN hovedet.
+   Portrætterne er hele figurer (robotter med krop, arme og ben), så hovedet
+   skæres ud her frem for at der laves nye filer: billedet skaleres op inde i
+   den runde maske og forskydes, så kun hovedet er tilbage.
+   Tallene er målt på de renderede SVG'er ved 512 px:
+     Aidan   hoved ca. x 93-423, y 0-330 af 512  ->  skala 512/330 = 155 %
+     Airina  hoved ca. x 105-395, y 52-342 af 512 ->  skala 512/290 = 177 %
+   De står som variabler, så en justering er ét sted og ikke fire. */
+.pod-avatar-portraet {
+  position: relative;
+  overflow: hidden;
+  background: var(--blue-light);
+}
+.pod-avatar-portraet img {
+  position: absolute;
+  width: var(--portraet-skala, 160%);
+  height: auto;
+  left: var(--portraet-x, -30%);
+  top: var(--portraet-y, -4%);
+  max-width: none;
+}
+.pod-avatar-portraet[data-vaert="aidan"] img {
+  --portraet-skala: 155%;
+  --portraet-x: -28%;
+  --portraet-y: 0%;
+}
+.pod-avatar-portraet[data-vaert="airina"] img {
+  --portraet-skala: 177%;
+  --portraet-x: -36%;
+  --portraet-y: -18%;
+}
 .pod-vaert-tekst { display: flex; flex-direction: column; line-height: 1.3; }
 .pod-vaert-tekst span { color: var(--muted); font-size: .9rem; }
 

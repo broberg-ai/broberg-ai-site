@@ -30,7 +30,7 @@ export type PodcastData = {
   eyebrow: string;
   heading: string;
   lead: string;
-  vaerter: { initialer: string; navn: string; rolle: string }[];
+  vaerter: { initialer: string; navn: string; rolle: string; portraet?: string }[];
   statusTitel: string;
   statusTekst: string;
   introTitel: string;
@@ -73,8 +73,19 @@ export function Podcast({
         <ul class="pod-vaerter" data-testid="podcast-vaerter">
           {data.vaerter.map((v) => (
             <li class="pod-vaert" data-testid="podcast-vaert">
-              <span class="pod-avatar" aria-hidden="true">
-                {v.initialer}
+              {/* Christian, 8/9: «Deres rigtige ansigter fra SVG - kun hovedet».
+                  Portrættet er en HEL figur, så hovedet skæres ud med CSS i
+                  stedet for at der laves nye filer: billedet skaleres op og
+                  forskydes inde i en rund maske. Tallene står i brand.css ved
+                  siden af hinanden, så de kan justeres ét sted.
+                  Initialerne bliver stående som reserve — findes portrættet
+                  ikke, er en bogstavcirkel bedre end et hul. */}
+              <span
+                class={`pod-avatar${v.portraet ? " pod-avatar-portraet" : ""}`}
+                data-vaert={v.portraet ? v.navn.toLowerCase() : undefined}
+                aria-hidden="true"
+              >
+                {v.portraet ? <img src={v.portraet} alt="" loading="lazy" /> : v.initialer}
               </span>
               <span class="pod-vaert-tekst">
                 <b>{v.navn}</b>
