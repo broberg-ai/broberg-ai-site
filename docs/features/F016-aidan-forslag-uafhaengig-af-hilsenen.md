@@ -77,3 +77,47 @@ scroll-afsløring som udløser.
 3. **Mutations-tjek:** rul rettelsen tilbage, og vagten skal gå rød.
 4. **På WebKit og en telefon-viewport**, ikke Chromium på skrivebordet — det er
    dér meldingen kom fra.
+
+---
+
+## F016.9 — de engelske sider fik aldrig de nye spørgsmål, og tre rigtige sektioner havde ingen
+
+**Selvmeldt, ikke ejer-meldt.** F016.6 skrev 145 linjer ind i `globals.aidanPills`
+— det danske dokument. `en-globals.aidanPills` blev aldrig rørt og stod tilbage
+med de oprindelige 17. Målt på produktion før rettelsen: DA 145 linjer, EN 17.
+
+Det er den samme fejlform som resten af F016: **et grønt svar på et smallere
+spørgsmål end det stillede.** Jeg målte «blev de 145 linjer skrevet» og fik ja.
+Spørgsmålet der betød noget var «har hver besøgende nu sidens egne spørgsmål»,
+og for en engelsktalende var svaret nej.
+
+### Og to sektioner mere, fundet undervejs
+
+Da jeg opregnede de engelske ruter for at oversætte reglerne, viste det sig at
+**`/platform`, `/ai-metode` og `/bag-om` er rigtige sider på BEGGE sprog uden én
+eneste egen regel.** De faldt tilbage på de tre generelle. Det havde ingen
+opdaget, fordi en side uden egne forslag ser ud præcis som en side hvis forslag
+ikke passer — den viser stadig tre pæne spørgsmål.
+
+### Ruterne er de engelske slugs, ikke danske med præfiks
+
+`normaliser()` skræller `/en` af, så en regel skrives `/flagships/cms` — ikke
+`/en/flagships/cms` og ikke `/flagskibe/cms`. De 17 gamle EN-linjer brugte
+allerede den form og virkede; det var kun indholdet der var forældet.
+
+### Fundet, men IKKE rettet (uden for scope)
+
+`/om`, `/kontakt` og `/priser` svarer 200 på begge sprog og renderer deres eget
+slug som titel — «om — broberg.ai». Det er ikke rigtige sider. To af dem har
+regler i den danske liste, som derfor aldrig kan ramme noget. Det er en separat
+sag; jeg har ikke rørt den.
+
+### Acceptkriterier
+
+1. `en-globals.aidanPills` har ≥ 145 linjer, læst tilbage fra en frisk GET med
+   streng lighed.
+2. `/en/flagships/cms` viser mindst ét forslag der nævner CMS/website/content.
+3. **Negativ kontrol:** en engelsk side viser INGEN danske spørgsmål.
+4. `/platform` viser egne spørgsmål på begge sprog.
+5. Feltantallet i begge globals-dokumenter er uændret før/efter skrivningen —
+   `_lastEditedBy` er det eneste andet felt der må have flyttet sig.

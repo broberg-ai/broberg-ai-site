@@ -11,7 +11,7 @@
  */
 import { describe, it, expect } from "bun:test";
 // @ts-expect-error — ren .mjs uden typer, med vilje: porten skal kunne køres af node alene
-import { scanKilde, manglendeFelter, tomReserve } from "../scripts/gate-cms-text.lib.mjs";
+import { scanKilde, manglendeFelter, tomReserve, pillsParitet, ruteAntal } from "../scripts/gate-cms-text.lib.mjs";
 
 const kort = (navne: string[]) => new Map(navne.map((n) => [n, "src/prøve.tsx"]));
 
@@ -73,5 +73,50 @@ describe("blind vinkel 2 — en TOM reservetekst er ikke et hjem for tekst", () 
     expect(scanKilde('const a = g("toSprog", isEn ? "Five steps" : "Fem trin");')).toEqual([
       "toSprog",
     ]);
+  });
+});
+
+/**
+ * F016.9 — sprog-paritet på de primede chat-spørgsmål.
+ *
+ * Den fejl porten ikke kunne se: F016.6 skrev 145 linjer i det DANSKE
+ * globals-dokument, `en-globals` blev glemt og stod med 17 i fire dage. Gate D
+ * hentede kun `globals`, så der fandtes ikke en måling der KUNNE gå rød.
+ *
+ * Prøverne her holder både halvdelen der skal fange drift og halvdelen der
+ * skal lade en rigtig liste passere — uden den anden ville «meld altid fejl»
+ * bestå.
+ */
+describe("sprog-paritet på aidanPills", () => {
+  const da = ["/a | et", "/a | to", "/a | tre", "/b | et", "/b | to", "/b | tre"].join("\n");
+  const en = ["/x | one", "/x | two", "/x | three", "/y | one", "/y | two", "/y | three"].join("\n");
+
+  it("POSITIV KONTROL: to lige lange lister er i orden", () => {
+    expect(pillsParitet(da, en)).toEqual([]);
+  });
+
+  it("fanger PRÆCIS den drift der skete — dansk opdateret, engelsk glemt", () => {
+    const fejl = pillsParitet(da, "/x | one\n/x | two\n/x | three");
+    expect(fejl.length).toBeGreaterThan(0);
+    expect(fejl[0]).toContain("ulige mange ruter");
+  });
+
+  it("en rute med for få forslag fanges — den fyldes op med de generelle og ser rigtig ud", () => {
+    const tynd = ["/x | one", "/x | two", "/x | three", "/y | one"].join("\n");
+    const fejl = pillsParitet(da, tynd);
+    expect(fejl.some((f: string) => f.includes("/y") && f.includes("kun 1"))).toBe(true);
+  });
+
+  it("en TOM liste er en fejl, ikke en bestået paritet", () => {
+    // Uden denne ville «begge tomme» tælle som to lige store lister.
+    expect(pillsParitet(da, "")).not.toEqual([]);
+    expect(pillsParitet("", "")).not.toEqual([]);
+  });
+
+  it("ruteAntal tæller pr. rute og springer skrald over", () => {
+    const m = ruteAntal("/a | et\n\nikke en regel\n/a | to\n/b |   \n/b | tre");
+    expect(m.get("/a")).toBe(2);
+    expect(m.get("/b")).toBe(1);
+    expect(m.size).toBe(2);
   });
 });

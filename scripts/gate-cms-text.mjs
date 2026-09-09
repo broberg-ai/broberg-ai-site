@@ -17,7 +17,7 @@
  *
  * Selve målingen bor i gate-cms-text.lib.mjs, så den kan prøves uden netværk.
  */
-import { felterMedReservetekst, manglendeFelter } from "./gate-cms-text.lib.mjs";
+import { felterMedReservetekst, manglendeFelter, pillsParitet } from "./gate-cms-text.lib.mjs";
 
 const SITE = process.env.CMS_SITE || "broberg-ai";
 const BASE = process.env.CMS_API_BASE || "https://webhouse.app";
@@ -58,3 +58,33 @@ if (mangler.length) {
   process.exit(1);
 }
 console.log(`✓ Alle ${felter.size} tekster findes i CMS'et for ${SITE} — ingen lever kun i koden.`);
+
+/* --------------------------------------------------------------------------
+ * F016.9 — sprog-paritet. Porten hentede kun `globals`, så den kunne
+ * strukturelt ikke se at `en-globals` var faldet bagud. Det skete: 145 danske
+ * linjer mod 17 engelske i fire dage, mens engelske sider viste tre pæne
+ * generelle forslag og så helt rigtige ud.
+ * -------------------------------------------------------------------------- */
+const enSvar = await fetch(`${BASE}/api/cms/globals/en-globals?site=${SITE}`, {
+  headers: { Authorization: `Bearer ${TOKEN}` },
+});
+if (enSvar.status === 404) {
+  // Sagt HØJT, ikke sprunget over i stilhed: et sprog-tjek der ikke kørte må
+  // aldrig kunne forveksles med et der bestod.
+  console.log(`· Sprog-paritet IKKE målt: ${SITE} har intet en-globals-dokument.`);
+} else if (!enSvar.ok) {
+  console.error(`✗ Gate D: CMS svarede ${enSvar.status} på en-globals for ${SITE}.`);
+  process.exit(1);
+} else {
+  const enData = (await enSvar.json()).data ?? {};
+  const fejl = pillsParitet(data.aidanPills, enData.aidanPills);
+  if (fejl.length) {
+    console.error(`\n✗ De primede chat-spørgsmål er ude af trit mellem sprogene:\n`);
+    for (const f of fejl) console.error(`    ${f}`);
+    console.error(`\n  Et sprog opdateret uden det andet ser IKKE forkert ud på sitet —`);
+    console.error(`  den glemte side viser stadig tre pæne generelle forslag.`);
+    console.error(`\n  Ret begge dokumenter og læs dem tilbage fra en frisk GET.`);
+    process.exit(1);
+  }
+  console.log(`✓ Sprog-paritet: dansk og engelsk dækker de samme antal ruter.`);
+}

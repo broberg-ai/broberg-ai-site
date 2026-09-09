@@ -80,3 +80,64 @@ export function manglendeFelter(felter, data) {
     return !udfyldt(v);
   });
 }
+
+/* ------------------------------------------------------------------------- *
+ * F016.9 — sprog-paritet på de primede chat-spørgsmål.
+ *
+ * Gate D læste kun `globals`. Den kunne strukturelt ikke se `en-globals`, og
+ * derfor heller ikke se at de to drev fra hinanden: F016.6 skrev 145 linjer i
+ * det danske dokument, det engelske stod med 17 i fire dage, og INTET sagde
+ * fra. En engelsk side viste stadig tre pæne generelle forslag — den grønne
+ * retning er den tavse retning, igen.
+ *
+ * Ruterne KAN ikke sammenlignes direkte (/flagskibe vs /flagships), og en
+ * oversættelsestabel ville selv drive. Så det der måles er STRUKTUREN: lige
+ * mange ruter, og nok spørgsmål på hver til at udvælgelsen har noget at vælge
+ * imellem.
+ * ------------------------------------------------------------------------- */
+
+/** «/rute | spørgsmål» → Map(rute → antal). Tomme og ugyldige linjer ignoreres. */
+export function ruteAntal(pills) {
+  const ud = new Map();
+  for (const linje of String(pills ?? "").split("\n")) {
+    const i = linje.indexOf("|");
+    if (i < 0) continue;
+    const rute = linje.slice(0, i).trim();
+    const spg = linje.slice(i + 1).trim();
+    if (!rute || !spg) continue;
+    ud.set(rute, (ud.get(rute) ?? 0) + 1);
+  }
+  return ud;
+}
+
+/**
+ * Hvad er galt med de to lister? Tom liste = i orden.
+ *
+ * `mindst` er hvor mange forslag udvælgelsen viser ad gangen (3). En rute med
+ * færre har intet at rotere mellem og fyldes op med de generelle — hvilket ser
+ * ud præcis som en rute der virker.
+ */
+export function pillsParitet(daPills, enPills, mindst = 3) {
+  const da = ruteAntal(daPills);
+  const en = ruteAntal(enPills);
+  const fejl = [];
+
+  if (da.size === 0 || en.size === 0) {
+    fejl.push(`en af listerne er tom (dansk: ${da.size} ruter, engelsk: ${en.size})`);
+    return fejl; // resten ville kun være støj oven på dette.
+  }
+  if (da.size !== en.size) {
+    fejl.push(
+      `ulige mange ruter — dansk ${da.size}, engelsk ${en.size}. ` +
+        `Et sprog er blevet opdateret uden det andet.`,
+    );
+  }
+  for (const [navn, liste] of [["dansk", da], ["engelsk", en]]) {
+    for (const [rute, antal] of liste) {
+      if (antal < mindst) {
+        fejl.push(`${navn} ${rute} har kun ${antal} forslag (mindst ${mindst})`);
+      }
+    }
+  }
+  return fejl;
+}
