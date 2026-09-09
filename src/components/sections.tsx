@@ -186,12 +186,19 @@ export function Platforms({ data, cmsRef, fields }: { data: PlatformsData; cmsRe
                   <Logo k={p.logoKey} />
                 </div>
                 <div class="nm" {...cmsAttrs(p.cmsRef, "name")}>{p.name}</div>
-                {/* status="live" → green LIVE; anything else (e.g. ideation) → a
-                    discreet grey "Snart" so a not-yet-live node makes no false claim. */}
+                {/* Tre tilstande. status="live" → grønt LIVE. status="new" (F013.3,
+                    Christian 9/9) → et fyldt, let skråtstillet mærkat i husets orange,
+                    med teksten fra dokumentets EGET felt pr. sprog — «Nyhed» / «New».
+                    Alt andet → det dæmpede grå «Snart», så en node der endnu ikke
+                    findes stadig ikke lover noget. */}
                 {p.status === "live" ? (
-                  <span class="badge">{p.status}</span>
+                  <span class="badge" data-testid={`flagship-badge-${p.logoKey}`}>{p.status}</span>
+                ) : p.status === "new" && p.badge ? (
+                  <span class="badge badge-nyhed" data-testid={`flagship-badge-${p.logoKey}`} {...cmsAttrs(p.cmsRef, "badge")}>
+                    {p.badge}
+                  </span>
                 ) : (
-                  <span class="badge badge-soon">Snart</span>
+                  <span class="badge badge-soon" data-testid={`flagship-badge-${p.logoKey}`}>Snart</span>
                 )}
               </div>
               <p {...cmsHtmlAttrs(p.cmsRef, "blurb")} dangerouslySetInnerHTML={{ __html: p.blurb }} />

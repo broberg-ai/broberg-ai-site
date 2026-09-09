@@ -83,6 +83,7 @@ export function buildHomeModel(locale: Locale, store: Store): PageModel | null {
       logoKey: String(p.slug).toLowerCase(),
       blurb: str(d.blurb) || str(d.tagline),
       status: str(d.status) || "live",
+      badge: str(d.badge),
       cmsRef: { collection: "platforms", slug: String(p.slug), locale },
     };
   });
@@ -376,6 +377,7 @@ export async function loadPlatforms(locale: Locale): Promise<Platform[]> {
         logoKey: stripLocalePrefix(String(p.slug), locale),
         blurb: str(d.blurb) || str(d.tagline),
         status: str(d.status) || "live",
+        badge: str(d.badge),
         cmsRef: { collection: "platforms", slug: String(p.slug), locale },
       };
     });

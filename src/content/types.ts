@@ -68,6 +68,10 @@ export interface Platform {
   logoKey: string;
   blurb: string;
   status: string;
+  /** F013.3 — mærkatets TEKST, pr. sprog fra CMS. `status` er maskinværdien
+   *  der vælger stilarten; dette er det brugeren læser. To felter, fordi en
+   *  stilart valgt på den viste tekst ville gå i stykker på «New». */
+  badge?: string;
   cmsRef?: CmsRef;
 }
 export interface PlatformsData {

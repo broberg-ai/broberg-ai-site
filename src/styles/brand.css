@@ -46,6 +46,9 @@
   --light: #f0f4f8;
   --muted: rgba(240, 244, 248, 0.5);
   --orange: #f3522c;
+  /* F013.3 — «Nyhed»-mærkatet. Ens i begge temaer; se .badge-nyhed. */
+  --nyhed-flade: #f3522c;
+  --nyhed-tekst: #04222f;
   /* Slightly lighter orange for TEXT/arrows so they clear WCAG AA on dark
      (the brand #f3522c is 4.28:1; this hits ≥4.5:1). Graphics keep --orange. */
   --orange-text: #ff6a45;
@@ -691,6 +694,32 @@ section {
   color: var(--muted);
   background: rgba(139, 146, 156, 0.1);
   border-color: rgba(139, 146, 156, 0.28);
+}
+/* F013.3 — «Nyhed»-mærkatet (Christian 9/9: «en lille flashy lidt på skrå
+   tag/pill … med en broberg.ai farverig farve»).
+   
+   MØRK TEKST PÅ ORANGE, ikke hvid. Mærkatet er 9,5 px versaler, altså
+   ALMINDELIG tekst efter WCAG (stor tekst begynder ved 18,66 px fed), så kravet
+   er 4,5:1 — ikke 3:1. Hvid på husets orange giver 3,45:1 og ville dumpe;
+   det er samme fejl F011.2 rettede på de blå knapper samme dag. Mørk tekst på
+   en lysende orange flade er begge dele på én gang: det mest iøjnefaldende OG
+   det der består (4,78:1).
+   
+   Fladen er ENS i begge temaer med vilje — en accent skal ikke følge
+   baggrunden, og én værdi kan ikke drive fra sig selv i det ene tema. */
+.badge-nyhed {
+  color: var(--nyhed-tekst);
+  background: var(--nyhed-flade);
+  border-color: var(--nyhed-flade);
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  transform: rotate(-6deg);
+  transform-origin: center;
+  box-shadow: 0 2px 10px rgba(243, 82, 44, 0.4);
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Hældningen er statisk, ikke bevægelse — den bliver stående. */
+  .badge-nyhed { transform: rotate(-6deg); }
 }
 .kicker {
   font-size: 12px;
