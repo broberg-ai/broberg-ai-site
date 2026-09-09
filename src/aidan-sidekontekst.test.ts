@@ -76,3 +76,66 @@ describe("serveren bruger siden — og kun via sit EGET indeks", () => {
     expect(krop, "konteksten skal med i system-strengen").toContain("const system");
   });
 });
+
+/**
+ * F013.6 — sidens egen tekst er den gældende kilde.
+ *
+ * MÅLT PÅ PRODUKTION 9/9-2026, én linje fra /api/aidan/health:
+ *   {"forsoeg":1,"svar":0,"tomme":0,"fejl":1,"sidsteMs":6001}
+ *
+ * Opslaget tidsudløb. Aidan svarede med NUL vidensbase — og opfandt HelpDesks
+ * model: «tre automatiske lag», «AI-førstehjælp», «80 % af spørgsmålene». Det
+ * rigtige tal er FEM niveauer, og det stod på den side den besøgende havde
+ * åben. Hans egen kontrakt forbyder ham udtrykkeligt at opfinde tal.
+ *
+ * Det er fejlformen i sin dyreste udgave: et svar uden viden ser ud præcis som
+ * et svar med, så fabrikationen er usynlig for alle andre end den der kender
+ * produktet. Christian gjorde.
+ *
+ * Kuren er ikke en hurtigere vidensbase — den er at siden selv, som ligger
+ * lokalt og svarer på under 200 ms, er den kilde der ikke kan udeblive.
+ */
+describe("sidens egen tekst lægges i prompten", () => {
+  // Prøverne her måler KILDEN, ikke et levende site: uden en kørende server
+  // udebliver kroppen med vilje, og en prøve der forudsatte den ville være
+  // rød af den rigtige grund og dermed ubrugelig. Den levende adfærd måles
+  // mod produktion og står i commit-beskeden.
+  const k = kode(server);
+
+  it("kroppen hentes og lægges i konteksten", () => {
+    expect(k, "sidens tekst hentes ikke").toContain("const krop = await sidensTekst(ren)");
+    expect(k).toContain("SIDEN SIGER DETTE");
+  });
+
+  it("siden er den GÆLDENDE kilde, over modellens hukommelse", () => {
+    // Uden den sætning kan modellen vægte sin egen forestilling højere, og
+    // det var præcis dét der skete: den opfandt tre lag hvor siden siger fem.
+    expect(k).toContain("den gældende kilde om produktet, over alt andet du mener at vide");
+  });
+
+  it("modellen får udtrykkeligt forbud mod at opfinde tal", () => {
+    expect(k).toContain("opfind ALDRIG niveauer, antal eller procenter");
+  });
+
+  it("kroppen er valgfri — udebliver den, står titel og manchet tilbage", () => {
+    // Forskellen på en forstærkning og en afhængighed, igen.
+    const i = k.indexOf("const krop = await sidensTekst");
+    expect(i).toBeGreaterThan(-1);
+    expect(k.slice(i, i + 900), "kroppen er gjort obligatorisk").toContain("krop\n            ?");
+  });
+
+  it("sidens tekst hentes fra VORES egen server og er cachet", () => {
+    expect(k).toContain("SITE_BASE");
+    expect(k).toContain("_sidetekst");
+    // ANVENDT, ikke blot erklæret: en prøve der leder efter konstantens NAVN
+    // består stadig når man fjerner brugen af den — målt, tredje gang i dag at
+    // en vagt måler tilstedeværelse frem for virkning.
+    const i = k.indexOf("async function sidensTekst");
+    const krop = k.slice(i, k.indexOf("\n}", i));
+    expect(krop, "loftet er erklæret men ikke brugt").toContain(".slice(0, SIDE_MAKS_TEGN)");
+  });
+
+  it("NEGATIV KONTROL: en ukendt sti giver stadig ingenting", async () => {
+    expect(await sidekontekst("da", "/findes-ikke-42")).toBe("");
+  });
+});

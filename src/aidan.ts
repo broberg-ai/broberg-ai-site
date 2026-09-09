@@ -21,6 +21,7 @@ import type { Context } from "hono";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import { createHash } from "node:crypto";
 import { buildSearchIndex } from "@/content/compose.ts";
+import { tilTekst } from "@/trail-clip.ts";
 import type { Locale } from "@/config.ts";
 import backstoryDa from "@/data/aidan-backstory.da.md" with { type: "text" };
 import backstoryEn from "@/data/aidan-backstory.en.md" with { type: "text" };
@@ -209,6 +210,29 @@ export async function aidanSystemPrompt(locale: Locale, persona: AidanPersona = 
  * og undertitel fra indekset gør, så en fabrikeret sti giver ingen kontekst i
  * stedet for at smugle tekst ind i systemprompten.
  */
+/** Sidens EGEN tekst, cachet pr. sti. Vores egen server, ikke en fremmed:
+ *  målt under 200 ms, mod Trails 2,3-21 s. Derfor er DEN her den pålidelige
+ *  kilde til hvad der står på siden, og vidensbasen forstærkningen. */
+const _sidetekst = new Map<string, { tekst: string; at: number }>();
+const SIDE_MAKS_TEGN = 3000;
+
+async function sidensTekst(sti: string): Promise<string> {
+  const nu = Date.now();
+  const c = _sidetekst.get(sti);
+  if (c && nu - c.at < 10 * 60_000) return c.tekst;
+  try {
+    const base = process.env.SITE_BASE ?? "http://127.0.0.1:" + (process.env.PORT ?? "3000");
+    const r = await fetch(base + sti, { signal: AbortSignal.timeout(2000) });
+    if (!r.ok) return "";
+    const tekst = tilTekst(await r.text()).slice(0, SIDE_MAKS_TEGN);
+    if (_sidetekst.size > 200) _sidetekst.clear();
+    _sidetekst.set(sti, { tekst, at: nu });
+    return tekst;
+  } catch {
+    return "";
+  }
+}
+
 export async function sidekontekst(locale: Locale, sti?: unknown): Promise<string> {
   if (typeof sti !== "string" || !sti.startsWith("/") || sti.length > 200) return "";
   const ren = sti.split("?")[0]!.split("#")[0]!.replace(/\/+$/, "") || "/";
@@ -223,9 +247,25 @@ export async function sidekontekst(locale: Locale, sti?: unknown): Promise<strin
     const t = String(post.title ?? "").trim();
     const u = String(post.subtitle ?? "").trim();
     if (!t) return "";
+    // SIDENS EGEN TEKST er den vigtigste del, og grunden er målt: 9/9-2026
+    // tidsudløb Trail-opslaget (6.001 ms), Aidan svarede med NUL vidensbase og
+    // opfandt HelpDesks model — «tre automatiske lag», «80 % af spørgsmålene».
+    // Sandheden — fem niveauer — stod på siden den besøgende havde åben.
+    // Et svar uden viden ser ud som et svar med, så fabrikationen var usynlig.
+    const krop = await sidensTekst(ren);
     return locale === "en"
-      ? `=== THE VISITOR IS ON THIS PAGE RIGHT NOW: "${t}" (${ren})${u ? ` — ${u}` : ""}\nAnswer about THIS page when the question fits it, and say its name. Do not answer about the company in general when the visitor is standing on a specific product.`
-      : `=== DEN BESØGENDE STÅR PÅ DENNE SIDE LIGE NU: «${t}» (${ren})${u ? ` — ${u}` : ""}\nSvar om DENNE side når spørgsmålet passer på den, og nævn den ved navn. Svar ikke om huset i almindelighed når den besøgende står på et bestemt produkt.`;
+      ? `=== THE VISITOR IS ON THIS PAGE RIGHT NOW: "${t}" (${ren})${u ? ` — ${u}` : ""}
+Answer about THIS page when the question fits it, and say its name. Do not answer about the company in general when the visitor is standing on a specific product.${
+          krop
+            ? `\nTHE PAGE SAYS THIS — it is the authoritative source about this product, above anything else you know. Quote it rather than describing the product from memory, and never invent levels, counts or percentages it does not state:\n${krop}`
+            : ""
+        }`
+      : `=== DEN BESØGENDE STÅR PÅ DENNE SIDE LIGE NU: «${t}» (${ren})${u ? ` — ${u}` : ""}
+Svar om DENNE side når spørgsmålet passer på den, og nævn den ved navn. Svar ikke om huset i almindelighed når den besøgende står på et bestemt produkt.${
+          krop
+            ? `\nSIDEN SIGER DETTE — det er den gældende kilde om produktet, over alt andet du mener at vide. Citér herfra frem for at beskrive produktet efter hukommelsen, og opfind ALDRIG niveauer, antal eller procenter den ikke nævner:\n${krop}`
+            : ""
+        }`;
   } catch {
     return ""; // kontekst er en forstærkning, aldrig en forudsætning
   }

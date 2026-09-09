@@ -38,7 +38,12 @@ describe("opslaget henter artiklen, ikke uddraget", () => {
     // afklipning stoler på en rangering vi ved er upålidelig (trail-F265.2).
     expect(kode, "plads-baseret afklipning er tilbage").not.toContain("TRAIL_HENT_TOP");
     expect(kode).toContain("TRAIL_MAKS_TEGN");
-    const linje = kode.split("\n").find((l) => /^\s*const tekst =/.test(l)) ?? "";
+    // FORANKRET I trailOpslag, ikke i filen. Første udgave tog den første linje
+    // i HELE filen der lignede — og pegede på en anden funktion, da sidekontekst
+    // senere fik sin egen `const tekst =`. En vagt der matcher på form frem for
+    // på sted flytter sig af sig selv.
+    const _f = kode.slice(kode.indexOf("export async function trailOpslag"));
+    const linje = _f.slice(0, _f.indexOf("\n}")).split("\n").find((l) => /^\s*const tekst =/.test(l)) ?? "";
     expect(linje, "loftet må ikke afhænge af pladsen").not.toContain("?");
   });
 
@@ -50,7 +55,12 @@ describe("opslaget henter artiklen, ikke uddraget", () => {
     // sidste og overlevede en mutation der fjernede fald-tilbagen, fordi den
     // samme frase også står i linjen der udleder kilden. En vagt der matcher
     // på naboskab i stedet for på linjen er ikke en vagt.
-    const linje = kode.split("\n").find((l) => /^\s*const tekst =/.test(l)) ?? "";
+    // FORANKRET I trailOpslag, ikke i filen. Første udgave tog den første linje
+    // i HELE filen der lignede — og pegede på en anden funktion, da sidekontekst
+    // senere fik sin egen `const tekst =`. En vagt der matcher på form frem for
+    // på sted flytter sig af sig selv.
+    const _f = kode.slice(kode.indexOf("export async function trailOpslag"));
+    const linje = _f.slice(0, _f.indexOf("\n}")).split("\n").find((l) => /^\s*const tekst =/.test(l)) ?? "";
     expect(linje, "tildelingen af tekst findes ikke").not.toBe("");
     expect(linje, "fald-tilbage til uddraget er væk").toContain("fuld || uddrag");
   });
