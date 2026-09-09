@@ -284,6 +284,29 @@ export function trailConfigured(): boolean {
 
 /** Frontmatter, claim-ankre og markdown-støj væk — modellen skal læse prosa,
  *  ikke Trails interne opmærkning. */
+/**
+ * F018.13 — en Trail-titel der er en FILSTI er ikke en titel.
+ *
+ * Målt 9/9-2026. Opslaget på «metode» gav som øverste træf et dokument hvis
+ * title-felt lyder «/neurons/concepts/metodiske-tilgange.md». Uddraget bygges
+ * som «— {titel}: {tekst}», så Aidan så en streng der lignede en side på VORES
+ * site — og svarede med [knap:Læs mere om metodiske tilgange]
+ * (/neurons/concepts/metodiske-tilgange). Den sti er 404 hos os.
+ *
+ * Så: en sti- eller filnavns-agtig titel gøres læsbar, før den når modellen.
+ * Det lukker den kilde vi kender; spærren i aidanTilHtml er den der holder
+ * for de kilder vi ikke kender.
+ */
+export function renTrailTitel(raa: string): string {
+  const t = String(raa ?? "").trim();
+  if (!t) return "";
+  if (!t.startsWith("/") && !/\.(md|markdown|txt|json|ya?ml)$/i.test(t)) return t;
+  const sidste = t.replace(/\/+$/, "").split("/").pop() ?? t;
+  const uden = sidste.replace(/\.(md|markdown|txt|json|ya?ml)$/i, "").replace(/[-_]+/g, " ").trim();
+  if (!uden) return "";
+  return uden.charAt(0).toUpperCase() + uden.slice(1);
+}
+
 export function renTrailTekst(raa: string): string {
   return String(raa ?? "")
     .replace(/^---[\s\S]*?\n---\n/, "")   // YAML-frontmatter
@@ -382,7 +405,8 @@ export async function trailOpslag(spoergsmaal: string): Promise<string> {
       const uddrag = renTrailTekst(String(d.highlight ?? ""));
       const tekst = (fuld || uddrag).slice(0, TRAIL_MAKS_TEGN);
       const kilde = /Kilde: (\S+)/.exec(fuld || uddrag)?.[1] ?? "";
-      return tekst ? `— ${d.title ?? "uden titel"}${kilde ? ` (${kilde})` : ""}: ${tekst}` : "";
+      const navn = renTrailTitel(String(d.title ?? "")) || "uden titel";
+      return tekst ? `— ${navn}${kilde ? ` (${kilde})` : ""}: ${tekst}` : "";
     }).filter(Boolean);
 
     trailTaeller.sidsteMs = Date.now() - start;

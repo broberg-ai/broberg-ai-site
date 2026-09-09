@@ -5,6 +5,7 @@ import { mountCmdk } from "@/client/cmdk.tsx";
 import { mountTurnstile } from "@/client/turnstile.tsx";
 import { mountAdminChat } from "@/client/admin-chat.tsx";
 import { aidanTilHtml } from "@/client/aidan-md.ts";
+import { laesEtiket, vaelgArtikler } from "@/client/aidan-tilbud.ts";
 import {
   skalVises as hilsenSkalVises,
   harTidligereSamtaler,
@@ -621,7 +622,11 @@ function aidan() {
 
   // Sikker rendering bor i aidan-md.ts (Christian 4/9, screenshot: rå **fed**
   // og lister i panelet) — testbar for sig, escaper alt, lukket formliste.
-  const tilHtml = aidanTilHtml;
+  // F018.13 — spærren mod opfundne links. Sættet fyldes af hentIndsigter() så
+  // snart det er hentet; er det ikke nået frem endnu, spærres INTET (fail-open).
+  // En langsom fetch må aldrig kunne slå de rigtige links ihjel.
+  let gyldigeSider: Set<string> | undefined;
+  const tilHtml = (raa: string) => aidanTilHtml(raa, gyldigeSider);
 
   // ── Reveal ved første scroll. Vinke-klippet er ude af figuren (ejeren 6/9:
   // SVG-udgaven er bedre og har den rigtige størrelse), så der er ingen video
@@ -854,6 +859,10 @@ function aidan() {
   const bagtaeppe = rod.querySelector<HTMLElement>("[data-testid='aidan-bagtaeppe']");
   const aabn = () => {
     panel.hidden = false;
+    // Varm sideliste + artikeltitler op med det samme: spærren mod opfundne
+    // links (F018.13) skal gælde ALLEREDE det første svar, ikke først når et
+    // oplæsnings-tilbud tilfældigvis har hentet listen.
+    void hentIndsigter();
     // F007.17: hilsenen må ikke komme til en der selv har åbnet chatten.
     panelHarVaeretAabent = true;
     // F007.20: og forslagene skal væk når samtalen er i gang — de er en vej
@@ -1026,14 +1035,23 @@ function aidan() {
     if (!infoPop.contains(t) && !infoKnap.contains(t)) infoPop.hidden = true;
   });
 
-  let indsigter: Set<string> | null = null;
-  const hentIndsigter = async (): Promise<Set<string>> => {
+  // F018.12 — artiklerne kommer nu MED titel, så et oplæsnings-tilbud kan sige
+  // hvad det vil læse. F018.13 — `sider` er sitets egen liste over gyldige
+  // stier (samme kilde som sitemap.xml), spærren mod links Aidan finder på.
+  let indsigter: { artikler: Map<string, string>; sider: Set<string> } | null = null;
+  const hentIndsigter = async (): Promise<{ artikler: Map<string, string>; sider: Set<string> }> => {
     if (indsigter) return indsigter;
+    const artikler = new Map<string, string>();
     try {
       const r = await fetch("/api/aidan/indsigter");
-      indsigter = new Set<string>(((await r.json()) as { stier?: string[] }).stier ?? []);
+      const j = (await r.json()) as { stier?: string[]; artikler?: { sti?: string; titel?: string }[]; sider?: string[] };
+      for (const a of j.artikler ?? []) if (a?.sti) artikler.set(a.sti, String(a.titel ?? "").trim());
+      // Et ældre serversvar har kun `stier`. Så mister vi titlen, ikke tilbuddet.
+      for (const sti of j.stier ?? []) if (!artikler.has(sti)) artikler.set(sti, "");
+      indsigter = { artikler, sider: new Set(j.sider ?? []) };
+      if (indsigter.sider.size) gyldigeSider = indsigter.sider;
     } catch {
-      indsigter = new Set();
+      indsigter = { artikler, sider: new Set() };
     }
     return indsigter;
   };
@@ -1059,7 +1077,7 @@ function aidan() {
     return `${m}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   };
 
-  const byggAfspiller = (efter: HTMLElement, sti: string, d: DOMStringMap): HTMLElement => {
+  const byggAfspiller = (efter: HTMLElement, sti: string, d: DOMStringMap, artikel = ""): HTMLElement => {
     const boks = document.createElement("div");
     boks.className = "aidan-afspiller henter";
     boks.dataset.testid = "aidan-afspiller";
@@ -1109,7 +1127,7 @@ function aidan() {
       knap.disabled = false;
       knap.textContent = "\u21BB"; // prøv igen — en vej ud, ikke en blindgyde
       knap.setAttribute("aria-label", d.laesFejl ?? "");
-      knap.onclick = () => boks.replaceWith(byggAfspiller(boks, sti, d));
+      knap.onclick = () => boks.replaceWith(byggAfspiller(boks, sti, d, artikel));
     };
 
     void (async () => {
@@ -1126,7 +1144,10 @@ function aidan() {
         const a = new Audio(URL.createObjectURL(await res.blob()));
         lyd = a;
         boks.classList.remove("henter");
-        titel.textContent = d.laesTilbud ?? "";
+        // HVAD spilles der? Stod her før: «Skal jeg læse artiklen højt for dig?»
+        // — et spørgsmål, i en afspiller der allerede var i gang. Christian 9/9:
+        // «Aidan refererer til en artikel … og det er DEN den skal læse højt.»
+        titel.textContent = artikel || d.laesTilbud || "";
         spor.disabled = false;
         knap.disabled = false;
 
@@ -1255,29 +1276,58 @@ function aidan() {
     efter.insertAdjacentElement("afterend", form);
     rulNed();
   };
+  /**
+   * F018.12 — tilbuddet skal SIGE hvad det vil læse.
+   *
+   * Christian 9/9-2026, med et skærmbillede af afspilleren i gang: «Aidan
+   * refererer til en artikel L\u00e6se mere om vores metode og det er DEN den skal
+   * l\u00e6se h\u00f8jt, den skal ikke g\u00e5 igang med at generere opl\u00e6sning af det der st\u00e5r
+   * i selve chatten.»
+   *
+   * Lyden HAR altid v\u00e6ret artiklens CMS-felt — chat-teksten n\u00e5r aldrig ind i
+   * den. Men to ting gjorde det um\u00e5leligt fra brugerens stol:
+   *
+   *  · Knappen sagde «Skal jeg l\u00e6se ARTIKLEN h\u00f8jt» i bestemt form uden navn.
+   *  · Udv\u00e6lgelsen var TAVS: det f\u00f8rste link i svaret hvis sti var en indsigt.
+   *    M\u00e5lt p\u00e5 produktion samme dag, sp\u00f8rgsm\u00e5let om podcast-artiklen: svaret
+   *    havde /flagskibe/trail F\u00d8RST (ikke en artikel) og artiklen som nr. 2 —
+   *    s\u00e5 tilbuddet knyttede sig til noget andet end det Aidan satte forrest.
+   *
+   * Nu: \u00e9t navngivet tilbud PR. artikel i svaret. Ingen tavs udv\u00e6lgelse.
+   */
+  const NAVNGIVNE_TILBUD_MAKS = 3;
+
   const tilbydOplaesning = async (svarBoble: HTMLElement): Promise<void> => {
     try {
-      const stier = await hentIndsigter();
-      if (!stier.size) return;
-      const sti = Array.from(svarBoble.querySelectorAll<HTMLAnchorElement>("a"))
-        .map((a) => new URL(a.getAttribute("href") ?? "", location.origin).pathname)
-        .find((p) => stier.has(p));
-      if (!sti) return;
+      const { artikler } = await hentIndsigter();
+      if (!artikler.size) return;
+      const fundne = vaelgArtikler(
+        Array.from(svarBoble.querySelectorAll<HTMLAnchorElement>("a")).map((a) => ({
+          sti: new URL(a.getAttribute("href") ?? "", location.origin).pathname,
+          tekst: a.textContent ?? "",
+        })),
+        artikler,
+        NAVNGIVNE_TILBUD_MAKS,
+      );
+      if (!fundne.length) return;
       const d = rod.dataset;
-      const knap = document.createElement("button");
-      knap.type = "button";
-      knap.className = "aidan-laes";
-      knap.dataset.testid = "aidan-laes-tilbud";
-      knap.textContent = `\u{1F50A} ${d.laesTilbud ?? ""}`;
-      knap.addEventListener("click", () => {
-        // Knappen bliver til afspilleren. Én gang — derefter ejer den pladsen.
-        const spiller = byggAfspiller(knap, sti, d);
-        knap.replaceWith(spiller);
-      });
-      svarBoble.insertAdjacentElement("afterend", knap);
+      let efter: HTMLElement = svarBoble;
+      for (const { sti, titel } of fundne) {
+        const knap = document.createElement("button");
+        knap.type = "button";
+        knap.className = "aidan-laes";
+        knap.dataset.testid = "aidan-laes-tilbud";
+        knap.textContent = `\u{1F50A} ${laesEtiket(d.laesNavngivet, d.laesTilbud, titel)}`;
+        knap.addEventListener("click", () => {
+          // Knappen bliver til afspilleren. \u00c9n gang — derefter ejer den pladsen.
+          knap.replaceWith(byggAfspiller(knap, sti, d, titel));
+        });
+        efter.insertAdjacentElement("afterend", knap);
+        efter = knap;
+      }
       rulNed();
     } catch {
-      /* tilbuddet må aldrig vælte chatten */
+      /* tilbuddet m\u00e5 aldrig v\u00e6lte chatten */
     }
   };
 

@@ -24,6 +24,7 @@ import { createAI, type AiClient } from "@broberg/ai-sdk";
 import type { Locale } from "@/config.ts";
 import { buildSearchIndex } from "@/content/compose.ts";
 import { list } from "@/content/store.ts";
+import { siteIndexGroups } from "@/routes.tsx";
 
 /** Persona → stemme pr. sprog (Azure-rosteret i ai-sdk). */
 const STEMMER = {
@@ -175,14 +176,20 @@ export function laesCacheNoegle(tale: string, stemme: string): string {
 // ── Indsigts-stierne — KUN posts-samlingen, fra sitets kanoniske søgeindeks.
 // Kortet sti → (slug, locale) er også opslaget når en artikel skal læses.
 // Cache 5 min: listen ændrer sig ved udgivelser, ikke pr. request.
-let _stier: { kort: Map<string, { slug: string; locale: Locale }>; hentet: number } | null = null;
-async function indsigtsStier(): Promise<Map<string, { slug: string; locale: Locale }>> {
+let _stier: { kort: Map<string, { slug: string; locale: Locale; titel: string }>; hentet: number } | null = null;
+async function indsigtsStier(): Promise<Map<string, { slug: string; locale: Locale; titel: string }>> {
   if (_stier && Date.now() - _stier.hentet < 300_000) return _stier.kort;
-  const kort = new Map<string, { slug: string; locale: Locale }>();
+  const kort = new Map<string, { slug: string; locale: Locale; titel: string }>();
   for (const locale of ["da", "en"] as Locale[]) {
     for (const e of await buildSearchIndex(locale)) {
       if (e.id.startsWith("post:") && typeof e.data === "string")
-        kort.set(e.data, { slug: e.id.slice("post:".length), locale });
+        // Titlen strippes for HTML her, ikke i UI'et: et rich-title-felt kan
+        // bære <em>, og den titel skal ind i en knap-tekst som ren tekst.
+        kort.set(e.data, {
+          slug: e.id.slice("post:".length),
+          locale,
+          titel: String(e.title ?? "").replace(/<[^>]+>/g, "").trim(),
+        });
     }
   }
   _stier = { kort, hentet: Date.now() };
@@ -205,9 +212,37 @@ function rateLimited(c: Context): boolean {
   return false;
 }
 
+/**
+ * F018.13 — sitets EGEN liste over gyldige stier.
+ *
+ * Samme kilde som sitemap.xml og llms.txt (`siteIndexGroups`), så de tre aldrig
+ * kan drive fra hinanden. Den bruges som spærre mod links Aidan finder på:
+ * uden en liste at måle mod ville enhver sti-lignende streng i vidensbasen
+ * kunne blive til en knap der lover en side vi ikke har.
+ */
+let _sider: { sæt: string[]; hentet: number } | null = null;
+export async function gyldigeSider(): Promise<string[]> {
+  if (_sider && Date.now() - _sider.hentet < 300_000) return _sider.sæt;
+  const set = new Set<string>();
+  for (const locale of ["da", "en"] as Locale[])
+    for (const grp of await siteIndexGroups(locale))
+      for (const link of grp.links)
+        set.add(link.href.startsWith("/") ? link.href : `/${link.href}`);
+  _sider = { sæt: [...set], hentet: Date.now() };
+  return _sider.sæt;
+}
+
 export async function handleAidanIndsigter(c: Context): Promise<Response> {
-  if (!laesKonfigureret()) return c.json({ stier: [] });
-  return c.json({ stier: [...(await indsigtsStier()).keys()] });
+  const sider = await gyldigeSider();
+  // `stier` beholdes uændret: en browser med en cachet ældre bundle må ikke gå
+  // i stykker af at serveren er nyere. Nye felter kommer VED SIDEN AF.
+  if (!laesKonfigureret()) return c.json({ stier: [], artikler: [], sider });
+  const kort = await indsigtsStier();
+  return c.json({
+    stier: [...kort.keys()],
+    artikler: [...kort].map(([sti, v]) => ({ sti, titel: v.titel })),
+    sider,
+  });
 }
 
 /** Fejl med HTTP-status — hentLyd kaster dem, ruterne oversætter. */

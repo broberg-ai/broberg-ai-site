@@ -20,6 +20,7 @@ import { createMailerFromEnv, type Mailer } from "@broberg/mail";
 import { hentLyd, laesKonfigureret, LydFejl, type Persona } from "@/aidan-laes.ts";
 import { renderOplaesningsMail, renderSvarMail } from "@/aidan-mail-brev.ts";
 import { aidanTilHtml } from "@/client/aidan-md.ts";
+import { gyldigeSider } from "@/aidan-laes.ts";
 
 const LEADS_FIL = process.env.AIDAN_LEADS ?? "/data/aidan-leads.jsonl";
 
@@ -153,7 +154,13 @@ export async function handleAidanSendSvar(c: Context): Promise<Response> {
   if (!EMAIL_RE.test(email)) return c.json({ error: "ugyldig_email" }, 400);
   if (!samtykke) return c.json({ error: "samtykke_kraevet" }, 400);
 
-  const brev = renderSvarMail({ svarHtml: aidanTilHtml(tekst), persona, en });
+  // Samme spærre som i chatten (F018.13): et dødt link må heller ikke rejse
+  // ud i en mail, hvor det overlever længere end svaret på skærmen.
+  const brev = renderSvarMail({
+    svarHtml: aidanTilHtml(tekst, new Set(await gyldigeSider())),
+    persona,
+    en,
+  });
   const resultat = await mailer().send({
     to: email,
     bcc: "cb@webhouse.dk",

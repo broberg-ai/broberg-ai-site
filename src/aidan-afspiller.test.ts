@@ -35,13 +35,26 @@ describe("hentningen kan ikke hænge for evigt", () => {
 
   it("en fejl giver en VEJ UD, ikke en blindgyde", () => {
     // Prøv-igen er hele forskellen på en fejl og en død knap.
-    expect(krop).toContain("boks.replaceWith(byggAfspiller(boks, sti, d))");
+    // F018.12: prøv-igen skal bære artiklens titel med — ellers mister
+    // afspilleren sit navn i det øjeblik man forsøger igen.
+    expect(krop).toContain("boks.replaceWith(byggAfspiller(boks, sti, d, artikel))");
     expect(krop, "fejlen skal kunne ses, ikke kun mærkes").toContain('boks.classList.add("fejl")');
   });
 
   it("BEGGE udgange rydder tidsgrænsen", () => {
     // En glemt clearTimeout ville afbryde en afspilning der allerede kørte.
     expect((krop.match(/clearTimeout\(frist\)/g) ?? []).length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("afspilleren siger HVAD den spiller (F018.12)", () => {
+  it("titel-feltet viser artiklens navn — ikke det generiske spørgsmål", () => {
+    // Christians skærmbillede 9/9: afspilleren var i gang (0:11 / 6:09) med
+    // «Skal jeg læse artiklen højt for dig?» stående over sporet. Et spørgsmål,
+    // i en afspiller der allerede spillede, om en artikel der ikke blev nævnt.
+    expect(krop).toContain('titel.textContent = artikel || d.laesTilbud || ""');
+    // og artiklen skal ind i funktionen for at kunne stå der
+    expect(krop, "byggAfspiller får ikke artiklens titel").toMatch(/artikel = ""/);
   });
 });
 

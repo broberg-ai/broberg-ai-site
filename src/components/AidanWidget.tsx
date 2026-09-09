@@ -54,6 +54,8 @@ export interface AidanTekster {
   nytSvar: string;
   forslag: string;
   laesTilbud: string;
+  /** F018.12 — «Læs «{titel}» højt». {titel} erstattes med artiklens navn. */
+  laesNavngivet: string;
   laesHenter: string;
   laesPause: string;
   laesVidere: string;
@@ -145,6 +147,7 @@ export function aidanTekster(
     pills: g("aidanPills", ""),
     hilsenSider: g("aidanHilsenSider", ""),
     laesTilbud: g("aidanLaesTilbud", en ? "Want me to read the article aloud?" : "Skal jeg læse artiklen højt for dig?"),
+    laesNavngivet: g("aidanLaesNavngivet", en ? "Read «{titel}» aloud" : "Læs «{titel}» højt"),
     laesHenter: g("aidanLaesHenter", en ? "Fetching the reading…" : "Henter oplæsningen…"),
     laesPause: g("aidanLaesPause", en ? "Pause" : "Pause"),
     laesVidere: g("aidanLaesVidere", en ? "Resume reading" : "Fortsæt oplæsningen"),
@@ -238,6 +241,7 @@ export function AidanWidget({
       data-aidan
       data-locale={locale}
       data-laes-tilbud={t.laesTilbud}
+      data-laes-navngivet={t.laesNavngivet}
       data-laes-henter={t.laesHenter}
       data-laes-pause={t.laesPause}
       data-laes-videre={t.laesVidere}

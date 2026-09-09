@@ -29,7 +29,33 @@ const KNAP_RE = /\[knap:([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)([.,!?;:]*)/g
  *     som fik fed-reglen til at fejle og vise rå ** til en besøgende).
  *  2. Knap-tokenet før den generelle link-regel (ellers æder den tokenet).
  *  3. Fed er IKKE-grådig og udelukker kun linjeskift — ikke stjerner. */
-function inline(t: string, knapBudget: { tilbage: number }): string {
+/**
+ * F018.13 — spærren mod links Aidan finder på.
+ *
+ * Målt 9/9-2026: 1 af 15 links i seks svar var 404 —
+ * /neurons/concepts/metodiske-tilgange, en Trail-intern sti modellen havde set
+ * som et dokuments titel og med rimelighed troede var vores. En knap der lover
+ * en side vi ikke har, er værre end ingen knap.
+ *
+ * `gyldige` er sitets EGEN sideliste (siteIndexGroups — samme kilde som
+ * sitemap.xml og llms.txt). Uden sættet spærres intet: mail-renderingen og de
+ * gamle prøver skal virke uændret, og en tom liste må aldrig kunne slå ALLE
+ * links ihjel.
+ *
+ * SNÆVERT MED VILJE. Kun interne stier måles. Eksterne https-links og rene
+ * ankre (#kontakt) går fri — en spærre der også tager de rigtige links med er
+ * en værre fejl end den den retter.
+ */
+function stiFindes(href: string, gyldige?: Set<string>): boolean {
+  if (!gyldige || !gyldige.size) return true;
+  if (!href.startsWith("/")) return true;
+  const sti = (href.split("?")[0]!.split("#")[0] || "/").replace(/\/+$/, "") || "/";
+  return gyldige.has(sti) || gyldige.has(sti + "/");
+}
+
+type Ctx = { tilbage: number; gyldige?: Set<string> };
+
+function inline(t: string, ctx: Ctx): string {
   const koder: string[] = [];
   let ud = t.replace(/`([^`\n]+)`/g, (_alt, kode: string) => {
     koder.push(kode);
@@ -37,8 +63,9 @@ function inline(t: string, knapBudget: { tilbage: number }): string {
   });
   ud = ud
     .replace(KNAP_RE, (_alt, tekst: string, href: string, tegn: string) => {
-      if (knapBudget.tilbage > 0) {
-        knapBudget.tilbage--;
+      if (!stiFindes(href, ctx.gyldige)) return `${tekst}${tegn}`;
+      if (ctx.tilbage > 0) {
+        ctx.tilbage--;
         // Sætningstegn LIGE efter tokenet sluges: knappen renderes som blok, så
         // et efterhængt «.» ville stå alene på sin egen linje under knappen
         // (målt på Christians E2E-screenshot 4/9). På et rent link hører det med.
@@ -48,8 +75,10 @@ function inline(t: string, knapBudget: { tilbage: number }): string {
       // «der må IKKE være tekst links i chat resultatet»).
       return `<a class="aidan-lenke" href="${href}">${tekst} <i>→</i></a>${tegn}`;
     })
-    .replace(/\[[a-zæøå]{2,12}:\s*([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a class="aidan-lenke" href="$2">$1 <i>→</i></a>')
-    .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, '<a class="aidan-lenke" href="$2">$1 <i>→</i></a>')
+    .replace(/\[[a-zæøå]{2,12}:\s*([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, (_alt, tekst: string, href: string) =>
+      stiFindes(href, ctx.gyldige) ? `<a class="aidan-lenke" href="${href}">${tekst} <i>→</i></a>` : tekst)
+    .replace(/\[([^\]]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g, (_alt, tekst: string, href: string) =>
+      stiFindes(href, ctx.gyldige) ? `<a class="aidan-lenke" href="${href}">${tekst} <i>→</i></a>` : tekst)
     .replace(/\*\*([^\n]+?)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[\s>])\*([^*\n]+)\*(?=[\s.,!?:;<]|$)/g, "$1<em>$2</em>");
   return ud.replace(/\u0000K(\d+)\u0000/g, (_alt, i: string) => `<code>${koder[Number(i)]}</code>`);
@@ -86,7 +115,7 @@ function sparkline(tal: number[]): string {
 
 /** Én markør-linje → blok-HTML, eller null hvis linjen ikke er en markør.
  *  Input er ESCAPED tekst; felterne indsættes som den tekst de er. */
-function markoer(linje: string, knapBudget: { tilbage: number }): string | null {
+function markoer(linje: string, ctx: Ctx): string | null {
   let m: RegExpExecArray | null;
   if ((m = CASE_RE.exec(linje))) {
     const mono = m[2].trim().slice(0, 2).toUpperCase();
@@ -121,7 +150,7 @@ function markoer(linje: string, knapBudget: { tilbage: number }): string | null 
 }
 
 /** Markdown-tabellinjer → <table>. Skillerækken (|---|---|) springes over. */
-function tabel(linjer: string[], knapBudget: { tilbage: number }): string {
+function tabel(linjer: string[], ctx: Ctx): string {
   const rk = linjer
     .filter((l) => !/^\s*\|[\s:|-]+\|\s*$/.test(l))
     .map((l) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim()));
@@ -131,12 +160,12 @@ function tabel(linjer: string[], knapBudget: { tilbage: number }): string {
   // kald på undefined ville dræbe hele læse-løkken midt i svaret (målt på
   // prod 5/9: svaret frøs ved tegn 108). Render intet; næste chunk fikser.
   if (!hoved) return "";
-  return `<div class="aidan-tabel"><table><thead><tr>${hoved.map((c) => `<th>${inline(c, knapBudget)}</th>`).join("")}</tr></thead><tbody>${krop.map((r) => `<tr>${r.map((c) => `<td>${inline(c, knapBudget)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  return `<div class="aidan-tabel"><table><thead><tr>${hoved.map((c) => `<th>${inline(c, ctx)}</th>`).join("")}</tr></thead><tbody>${krop.map((r) => `<tr>${r.map((c) => `<td>${inline(c, ctx)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 
 /** Modelsvar → sikker HTML. Input er RÅ modeltekst; escaping sker her. */
-export function aidanTilHtml(raa: string): string {
-  const knapBudget = { tilbage: 2 };
+export function aidanTilHtml(raa: string, gyldigeStier?: Set<string>): string {
+  const ctx: Ctx = { tilbage: 2, gyldige: gyldigeStier };
   return escHtml(raa)
     .split(/\n{2,}/)
     .map((blok) => {
@@ -151,29 +180,29 @@ export function aidanTilHtml(raa: string): string {
         if (PUNKT.test(linjer[i])) {
           const run: string[] = [];
           while (i < linjer.length && PUNKT.test(linjer[i])) run.push(linjer[i++].replace(PUNKT, ""));
-          dele.push(`<ul>${run.map((l) => `<li>${inline(l, knapBudget)}</li>`).join("")}</ul>`);
+          dele.push(`<ul>${run.map((l) => `<li>${inline(l, ctx)}</li>`).join("")}</ul>`);
         } else if (NUMMER.test(linjer[i])) {
           const run: string[] = [];
           while (i < linjer.length && NUMMER.test(linjer[i])) run.push(linjer[i++].replace(NUMMER, ""));
-          dele.push(`<ol>${run.map((l) => `<li>${inline(l, knapBudget)}</li>`).join("")}</ol>`);
+          dele.push(`<ol>${run.map((l) => `<li>${inline(l, ctx)}</li>`).join("")}</ol>`);
         } else if (STREG.test(linjer[i])) {
           // «---» renderet som rå bindestreger lignede markdown (E2E-screenshot
           // 4/9 aften) — nu en tynd skillelinje.
           dele.push('<hr class="aidan-hr">');
           i++;
-        } else if (markoer(linjer[i], knapBudget) !== null) {
-          dele.push(markoer(linjer[i], knapBudget)!);
+        } else if (markoer(linjer[i], ctx) !== null) {
+          dele.push(markoer(linjer[i], ctx)!);
           i++;
         } else if (TABELLINJE.test(linjer[i])) {
           const run: string[] = [];
           while (i < linjer.length && TABELLINJE.test(linjer[i])) run.push(linjer[i++]);
-          dele.push(tabel(run, knapBudget));
+          dele.push(tabel(run, ctx));
         } else {
           const run: string[] = [];
           while (i < linjer.length && !PUNKT.test(linjer[i]) && !NUMMER.test(linjer[i]) && !STREG.test(linjer[i]) && markoer(linjer[i], { tilbage: 0 }) === null && !TABELLINJE.test(linjer[i])) {
             // ### Overskrift → fremhævet linje (modellen skriver dem af sig selv)
             const h = /^#{1,4}\s+(.+)$/.exec(linjer[i]);
-            run.push(h ? `<strong class="aidan-h">${inline(h[1], knapBudget)}</strong>` : inline(linjer[i], knapBudget));
+            run.push(h ? `<strong class="aidan-h">${inline(h[1], ctx)}</strong>` : inline(linjer[i], ctx));
             i++;
           }
           dele.push(`<p>${run.join("<br>")}</p>`);
