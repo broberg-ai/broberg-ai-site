@@ -20,7 +20,7 @@ import { richtextBlock } from "@/content/richtext.ts";
 
 // F007.8.2: Airina — Aidans kvindelige modstykke (figurerne fra supers Assets).
 // Figurerne selv bor i Figur.tsx, fordi podcast-siden bruger de samme to.
-import { Figur } from "@/components/Figur.tsx";
+import { Figur, VaertFigur } from "@/components/Figur.tsx";
 
 export interface AidanTekster {
   boble: string;
@@ -449,6 +449,25 @@ export function AidanWidget({
             <button type="button" class="aidan-om-luk" data-testid="aidan-om-luk" aria-label={en ? "Close" : "Luk"}>×</button>
           </div>
           <div class="aidan-om-krop">
+            {/* F007.21 — panelet hedder «Om Aidan & Airina» og forklarede at Airina
+                er «et andet ansigt» uden at vise nogen af dem. Christian 9/9:
+                «et billede af begge vores AI avatarer i toppen med deres navn ud for».
+                VaertFigur og IKKE Figur: Figur lægger begge i DOM'en og lader CSS
+                vælge ÉN efter valgt persona — her skal begge stå samtidig. */}
+            <div class="aidan-om-ansigter" data-testid="aidan-om-ansigter">
+              <span class="aidan-om-ansigt">
+                <span class="pod-avatar pod-avatar-figur aidan-om-ring">
+                  <VaertFigur vaert="aidan" klasse="pod-avatar-krop" />
+                </span>
+                <b {...cmsAttrs(globalsRef, "aidanNavn")}>{t.navn}</b>
+              </span>
+              <span class="aidan-om-ansigt">
+                <span class="pod-avatar pod-avatar-figur aidan-om-ring">
+                  <VaertFigur vaert="airina" klasse="pod-avatar-krop" />
+                </span>
+                <b {...cmsAttrs(globalsRef, "airinaNavn")}>{t.airinaNavn}</b>
+              </span>
+            </div>
             <p class="aidan-info-tekst" {...cmsAttrs(globalsRef, "aidanInfo")}>{t.info}</p>
             {/* Indholdet BOR i CMS'et (aidanOmMd, da+en) — koden render kun. */}
             {t.omMd ? <div class="aidan-om-md" {...cmsHtmlAttrs(globalsRef, "aidanOmMd")} dangerouslySetInnerHTML={{ __html: richtextBlock(t.omMd) }} /> : null}
