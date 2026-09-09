@@ -131,3 +131,67 @@ test(".lead viser linjeskift som redaktøren skriver dem i CMS'et", () => {
   const blok = CSS.slice(CSS.indexOf(".lead {"));
   expect(blok.slice(0, blok.indexOf("}"))).toContain("white-space: pre-line");
 });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * F011 — den blå flade skal kunne bære sin tekst.
+ *
+ * Målt på produktion 9/9-2026: i lys tilstand stod hvid tekst på #0096db med
+ * 3,06:1, hvor WCAG AA kræver 4,5. Det ramte hver primære knap på sitet.
+ * Mørk tilstand var 6,22 og fejlede ikke — det var ÉN tilstand, ikke begge, og
+ * den skelnen manglede i min første melding til Christian.
+ *
+ * Hvorfor en prøve og ikke bare en rettelse: en farve kan justeres «lidt» af
+ * æstetiske grunde uden at nogen regner efter, og resultatet ser fint ud på
+ * den skærm man sidder ved. Der fandtes allerede en lokal lappeløsning i
+ * filen — `[data-theme="light"] .aidan-banner-primaer { color: #fff }` — altså
+ * havde præcis dette problem ramt én gang før og var løst ét sted.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+const AA = 4.5;
+
+/* luminans() / kontrast() / token(blok, navn) findes ALLEREDE ovenfor — de kom
+   med den forrige kontrast-prøve. Første udgave af det her afsnit skrev sine
+   egne af samme navn; funktionsdeklarationer hejses, så MINE overskrev dem og
+   gjorde den bestående prøve rød. Genbrug frem for at gen-erklære. */
+
+test("POSITIV KONTROL: udregningen kan SE den fejl der blev meldt", () => {
+  // Uden denne ville en kontrast() der altid gav 21 bestå alt nedenfor.
+  expect(kontrast("#000000", "#ffffff")).toBeCloseTo(21, 1);
+  expect(kontrast("#f5f7fa", "#0096db")).toBeLessThan(AA);
+});
+
+test("teksten på den blå flade klarer AA i BEGGE tilstande", () => {
+  for (const [tema, som] of [
+    [":root {", "mørkt"],
+    ['[data-theme="light"] {', "lyst"],
+  ] as const) {
+    const blaa = token(tema, "--blue");
+    const paa = token(tema, "--paa-blaa");
+    const v = kontrast(paa, blaa);
+    expect(`${som}: ${paa} på ${blaa} = ${v.toFixed(2)}`).toBe(
+      `${som}: ${paa} på ${blaa} = ${Math.max(v, AA).toFixed(2)}`,
+    );
+  }
+});
+
+test("ingen fast tekstfarve står på en blå flade — brug --paa-blaa", () => {
+  // Lappeløsningen der fandtes før tokenet må ikke komme igen: én rettet
+  // forekomst og otte urettede ser ens ud lige efter man har rettet den ene.
+  const synder = CSS.split("}")
+    // BEGGE blå flader: --blue OG --blue-text. Hover-tilstanden på podcastens
+    // afspil-knap brugte den anden og stod på 2,92:1 i lys tilstand — en
+    // eksisterende fejl, fundet fordi vagten blev bredere end den sag den
+    // startede med.
+    .filter((b) => /background:\s*var\(--blue(-text)?\)\s*;/.test(b))
+    .filter((b) => /\n\s*color:\s*#[0-9a-fA-F]{3,8}\s*;/.test(b))
+    .map((b) => (b.trim().split("\n")[0] ?? "").trim());
+  expect(synder, "en fast farve ovenpå --blue driver fra tokenet").toEqual([]);
+});
+
+test("den primære knap bruger tokenet, ikke temaets forgrund", () => {
+  const blok = CSS.slice(CSS.indexOf(".btn {"));
+  const krop = blok.slice(0, blok.indexOf("}"));
+  expect(krop).toContain("background: var(--blue)");
+  expect(krop, "knappens tekst skal følge den blå flade, ikke --dark")
+    .toContain("color: var(--paa-blaa)");
+});
