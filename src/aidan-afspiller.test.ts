@@ -80,11 +80,28 @@ describe("afspilleren er en afspiller, ikke en knap", () => {
       .toContain("appearance: none");
   });
 
-  it("oplæsnings-TILBUDDET har også et testid — ellers kan Lens ikke nå afspilleren", () => {
-    // F086. Manglen kostede to mislykkede produktions-verifikationer: uden et
-    // anker kan man hverken klikke knappen eller VENTE på den, og en
-    // ventetid der bygger på setTimeout rammer Lens' egen 8-sekunders grænse.
-    expect(kode, "oplæsningsknappen har intet anker").toContain('knap.dataset.testid = "aidan-laes"');
+  it("oplæsnings-tilbuddet har PRÆCIS ét testid — det sidste vinder", () => {
+    /* MIN EGEN FEJL, og den er lærerig nok til at stå her.
+     *
+     * Jeg troede knappen manglede et anker, tilføjede et — og lagde det OVER
+     * det der allerede var der:
+     *   knap.dataset.testid = "aidan-laes";        ← min
+     *   knap.dataset.testid = "aidan-laes-tilbud"; ← den rigtige, overskrev
+     *
+     * Min prøve ledte efter min egen LINJE i kilden og bestod, mens den
+     * effektive værdi var en anden. Fjerde gang samme dag at en vagt målte
+     * TILSTEDEVÆRELSE frem for VIRKNING — og første gang den fik mig til at
+     * skrive en rettelse, en plan og et kort for en mangel der ikke fandtes.
+     *
+     * Prøven tæller derfor tildelingerne. To er lige så galt som nul: den ene
+     * er død, og den døde er den man leder efter i en Lens-kørsel.
+     */
+    const i = kode.indexOf('knap.className = "aidan-laes"');
+    expect(i, "oplæsningsknappen findes ikke").toBeGreaterThan(-1);
+    const blok = kode.slice(i, i + 400);
+    const tildelinger = blok.match(/knap\.dataset\.testid = /g) ?? [];
+    expect(tildelinger.length, "et testid der sættes to gange har én død værdi").toBe(1);
+    expect(blok).toContain('knap.dataset.testid = "aidan-laes-tilbud"');
   });
 
   it("hvert element har et testid, så Lens kan drive det", () => {
