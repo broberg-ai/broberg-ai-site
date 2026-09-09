@@ -24,6 +24,7 @@ import { Figur } from "@/components/Figur.tsx";
 
 export interface AidanTekster {
   boble: string;
+  bobleSider: string;
   /** F007.17 — den proaktive hilsen efter 10 sekunder. */
   hilsenTitel: string;
   hilsenKrop: string;
@@ -93,6 +94,10 @@ export function aidanTekster(
   const en = locale === "en";
   return {
     boble: g("aidanBoble", en ? "Hi — I'm Aidan" : "Hej — jeg er Aidan"),
+    // F016.2 — korte, side-specifikke linjer til den lille boble ved knappen.
+    // TOM reservetekst med vilje: findes reglerne ikke i CMS'et, bliver den
+    // faste boble-tekst stående. Ship-dark, og teksten lever aldrig kun i koden.
+    bobleSider: g("aidanBobleSider", ""),
     hilsenTitel: g("aidanHilsenTitel", en ? "Hi there 👋" : "Hej der 👋"),
     hilsenKrop: g(
       "aidanHilsenKrop",
@@ -229,6 +234,7 @@ export function AidanWidget({
       data-navn-airina={t.airinaNavn}
       data-boble-aidan={t.boble}
       data-boble-airina={t.airinaBoble}
+      data-boble-sider={t.bobleSider}
       data-hilsen-krop-aidan={t.hilsenKrop}
       data-hilsen-krop-airina={t.airinaHilsenKrop}
       data-hilsen-aidan={t.hilsen}

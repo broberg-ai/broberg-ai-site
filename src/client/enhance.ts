@@ -631,6 +631,7 @@ function aidan() {
     if (vist) return;
     vist = true;
     fab.classList.add("vis");
+    tilpasBoble();
     boble.classList.add("vis");
     setTimeout(() => boble.classList.remove("vis"), 6000);
   };
@@ -671,6 +672,22 @@ function aidan() {
    *
    *  Intet match → den hidtidige tekst bliver stående. En side uden regel må
    *  aldrig blive til en tom hilsen. */
+  /** F016.2 — den lille boble ved knappen skifter også med siden.
+   *
+   *  Det var DEN Christian citerede: «den skriver stadig kun Hej - jeg er
+   *  Aidan». Kortet og forslagene var to andre elementer; boblen er den man
+   *  ser FØRST, fordi den kommer ved første scroll.
+   *
+   *  Egne, KORTE regler (aidanBobleSider) frem for kortets: kortets linjer er
+   *  40-58 tegn og ville flyde ud af en boble der i dag bærer 18.
+   *
+   *  Intet match, eller ingen regler i CMS'et → den faste tekst bliver
+   *  stående. En boble uden tekst er værre end en generisk. */
+  const tilpasBoble = () => {
+    const valgt = vaelgPills(laesRegler(rod.dataset.bobleSider ?? ""), location.pathname, spor, 1);
+    if (valgt[0]) boble.textContent = valgt[0];
+  };
+
   const tilpasHilsen = () => {
     const krop = rod.querySelector<HTMLElement>(".aidan-hilsen-krop");
     if (!krop) return;
