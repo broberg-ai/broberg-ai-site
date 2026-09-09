@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="da" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Knappernes kontrast — nu og forslag</title>
+<style>
+:root{
+  --blue:#00b2ff; --blue-text:#00b2ff; --blue-light:#40c8ff;
+  --dark:#23282f; --card:rgba(255,255,255,.04); --card-border:rgba(255,255,255,.08);
+  --light:#f0f4f8; --muted:rgba(240,244,248,.5); --orange:#f3522c; --orange-text:#ff6a45;
+  --bg:#161b22; --panel:#1b212a;
+  --fb:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+}
+[data-theme="light"]{
+  --blue:#0096db; --blue-text:#0a6d9e; --blue-light:#007bb8;
+  --dark:#f5f7fa; --card:#ffffff; --card-border:rgba(17,25,38,.11);
+  --light:#161b22; --muted:rgba(22,29,40,.6); --orange:#ec4e27; --orange-text:#c93a16;
+  --bg:#f5f7fa; --panel:#ffffff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--light);font-family:var(--fb);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  transition:background .25s ease,color .25s ease}
+.wrap{max-width:960px;margin:0 auto;padding:28px 20px 72px}
+h1{font-family:var(--serif);font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.15;
+  margin:0 0 6px;font-weight:400}
+h2{font-family:var(--serif);font-weight:400;font-size:1.3rem;margin:0 0 4px}
+.eyebrow{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--orange-text);font-weight:600;margin-bottom:10px}
+.lead{color:var(--muted);max-width:62ch;margin:0 0 8px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  margin:22px 0 30px;padding:12px 14px;border:1px solid var(--card-border);
+  border-radius:12px;background:var(--panel)}
+.bar b{font-size:.8rem;font-weight:600}
+.tgl{display:inline-flex;border:1px solid var(--card-border);border-radius:999px;
+  overflow:hidden}
+.tgl button{border:0;background:transparent;color:var(--muted);font:inherit;
+  font-size:.8rem;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
+.tgl button:hover{background:rgba(128,128,128,.12);color:var(--light)}
+.tgl button:active{transform:translateY(1px)}
+.tgl button[aria-pressed="true"]{background:var(--blue);color:var(--dark);font-weight:600}
+.note{font-size:.78rem;color:var(--muted)}
+
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:700px){.grid{grid-template-columns:1fr 1fr}}
+.opt{border:1px solid var(--card-border);border-radius:14px;background:var(--panel);
+  padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.opt.now{border-color:rgba(236,78,39,.5)}
+.opt.pick{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset}
+.tag{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.tag.bad{color:var(--orange-text)}
+.tag.ok{color:var(--blue-text)}
+.opt h3{margin:0;font-size:.98rem;font-weight:600}
+.opt p{margin:0;font-size:.82rem;color:var(--muted)}
+
+/* Knapperne — samme regel som sitets .btn */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--btn-bg,var(--blue));color:var(--btn-fg,var(--dark));border:none;
+  border-radius:100px;padding:11px 22px;font-family:var(--fb);font-size:.9rem;
+  font-weight:600;cursor:pointer;text-decoration:none;
+  transition:filter .15s ease,transform .1s ease}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+
+.ratio{display:inline-flex;align-items:baseline;gap:7px;font-variant-numeric:tabular-nums}
+.ratio .n{font-family:var(--serif);font-size:1.75rem;line-height:1}
+.ratio .v{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border-radius:99px}
+.v.fail{background:rgba(236,78,39,.16);color:var(--orange-text)}
+.v.pass{background:rgba(0,150,219,.16);color:var(--blue-text)}
+[data-theme=""] .v.pass,:root:not([data-theme="light"]) .v.pass{background:rgba(0,178,255,.16)}
+
+.swatch{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--muted)}
+.chip{width:15px;height:15px;border-radius:4px;border:1px solid var(--card-border);flex:none}
+
+.ctx{margin-top:34px;border:1px solid var(--card-border);border-radius:14px;
+  background:var(--panel);overflow:hidden}
+.ctx .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 16px;border-bottom:1px solid var(--card-border)}
+.logo{font-weight:700;font-size:.95rem}
+.logo i{color:var(--orange-text);font-style:normal}
+.ctx .body{padding:22px 16px 26px}
+.ctx h2{margin-bottom:8px}
+.side{display:grid;gap:14px;grid-template-columns:1fr 1fr;margin-top:16px}
+@media(max-width:620px){.side{grid-template-columns:1fr}}
+.side>div{border:1px solid var(--card-border);border-radius:11px;padding:14px;min-width:0}
+.side h4{margin:0 0 10px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+
+.tbl{width:100%;border-collapse:collapse;margin-top:12px;font-size:.83rem}
+.tbl th,.tbl td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--card-border)}
+.tbl th{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.tbl td:last-child,.tbl th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.foot{margin-top:30px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--card-border);
+  padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Tilgængelighed · primære knapper</div>
+  <h1>De blå knapper er for lyse — men kun i lys tilstand.</h1>
+  <p class="lead">Målt på produktion i dag: i <b>mørk</b> tilstand er knappen 6,22:1 og
+  klarer kravet med god margin. I <b>lys</b> tilstand er den 3,06:1, hvor kravet er 4,5:1.
+  Det rammer hver eneste primære knap på sitet — «Kontakt», «Læs mere», «Send».</p>
+
+  <div class="bar">
+    <b>Se den i:</b>
+    <div class="tgl" role="group" aria-label="Tilstand">
+      <button type="button" data-tema="light" aria-pressed="true">Lys</button>
+      <button type="button" data-tema="dark" aria-pressed="false">Mørk</button>
+    </div>
+    <span class="note" id="besked">Lys tilstand — det er her problemet er.</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="opt now">
+      <span class="tag bad">Nu</span>
+      <h3>Sådan ser den ud i dag</h3>
+      <div class="btns"><a class="btn" href="#">Kontakt os</a></div>
+      <div class="ratio"><span class="n" data-nu>3,06</span><span class="v fail" data-nuv>Falder</span></div>
+      <p>Hvid tekst på brand-blå. Læsbar for de fleste — men ikke i sollys,
+      på en billig skærm, eller for de ~8 % med nedsat farvesyn.</p>
+      <div class="swatch"><span class="chip" style="background:#0096db"></span>#0096db · tekst #f5f7fa</div>
+    </div>
+
+    <div class="opt pick">
+      <span class="tag ok">Forslag A — anbefalet</span>
+      <h3>Mørkere blå, hvid tekst</h3>
+      <div class="btns"><a class="btn" href="#" style="--btn-bg:#0072a8;--btn-fg:#fff">Kontakt os</a></div>
+      <div class="ratio"><span class="n">5,29</span><span class="v pass">Klarer AA</span></div>
+      <p>Samme knap, dybere blå. Ligner sig selv, og god margin til kravet —
+      ikke en løsning der lige akkurat består.</p>
+      <div class="swatch"><span class="chip" style="background:#0072a8"></span>#0072a8 · tekst hvid</div>
+    </div>
+
+    <div class="opt">
+      <span class="tag ok">Forslag B</span>
+      <h3>Behold farven, mørk tekst</h3>
+      <div class="btns"><a class="btn" href="#" style="--btn-bg:#0096db;--btn-fg:#0d1117">Kontakt os</a></div>
+      <div class="ratio"><span class="n">5,75</span><span class="v pass">Klarer AA</span></div>
+      <p>Brand-blå er urørt — det er teksten der bliver mørk. Præcis samme greb
+      som mørk tilstand allerede bruger, så de to tilstande kommer til at ligne
+      hinanden mere.</p>
+      <div class="swatch"><span class="chip" style="background:#0096db"></span>#0096db · tekst #0d1117</div>
+    </div>
+
+    <div class="opt">
+      <span class="tag ok">Forslag C</span>
+      <h3>Mindste indgreb</h3>
+      <div class="btns"><a class="btn" href="#" style="--btn-bg:#007ab4;--btn-fg:#fff">Kontakt os</a></div>
+      <div class="ratio"><span class="n">4,73</span><span class="v pass">Klarer AA</span></div>
+      <p>Den mindst mulige ændring der består. Tættest på farven i dag —
+      men kun 0,23 over grænsen, så en senere justering kan sende den under igen.</p>
+      <div class="swatch"><span class="chip" style="background:#007ab4"></span>#007ab4 · tekst hvid</div>
+    </div>
+
+  </div>
+
+  <div class="ctx">
+    <div class="nav">
+      <span class="logo">broberg<i>.ai</i></span>
+      <a class="btn" href="#" id="navknap" style="padding:8px 16px;font-size:.82rem">Kontakt</a>
+    </div>
+    <div class="body">
+      <div class="eyebrow">Sådan ser det ud på siden</div>
+      <h2>Nu, ved siden af forslaget.</h2>
+      <p class="lead" style="font-size:.88rem">Klik dig gennem forslagene ovenfor og se
+      knappen i toppen skifte med. Nedenfor står de to ved siden af hinanden.</p>
+      <div class="side">
+        <div>
+          <h4>Nu · 3,06</h4>
+          <a class="btn" href="#" style="width:100%">Send besked</a>
+        </div>
+        <div>
+          <h4>Forslag A · 5,29</h4>
+          <a class="btn" href="#" style="width:100%;--btn-bg:#0072a8;--btn-fg:#fff">Send besked</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll">
+  <table class="tbl">
+    <thead><tr><th>Hvor</th><th>Baggrund</th><th>Tekst</th><th>Kontrast</th></tr></thead>
+    <tbody>
+      <tr><td>Mørk tilstand (uændret)</td><td>#00b2ff</td><td>#23282f</td><td>6,22 ✓</td></tr>
+      <tr><td>Lys tilstand — i dag</td><td>#0096db</td><td>#f5f7fa</td><td>3,06 ✗</td></tr>
+      <tr><td>Forslag A</td><td>#0072a8</td><td>hvid</td><td>5,29 ✓</td></tr>
+      <tr><td>Forslag B</td><td>#0096db</td><td>#0d1117</td><td>5,75 ✓</td></tr>
+      <tr><td>Forslag C</td><td>#007ab4</td><td>hvid</td><td>4,73 ✓</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="foot"><b>Det du skal vide inden du vælger:</b> forslag A og C ændrer
+  farven <i>--blue</i>, som også tegner rammer, prikker og accenter cirka 25 steder
+  i lys tilstand — alt blåt bliver en anelse dybere. Forslag B rører kun knapperne.
+  Mørk tilstand ændrer sig ikke i nogen af dem.<br><br>
+  Målt på broberg.ai i dag med rigtige browserfarver, ikke aflæst fra CSS-filen.</p>
+
+</div>
+
+<script>
+(function(){
+  var rod = document.documentElement;
+  var besked = document.getElementById('besked');
+  var nu = document.querySelector('[data-nu]');
+  var nuv = document.querySelector('[data-nuv]');
+  document.querySelectorAll('.tgl button').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t = b.dataset.tema;
+      rod.setAttribute('data-theme', t === 'light' ? 'light' : '');
+      document.querySelectorAll('.tgl button').forEach(function(o){
+        o.setAttribute('aria-pressed', String(o === b));
+      });
+      var lys = t === 'light';
+      besked.textContent = lys
+        ? 'Lys tilstand — det er her problemet er.'
+        : 'Mørk tilstand — knappen er 6,22:1 og fejler ikke. Uændret i alle forslag.';
+      nu.textContent = lys ? '3,06' : '6,22';
+      nuv.textContent = lys ? 'Falder' : 'Klarer AA';
+      nuv.className = 'v ' + (lys ? 'fail' : 'pass');
+    });
+  });
+  // Klik på et forslag → navknappen i rammen nedenfor skifter med.
+  var nav = document.getElementById('navknap');
+  document.querySelectorAll('.opt').forEach(function(kort){
+    kort.addEventListener('click', function(){
+      var k = kort.querySelector('.btn');
+      nav.style.setProperty('--btn-bg', k.style.getPropertyValue('--btn-bg') || '');
+      nav.style.setProperty('--btn-fg', k.style.getPropertyValue('--btn-fg') || '');
+      document.querySelectorAll('.opt').forEach(function(o){
+        if (o !== kort && !o.classList.contains('now')) o.classList.remove('pick');
+      });
+      if (!kort.classList.contains('now')) kort.classList.add('pick');
+    });
+  });
+})();
+</script>
+</body>
+</html>
