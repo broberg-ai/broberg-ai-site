@@ -217,6 +217,74 @@ export class LydFejl extends Error {
   }
 }
 
+/**
+ * F018.10 — en lang artikel sprængte Azure, og fejlen kom som en lukket socket.
+ *
+ * MÅLT PÅ PRODUKTION 9/9-2026, samme rute, samme stemme:
+ *
+ *    8.447 tegn   HTTP 200   3,2 MB   21 s
+ *   10.764 tegn   HTTP 500   ——        5 s
+ *
+ * Azures REST-endpoint har et loft (10 minutters lyd pr. kald), og det melder
+ * sig som «The socket connection was closed unexpectedly» — altså ikke som en
+ * grænse, men som en netværksfejl. Derfor lignede det et driftsproblem.
+ *
+ * Vores eget TEKST_LOFT på 12.000 tegn lå OVER den grænse, så det spærrede
+ * ingenting: 3 af 59 artikler kunne ikke læses op, og de var netop de længste
+ * — dem hvor en oplæsning er mest værd.
+ *
+ * Teksten deles derfor ved SÆTNINGSGRÆNSER og sys sammen. MP3-rammer kan
+ * lægges i forlængelse af hinanden uden at kode om; en deling midt i en
+ * sætning ville derimod høres.
+ */
+const AZURE_STYKKE = 4_500; // tegn pr. kald — godt under det målte knæk
+
+export function delTale(tale: string, loft = AZURE_STYKKE): string[] {
+  const ud: string[] = [];
+  let rest = String(tale ?? "").trim();
+  if (!rest) return [];
+  while (rest.length > loft) {
+    // Del ved den SIDSTE sætningsslutning inden loftet. Findes ingen (en meget
+    // lang passage uden punktum), deles ved sidste mellemrum frem for midt i
+    // et ord.
+    const vindue = rest.slice(0, loft);
+    let skaer = Math.max(
+      vindue.lastIndexOf(". "), vindue.lastIndexOf("! "),
+      vindue.lastIndexOf("? "), vindue.lastIndexOf("\n"),
+    );
+    if (skaer < loft * 0.5) skaer = vindue.lastIndexOf(" ");
+    if (skaer <= 0) skaer = loft; // sidste udvej: hellere et hårdt snit end en uendelig løkke
+    ud.push(rest.slice(0, skaer + 1).trim());
+    rest = rest.slice(skaer + 1).trim();
+  }
+  if (rest) ud.push(rest);
+  return ud;
+}
+
+/** Hele artiklen som ÉN lydstrøm, uanset hvor mange kald det tog. */
+async function talSammenhaengende(tale: string, stemme: string, locale: Locale): Promise<Uint8Array> {
+  const stykker = delTale(tale);
+  // SEKVENTIELT med vilje: rækkefølgen ER lyden, og et parallelt kald der
+  // lander først ville sy artiklen forkert sammen.
+  const dele: Uint8Array[] = [];
+  for (const stykke of stykker) {
+    const { audio } = await ai().tts({
+      text: stykke,
+      voice: stemme,
+      lang: locale === "en" ? "en-US" : "da-DK",
+      pronunciations: udtaleFor(locale),
+      override: { provider: "azure" },
+    });
+    dele.push(new Uint8Array(audio));
+  }
+  if (dele.length === 1) return dele[0]!;
+  const samlet = new Uint8Array(dele.reduce((n, d) => n + d.byteLength, 0));
+  let i = 0;
+  for (const d of dele) { samlet.set(d, i); i += d.byteLength; }
+  console.log(`[aidan-laes] syede ${dele.length} stykker sammen (${samlet.byteLength} bytes)`);
+  return samlet;
+}
+
 /** Delt af /laes (afspilning) og /send-lyd (mail, F007.9): sti → lydfil.
  *  Server-autoritativ sti-validering + cache pr. (indhold, stemme). */
 export async function hentLyd(
@@ -249,16 +317,10 @@ export async function hentLyd(
   } catch {
     /* ikke i cache endnu */
   }
-  const { audio, mimeType } = await ai().tts({
-    text: tale,
-    voice: stemme,
-    lang: locale === "en" ? "en-US" : "da-DK",
-    pronunciations: udtaleFor(locale),
-    override: { provider: "azure" },
-  });
+  const audio = await talSammenhaengende(tale, stemme, locale);
   await writeFile(fil, audio).catch(() => {}); // en fejlet cache-skrivning må aldrig koste svaret
   console.log(`[aidan-laes] genereret ${audio.byteLength} bytes (${stemme}) for ${sti}`);
-  return { audio: new Uint8Array(audio), mimeType: mimeType || "audio/mpeg", titel };
+  return { audio, mimeType: "audio/mpeg", titel };
 }
 
 export async function handleAidanLaes(c: Context): Promise<Response> {
