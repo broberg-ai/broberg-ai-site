@@ -123,10 +123,24 @@ export async function trailHarSide(sourceUrl: string): Promise<boolean> {
     { headers: { authorization: `Bearer ${a.token}`, "x-trail-tenant": a.tenant } },
   );
   if (!res.ok) return false;
-  const data = (await res.json()) as { documents?: Array<{ content?: string; highlight?: string }> };
-  return (data.documents ?? []).some((d) =>
-    String(d.content ?? d.highlight ?? "").includes(`Kilde: ${sourceUrl}`),
-  );
+  // MATCH PÅ FILNAVNET, ikke på tekstindholdet.
+  //
+  // Den gamle udgave søgte efter «Kilde: <url>» i `content ?? highlight`.
+  // Søge-API'et returnerer ALDRIG et content-felt (kun `chunks` har et), så
+  // den læste i praksis altid `highlight` — og indtil 9/9-2026 var highlight
+  // HELE dokumentet, så markøren stod der og tjekket virkede.
+  //
+  // Trail skiftede samme dag highlight til et 40-tokens uddrag (deres F265.3,
+  // en berettiget rettelse: ét opslag kostede en agent ~3.770 tokens). Uddraget
+  // rummer sjældent «Kilde:», så spærren begyndte at svare NEJ om sider der
+  // ligger i KB'en — målt på /flagskibe/helpdesk, som findes og blev meldt
+  // fraværende. Konsekvensen er gen-upload ved hver udgivelse.
+  //
+  // Filnavnet er den identitet vi SELV sætter ved upload og er uafhængigt af
+  // hvordan et søgeuddrag klippes.
+  const data = (await res.json()) as { documents?: Array<{ filename?: string }> };
+  const vores = trailFilnavn(sourceUrl);
+  return (data.documents ?? []).some((d) => String(d.filename ?? "") === vores);
 }
 
 /** Upload én side (markdown) til KB'en. Kaster ved fejl — kalderen afgør om

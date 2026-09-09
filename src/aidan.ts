@@ -242,38 +242,122 @@ export function trailConfigured(): boolean {
   return Boolean(process.env.TRAIL_TOKEN && process.env.TRAIL_KB);
 }
 
+/** Frontmatter, claim-ankre og markdown-støj væk — modellen skal læse prosa,
+ *  ikke Trails interne opmærkning. */
+export function renTrailTekst(raa: string): string {
+  return String(raa ?? "")
+    .replace(/^---[\s\S]*?\n---\n/, "")   // YAML-frontmatter
+    .replace(/\{#claim-[0-9a-f-]+\}/g, "") // ankre Trail selv sætter
+    .replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * F013.3 — hent ARTIKLEN, ikke uddraget.
+ *
+ * Målt 9/9-2026: opslaget gav 337 tegn for en Neuron på 4.441. Koden læste
+ * `d.highlight ?? d.content`, og søge-API'et returnerer ALDRIG et content-felt
+ * — så det var altid highlight. Indtil samme dag var highlight hele dokumentet,
+ * og fejlen var derfor usynlig: vi fik artiklen, bare ad en vej der ikke lovede
+ * den. Trail skiftede highlight til et 40-tokens uddrag (deres F265.3), og så
+ * faldt vi til 7 % uden at noget gik i stykker synligt.
+ *
+ * Trail-sessionen meldte selv regressionen og pegede på vejen der virker i dag:
+ * GET /documents/<id>/content. Vi henter kun de øverste træf, for hvert kald er
+ * en rundtur — deres ?includeContent=true kommer og gør det til ét kald.
+ */
+// LOFTET ER PR. ARTIKEL, IKKE PR. PLADS.
+//
+// Første udgave gav fuld tekst til de tre øverste og et uddrag til resten.
+// Målingen viste hvorfor det er forkert her: på «Hvordan eskalerer en sag til
+// et menneske?» lå HelpDesk-artiklen som nr. 6 og fik derfor 289 tegn, mens et
+// CV lå som nr. 3 og fik 1.631. Vi klippede altså det eneste relevante svar væk
+// på grundlag af en rangering vi ved er upålidelig (trail-F265.2, åben hos dem).
+//
+// Samme samlede budget, fordelt fladt: ingen plads-afhængig afklipning, og en
+// regel i stedet for to. Loftet findes fordi ét opslag returnerer 6 artikler à
+// 3.668-17.315 tegn — 56.814 i alt for det spørgsmål der startede sagen.
+const TRAIL_MAKS_TEGN = 1000; // pr. artikel · 6 træf ⇒ ~6.000 tegn i alt
+const TRAIL_TIMEOUT_MS = 6000;
+
+/**
+ * Hvor tit bidrager vidensbasen egentlig?
+ *
+ * Det her er hele lektien fra 9/9: opslaget fejler TAVST — `catch { return "" }`
+ * — og et svar uden vidensbase ser præcis ud som et svar med. Vi opdagede først
+ * at Aidan fik 7 % da en ANDEN part sagde til, og at han tidsudløber fandt vi
+ * kun fordi vi målte med fejlen synlig.
+ *
+ * Tælleren er ikke pynt: den er forskellen på «Trail bidrager» som en påstand
+ * og som et tal. Læses på /api/aidan/health.
+ */
+export const trailTaeller = { forsoeg: 0, svar: 0, tomme: 0, fejl: 0, sidsteMs: 0 };
+
 export async function trailOpslag(spoergsmaal: string): Promise<string> {
   if (!trailConfigured()) return "";
+  const start = Date.now();
+  trailTaeller.forsoeg++;
   try {
     const ctl = new AbortController();
-    // En langsom vidensbase må aldrig stalle chatten — så hellere et svar
-    // uden opslag end en besøgende der kigger på tre prikker.
-    const timer = setTimeout(() => ctl.abort(), 2500);
-    const url = `${TRAIL_API}/knowledge-bases/${encodeURIComponent(process.env.TRAIL_KB!)}/search?q=${encodeURIComponent(spoergsmaal.slice(0, 200))}&limit=6`;
+    // MÅLT 9/9-2026, og det er IKKE det man ville gætte: selve søgningen svinger
+    // 2,3-21 sekunder. Flaget er ikke omkostningen — seks parallelle
+    // indholds-hentninger koster 0,8 s oveni en søgning der selv tog 7,9.
+    //
+    // (Min første konklusion var at flaget kostede 6-8 s. Den sammenlignede en
+    //  VARM søgning uden flag mod en KOLD med. Variansen ligger i søgningen.)
+    //
+    // Derfor er 6 s et bevidst kompromis, ikke et tal der dækker værste fald:
+    // en besøgende må ikke vente på en vidensbase. Er den kold, får Aidan intet
+    // — og DET skal kunne ses, ikke gættes. Se tælleren nedenfor.
+    const timer = setTimeout(() => ctl.abort(), TRAIL_TIMEOUT_MS);
+    const a = { token: process.env.TRAIL_TOKEN!, tenant: process.env.TRAIL_TENANT ?? "broberg-ai" };
+    // includeContent=true (trails F265.8, live 9/9-2026) giver hele Neuronen i
+    // SAMME kald. Flaget er opt-in hos dem med vilje: uden det er svaret
+    // bit-for-bit som før, så deres øvrige forbrugere ikke pludselig betaler
+    // for 5.000 tegn de ikke bad om.
+    const url = `${TRAIL_API}/knowledge-bases/${encodeURIComponent(process.env.TRAIL_KB!)}/search?q=${encodeURIComponent(spoergsmaal.slice(0, 200))}&limit=6&includeContent=true`;
     const res = await fetch(url, {
-      headers: {
-        authorization: `Bearer ${process.env.TRAIL_TOKEN}`,
-        "x-trail-tenant": process.env.TRAIL_TENANT ?? "broberg-ai",
-      },
+      headers: { authorization: `Bearer ${a.token}`, "x-trail-tenant": a.tenant },
       signal: ctl.signal,
     });
+    if (!res.ok) { clearTimeout(timer); return ""; }
+    const data = (await res.json()) as {
+      documents?: Array<{ id?: string; title?: string; highlight?: string; content?: string }>;
+    };
     clearTimeout(timer);
-    if (!res.ok) return "";
-    const data = (await res.json()) as { documents?: Array<{ title?: string; highlight?: string; content?: string }> };
-    const hits = (data.documents ?? []).slice(0, 6).map((d) => {
-      const tekst = String(d.highlight ?? d.content ?? "")
-        .replace(/<\/?mark>/g, "")
-        .replace(/\s+/g, " ")
-        .slice(0, 500);
-      const kilde = /Kilde: (\S+)/.exec(String(d.content ?? d.highlight ?? ""))?.[1] ?? "";
-      return `— ${d.title ?? "uden titel"}${kilde ? ` (${kilde})` : ""}: ${tekst}`;
-    });
-    if (!hits.length) return "";
+    const traef = (data.documents ?? []).slice(0, 6);
+
+    // Fuld tekst for de øverste, uddrag for resten. Uden flaget — eller hvis
+    // Trail en dag holder op med at sende content — falder hver linje tilbage
+    // på uddraget frem for at blive tom. Det er forskellen på en forstærkning
+    // og en afhængighed, og det er præcis dét der svigtede sidst: feltet
+    // forsvandt, og vi opdagede det ikke fordi svaret bare blev tyndere.
+    //
+    // Et EKSAKT titel-træf kommer tilbage med tomt uddrag (trail meldte det
+    // 9/9) — altså ville vores BEDSTE træf være det eneste uden tekst hvis vi
+    // kun læste highlight. Endnu en grund til at content er den primære kilde.
+    const hits = traef.map((d) => {
+      const fuld = renTrailTekst(String(d.content ?? ""));
+      const uddrag = renTrailTekst(String(d.highlight ?? ""));
+      const tekst = (fuld || uddrag).slice(0, TRAIL_MAKS_TEGN);
+      const kilde = /Kilde: (\S+)/.exec(fuld || uddrag)?.[1] ?? "";
+      return tekst ? `— ${d.title ?? "uden titel"}${kilde ? ` (${kilde})` : ""}: ${tekst}` : "";
+    }).filter(Boolean);
+
+    trailTaeller.sidsteMs = Date.now() - start;
+    if (!hits.length) { trailTaeller.tomme++; return ""; }
+    trailTaeller.svar++;
     return `OPSLAG I DIN VIDENSBASE (Trail «broberg.ai») for netop dette spørgsmål — citér herfra og link til kilden når du bruger et opslag:\n${hits.join("\n")}`;
   } catch {
+    // Tavs mod den besøgende, TALT mod os selv. Et opslag der aldrig når frem
+    // må ikke kunne forveksles med et der intet fandt.
+    trailTaeller.fejl++;
+    trailTaeller.sidsteMs = Date.now() - start;
     return ""; // opslag er en forstærkning, aldrig en forudsætning
   }
 }
+
 
 // ── Ruterne ─────────────────────────────────────────────────────────────────
 
@@ -282,7 +366,13 @@ const MAX_HISTORIK = 20;
 
 /** GET /api/aidan/health — {ok} når chatten kan svare. */
 export function handleAidanHealth(c: Context): Response {
-  return c.json({ ok: aidanConfigured() }, aidanConfigured() ? 200 : 503);
+  // Vidensbasens bidrag er MÅLT her, ikke påstået. Uden tallet kan «Trail
+  // bidrager til svarene» stå som sandt i måneder mens hvert opslag
+  // tidsudløber — det var præcis tilstanden 9/9-2026.
+  return c.json(
+    { ok: aidanConfigured(), trail: { konfigureret: trailConfigured(), ...trailTaeller } },
+    aidanConfigured() ? 200 : 503,
+  );
 }
 
 /** POST /api/aidan/chat — SSE. Body: { messages: [{role,content}...], locale? }. */
