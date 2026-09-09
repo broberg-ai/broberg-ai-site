@@ -722,6 +722,38 @@ function aidan() {
     pillsEl.classList.remove("vis");
     rod.style.removeProperty("--aidan-pills-h");
   };
+
+  // F007.20 — forslagene hører til SIDEN, ikke til hilsen-kortet.
+  //
+  // Christian, anden gang: «Aidan er SLET ikke adaptiv - hvorfor ikke». Han
+  // havde ret, og årsagen var min: visPills() blev kun kaldt INDE i
+  // hilsen-kortets gate. Den gate er et engangs-vink til en FØRSTEGANGS-
+  // besøgende og siger nej hvis du har chattet før, har lukket kortet, eller
+  // allerede har set det i dette besøg.
+  //
+  // Målt på produktion (iPhone/WebKit, en tidligere samtale i localStorage —
+  // altså hans egen tilstand): efter 16 sekunder på /universet stod
+  // pills-hidden=true, antal=0. Ikke «sjældent»: der findes ingen rækkefølge
+  // af klik der kan fremkalde dem for en der har brugt Aidan én gang.
+  //
+  // Og derfor bestod min verifikation i går: en frisk browser har tom
+  // hukommelse. Målingen svarede rigtigt på «kan de renderes», ikke på «vil en
+  // tilbagevendende besøgende nogensinde se dem».
+  //
+  // Nu følger de CHAT-KNAPPEN. Den afsløres ved første scroll, og forslagene
+  // lægger sig oven over den — som i Intercom-eksemplet der var forlægget.
+  // Det giver dem samtidig den rigtige betingelse gratis: står knappen ikke
+  // der endnu, svæver forslagene ikke over ingenting.
+  let pillsVist = false;
+  const maaskeVisPills = () => {
+    if (pillsVist || panelHarVaeretAabent) return;
+    if (!fab.classList.contains("vis")) return;
+    pillsVist = true;
+    visPills();
+  };
+  // Lidt luft efter at knappen er dukket op, så de to ikke popper samtidig.
+  addEventListener("scroll", () => { setTimeout(maaskeVisPills, 700); }, { passive: true });
+  setTimeout(maaskeVisPills, 1200); // landet midt på siden: knappen er der allerede
   if (hilsen && hilsenKlik && hilsenLuk) {
     let synligMs = laesSynligMs();
     let sidst = Date.now();
@@ -795,6 +827,9 @@ function aidan() {
     panel.hidden = false;
     // F007.17: hilsenen må ikke komme til en der selv har åbnet chatten.
     panelHarVaeretAabent = true;
+    // F007.20: og forslagene skal væk når samtalen er i gang — de er en vej
+    // IND i chatten, ikke pynt ved siden af den åbne.
+    skjulPills();
     if (bagtaeppe) bagtaeppe.hidden = false;
     fab.classList.add("aaben");
     boble.classList.remove("vis");
