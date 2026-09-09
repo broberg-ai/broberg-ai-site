@@ -1267,6 +1267,10 @@ function aidan() {
       const knap = document.createElement("button");
       knap.type = "button";
       knap.className = "aidan-laes";
+      // F086: hvert interaktivt element skal have et stabilt anker, ellers kan
+      // Lens hverken klikke det eller vente på det. Manglen kostede mig to
+      // mislykkede produktions-verifikationer af afspilleren.
+      knap.dataset.testid = "aidan-laes";
       knap.dataset.testid = "aidan-laes-tilbud";
       knap.textContent = `\u{1F50A} ${d.laesTilbud ?? ""}`;
       knap.addEventListener("click", () => {

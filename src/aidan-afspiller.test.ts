@@ -80,6 +80,13 @@ describe("afspilleren er en afspiller, ikke en knap", () => {
       .toContain("appearance: none");
   });
 
+  it("oplæsnings-TILBUDDET har også et testid — ellers kan Lens ikke nå afspilleren", () => {
+    // F086. Manglen kostede to mislykkede produktions-verifikationer: uden et
+    // anker kan man hverken klikke knappen eller VENTE på den, og en
+    // ventetid der bygger på setTimeout rammer Lens' egen 8-sekunders grænse.
+    expect(kode, "oplæsningsknappen har intet anker").toContain('knap.dataset.testid = "aidan-laes"');
+  });
+
   it("hvert element har et testid, så Lens kan drive det", () => {
     for (const t of ["aidan-afspiller", "aidan-afspiller-knap", "aidan-afspiller-spor", "aidan-afspiller-tid", "aidan-afspiller-titel"]) {
       expect(krop, `mangler testid ${t}`).toContain(`"${t}"`);
