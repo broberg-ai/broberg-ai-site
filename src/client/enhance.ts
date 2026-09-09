@@ -1038,6 +1038,132 @@ function aidan() {
     return indsigter;
   };
   let lyd: HTMLAudioElement | null = null;
+
+  /**
+   * F018.11 — lydafspilleren inde i Aidan.
+   *
+   * Christian 9/9-2026, med et skærmbillede af en knap der stod på «Henter
+   * oplæsningen…»: «Den gik kold - kom aldrig frem … husk at lave en lækker
+   * lydafspiller inside Aidan også :)»
+   *
+   * TO TING SKÆRMBILLEDET VISTE, ud over at der manglede en afspiller:
+   *  · Der var INGEN tidsgrænse på hentningen. Svarede serveren aldrig, stod
+   *    knappen sådan for evigt, og der var ingen vej ud.
+   *  · En oplæsning tager op mod 30 sekunder at lave første gang (målt: 30,1 s
+   *    for en artikel på 10.764 tegn; 0,7 s når den er lavet). Ét statisk ord
+   *    i et halvt minut er ikke ventetid — det er en død skærm.
+   */
+  const tid = (s: number) => {
+    if (!isFinite(s) || s < 0) return "0:00";
+    const m = Math.floor(s / 60);
+    return `${m}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  };
+
+  const byggAfspiller = (efter: HTMLElement, sti: string, d: DOMStringMap): HTMLElement => {
+    const boks = document.createElement("div");
+    boks.className = "aidan-afspiller henter";
+    boks.dataset.testid = "aidan-afspiller";
+
+    const knap = document.createElement("button");
+    knap.type = "button";
+    knap.className = "aidan-afspiller-knap";
+    knap.dataset.testid = "aidan-afspiller-knap";
+    knap.disabled = true;
+    knap.textContent = "\u25B6";
+    knap.setAttribute("aria-label", d.laesTilbud ?? "");
+
+    const midt = document.createElement("div");
+    midt.className = "aidan-afspiller-midt";
+    const titel = document.createElement("div");
+    titel.className = "aidan-afspiller-titel";
+    titel.dataset.testid = "aidan-afspiller-titel";
+    titel.textContent = d.laesHenter ?? "";
+    const spor = document.createElement("input");
+    spor.type = "range";
+    spor.className = "aidan-spor";
+    spor.dataset.testid = "aidan-afspiller-spor";
+    spor.min = "0"; spor.max = "100"; spor.value = "0"; spor.step = "0.1";
+    spor.disabled = true;
+    spor.setAttribute("aria-label", d.laesTilbud ?? "");
+    midt.append(titel, spor);
+
+    const ur = document.createElement("span");
+    ur.className = "aidan-afspiller-tid";
+    ur.dataset.testid = "aidan-afspiller-tid";
+    ur.textContent = "";
+
+    boks.append(knap, midt, ur);
+
+    // TIDSGRÆNSE. 90 sekunder er rundt om det målte værste fald (30 s) med luft
+    // til en kold maskine — men den FINDES, og det er hele forskellen: en
+    // hentning der ikke lykkes ender i en fejl man kan handle på, ikke i en
+    // knap der bliver ved med at hente.
+    const ctl = new AbortController();
+    const frist = setTimeout(() => ctl.abort(), 90_000);
+
+    const visFejl = () => {
+      boks.classList.remove("henter");
+      boks.classList.add("fejl");
+      titel.textContent = d.laesFejl ?? "";
+      spor.disabled = true;
+      knap.disabled = false;
+      knap.textContent = "\u21BB"; // prøv igen — en vej ud, ikke en blindgyde
+      knap.setAttribute("aria-label", d.laesFejl ?? "");
+      knap.onclick = () => boks.replaceWith(byggAfspiller(boks, sti, d));
+    };
+
+    void (async () => {
+      try {
+        const res = await fetch("/api/aidan/laes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sti, persona: persona() }),
+          signal: ctl.signal,
+        });
+        clearTimeout(frist);
+        if (!res.ok) return visFejl();
+        lyd?.pause();
+        const a = new Audio(URL.createObjectURL(await res.blob()));
+        lyd = a;
+        boks.classList.remove("henter");
+        titel.textContent = d.laesTilbud ?? "";
+        spor.disabled = false;
+        knap.disabled = false;
+
+        const tegn = () => {
+          const p = a.duration ? (a.currentTime / a.duration) * 100 : 0;
+          spor.value = String(p);
+          spor.style.setProperty("--gaaet", `${p}%`);
+          ur.textContent = a.duration ? `${tid(a.currentTime)} / ${tid(a.duration)}` : tid(a.currentTime);
+        };
+        a.addEventListener("loadedmetadata", tegn);
+        a.addEventListener("timeupdate", tegn);
+        a.addEventListener("ended", () => {
+          knap.textContent = "\u25B6";
+          knap.setAttribute("aria-label", d.laesTilbud ?? "");
+        });
+        spor.addEventListener("input", () => {
+          if (a.duration) a.currentTime = (Number(spor.value) / 100) * a.duration;
+          tegn();
+        });
+        knap.onclick = () => {
+          if (a.paused) { void a.play(); knap.textContent = "\u23F8"; knap.setAttribute("aria-label", d.laesPause ?? ""); }
+          else { a.pause(); knap.textContent = "\u25B6"; knap.setAttribute("aria-label", d.laesVidere ?? ""); }
+        };
+        await a.play();
+        knap.textContent = "\u23F8";
+        knap.setAttribute("aria-label", d.laesPause ?? "");
+        tegn();
+        visMailTilbud(boks, { sti });
+      } catch {
+        clearTimeout(frist);
+        visFejl();
+      }
+    })();
+
+    return boks;
+  };
+
   // F007.9: når afspilningen er i gang, tilbydes «få den tilsendt på mail».
   // Samtykket håndhæves på serveren — fluebenet her er kun UI.
   const visMailTilbud = (efter: HTMLElement, last: { sti?: string; tekst?: string }, overskrift?: string) => {
@@ -1128,47 +1254,10 @@ function aidan() {
       knap.className = "aidan-laes";
       knap.dataset.testid = "aidan-laes-tilbud";
       knap.textContent = `\u{1F50A} ${d.laesTilbud ?? ""}`;
-      let tilstand: "klar" | "henter" | "spiller" | "pause" = "klar";
-      knap.addEventListener("click", async () => {
-        if (tilstand === "henter") return;
-        if (tilstand === "spiller") {
-          lyd?.pause();
-          tilstand = "pause";
-          knap.textContent = `\u25B6 ${d.laesVidere ?? ""}`;
-          return;
-        }
-        if (tilstand === "pause") {
-          void lyd?.play();
-          tilstand = "spiller";
-          knap.textContent = `\u23F8 ${d.laesPause ?? ""}`;
-          return;
-        }
-        tilstand = "henter";
-        knap.textContent = d.laesHenter ?? "";
-        try {
-          const res = await fetch("/api/aidan/laes", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sti, persona: persona() }),
-          });
-          if (!res.ok) throw new Error(String(res.status));
-          lyd?.pause();
-          lyd = new Audio(URL.createObjectURL(await res.blob()));
-          lyd.addEventListener("ended", () => {
-            tilstand = "klar";
-            knap.textContent = `\u{1F50A} ${d.laesTilbud ?? ""}`;
-          });
-          await lyd.play();
-          tilstand = "spiller";
-          knap.textContent = `\u23F8 ${d.laesPause ?? ""}`;
-          visMailTilbud(knap, { sti });
-        } catch {
-          tilstand = "klar";
-          knap.textContent = d.laesFejl ?? "";
-          setTimeout(() => {
-            if (tilstand === "klar") knap.textContent = `\u{1F50A} ${d.laesTilbud ?? ""}`;
-          }, 4000);
-        }
+      knap.addEventListener("click", () => {
+        // Knappen bliver til afspilleren. Én gang — derefter ejer den pladsen.
+        const spiller = byggAfspiller(knap, sti, d);
+        knap.replaceWith(spiller);
       });
       svarBoble.insertAdjacentElement("afterend", knap);
       rulNed();
