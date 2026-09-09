@@ -196,6 +196,41 @@ export async function aidanSystemPrompt(locale: Locale, persona: AidanPersona = 
 }
 
 
+/**
+ * F013.2 — hvilken side står den besøgende på?
+ *
+ * Forslagene over chat-knappen er sidespecifikke (F016), men spørgsmålet blev
+ * sendt uden sidekontekst. Christian klikkede «Skal vi bruge en widget fra
+ * jer?» på /flagskibe/helpdesk og fik et svar om huset i almindelighed, uden
+ * at HelpDesk blev nævnt én gang. Aidan KUNNE ikke vide det.
+ *
+ * Stien slås op i sitets EGET søgeindeks og bruges kun til at finde en post
+ * vi selv har skrevet. Klientens streng når aldrig ind i prompten — kun titel
+ * og undertitel fra indekset gør, så en fabrikeret sti giver ingen kontekst i
+ * stedet for at smugle tekst ind i systemprompten.
+ */
+export async function sidekontekst(locale: Locale, sti?: unknown): Promise<string> {
+  if (typeof sti !== "string" || !sti.startsWith("/") || sti.length > 200) return "";
+  const ren = sti.split("?")[0]!.split("#")[0]!.replace(/\/+$/, "") || "/";
+  const uden = ren.replace(/^\/(da|en)(?=\/|$)/, "") || "/";
+  try {
+    const index = await buildSearchIndex(locale);
+    const post = index.find((e) => {
+      const d = String((e as { data?: unknown }).data ?? "").replace(/\/+$/, "") || "/";
+      return d === ren || d === uden;
+    }) as { title?: string; subtitle?: string } | undefined;
+    if (!post) return "";
+    const t = String(post.title ?? "").trim();
+    const u = String(post.subtitle ?? "").trim();
+    if (!t) return "";
+    return locale === "en"
+      ? `=== THE VISITOR IS ON THIS PAGE RIGHT NOW: "${t}" (${ren})${u ? ` — ${u}` : ""}\nAnswer about THIS page when the question fits it, and say its name. Do not answer about the company in general when the visitor is standing on a specific product.`
+      : `=== DEN BESØGENDE STÅR PÅ DENNE SIDE LIGE NU: «${t}» (${ren})${u ? ` — ${u}` : ""}\nSvar om DENNE side når spørgsmålet passer på den, og nævn den ved navn. Svar ikke om huset i almindelighed når den besøgende står på et bestemt produkt.`;
+  } catch {
+    return ""; // kontekst er en forstærkning, aldrig en forudsætning
+  }
+}
+
 // ── Trail-hjernen (spec §3) — KB'en «broberg.ai» hos app.trailmem.com.
 // Pr. BESKED slås brugerens spørgsmål op i vidensbasen, og de bedste træf
 // lægges i primeren med kilde-URL, så Aidan kan sige HVOR det står.
@@ -255,7 +290,7 @@ export async function handleAidanChat(c: Context): Promise<Response> {
   if (!aidanConfigured()) return c.json({ error: "chat_not_configured" }, 503);
   if (rateLimited(c)) return c.json({ error: "rate_limited" }, 429);
 
-  let body: { messages?: Array<{ role?: string; content?: string }>; locale?: string; persona?: string };
+  let body: { messages?: Array<{ role?: string; content?: string }>; locale?: string; persona?: string; sti?: string };
   try {
     body = await c.req.json();
   } catch {
@@ -284,8 +319,12 @@ export async function handleAidanChat(c: Context): Promise<Response> {
         // F007.13 (11): navngivne tænke-skridt — ærlig ventetid i stedet for
         // tre anonyme prikker. Opslaget sker HER så klienten kan se skridtet.
         send("status", { trin: locale === "en" ? "Searching the knowledge base…" : "Søger i vidensbasen…" });
-        const [grund, opslag] = await Promise.all([aidanSystemPrompt(locale, persona), trailOpslag(sidste)]);
-        const system = opslag ? `${grund}\n\n=== ${opslag}` : grund;
+        const [grund, opslag, side] = await Promise.all([
+          aidanSystemPrompt(locale, persona),
+          trailOpslag(sidste),
+          sidekontekst(locale, body.sti),
+        ]);
+        const system = [grund, side, opslag && `=== ${opslag}`].filter(Boolean).join("\n\n");
         send("status", { trin: locale === "en" ? "Writing the answer…" : "Skriver svar…" });
         for await (const ev of ai().chatStream({ tier: "smart", system, messages, maxTokens: 1200 })) {
           if (ev.type === "text") send("text", { delta: ev.delta });

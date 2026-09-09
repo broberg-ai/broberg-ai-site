@@ -1530,7 +1530,16 @@ function aidan() {
       const res = await fetch("/api/aidan/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: historik.slice(-20), locale: samtaleSprog, persona: persona() }),
+        // F013.2 — SIDEN FØLGER MED. Forslagene over knappen er sidespecifikke
+        // («Skal vi bruge en widget fra jer?» på /flagskibe/helpdesk), men
+        // spørgsmålet blev sendt uden nogen anelse om hvor den besøgende stod.
+        // Aidan svarede derfor om huset i almindelighed, ikke om HelpDesk.
+        body: JSON.stringify({
+          messages: historik.slice(-20),
+          locale: samtaleSprog,
+          persona: persona(),
+          sti: location.pathname,
+        }),
       });
       if (!res.ok || !res.body) return fejl(res.status);
       const laeser = res.body.getReader();
