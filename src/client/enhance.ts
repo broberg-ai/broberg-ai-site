@@ -15,7 +15,7 @@ import {
   laesSynligMs,
   gemSynligMs,
 } from "./aidan-hilsen.ts";
-import { noterSide, laesRegler, vaelgPills, sideForslag } from "@/client/aidan-spor.ts";
+import { noterSide, laesRegler, vaelgPills, sideForslag, harEksaktRegel } from "@/client/aidan-spor.ts";
 import { listSamtaler, hentSamtale, gemAktiv, sletSamtale, aktivId, saetAktiv, relativTid, erNaerBunden, type Tur } from "@/client/aidan-samtaler.ts";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
@@ -699,19 +699,15 @@ function aidan() {
     if (!pillsEl) return;
     const regler = laesRegler(rod.dataset.pills ?? "");
     const valgte = vaelgPills(regler, location.pathname, spor);
-    // F016.4 — har siden ingen EGEN regel, handler intet af det valgte om den.
-    // Så bygges det første forslag af sidens titel, og pladsen tages fra de
-    // generelle — ikke lagt oveni, for stakken må ikke vokse.
+    // F016.4/F016.5 — har siden ingen regel om NETOP sig selv, handler intet af
+    // det valgte om den. Så bygges det første forslag af sidens titel, og
+    // pladsen tages fra de generelle — ikke lagt oveni, for stakken må ikke
+    // vokse.
     //
-    // Rækkefølgen er med vilje: en håndskrevet regel for netop denne rute er
-    // bedre end en skabelon, så den bygges KUN når der ikke er nogen.
-    const harEgenRegel = vaelgPills(
-      regler.filter((r) => r.ruter.length > 0),
-      location.pathname,
-      [],
-      1,
-    ).length > 0;
-    if (!harEgenRegel) {
+    // EKSAKT match, ikke præfiks: `/flagskibe` dækker `/flagskibe/cms` uden at
+    // sige et ord om cms. En håndskrevet regel for netop denne rute er bedre
+    // end en skabelon; en sektionsregel er det ikke.
+    if (!harEksaktRegel(regler, location.pathname)) {
       const eget = sideForslag(rod.dataset.sideForslag ?? "", rod.dataset.sideTitel ?? "");
       if (eget) valgte.splice(0, valgte.length > 2 ? 1 : 0, eget);
     }

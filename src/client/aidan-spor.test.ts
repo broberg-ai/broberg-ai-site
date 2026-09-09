@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeEach } from "bun:test";
 import {
-  normaliser, rammer, laesRegler, vaelgPills, sideForslag, noterSide, laesSpor, SPOR_NOEGLE, SPOR_LOFT,
+  normaliser, rammer, laesRegler, vaelgPills, sideForslag, harEksaktRegel, noterSide, laesSpor, SPOR_NOEGLE, SPOR_LOFT,
 } from "./aidan-spor.ts";
 
 /* Bun kører ikke i en browser, så lageret stilles op her. Stubben er IKKE det
@@ -215,5 +215,31 @@ describe("sideForslag — bygget af sidens titel", () => {
 
   it("titlen trimmes, så et mellemrum fra CMS'et ikke ses i knappen", () => {
     expect(sideForslag("Om {titel}?", "  Trail  ")).toBe("Om Trail?");
+  });
+});
+
+/* ── F016.5 — «har en regel» ≠ «har en regel om NETOP denne side» ────────── */
+describe("harEksaktRegel", () => {
+  const regler = laesRegler("/flagskibe | Spørg om et flagskib\n/universet | Om maskinrummet\n* | Generelt");
+
+  it("en sektionsregel gør IKKE underruten til sin egen", () => {
+    // Fejlen Christian fandt: /flagskibe rammer /flagskibe/cms som præfiks,
+    // men siger ikke et ord om cms.
+    expect(harEksaktRegel(regler, "/flagskibe/cms")).toBe(false);
+  });
+
+  it("POSITIV KONTROL: sektionens egen forside HAR sin egen regel", () => {
+    // Uden denne ville «svar altid false» bestå prøven ovenfor.
+    expect(harEksaktRegel(regler, "/flagskibe")).toBe(true);
+    expect(harEksaktRegel(regler, "/universet")).toBe(true);
+  });
+
+  it("sprogpræfiks og skråstreg til sidst ændrer ikke svaret", () => {
+    expect(harEksaktRegel(regler, "/universet/")).toBe(true);
+    expect(harEksaktRegel(regler, "/da/universet")).toBe(true);
+  });
+
+  it("en generel regel (*) tæller ikke som sidens egen", () => {
+    expect(harEksaktRegel(regler, "/noget-helt-andet")).toBe(false);
   });
 });

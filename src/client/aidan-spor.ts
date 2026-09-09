@@ -108,6 +108,26 @@ export function sideForslag(skabelon: string, sideTitel: string): string | null 
   return s.replace("{titel}", t);
 }
 
+/** F016.5 — har DENNE rute sin egen regel, eller er den bare dækket af en
+ *  præfiks-regel for en hel sektion?
+ *
+ *  Christian, på /flagskibe/cms: «Her er jeg på cms flagship siden men ikke et
+ *  ord om CMS». Han havde ret, og fejlen var min: F016.4 byggede kun et
+ *  titel-forslag når ingen regel ramte ruten — men `/flagskibe` RAMMER
+ *  `/flagskibe/cms` som præfiks, uden at sige noget som helst om CMS.
+ *
+ *  «Har en regel» og «har en regel om NETOP denne side» er to forskellige ting,
+ *  og jeg behandlede dem som én. Præcis samme fejlform som resten af ugen: et
+ *  svar der er rigtigt på et bredere spørgsmål end det stillede.
+ *
+ *  Derfor EKSAKT match her. En sektionsregel er stadig god — den kommer bare
+ *  ikke først, når siden selv kan sige hvad den handler om.
+ */
+export function harEksaktRegel(regler: PillRegel[], sti: string): boolean {
+  const nu = normaliser(sti);
+  return regler.some((r) => r.ruter.some((rute) => normaliser(rute) === nu));
+}
+
 export function vaelgPills(
   regler: PillRegel[],
   nuSti: string,
