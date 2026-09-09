@@ -1150,9 +1150,24 @@ function aidan() {
           if (a.paused) { void a.play(); knap.textContent = "\u23F8"; knap.setAttribute("aria-label", d.laesPause ?? ""); }
           else { a.pause(); knap.textContent = "\u25B6"; knap.setAttribute("aria-label", d.laesVidere ?? ""); }
         };
-        await a.play();
-        knap.textContent = "\u23F8";
-        knap.setAttribute("aria-label", d.laesPause ?? "");
+        // AUTOPLAY MÅ IKKE TÆLLE SOM EN HENTEFEJL.
+        //
+        // Målt på produktion 9/9-2026: afspilleren endte i fejltilstand med
+        // «Kunne ikke hente oplæsningen» — MENS den viste 0:00 / 6:15. Lyden
+        // var altså hentet og målt; det var play() der blev afvist, fordi en
+        // browser kun tillader afspilning i forlængelse af en brugerhandling,
+        // og klikket lå 30 sekunder tilbage da hentningen endelig var færdig.
+        //
+        // At kalde det en hentefejl er den værste af de to udfald: den rigtige
+        // tilstand er en afspiller der er KLAR og venter på et tryk.
+        try {
+          await a.play();
+          knap.textContent = "\u23F8";
+          knap.setAttribute("aria-label", d.laesPause ?? "");
+        } catch {
+          knap.textContent = "\u25B6";
+          knap.setAttribute("aria-label", d.laesVidere ?? "");
+        }
         tegn();
         visMailTilbud(boks, { sti });
       } catch {

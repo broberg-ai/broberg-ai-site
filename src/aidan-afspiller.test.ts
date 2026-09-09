@@ -92,3 +92,34 @@ describe("afspilleren er en afspiller, ikke en knap", () => {
     expect(css.slice(i, i + 300)).toContain("color: var(--paa-blaa)");
   });
 });
+
+/**
+ * F018.11.1 — en blokeret afspilning er ikke en hentefejl.
+ *
+ * MÅLT PÅ PRODUKTION 9/9-2026, på et skærmbillede fra selve afspilleren:
+ * fejltilstanden sagde «Kunne ikke hente oplæsningen» — og viste samtidig
+ * «0:00 / 6:15». Lyden VAR hentet, og dens længde var målt. Det der fejlede
+ * var play(): en browser tillader kun afspilning i forlængelse af en
+ * brugerhandling, og klikket lå 30 sekunder tilbage da hentningen var færdig.
+ *
+ * De to udfald ligner hinanden i koden og er modsatte for brugeren: den ene
+ * betyder «prøv igen», den anden betyder «tryk på play». Fanget ved at LÆSE
+ * skærmbilledet — tallet ved siden af fejlteksten modsagde den.
+ */
+describe("en blokeret afspilning er ikke en hentefejl", () => {
+  it("play() har sin EGEN fejlhåndtering", () => {
+    const i = krop.indexOf("await a.play()");
+    expect(i, "play() kaldes ikke").toBeGreaterThan(-1);
+    // Kaldet skal stå i sin egen try, ikke i den ydre der viser hentefejlen.
+    expect(krop.slice(Math.max(0, i - 120), i), "play() ligger i den ydre try — en blokering ville melde hentefejl")
+      .toContain("try {");
+  });
+
+  it("en blokeret afspilning efterlader en KLAR afspiller, ikke en fejl", () => {
+    const i = krop.indexOf("await a.play()");
+    const efter = krop.slice(i, i + 320);
+    expect(efter, "der er ingen catch omkring play()").toContain("catch");
+    expect(efter, "en blokering skal give play-ikonet tilbage").toContain('"\\u25B6"');
+    expect(efter, "en blokering må ALDRIG kalde visFejl").not.toContain("visFejl");
+  });
+});
