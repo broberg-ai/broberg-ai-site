@@ -857,6 +857,21 @@ function aidan() {
   // ── Åbn/luk
   const mobil = () => matchMedia("(max-width: 560px)").matches;
   const bagtaeppe = rod.querySelector<HTMLElement>("[data-testid='aidan-bagtaeppe']");
+  // F018.14 — panelet må ALDRIG kunne ende rullet.
+  //
+  // `overflow: hidden` fjerner rullebjælken; det forhindrer ikke rulning. En
+  // checkboks der får fokus bliver rullet ind i synsfeltet af browseren, og
+  // står den indre besked-kasse allerede ved sin grænse, ruller browseren
+  // panelet selv. Målt på produktion: scrollTop=537, header og beskeder 536 px
+  // over kanten, og ingen vej tilbage — hjulet rammer ikke et hidden-panel.
+  //
+  // min-height:0 på .aidan-msgs (brand.css) er roden. Denne vagt er det lag der
+  // holder når layoutet en dag ændrer sig igen: en tilstand man ikke kan komme
+  // ud af, må ikke kunne opstå.
+  panel.addEventListener("scroll", () => {
+    if (panel.scrollTop !== 0) panel.scrollTop = 0;
+  });
+
   const aabn = () => {
     panel.hidden = false;
     // Varm sideliste + artikeltitler op med det samme: spærren mod opfundne

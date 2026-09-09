@@ -3586,6 +3586,16 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 
 .aidan-msgs {
   flex: 1;
+  /* F018.14 — UDEN denne linje bliver panelet sort.
+     Et flex-element i en kolonne har som standard min-height: auto og nægter
+     derfor at krympe under sit eget indhold. Ved et langt svar blev kolonnen
+     højere end panelet (målt 1115 mod 578 px), og panelets overflow:hidden
+     klippede resten væk — lydløst. Så gav et klik på samtykke-boksen den
+     fokus, browseren rullede den ind i synsfeltet, og da denne kasse allerede
+     stod ved sin egen grænse rullede den PANELET i stedet: scrollTop=537,
+     header og beskeder 536 px over kanten, ingen rullebjælke at komme tilbage
+     med. Det var Christians «der blev bare HELT sort». */
+  min-height: 0;
   overflow-y: auto;
   /* Når chatten rammer top/bund må scrollen ikke kæde videre til siden
      bagved — det var halvdelen af «scrolle kører omme bagved» (5/9). */
