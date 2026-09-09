@@ -1062,7 +1062,27 @@ function aidan() {
     boks.dataset.testid = "aidan-mail-samtykke";
     const tegnet = document.createElement("span");
     tegnet.className = "aidan-boks";
-    samtykke.append(boks, tegnet, document.createTextNode(d.mailSamtykke ?? ""));
+    // ETIKETTEN SKAL PASSE TIL DET DER SENDES.
+    //
+    // Christian, 9/9-2026: «Jeg fik ikke en lydfil, den giver vist ikke helt
+    // mening, hvad skulle det være en lydfil af? Vores meget korte samtaler.»
+    //
+    // Han har ret. Formularen er delt mellem tre ting: oplæsningen af en
+    // ARTIKEL (hvor der ER en lydfil), et chat-SVAR, og et TRANSSKRIPT. Alle
+    // tre viste lyd-etiketten, fordi den var den første der blev skrevet.
+    //
+    // Det er ikke kun en skæv formulering: et samtykke skal beskrive hvad man
+    // siger ja til. Står der «send mig lydfilen» og man får en tekst, er
+    // samtykket afgivet på et forkert grundlag.
+    //
+    // `last.sti` betyder en lydfil; `last.tekst` betyder tekst. Signalet fandtes
+    // allerede — det blev bare ikke brugt.
+    const erLyd = typeof last.sti === "string" && last.sti !== "";
+    samtykke.append(
+      boks,
+      tegnet,
+      document.createTextNode((erLyd ? d.mailSamtykke : d.svarSamtykke) ?? d.mailSamtykke ?? ""),
+    );
     const send = document.createElement("button");
     send.type = "submit";
     send.className = "aidan-banner-primaer";

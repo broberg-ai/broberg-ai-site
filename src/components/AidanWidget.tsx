@@ -78,6 +78,7 @@ export interface AidanTekster {
   mailTilbud: string;
   mailFelt: string;
   mailSamtykke: string;
+  svarSamtykke: string;
   mailSend: string;
   mailSendt: string;
   mailFejl: string;
@@ -179,6 +180,9 @@ export function aidanTekster(
     mailTilbud: g("aidanMailTilbud", en ? "Want the reading sent to you as an audio file?" : "Vil du have oplæsningen tilsendt som lydfil?"),
     mailFelt: g("aidanMailFelt", en ? "your@email.com" : "din@mail.dk"),
     mailSamtykke: g("aidanMailSamtykke", en ? "Yes — send me the audio file and relevant news from broberg.ai" : "Ja tak — send mig lydfilen og relevant nyt fra broberg.ai"),
+    // Samme formular, andet indhold: et chat-svar og et transskript er TEKST.
+    // Et samtykke skal beskrive det man faktisk siger ja til.
+    svarSamtykke: g("aidanSvarSamtykke", en ? "Yes — send me this answer and relevant news from broberg.ai" : "Ja tak — send mig svaret og relevant nyt fra broberg.ai"),
     mailSend: g("aidanMailSend", en ? "Send" : "Send"),
     mailSendt: g("aidanMailSendt", en ? "Sent — check your inbox" : "Sendt — tjek din indbakke"),
     mailFejl: g("aidanMailFejl", en ? "Couldn't send — try again" : "Kunne ikke sende — prøv igen"),
@@ -241,6 +245,7 @@ export function AidanWidget({
       data-mail-tilbud={t.mailTilbud}
       data-mail-felt={t.mailFelt}
       data-mail-samtykke={t.mailSamtykke}
+      data-svar-samtykke={t.svarSamtykke}
       data-mail-send={t.mailSend}
       data-mail-sendt={t.mailSendt}
       data-mail-fejl={t.mailFejl}
