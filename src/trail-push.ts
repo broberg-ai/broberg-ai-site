@@ -64,6 +64,22 @@ async function pushSide(collection: string, slug: string, locale: Locale): Promi
     : `[trail-push] sendt til KB: ${sourceUrl}`);
 }
 
+/**
+ * Har dette dokument en søskende på primærsproget?
+ *
+ * `translationGroup` er CMS'ets egen kobling mellem oversættelser (F48) — den
+ * samme sitet allerede bruger til at finde sprog-tvillinger i navigationen.
+ * Uden en gruppe er dokumentet enestående og sendes.
+ */
+export function harSoeskendePaaPrimaersprog(
+  doc: Record<string, unknown> | null,
+  locale: Locale,
+): boolean {
+  if (locale === "da") return false; // primærsproget sendes altid
+  const tg = doc?.translationGroup ?? (doc?.data as Record<string, unknown> | undefined)?.translationGroup;
+  return typeof tg === "string" && tg.trim() !== "";
+}
+
 /** Planlæg et push. Fyrer-og-glemmer: webhook-svaret må ALDRIG vente på —
  *  eller vælte på — Trail. */
 export function planlaegTrailPush(
@@ -76,6 +92,29 @@ export function planlaegTrailPush(
   if (!doc || doc.status !== "published") return; // kladder hører ikke til i KB'en
   const dataLocale = (doc.data as Record<string, unknown> | undefined)?.locale;
   const locale: Locale = doc.locale === "en" || dataLocale === "en" ? "en" : "da";
+
+  // PAUSE (Christian 9/9-2026): oversættelser sendes ikke til Trail.
+  //
+  // Hans begrundelse, og den er vidensbasens egen logik: «desto mere tekst der
+  // er i hjernen, desto mere diluted bliver sandheden». Målt af Trail: 139
+  // råkilder, 70 med en engelsk tvilling — halvdelen af korpusset er den samme
+  // sandhed sagt to gange. Et opslag på «helpdesk» gav den engelske udgave som
+  // nr. 3, lige under den danske original, altså to af seks pladser til ét svar.
+  //
+  // FORMEN ER TRAILS, ikke en flad sprogregel: spring over hvis dokumentet har
+  // en SØSKENDE på primærsproget. En engelsk-KUN side til et andet marked
+  // overlever derfor — med «spring alt engelsk over» ville den forsvinde uden
+  // at nogen opdagede det.
+  //
+  // PRISEN, som Christian har taget stilling til: Aidan kan ikke citere den
+  // publicerede engelske ordlyd — han oversætter den danske i farten. For fakta
+  // er det ligegyldigt; for salgstekst er det et valg.
+  //
+  // OPHÆVES ved at fjerne dette kald. Det er en pause, ikke en arkitektur.
+  if (harSoeskendePaaPrimaersprog(doc, locale)) {
+    console.log(`[trail-push] springer over — oversættelse med dansk søskende: ${collection}:${slug}`);
+    return;
+  }
 
   const noegle = `${collection}:${slug}`;
   const eksisterende = ventende.get(noegle);
