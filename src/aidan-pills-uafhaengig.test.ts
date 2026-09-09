@@ -80,3 +80,44 @@ describe("forslagene spørger ikke hilsen-gaten om lov", () => {
     expect(kode.slice(i, i + 500)).toContain("skjulPills()");
   });
 });
+
+/**
+ * F016.3 — «Velkommen tilbage · Fortsæt / Start ny» kan slås fra.
+ *
+ * Christian: «Den funktion der foreslår at fortsætte med en gammel samtale
+ * eller ny skal slås fra. Ikke slettes bare have et flag så den kan være slået
+ * fra, jeg synes den virker lidt for fyldig.»
+ *
+ * FRAVALGT = elementet renderes slet ikke, ikke at det står skjult. Et skjult
+ * element ligger stadig i DOM'en og kan blive vist igen af et tilfældigt
+ * `hidden = false` et andet sted.
+ *
+ * Og fordi elementet så KAN mangle, skal klienten tåle null. Et `!` dér ville
+ * kaste og tage HELE Aidan med sig — chatten, forslagene, boblen — fordi
+ * funktionen afbrydes midt i opsætningen.
+ */
+const widget = readFileSync(join(import.meta.dir, "components/AidanWidget.tsx"), "utf8");
+
+describe("velkomstbanneret er bag et flag, ikke slettet", () => {
+  it("banneret renderes kun når flaget er sat", () => {
+    expect(widget).toContain("visVelkomstbanner");
+    const i = widget.indexOf('class="aidan-banner"');
+    expect(i, "banner-markupen er væk — den skulle slås FRA, ikke slettes").toBeGreaterThan(-1);
+    // Markupen skal stå inde i en betinget gren.
+    expect(widget.slice(Math.max(0, i - 200), i)).toContain("visVelkomstbanner");
+  });
+
+  it("kun et EKSPLICIT true tænder den — en manglende værdi er ikke «tændt»", () => {
+    const routes = readFileSync(join(import.meta.dir, "routes.tsx"), "utf8");
+    expect(routes).toContain("aidanVelkomstbanner === true");
+  });
+
+  it("klienten tåler at banneret mangler — ellers ryger hele Aidan", () => {
+    const i = kode.indexOf("const banner = rod.querySelector");
+    expect(i).toBeGreaterThan(-1);
+    const linje = kode.slice(i, kode.indexOf("\n", i));
+    expect(linje, "et ! her kaster når banneret er fravalgt").not.toMatch(/\)!;\s*$/);
+    // Ingen af brugsstederne må antage at det findes.
+    expect(kode).not.toMatch(/\n\s*banner\.querySelector\(/);
+  });
+});

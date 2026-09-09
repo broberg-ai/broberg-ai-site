@@ -82,6 +82,32 @@ export function laesRegler(raa: string): PillRegel[] {
  * læst om consulting og står nu på kontaktsiden, er consulting-spørgsmålet
  * stadig det mest relevante at kunne klikke.
  */
+/** F016.4 — et forslag der ALTID handler om siden man står på.
+ *
+ *  Christian: «Har du noget som helst adaptivt der matcher den side jeg er på
+ *  når de kommer frem? Du viser 4 forslag, 1 af dem kunne godt handle om temaet
+ *  på den side jeg er på.»
+ *
+ *  Målt: 9 ruter har en håndskrevet regel. Artikler (/ai-metode/…, /platform/…,
+ *  /bag-om/…), tag-sider og de 13 enkelte flagskibe har INGEN — dér faldt alle
+ *  forslag tilbage på de tre generelle, og intet handlede om siden.
+ *
+ *  Løsningen er ikke en regel pr. side. Det ville vokse med hver ny artikel og
+ *  være forældet den dag nogen glemmer at tilføje en. I stedet BYGGES forslaget
+ *  af sidens egen titel, som allerede står i DOM'en — så en side der oprettes i
+ *  morgen er dækket uden at nogen rører CMS'et.
+ *
+ *  Skabelonen bor i CMS'et (aidanSideForslag), så ordlyden kan rettes uden en
+ *  udrulning. Tom skabelon eller tom titel → ingenting, og de håndskrevne
+ *  regler klarer sig selv som før.
+ */
+export function sideForslag(skabelon: string, sideTitel: string): string | null {
+  const t = sideTitel.trim();
+  const s = skabelon.trim();
+  if (!t || !s || !s.includes("{titel}")) return null;
+  return s.replace("{titel}", t);
+}
+
 export function vaelgPills(
   regler: PillRegel[],
   nuSti: string,

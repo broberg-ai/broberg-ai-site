@@ -97,6 +97,9 @@ async function page(
           )}
           globalsRef={globalsRef}
           locale={meta.locale}
+          // F016.3 — fravalgt som standard. Kun et EKSPLICIT true i CMS'et
+          // tænder banneret igen; en manglende værdi må ikke betyde «tændt».
+          visVelkomstbanner={globalsData.aidanVelkomstbanner === true}
         />
       ) : null}
     </>,

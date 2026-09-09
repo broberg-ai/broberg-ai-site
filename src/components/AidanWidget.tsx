@@ -25,6 +25,7 @@ import { Figur } from "@/components/Figur.tsx";
 export interface AidanTekster {
   boble: string;
   bobleSider: string;
+  sideForslag: string;
   /** F007.17 — den proaktive hilsen efter 10 sekunder. */
   hilsenTitel: string;
   hilsenKrop: string;
@@ -98,6 +99,10 @@ export function aidanTekster(
     // TOM reservetekst med vilje: findes reglerne ikke i CMS'et, bliver den
     // faste boble-tekst stående. Ship-dark, og teksten lever aldrig kun i koden.
     bobleSider: g("aidanBobleSider", ""),
+    // F016.4 — skabelon til det forslag der bygges af sidens egen titel.
+    // TOM reservetekst: uden en skabelon i CMS'et bygges der ingenting, og de
+    // håndskrevne regler klarer sig selv som før (ship-dark).
+    sideForslag: g("aidanSideForslag", ""),
     hilsenTitel: g("aidanHilsenTitel", en ? "Hi there 👋" : "Hej der 👋"),
     hilsenKrop: g(
       "aidanHilsenKrop",
@@ -206,11 +211,20 @@ export function AidanWidget({
   t,
   globalsRef,
   locale,
+  visVelkomstbanner,
 }: {
   sideTitel?: string;
   t: AidanTekster;
   globalsRef: CmsRef | undefined;
   locale: Locale;
+  /** F016.3 — «Velkommen tilbage · Fortsæt / Start ny». Christian: «den virker
+   *  lidt for fyldig». Slået fra som standard, men BEHOLDT: styres af
+   *  globals.aidanVelkomstbanner, så den kan tændes igen uden en udrulning.
+   *
+   *  Fravalgt betyder at elementet slet ikke renderes — ikke at det står
+   *  skjult. Et skjult element ville stadig ligge i DOM'en og kunne blive
+   *  vist igen af en tilfældig `hidden = false` et andet sted. */
+  visVelkomstbanner?: boolean;
 }) {
   const en = locale === "en";
   const chips = t.chips.split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 4);
@@ -235,6 +249,7 @@ export function AidanWidget({
       data-boble-aidan={t.boble}
       data-boble-airina={t.airinaBoble}
       data-boble-sider={t.bobleSider}
+      data-side-forslag={t.sideForslag}
       data-hilsen-krop-aidan={t.hilsenKrop}
       data-hilsen-krop-airina={t.airinaHilsenKrop}
       data-hilsen-aidan={t.hilsen}
@@ -358,15 +373,17 @@ export function AidanWidget({
         </div>
         {/* Velkommen tilbage — Eir-mønstret: seneste samtales titel + Fortsæt/Start ny.
             Klienten udfylder titlen og viser banneret når der ER en tidligere samtale. */}
-        <div class="aidan-banner" data-testid="aidan-banner" hidden>
-          <span>
-            <span {...cmsAttrs(globalsRef, "aidanVelkommen")}>{t.velkommen}</span> <b class="aidan-banner-titel" />.
-          </span>
-          <span class="aidan-banner-knapper">
-            <button type="button" class="aidan-banner-primaer" data-testid="aidan-banner-fortsaet">{t.fortsaet}</button>
-            <button type="button" class="aidan-banner-sekundaer" data-testid="aidan-banner-startny">{t.startNy}</button>
-          </span>
-        </div>
+        {visVelkomstbanner ? (
+          <div class="aidan-banner" data-testid="aidan-banner" hidden>
+            <span>
+              <span {...cmsAttrs(globalsRef, "aidanVelkommen")}>{t.velkommen}</span> <b class="aidan-banner-titel" />.
+            </span>
+            <span class="aidan-banner-knapper">
+              <button type="button" class="aidan-banner-primaer" data-testid="aidan-banner-fortsaet">{t.fortsaet}</button>
+              <button type="button" class="aidan-banner-sekundaer" data-testid="aidan-banner-startny">{t.startNy}</button>
+            </span>
+          </div>
+        ) : null}
         {/* Historik-visningen lægger sig over beskederne når klok-knappen trykkes. */}
         <div class="aidan-historik" data-testid="aidan-historik-visning" hidden>
           <div class="aidan-historik-hoved">

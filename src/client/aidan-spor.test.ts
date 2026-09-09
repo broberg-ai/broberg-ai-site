@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeEach } from "bun:test";
 import {
-  normaliser, rammer, laesRegler, vaelgPills, noterSide, laesSpor, SPOR_NOEGLE, SPOR_LOFT,
+  normaliser, rammer, laesRegler, vaelgPills, sideForslag, noterSide, laesSpor, SPOR_NOEGLE, SPOR_LOFT,
 } from "./aidan-spor.ts";
 
 /* Bun kører ikke i en browser, så lageret stilles op her. Stubben er IKKE det
@@ -178,5 +178,42 @@ describe("ruten gemmes", () => {
 
   it("KONTROL: reglerne findes overhovedet, så prøverne ovenfor ikke måler på nul", () => {
     expect(R.length).toBe(5);
+  });
+});
+
+/* ── F016.4 — forslaget der bygges af sidens egen titel ────────────────────
+ *
+ * Christian: «Har du noget som helst adaptivt der matcher den side jeg er på
+ * når de kommer frem?» Målt: 9 ruter havde en håndskrevet regel; artikler,
+ * tag-sider og de enkelte flagskibe havde ingen, og dér handlede INTET af det
+ * viste om siden.
+ *
+ * Skabelonen bor i CMS'et, så ordlyden kan rettes uden en udrulning — og
+ * derfor skal koden tåle at den er tom, forkert eller mangler pladsholderen.
+ */
+describe("sideForslag — bygget af sidens titel", () => {
+  it("sætter titlen ind i skabelonen", () => {
+    expect(sideForslag("Fortæl mig om «{titel}»", "Agentic orkestration")).toBe(
+      "Fortæl mig om «Agentic orkestration»",
+    );
+  });
+
+  it("ingen skabelon i CMS → ingenting (ship-dark)", () => {
+    expect(sideForslag("", "En side")).toBeNull();
+  });
+
+  it("ingen titel → ingenting, aldrig et forslag med et tomt hul", () => {
+    expect(sideForslag("Fortæl mig om «{titel}»", "")).toBeNull();
+    expect(sideForslag("Fortæl mig om «{titel}»", "   ")).toBeNull();
+  });
+
+  it("skabelon UDEN pladsholder → ingenting", () => {
+    // Ellers ville hver eneste side få det samme forslag, og det er præcis
+    // den generiske opførsel feltet findes for at komme ud over.
+    expect(sideForslag("Fortæl mig mere", "En side")).toBeNull();
+  });
+
+  it("titlen trimmes, så et mellemrum fra CMS'et ikke ses i knappen", () => {
+    expect(sideForslag("Om {titel}?", "  Trail  ")).toBe("Om Trail?");
   });
 });

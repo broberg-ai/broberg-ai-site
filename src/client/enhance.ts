@@ -15,7 +15,7 @@ import {
   laesSynligMs,
   gemSynligMs,
 } from "./aidan-hilsen.ts";
-import { noterSide, laesRegler, vaelgPills } from "@/client/aidan-spor.ts";
+import { noterSide, laesRegler, vaelgPills, sideForslag } from "@/client/aidan-spor.ts";
 import { listSamtaler, hentSamtale, gemAktiv, sletSamtale, aktivId, saetAktiv, relativTid, erNaerBunden, type Tur } from "@/client/aidan-samtaler.ts";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
 
@@ -699,6 +699,22 @@ function aidan() {
     if (!pillsEl) return;
     const regler = laesRegler(rod.dataset.pills ?? "");
     const valgte = vaelgPills(regler, location.pathname, spor);
+    // F016.4 — har siden ingen EGEN regel, handler intet af det valgte om den.
+    // Så bygges det første forslag af sidens titel, og pladsen tages fra de
+    // generelle — ikke lagt oveni, for stakken må ikke vokse.
+    //
+    // Rækkefølgen er med vilje: en håndskrevet regel for netop denne rute er
+    // bedre end en skabelon, så den bygges KUN når der ikke er nogen.
+    const harEgenRegel = vaelgPills(
+      regler.filter((r) => r.ruter.length > 0),
+      location.pathname,
+      [],
+      1,
+    ).length > 0;
+    if (!harEgenRegel) {
+      const eget = sideForslag(rod.dataset.sideForslag ?? "", rod.dataset.sideTitel ?? "");
+      if (eget) valgte.splice(0, valgte.length > 2 ? 1 : 0, eget);
+    }
     if (!valgte.length) return;
     pillsEl.replaceChildren(
       ...valgte.map((tekst, i) => {
@@ -904,8 +920,12 @@ function aidan() {
 
   // ── Samtalen (F007.4): rigtigt lager med historik + Ny samtale — Eir-
   // pariteten. Ren logik bor i aidan-samtaler.ts; her er kun DOM-limen.
-  const banner = rod.querySelector<HTMLElement>("[data-testid='aidan-banner']")!;
-  const bannerTitel = banner.querySelector<HTMLElement>(".aidan-banner-titel")!;
+  // F016.3 — «Velkommen tilbage»-banneret kan slås fra i CMS'et
+  // (globals.aidanVelkomstbanner). Er det fra, findes elementet slet ikke, så
+  // ALT herunder skal tåle null. Et ! her ville kaste og tage HELE Aidan med
+  // sig — chatten, forslagene, boblen — fordi funktionen afbrydes.
+  const banner = rod.querySelector<HTMLElement>("[data-testid='aidan-banner']");
+  const bannerTitel = banner?.querySelector<HTMLElement>(".aidan-banner-titel") ?? null;
   const histVisning = rod.querySelector<HTMLElement>("[data-testid='aidan-historik-visning']")!;
   const histListe = rod.querySelector<HTMLElement>("[data-testid='aidan-hist-liste']")!;
   const chipsEl = rod.querySelector<HTMLElement>(".aidan-chips")!;
@@ -1169,23 +1189,23 @@ function aidan() {
   const nySamtale = () => {
     saetAktiv(null);
     visSamtale([]);
-    banner.hidden = true;
+    if (banner) banner.hidden = true;
     lukHistorik();
     anvendPersona(); // hilsnen kom fra SSR-html'en (Aidans) — mal personaens
   };
 
   // Velkommen tilbage: kun når der FINDES en tidligere samtale med indhold.
   const seneste = aktivId() ? hentSamtale(aktivId()!) : listSamtaler()[0] ?? null;
-  if (seneste && seneste.beskeder.length) {
+  if (banner && bannerTitel && seneste && seneste.beskeder.length) {
     bannerTitel.textContent = seneste.titel;
     banner.hidden = false;
   }
-  banner.querySelector("[data-testid='aidan-banner-fortsaet']")!.addEventListener("click", () => {
+  banner?.querySelector("[data-testid='aidan-banner-fortsaet']")?.addEventListener("click", () => {
     saetAktiv(seneste!.id);
     visSamtale(seneste!.beskeder);
     banner.hidden = true;
   });
-  banner.querySelector("[data-testid='aidan-banner-startny']")!.addEventListener("click", nySamtale);
+  banner?.querySelector("[data-testid='aidan-banner-startny']")?.addEventListener("click", nySamtale);
 
   // ── Historik-visningen
   const en = locale === "en";
@@ -1260,7 +1280,7 @@ function aidan() {
       rk.addEventListener("click", () => {
         saetAktiv(sam.id);
         visSamtale(sam.beskeder);
-        banner.hidden = true;
+        if (banner) banner.hidden = true;
         lukHistorik();
       });
       histListe.appendChild(rk);
