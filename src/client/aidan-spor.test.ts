@@ -243,3 +243,95 @@ describe("harEksaktRegel", () => {
     expect(harEksaktRegel(regler, "/noget-helt-andet")).toBe(false);
   });
 });
+
+/* ── F016.6 — primede kandidater skal ALLE kunne komme frem ──────────────── */
+describe("rotation over primede kandidater", () => {
+  const fem = laesRegler(
+    "/x | et\n/x | to\n/x | tre\n/x | fire\n/x | fem\n* | generel",
+  );
+
+  it("uden rotation vises de tre første", () => {
+    expect(vaelgPills(fem, "/x", [], 3, 0)).toEqual(["et", "to", "tre"]);
+  });
+
+  it("rotationen flytter startpunktet, så de sidste også bliver vist", () => {
+    expect(vaelgPills(fem, "/x", [], 3, 3)).toEqual(["fire", "fem", "et"]);
+  });
+
+  it("ALLE fem kan komme frem over nok sidevisninger", () => {
+    // Uden denne kunne rotationen ramme de samme tre hver gang og stadig
+    // bestå prøven ovenfor.
+    const set = new Set<string>();
+    for (let i = 0; i < 5; i++) vaelgPills(fem, "/x", [], 3, i).forEach((t) => set.add(t));
+    expect([...set].sort()).toEqual(["et", "fem", "fire", "to", "tre"]);
+  });
+
+  it("er der IKKE flere kandidater end pladser, roteres der ikke", () => {
+    // Ellers ville rækkefølgen skifte uden grund på en side med præcis tre.
+    const tre = laesRegler("/y | a\n/y | b\n/y | c");
+    for (const r of [0, 1, 2, 7]) expect(vaelgPills(tre, "/y", [], 3, r)).toEqual(["a", "b", "c"]);
+  });
+
+  it("samme rotation giver samme svar — den er ikke tilfældig", () => {
+    expect(vaelgPills(fem, "/x", [], 3, 2)).toEqual(vaelgPills(fem, "/x", [], 3, 2));
+  });
+});
+
+/* ── F016.7 — sidens egne regler slår sektionens ─────────────────────────── */
+describe("den mest specifikke regel kommer først", () => {
+  // Rækkefølgen her er MED VILJE den forkerte: sektionen står først i CMS'et,
+  // præcis som den gjorde da Christian så «ikke et ord om CMS».
+  const regler = laesRegler(
+    "/flagskibe | Hvad koster de?\n" +
+    "/flagskibe | Er de i drift?\n" +
+    "/flagskibe/cms | Har du brug for et AI-native CMS?\n" +
+    "/flagskibe/cms | Kan AI skrive mit indhold?\n" +
+    "* | Generelt",
+  );
+
+  it("på /flagskibe/cms kommer cms-spørgsmålene FØRST", () => {
+    expect(vaelgPills(regler, "/flagskibe/cms", [], 2)).toEqual([
+      "Har du brug for et AI-native CMS?",
+      "Kan AI skrive mit indhold?",
+    ]);
+  });
+
+  it("sektionens spørgsmål er der stadig — de kommer bare efter", () => {
+    // De må ikke forsvinde: en side med kun ét eget spørgsmål skal stadig
+    // kunne fylde op fra sektionen.
+    expect(vaelgPills(regler, "/flagskibe/cms", [], 4)).toContain("Hvad koster de?");
+  });
+
+  it("POSITIV KONTROL: på sektionens egen side er sektionens spørgsmål først", () => {
+    expect(vaelgPills(regler, "/flagskibe", [], 1)).toEqual(["Hvad koster de?"]);
+  });
+});
+
+/* ── F016.8 — rotationen må ikke bytte sidens egne væk ───────────────────── */
+describe("rotationen holder sig inden for sidens egne", () => {
+  const regler = laesRegler(
+    "/flagskibe | sektion-a\n/flagskibe | sektion-b\n/flagskibe | sektion-c\n" +
+    "/flagskibe/trail | trail-1\n/flagskibe/trail | trail-2\n" +
+    "/flagskibe/trail | trail-3\n/flagskibe/trail | trail-4\n/flagskibe/trail | trail-5",
+  );
+
+  it("uanset rotation er ALLE tre om trail — aldrig sektionens", () => {
+    // Fejlen dette fanger: rotation over hele laget kunne lande forbi trails
+    // fem og ned i sektionens, så en trail-side talte om flagskibe generelt.
+    for (const r of [0, 1, 2, 3, 4, 7, 11]) {
+      const valgt = vaelgPills(regler, "/flagskibe/trail", [], 3, r);
+      expect(valgt.every((t) => t.startsWith("trail-")), `rotation ${r}: ${valgt}`).toBe(true);
+    }
+  });
+
+  it("og alle fem trail-spørgsmål kan stadig komme frem", () => {
+    const set = new Set<string>();
+    for (let i = 0; i < 5; i++) vaelgPills(regler, "/flagskibe/trail", [], 3, i).forEach((t) => set.add(t));
+    expect(set.size).toBe(5);
+  });
+
+  it("har siden FÆRRE egne end der er plads til, fyldes der op fra sektionen", () => {
+    const faa = laesRegler("/flagskibe | sektion-a\n/flagskibe/lens | lens-1");
+    expect(vaelgPills(faa, "/flagskibe/lens", [], 3, 0)).toEqual(["lens-1", "sektion-a"]);
+  });
+});

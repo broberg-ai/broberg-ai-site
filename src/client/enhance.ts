@@ -698,7 +698,7 @@ function aidan() {
   const visPills = () => {
     if (!pillsEl) return;
     const regler = laesRegler(rod.dataset.pills ?? "");
-    const valgte = vaelgPills(regler, location.pathname, spor);
+    const valgte = vaelgPills(regler, location.pathname, spor, 3, spor.length);
     // F016.4/F016.5 — har siden ingen regel om NETOP sig selv, handler intet af
     // det valgte om den. Så bygges det første forslag af sidens titel, og
     // pladsen tages fra de generelle — ikke lagt oveni, for stakken må ikke

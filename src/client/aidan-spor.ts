@@ -133,19 +133,65 @@ export function vaelgPills(
   nuSti: string,
   spor: string[],
   antal = 3,
+  /** Hvor mange sider brugeren har set i dette besøg. Roterer hvilke af de
+   *  primede kandidater der vises, når der er flere end der er plads til. */
+  rotation = 0,
 ): string[] {
   const tidligere = spor.filter((s) => normaliser(s) !== normaliser(nuSti));
-  const lag = (n: 0 | 1 | 2) =>
-    regler.filter((r) => {
+  /** Hvor SPECIFIKT rammer reglen den her sti? Længden af den længste af
+   *  reglens ruter der matcher. `/flagskibe/cms` (15) slår `/flagskibe` (10).
+   *
+   *  F016.7 — uden den her stod sektionens spørgsmål først på /flagskibe/cms,
+   *  fordi begge regler ligger i SAMME lag og rækkefølgen var filens.
+   *  Christian så det med det samme: «ikke et ord om CMS». At sortere efter
+   *  hvor præcist en regel rammer, er forskellen på «en regel der gælder her»
+   *  og «reglen der handler om her».
+   */
+  const praecision = (r: PillRegel) =>
+    Math.max(...r.ruter.filter((rute) => rammer(rute, nuSti)).map((rute) => normaliser(rute).length), 0);
+
+  const lag = (n: 0 | 1 | 2) => {
+    const valgte = regler.filter((r) => {
       if (n === 2) return r.ruter.length === 0;
       if (r.ruter.length === 0) return false;
       if (n === 0) return r.ruter.some((rute) => rammer(rute, nuSti));
       return r.ruter.some((rute) => tidligere.some((s) => rammer(rute, s)));
     });
+    // Kun lag 0 sorteres: dér findes både sidens egne og sektionens regler.
+    // Lag 1 (tidligere sete sider) og 2 (generelle) beholder deres orden fra
+    // CMS'et, som er redaktørens prioritering.
+    return n === 0
+      ? valgte.slice().sort((a, b) => praecision(b) - praecision(a))
+      : valgte;
+  };
 
   const ud: string[] = [];
   for (const n of [0, 1, 2] as const) {
-    for (const r of lag(n)) {
+    // F016.6 — er der PRIMET flere kandidater end der er plads til, roteres
+    // startpunktet. Christian: «Kan vi prime x antal beskeder der kan vælges
+    // mellem?» Uden rotation ville kun de tre første af fem nogensinde blive
+    // vist, og de sidste to var skrevet forgæves.
+    //
+    // Rotationen er DETERMINISTISK ud fra et tal kalderen giver (sidevisninger
+    // i dette besøg), ikke tilfældig: en bruger der scroller op og ned skal se
+    // det samme, mens den der kommer igen ser noget nyt. Tilfældighed pr.
+    // gennemløb ville skifte forslagene mens man kigger på dem.
+    // F016.8 — roter INDEN FOR den mest specifikke gruppe, ikke på tværs.
+    //
+    // Første udgave roterede over hele laget. På /flagskibe/trail betød det at
+    // startpunktet kunne lande forbi trails egne fem og ned i sektionens — og
+    // så fik trail-siden ét trail-spørgsmål og to om flagskibe i almindelighed.
+    // Rotationen skulle give VARIATION mellem sidens egne, ikke bytte dem væk.
+    const kandidater = lag(n);
+    const top = n === 0 && kandidater.length ? praecision(kandidater[0]) : -1;
+    const gruppe = n === 0 ? kandidater.filter((r) => praecision(r) === top) : kandidater;
+    const resten = n === 0 ? kandidater.filter((r) => praecision(r) !== top) : [];
+    const start = gruppe.length > antal ? rotation % gruppe.length : 0;
+    const raekke = [
+      ...gruppe.map((_, i) => gruppe[(start + i) % gruppe.length]),
+      ...resten,
+    ];
+    for (const r of raekke) {
       if (ud.length >= antal) return ud;
       if (!ud.includes(r.tekst)) ud.push(r.tekst);
     }
