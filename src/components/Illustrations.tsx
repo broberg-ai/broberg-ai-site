@@ -1239,7 +1239,137 @@ const aoOtteSkridt = (
   </svg>
 );
 
+/* scope — hele forløbet i ét billede, læst fra venstre mod højre:
+   TRE STEMMER → PERISKOPET → NAVNGIVNE AFSNIT → EN GODKENDT KRAVSPEC.
+
+   Periskopet er navnets ene halvdel gjort til billede: instrumentet der kigger
+   ind i mødet. Kravspecen til højre er den anden halvdel. Tegningen skal vise
+   at de to er SAMME ting set fra hver sin ende — derfor er der ét ubrudt rør
+   fra linsen til dokumentet, ikke to adskilte scener.
+
+   Det bærende valg er at talerne har HVER SIN FARVE, og at farven følger med
+   hele vejen: ind gennem linsen, ned gennem røret, ud i referatets afsnit. Det
+   er dét produktet gør som en almindelig optager ikke gør — den ved hvem der
+   sagde hvad. Uden farvesporet ville billedet bare vise «lyd bliver til
+   tekst», som enhver diktafon kan.
+
+   Fluebenet til sidst er ikke pynt: kravspecen er først noget værd når den er
+   godkendt, og det er den sidste tilstand før en agent må bygge på den. */
+const SCOPE_STEMMER = [
+  { cy: 74, farve: "var(--blue)" },
+  { cy: 140, farve: "#F3522C" },
+  { cy: 206, farve: "var(--blue-light)" },
+];
+
+/* Hvor de tre spor mødes: lige foran linsen. Ét tal, så tragten ikke kan
+   drifte fra linsens placering når nogen flytter periskopet. */
+const SCOPE_TRAGT = { x: 116, y: 86 };
+
+const scope = wrap(
+  <g>
+    {/* de tre der taler */}
+    {SCOPE_STEMMER.map((s, i) => (
+      <g key={i}>
+        <circle
+          class={i === 1 ? "pulse-core" : "node"}
+          cx="42"
+          cy={s.cy}
+          r="17"
+          fill="color-mix(in srgb,var(--blue) 10%,transparent)"
+          stroke={s.farve}
+          stroke-width="1.8"
+        />
+        <circle cx="42" cy={s.cy} r="5" fill={s.farve} />
+        {/* lyden ud af hver stemme */}
+        <path
+          d={`M66 ${s.cy} q6 -9 12 0 t12 0`}
+          fill="none"
+          stroke={s.farve}
+          stroke-width="1.8"
+          stroke-linecap="round"
+          opacity="0.5"
+        />
+      </g>
+    ))}
+
+    {/* tragten: alle tre stemmer løber sammen foran linsen */}
+    {SCOPE_STEMMER.map((s, i) => (
+      <path
+        key={i}
+        class="illu-flow"
+        d={`M100 ${s.cy} L${SCOPE_TRAGT.x} ${SCOPE_TRAGT.y}`}
+        fill="none"
+        stroke={s.farve}
+        stroke-width="1.6"
+        stroke-dasharray="3 5"
+        opacity="0.6"
+      />
+    ))}
+
+    {/* PERISKOPET — ét ubrudt rør fra linsen til dokumentet */}
+    <path
+      d="M134 86 H180 V150 H206"
+      fill="none"
+      stroke="var(--light)"
+      stroke-width="15"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.9"
+    />
+    {/* Linsen: den ene ting der er fast orange — «den kigger nu». Den havde
+        illu-glow, men den klasse falder til 45 % opacitet, og et stillbillede
+        af helten rammer lige så ofte bunden som toppen: linsen stod vasket ud
+        ved siden af de tre mættede stemmer. Bevægelsen bæres af de stiplede
+        spor og de indgående prikker; linsen skal bare stå fast. */}
+    <circle cx="130" cy="86" r="13" fill="#F3522C" />
+    <circle cx="126" cy="82" r="4" fill="#fff" opacity="0.45" />
+
+    {/* de tre stemmer glider ind gennem linsen, én ad gangen, med deres farve i behold */}
+    {SCOPE_STEMMER.map((s, i) => (
+      <circle
+        key={i}
+        class="illu-ind"
+        style={`animation-delay:${i * 0.9}s`}
+        cx="150"
+        cy="86"
+        r="4.5"
+        fill={s.farve}
+      />
+    ))}
+
+    <g class="illu-flow" stroke="#F3522C" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M216 150 h12" stroke-dasharray="3 5" />
+    </g>
+
+    {/* kravspecen: hvert afsnit bærer talerens farve videre */}
+    <rect
+      x="230"
+      y="46"
+      width="96"
+      height="188"
+      rx="9"
+      fill="color-mix(in srgb,var(--blue) 5%,transparent)"
+      stroke="var(--card-border)"
+      stroke-width="1.4"
+    />
+    {SCOPE_STEMMER.map((s, i) => (
+      <g key={i}>
+        <circle cx="244" cy={72 + i * 52} r="4.5" fill={s.farve} />
+        <rect x="256" y={68 + i * 52} width="54" height="6" rx="3" fill="var(--light)" opacity="0.72" />
+        <rect x="256" y={80 + i * 52} width={i === 2 ? 32 : 44} height="6" rx="3" fill="var(--light)" opacity="0.38" />
+      </g>
+    ))}
+
+    {/* godkendt — den tilstand kravspecen skal nå før en agent må bygge på den */}
+    <g class="illu-glow">
+      <circle cx="278" cy="214" r="13" fill="color-mix(in srgb,#F3522C 16%,transparent)" stroke="#F3522C" stroke-width="1.8" />
+      <path d="M272 214 l4.5 4.5 L285 210" fill="none" stroke="#F3522C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
+  scope,
   components,
   cardmem,
   buddy,

@@ -1238,6 +1238,34 @@ footer {
   animation: sflow 3s linear infinite;
 }
 
+/* scope — de tre stemmer glider ind gennem linsen og videre ned i roeret.
+   Prikkerne har hver sin animation-delay, saa de kommer EN AD GANGEN: en
+   samtale er skiftevis, ikke tre mennesker der taler oveni hinanden.
+   Reduced-motion er daekket af den globale *-regel laengere nede. */
+.illu-ind {
+  animation: illu-ind 3.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes illu-ind {
+  0% {
+    transform: translate(-16px, 0);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate(30px, 0);
+    opacity: 1;
+  }
+  85%,
+  100% {
+    transform: translate(30px, 62px);
+    opacity: 0;
+  }
+}
+
 /* Trail bespoke page bits (reusable across flagships) */
 .flowchips {
   display: flex;

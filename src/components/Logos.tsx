@@ -18,6 +18,41 @@ const logos: Record<string, JSX.Element> = {
       <rect x="52" y="72" width="32" height="9" rx="4.5" fill="#f6f6f6" />
     </svg>
   ),
+  /* scope — periskoppet, i samme silhuet som flagskibets illustration:
+     linsen kigger til VENSTRE ind i mødet, røret går ned, og foden peger til
+     HØJRE ud mod kravspecen. At mærket og tegningen vender samme vej er ikke
+     pedanteri — vender de hver sin vej, læses de som to forskellige ting.
+
+     Første udgave havde to tekstlinjer ved siden af for at sige «kravspec»
+     også. Målt på flagskibs-gitteret ved 24 px blev mærket dermed det
+     svageste i rækken: et lille flag med to streger. Et logo på den størrelse
+     kan sige ÉN ting, og navnet siger allerede den anden.
+
+     Stregtykkelsen er ikke smag. Fire kandidater blev tegnet op ved siden af
+     hinanden i den STØRRELSE de skal virke i (24 px i gitteret, begge temaer):
+     et tyndt rør forsvandt, en fyldt silhuet blev en klump, og et sigtekorn
+     var mest læsbart af alle — men et sigtekorn er et riffelsigte, ikke et
+     periskop, og ville modsige flagskibets egen tegning. 21 i stregbredde er
+     det tal der bar ved 24 px uden at lukke sig sammen ved 96.
+
+     Linsen er FAST orange og arver ikke temaet — den er det ene element der
+     skal betyde «den kigger nu» uanset hvilken flade mærket står på. Røret
+     bruger --light, fordi det er instrumentet og skal opføre sig som
+     forgrundsfarve i begge temaer. */
+  scope: (
+    <svg viewBox="0 0 128 128" width="24" height="24">
+      <path
+        d="M37 39 H71 V99 H101"
+        fill="none"
+        stroke="var(--light)"
+        stroke-width="21"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <circle cx="37" cy="39" r="21" fill="#F3522C" />
+      <circle cx="30" cy="32" r="6.5" fill="#fff" opacity="0.42" />
+    </svg>
+  ),
   cms: (
     <svg viewBox="0 0 335.2 338.48" width="23" height="23">
       <path fill="#2a2a3e" d="M167.6,0C87.6,0,7.6,48,7.6,144s48,169.6,112,192c32,9.6,48-9.6,48-41.6" />
