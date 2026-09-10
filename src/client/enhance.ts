@@ -689,6 +689,10 @@ function aidan() {
    *  Intet match, eller ingen regler i CMS'et → den faste tekst bliver
    *  stående. En boble uden tekst er værre end en generisk. */
   const tilpasBoble = () => {
+    // F020.2 — en fast boble vinder over det sti-baserede valg. Fejlsiden har
+    // ingen fast sti at skrive en regel for, og dens budskab er sidens eget.
+    const fast = (rod.dataset.bobleFast ?? "").trim();
+    if (fast) { boble.textContent = fast; return; }
     const valgt = vaelgPills(laesRegler(rod.dataset.bobleSider ?? ""), location.pathname, spor, 1);
     if (valgt[0]) boble.textContent = valgt[0];
   };

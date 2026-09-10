@@ -68,7 +68,12 @@ const SOLUTION_ICONS: Record<string, string> = {
 
 async function page(
   children: any,
-  meta: { title: string; description: string; locale: Locale; canonical?: string; altHref?: string; noindex?: boolean },
+  meta: {
+    title: string; description: string; locale: Locale;
+    canonical?: string; altHref?: string; noindex?: boolean;
+    /** F020.2 — Aidan taler ikke uopfordret om DENNE side. */
+    aidanTavs?: boolean; aidanBoble?: string; aidanPills?: string;
+  },
 ) {
   const footerData = await loadFooter(meta.locale);
   const globalsDoc = await loadGlobals(meta.locale);
@@ -101,6 +106,9 @@ async function page(
           // F016.3 — fravalgt som standard. Kun et EKSPLICIT true i CMS'et
           // tænder banneret igen; en manglende værdi må ikke betyde «tændt».
           visVelkomstbanner={globalsData.aidanVelkomstbanner === true}
+          tavs={meta.aidanTavs}
+          egenBoble={meta.aidanBoble}
+          egnePills={meta.aidanPills}
         />
       ) : null}
     </>,
@@ -1388,6 +1396,19 @@ export async function render404(locale: Locale, sti: string): Promise<string> {
       // problemet: statuskoden ville være rigtig, og Google ville stadig have
       // en side pr. stavefejl at kigge på.
       noindex: true,
+      // F020.2 — Christian med skærmbillede: Aidan stod som figur på siden MED
+      // sin egen replik, og widgeten spurgte samtidig «Fortæl mig om «Siden
+      // findes ikke»». Sidetitel-forslaget er bygget til en artikel.
+      //
+      // Han holdt én undtagelse åben: «hvis den kan sige noget skægt automatisk
+      // der understøtter det budskab der i forvejen er på siden». Derfor tier
+      // Aidan ikke helt — han siger noget der PASSER. Siden lover at pege dig
+      // et sted hen hvor der faktisk står noget; det er dét han tilbyder.
+      aidanTavs: true,
+      aidanBoble: g("nf_aidanBoble", isEn ? "Shall I find one that does?" : "Skal jeg finde en der findes?"),
+      aidanPills: g("nf_aidanPills", isEn
+        ? "What can you actually help with?\nWhat should I read first?\nWhat do you build?"
+        : "Hvad kan I egentlig hjælpe med?\nHvad skal jeg læse først?\nHvad bygger I?"),
     },
   );
 }

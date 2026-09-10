@@ -219,8 +219,31 @@ export function AidanWidget({
   globalsRef,
   locale,
   visVelkomstbanner,
+  tavs,
+  egenBoble,
+  egnePills,
 }: {
   sideTitel?: string;
+  /** F020.2 — Aidan taler ikke UOPFORDRET her.
+   *
+   *  Christian 10/9 med skærmbillede fra 404-siden: han stod som figur på
+   *  siden med sin egen replik, OG widgeten spurgte «Fortæl mig om «Siden
+   *  findes ikke»». Sidetitel-forslaget er bygget til en artikel; på en
+   *  fejlside bliver det tåbeligt.
+   *
+   *  `tavs` fjerner de to ting der taler af sig selv om SIDEN: forslaget
+   *  bygget af titlen, og kontekst-hilsnen ved første åbning. Knappen bliver —
+   *  man kan stadig spørge ham. Det er forskellen på at holde mund og på ikke
+   *  at være der.
+   *
+   *  «Eneste undtagelse er hvis den kan sige noget skægt automatisk der
+   *  understøtter det budskab der i forvejen er på siden» (hans ord) — det er
+   *  hvad `egenBoble` og `egnePills` er til. */
+  tavs?: boolean;
+  /** Fast boble-tekst der vinder over det sti-baserede valg. */
+  egenBoble?: string;
+  /** Faste forslag i stedet for de generelle. Ét pr. linje. */
+  egnePills?: string;
   t: AidanTekster;
   globalsRef: CmsRef | undefined;
   locale: Locale;
@@ -274,12 +297,16 @@ export function AidanWidget({
       data-status-ok={t.statusOk}
       data-status-fejl={t.statusFejl}
       data-tid-besked={t.tidBesked}
-      data-hilsen-side={t.hilsenSide}
-      data-side-titel={sideTitel ?? ""}
+      // Tavs tømmer BEGGE de titel-drevne kilder. At tømme kun den ene ville
+      // lukke halvdelen: sideForslag() ville tie, mens kontekst-hilsnen stadig
+      // sagde sidens navn ved første åbning.
+      data-hilsen-side={tavs ? "" : t.hilsenSide}
+      data-side-titel={tavs ? "" : (sideTitel ?? "")}
+      data-boble-fast={egenBoble ?? ""}
       data-kopier={t.kopier}
       data-kopieret={t.kopieret}
       data-trans-tilbud={t.transTilbud}
-      data-pills={t.pills}
+      data-pills={egnePills ?? t.pills}
       data-hilsen-sider={t.hilsenSider}
     >
       <button

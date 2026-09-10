@@ -103,3 +103,47 @@ test("siden har testid'er så Lens kan finde den", () => {
   expect(r).toContain('data-testid="ikke-fundet-forsiden"');
   expect(r).toContain('data-testid="ikke-fundet-artikler"');
 });
+
+// ── F020.2 — Aidan taler ikke uopfordret om fejlsiden ────────────────────────
+//
+// Christian med skærmbillede: han stod som FIGUR på siden med sin egen replik,
+// mens widgeten samtidig spurgte «Fortæl mig om «Siden findes ikke»».
+// Sidetitel-forslaget er bygget til en artikel.
+//
+// Hans undtagelse er bygget ind frem for væk: han må gerne sige noget der
+// UNDERSTØTTER budskabet. Siden lover at pege dig et sted hen hvor der står
+// noget — det er dét han tilbyder.
+
+test("widgeten kan gøres tavs, og tavs tømmer BEGGE de titel-drevne kilder", () => {
+  const w = read("components/AidanWidget.tsx");
+  // Kun den ene ville lukke halvdelen: forslaget ville tie, mens
+  // kontekst-hilsnen stadig sagde sidens navn ved første åbning.
+  expect(w).toContain('data-side-titel={tavs ? "" : (sideTitel ?? "")}');
+  expect(w).toContain('data-hilsen-side={tavs ? "" : t.hilsenSide}');
+});
+
+test("404-siden slår den til", () => {
+  expect(render404Krop()).toContain("aidanTavs: true");
+});
+
+test("KONTROL: en almindelig side er IKKE tavs", () => {
+  // Uden denne ville en widget der ALTID tier bestå prøven ovenfor — og Aidan
+  // ville holde op med at tale på hele sitet uden at nogen prøve blev rød.
+  const r = routes();
+  const tak = r.slice(r.indexOf("export async function renderThanks"));
+  expect(tak.slice(0, tak.indexOf("\nexport "))).not.toContain("aidanTavs");
+});
+
+test("undtagelsen er bygget ind: han siger noget der passer, i stedet for intet", () => {
+  const k = render404Krop();
+  expect(k).toContain('g("nf_aidanBoble"');
+  expect(k).toContain('g("nf_aidanPills"');
+  // Og teksten kommer fra cms — reserveteksten er nødbremsen.
+  expect(k).toContain("Skal jeg finde en der findes?");
+});
+
+test("en fast boble VINDER over det sti-baserede valg", () => {
+  // Fejlsiden har ingen fast sti at skrive en sti-regel for.
+  const e = read("client/enhance.ts");
+  expect(e).toMatch(/bobleFast[\s\S]{0,200}?return;/);
+});
