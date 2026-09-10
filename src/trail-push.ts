@@ -67,17 +67,39 @@ async function pushSide(collection: string, slug: string, locale: Locale): Promi
 /**
  * Har dette dokument en søskende på primærsproget?
  *
- * `translationGroup` er CMS'ets egen kobling mellem oversættelser (F48) — den
- * samme sitet allerede bruger til at finde sprog-tvillinger i navigationen.
- * Uden en gruppe er dokumentet enestående og sendes.
+ * TO KENDETEGN, fordi ét ikke dækker. Målt 10/9 på alle 64 engelske dokumenter:
+ *
+ *   posts       27 af 27 har translationGroup   → første kendetegn virker
+ *   platforms    0 af 14 har translationGroup   → den ville have spærret INGEN
+ *
+ * Første udgave spurgte kun om dokumentet HAR en `translationGroup`. For posts
+ * er «har et felt» og «har en søskende» det samme; for platforms er de ikke,
+ * og alle 14 engelske flagskibs-sider ville være røget til Trail igen ved næste
+ * redigering. At Trail målte NUL siden filteret gik live betød ikke at det
+ * dækkede dem — kun at ingen af dem var blevet gemt siden.
+ *
+ * Det er husets egen fejlform: en vagt der måler et FELTS tilstedeværelse frem
+ * for den EGENSKAB der betyder noget.
+ *
+ * 1. `translationGroup` — CMS'ets egen kobling (F48), den samme navigationen
+ *    bruger til sprogskiftet.
+ * 2. SLUG-MØNSTRET `en-<slug>` — den konvention de oversatte dokumenter uden
+ *    gruppe faktisk følger. Målt: alle 14 platforms + 19 andre danner par på
+ *    den, og hver eneste dansk modpart findes.
+ *
+ * Kun ét af dem behøver at holde. Et dokument uden begge er enestående og
+ * sendes — en engelsk-KUN side til et andet marked overlever derfor stadig.
  */
 export function harSoeskendePaaPrimaersprog(
   doc: Record<string, unknown> | null,
   locale: Locale,
+  slug?: string,
 ): boolean {
   if (locale === "da") return false; // primærsproget sendes altid
   const tg = doc?.translationGroup ?? (doc?.data as Record<string, unknown> | undefined)?.translationGroup;
-  return typeof tg === "string" && tg.trim() !== "";
+  if (typeof tg === "string" && tg.trim() !== "") return true;
+  const s = (slug ?? (typeof doc?.slug === "string" ? doc.slug : "")).trim();
+  return s.startsWith("en-") && s.length > 3;
 }
 
 /** Planlæg et push. Fyrer-og-glemmer: webhook-svaret må ALDRIG vente på —
@@ -111,7 +133,7 @@ export function planlaegTrailPush(
   // er det ligegyldigt; for salgstekst er det et valg.
   //
   // OPHÆVES ved at fjerne dette kald. Det er en pause, ikke en arkitektur.
-  if (harSoeskendePaaPrimaersprog(doc, locale)) {
+  if (harSoeskendePaaPrimaersprog(doc, locale, slug)) {
     console.log(`[trail-push] springer over — oversættelse med dansk søskende: ${collection}:${slug}`);
     return;
   }
