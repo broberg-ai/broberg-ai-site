@@ -4790,3 +4790,79 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 }
 .aidan-afspiller.fejl { border-color: var(--orange); }
 .aidan-afspiller.fejl .aidan-afspiller-titel { color: var(--orange-text); }
+
+/* ── F020 — siden der ikke findes ──────────────────────────────────────────
+   Erstatter en pladsholder der byggede en side af selve adressen og svarede
+   200. Layoutet er den godkendte mockup: de tre med hver sin replik.        */
+.nf-wrap { padding-top: 64px; padding-bottom: 72px; text-align: center; max-width: 1000px; }
+
+.nf-kode {
+  font-size: clamp(3.2rem, 9vw, 5.4rem);
+  font-weight: 800; line-height: .86; letter-spacing: -.05em; margin: 0 0 .4rem;
+  /* LODRET forløb med vilje. Vandret mellem blå og orange går gennem GRÅT —
+     de er modsatte på farvecirklen og mødes i det umættede midtpunkt, præcis
+     hvor midtercifret står. Lodret giver hvert ciffer hele forløbet. */
+  background: linear-gradient(180deg, var(--blue-light) 0%, var(--blue) 42%, var(--orange) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.nf-under { margin: 0 auto 1.7rem; max-width: 34rem; }
+
+.nf-trio {
+  display: flex; justify-content: center; align-items: flex-end;
+  gap: clamp(.5rem, 2.5vw, 1.8rem); flex-wrap: wrap; margin-bottom: 1.7rem;
+}
+.nf-en { display: flex; flex-direction: column; align-items: center; width: clamp(150px, 25vw, 225px); }
+.nf-en--midt { width: clamp(168px, 28vw, 258px); }
+
+.nf-boble {
+  position: relative; background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 14px; padding: .7rem .85rem; margin-bottom: 1.1rem;
+  font-size: .85rem; line-height: 1.45; min-height: 4.6rem;
+  display: flex; align-items: center; text-align: center;
+}
+.nf-boble::after {
+  content: ""; position: absolute; bottom: -7px; left: 50%;
+  transform: translateX(-50%) rotate(45deg); width: 12px; height: 12px;
+  /* Pilen er en DEL AF BOBLEN, så den bærer boblens egen flade — ikke sidens.
+     Min første udgave brugte --dark2 med en --light-override til lyst tema, og
+     begge dele var forkert: tokens her er SEMANTISKE, ikke bogstavelige.
+     Målt i browseren i lyst tema: --light er #161b22 (mørk, den er
+     forgrundsfarven) og --dark2 er #ffffff. Overriden gjorde altså pilen sort
+     på en hvid boble. --card er boblens fyld i begge temaer. */
+  background: var(--card);
+  border-right: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border);
+}
+
+.nf-scene {
+  width: 100%; aspect-ratio: 1; border-radius: 16px; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.05), transparent 68%);
+  overflow: hidden;
+}
+.nf-figur { width: 100%; height: 100%; display: block; object-fit: contain; }
+/* Airinas SVG har 2048 i viewBox hvor Aidans har 1024, altså dobbelt luft
+   omkring figuren ved samme boksbredde — hun VIRKER mindre. Skaleret så de
+   tre ser lige store ud, hvilket er det øjet dømmer. */
+.nf-figur--airina { transform: scale(1.22); transform-origin: center 60%; }
+.nf-figur--cb { object-fit: cover; object-position: center 22%; border-radius: 16px; }
+
+.nf-navn { margin: .6rem 0 .15rem; font-weight: 600; font-size: .95rem; }
+.nf-rolle {
+  margin: 0; color: var(--muted); font-size: .75rem;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.nf-knapper { justify-content: center; }
+.nf-sti {
+  margin-top: 1.8rem; font-size: .78rem; color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.nf-sti code {
+  background: var(--orange-soft); color: var(--orange-text);
+  padding: .15rem .45rem; border-radius: 4px;
+}
+
+@media (max-width: 560px) {
+  .nf-wrap { padding-top: 48px; }
+  .nf-trio { gap: 1.4rem; }
+  .nf-en, .nf-en--midt { width: min(62vw, 220px); }
+  .nf-boble { min-height: 0; }
+}

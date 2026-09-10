@@ -49,6 +49,7 @@ import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
 import { Cases, Insights, About, cmsAttrs, cmsHtmlAttrs, cmsRichAttrs } from "@/components/sections.tsx";
 import type { CmsRef } from "@/content/types.ts";
 import { AidanWidget, aidanTekster } from "@/components/AidanWidget.tsx";
+import { AIDAN_STILL, AIRINA_STILL } from "@/components/Figur.tsx";
 import { aidanConfigured } from "@/aidan.ts";
 import { Faq } from "@/components/Faq.tsx";
 import { Contact } from "@/components/Contact.tsx";
@@ -67,7 +68,7 @@ const SOLUTION_ICONS: Record<string, string> = {
 
 async function page(
   children: any,
-  meta: { title: string; description: string; locale: Locale; canonical?: string; altHref?: string },
+  meta: { title: string; description: string; locale: Locale; canonical?: string; altHref?: string; noindex?: boolean },
 ) {
   const footerData = await loadFooter(meta.locale);
   const globalsDoc = await loadGlobals(meta.locale);
@@ -1280,6 +1281,117 @@ export async function renderAllNews(locale: Locale): Promise<string> {
 }
 
 // Generic page — placeholder until cms `pages` are wired.
+/** F020 — siden der ikke findes.
+ *
+ *  ÅRSAGEN den erstatter: de to ét-segment-ruter faldt tilbage på
+ *  renderGenericPage(), som ikke slår noget op i cms — den byggede en side af
+ *  SELVE ADRESSEN («/findes-ikke-xyz» → overskriften «findes ikke xyz») og
+ *  svarede 200. Google kunne dermed indeksere en side for hver stavefejl, og
+ *  et opfundet link så ud som en side der bare var tom.
+ *
+ *  Målt før rettelsen: sitemappet har 121 stier, 13 af dem ét-segment. Alle 13
+ *  hentet fra produktion og gennemsøgt for pladsholderens egen sætning — 0
+ *  træf. Ingen rigtig side afhang af den. */
+export async function render404(locale: Locale, sti: string): Promise<string> {
+  const isEn = locale === "en";
+  const { ref, g } = await globalsChrome(locale);
+
+  const de = [
+    {
+      navn: "Airina",
+      rolle: g("nf_airinaRolle", isEn ? "Keeps track" : "Holder styr på det"),
+      replik: g("nf_airinaReplik", isEn
+        ? "«I have checked every path on this site. It is not among them.»"
+        : "«Jeg har tjekket alle sitets stier. Den er ikke iblandt dem.»"),
+      felt: "airina",
+      billede: AIRINA_STILL,
+      w: 2048,
+    },
+    {
+      navn: "Aidan",
+      rolle: g("nf_aidanRolle", isEn ? "Host" : "Vært"),
+      replik: g("nf_aidanReplik", isEn
+        ? "«I can answer almost anything on this site. Just not where that page went.»"
+        : "«Jeg kan svare på næsten alt her på sitet. Bare ikke hvor den side blev af.»"),
+      felt: "aidan",
+      billede: AIDAN_STILL,
+      w: 1024,
+    },
+    {
+      navn: "Christian",
+      rolle: g("nf_cbRolle", isEn ? "Wrote the brief" : "Skrev bestillingen"),
+      replik: g("nf_cbReplik", isEn
+        ? "«I do not write the code. I orchestrate our AI agents.»"
+        : "«Jeg skriver ikke koden. Jeg orkestrerer vores AI agenter.»"),
+      felt: "cb",
+      billede: "/media/cb.webp",
+      w: 600,
+    },
+  ];
+
+  return await page(
+    <section id="top">
+      <div class="wrap nf-wrap">
+        <p class="nf-kode" aria-hidden="true">404</p>
+        <h1 {...cmsAttrs(ref, "nf_overskrift")}>
+          {g("nf_overskrift", isEn
+            ? "That page does not exist. And none of us will own up to it."
+            : "Den side findes ikke. Og ingen af os vil kendes ved den.")}
+        </h1>
+        <p class="lead nf-under" {...cmsAttrs(ref, "nf_under")}>
+          {g("nf_under", isEn
+            ? "All three of us looked. There was nothing. But we can point you somewhere there actually is."
+            : "Vi har kigget alle tre. Der var ingenting. Men vi kan pege dig et sted hen hvor der faktisk står noget.")}
+        </p>
+
+        <div class="nf-trio" data-testid="ikke-fundet-trio">
+          {de.map((p) => (
+            <div class={`nf-en${p.navn === "Aidan" ? " nf-en--midt" : ""}`} key={p.navn}>
+              <div class="nf-boble" {...cmsAttrs(ref, `nf_${p.felt}Replik`)}>{p.replik}</div>
+              <div class="nf-scene">
+                <img
+                  class={`nf-figur nf-figur--${p.felt}`}
+                  src={p.billede}
+                  alt=""
+                  width={p.w}
+                  height={p.w}
+                  loading="eager"
+                />
+              </div>
+              <p class="nf-navn">{p.navn}</p>
+              <p class="nf-rolle" {...cmsAttrs(ref, `nf_${p.felt}Rolle`)}>{p.rolle}</p>
+            </div>
+          ))}
+        </div>
+
+        <div class="cta-row nf-knapper">
+          <a class="btn" href={withLocale(locale, "/")} data-testid="ikke-fundet-forsiden">
+            {g("nf_knapForsiden", isEn ? "To the homepage" : "Til forsiden")} <span class="ar">→</span>
+          </a>
+          <a class="btn btn-ghost" href={withLocale(locale, isEn ? "/news" : "/nyheder")} data-testid="ikke-fundet-artikler">
+            {g("nf_knapArtikler", isEn ? "See the articles" : "Se artiklerne")} <span class="ar">→</span>
+          </a>
+        </div>
+
+        <p class="nf-sti">
+          {g("nf_duBadOm", isEn ? "You asked for" : "Du bad om")} <code>{sti}</code>
+        </p>
+      </div>
+    </section>,
+    {
+      title: isEn ? "Page not found — broberg.ai" : "Siden findes ikke — broberg.ai",
+      description: isEn
+        ? "That page does not exist on broberg.ai."
+        : "Den side findes ikke på broberg.ai.",
+      locale,
+      // En fejlside må ALDRIG indekseres. Uden den ville rettelsen kun flytte
+      // problemet: statuskoden ville være rigtig, og Google ville stadig have
+      // en side pr. stavefejl at kigge på.
+      noindex: true,
+    },
+  );
+}
+
 export async function renderGenericPage(locale: Locale, slug: string): Promise<string> {
   return await page(
     <section>

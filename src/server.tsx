@@ -23,7 +23,7 @@ import {
   renderBlogIndex,
   renderTagPage,
   renderTagCloud,
-  renderGenericPage,
+  render404,
   renderSolutions,
   renderSolutionDetail,
   renderThanks,
@@ -264,12 +264,12 @@ app.get("/en/universe", async () => html(await renderUniverset("en")));
 app.get(`/${flagshipsSegment("da")}`, async () => html(await renderFlagships("da")));
 app.get(`/${flagshipsSegment("da")}/:slug`, async (c) => {
   const r = await renderFlagshipDetail("da", c.req.param("slug"));
-  return r ? html(r) : notFound(await renderGenericPage("da", "ikke-fundet"));
+  return r ? html(r) : notFound(await render404("da", c.req.path));
 });
 app.get(`/en/${flagshipsSegment("en")}`, async () => html(await renderFlagships("en")));
 app.get(`/en/${flagshipsSegment("en")}/:slug`, async (c) => {
   const r = await renderFlagshipDetail("en", c.req.param("slug"));
-  return r ? html(r) : notFound(await renderGenericPage("en", "not-found"));
+  return r ? html(r) : notFound(await render404("en", c.req.path));
 });
 
 // F012 — podcast (samme segment på begge sprog; ordet oversættes ikke).
@@ -282,11 +282,11 @@ app.get("/tags", async () => html(await renderTagCloud("da")));
 app.get("/en/tags", async () => html(await renderTagCloud("en")));
 app.get("/tags/:tag", async (c) => {
   const r = await renderTagPage("da", c.req.param("tag"));
-  return r ? html(r) : notFound(await renderGenericPage("da", "ikke-fundet"));
+  return r ? html(r) : notFound(await render404("da", c.req.path));
 });
 app.get("/en/tags/:tag", async (c) => {
   const r = await renderTagPage("en", c.req.param("tag"));
-  return r ? html(r) : notFound(await renderGenericPage("en", "not-found"));
+  return r ? html(r) : notFound(await render404("en", c.req.path));
 });
 
 // Løsninger (F156.2) — /losninger + /losninger/:slug (DA), /en/solutions +
@@ -296,12 +296,12 @@ app.get("/en/tags/:tag", async (c) => {
 app.get("/losninger", async () => html(await renderSolutions("da")));
 app.get("/losninger/:slug", async (c) => {
   const r = await renderSolutionDetail("da", c.req.param("slug"));
-  return r ? html(r) : notFound(await renderGenericPage("da", "ikke-fundet"));
+  return r ? html(r) : notFound(await render404("da", c.req.path));
 });
 app.get("/en/solutions", async () => html(await renderSolutions("en")));
 app.get("/en/solutions/:slug", async (c) => {
   const r = await renderSolutionDetail("en", c.req.param("slug"));
-  return r ? html(r) : notFound(await renderGenericPage("en", "not-found"));
+  return r ? html(r) : notFound(await render404("en", c.req.path));
 });
 
 // "Tak" (F156.7) — dedicated post-submit confirmation page the contact form
@@ -334,7 +334,7 @@ app.get("/en/:category/:slug", async (c) => {
   const canon = await postCanonicalCategory("en", slug);
   if (canon && canon !== category) return c.redirect(withLocale("en", `/${canon}/${slug}`), 301);
   const r = await renderBlogPost("en", category, slug);
-  return r ? html(r) : notFound(await renderGenericPage("en", "not-found"));
+  return r ? html(r) : notFound(await render404("en", c.req.path));
 });
 
 // Single segment EN: a category slug → its blog index; otherwise a generic
@@ -344,7 +344,9 @@ app.get("/en/:category/:slug", async (c) => {
 app.get("/en/:slug", async (c) => {
   const seg = c.req.param("slug");
   const idx = await renderBlogIndex("en", seg);
-  return html(idx ?? await renderGenericPage("en", seg));
+  // F020 — her stod `?? renderGenericPage(...)`, som byggede en side af selve
+  // adressen og svarede 200. En sti der ikke findes siger det nu.
+  return idx ? html(idx) : notFound(await render404("en", c.req.path));
 });
 
 app.get("/:category/:slug", async (c) => {
@@ -354,14 +356,14 @@ app.get("/:category/:slug", async (c) => {
   const canon = await postCanonicalCategory("da", slug);
   if (canon && canon !== category) return c.redirect(withLocale("da", `/${canon}/${slug}`), 301);
   const r = await renderBlogPost("da", category, slug);
-  return r ? html(r) : notFound(await renderGenericPage("da", "ikke-fundet"));
+  return r ? html(r) : notFound(await render404("da", c.req.path));
 });
 
 // Single segment DA: a category slug → its blog index; otherwise a generic page.
 app.get("/:slug", async (c) => {
   const seg = c.req.param("slug");
   const idx = await renderBlogIndex("da", seg);
-  return html(idx ?? await renderGenericPage("da", seg));
+  return idx ? html(idx) : notFound(await render404("da", c.req.path));
 });
 
 // ── Boot ──────────────────────────────────────────────────────────────────────

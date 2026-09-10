@@ -23,6 +23,11 @@ export interface PageMeta {
       — used by /admin, whose panel is a fixed dark back-office surface, so the
       shared header can't render light over it. */
   forceTheme?: "dark" | "light";
+  /** F020 — hold siden ude af søgemaskinerne. En fejlside SKAL bære den:
+      uden den ville en rigtig 404 kun flytte problemet halvvejs — statuskoden
+      ville være rigtig, og Google ville stadig have en side pr. stavefejl at
+      kigge på. */
+  noindex?: boolean;
 }
 
 export function renderPage(children: ComponentChildren, meta: PageMeta, assets: Assets): string {
@@ -41,6 +46,7 @@ export function renderPage(children: ComponentChildren, meta: PageMeta, assets: 
         <meta name="theme-color" content="#1c2027" />
         <title>{meta.title}</title>
         <meta name="description" content={meta.description} />
+        {meta.noindex ? <meta name="robots" content="noindex, follow" /> : null}
         <meta property="og:title" content={meta.title} />
         <meta property="og:description" content={meta.description} />
         <meta property="og:type" content="website" />
