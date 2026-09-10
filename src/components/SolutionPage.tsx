@@ -8,6 +8,7 @@ import { FeaturedEmblem } from "@/components/Featured.tsx";
 import type { Locale } from "@/config.ts";
 import type { CmsRef } from "@/content/types.ts";
 import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
+import { Faq } from "@/components/Faq.tsx";
 
 export interface SolutionLabels {
   losningerPrefix: string;
@@ -42,6 +43,24 @@ export interface SolutionData {
   proofNote?: string;
   ctaHeadingHtml: string;
   ctaLead: string;
+  /* F022 — tre VALGFRIE blokke, tilføjet for Agentic Engineering-siden.
+     De er valgfrie med vilje: de fire eksisterende løsningssider har dem ikke,
+     og en side uden feltet skal rendere BYTE-IDENTISK med før. Det er dét
+     solution-page-valgfri.test.ts måler, ikke at de nye blokke findes. */
+  stats?: [string, string][];        // tal, forklaring — genbruger .stat-card
+  workshop?: SolutionWorkshop;
+  faqEyebrow?: string;
+  faqHeading?: string;
+  faq?: [string, string][];          // genbruger <Faq> fra salgslandingen
+}
+
+export interface SolutionWorkshop {
+  eyebrow: string;
+  heading: string;
+  lead: string;
+  bullets: string[];
+  ctaLabel: string;
+  ctaHref: string;
 }
 
 const TYPE_LABEL: Record<ProofType, { da: string; en: string }> = {
@@ -124,6 +143,27 @@ export function SolutionPage({
         </div>
       </section>
 
+      {data.stats?.length ? (
+        <section style="padding-top:0">
+          <div class="wrap">
+            <div class="stat-row" data-testid="solution-stats">
+              {data.stats.map(([n, cap], i) => {
+                /* Samme regel som flagskibenes Stats: et ORD eller en frase kan
+                   ikke bære 38 px på én linje, et kort tal kan. Kopieret frem for
+                   omskrevet, så de to steder ser ens ud. */
+                const word = n.length > 5 || /\s/.test(n);
+                return (
+                  <div class="card stat-card" key={i}>
+                    <div class={word ? "stat-num stat-num-word" : "stat-num"} {...cmsAttrs(cmsRef, `stats.${i}.0`)}>{n}</div>
+                    <div class="stat-cap" {...cmsAttrs(cmsRef, `stats.${i}.1`)}>{cap}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section style="background:var(--dark2)">
         <div class="wrap" style="max-width:720px">
           <h2 style="font-size:clamp(26px,3.4vw,38px)" {...cmsHtmlAttrs(cmsRef, "problemHeading")} dangerouslySetInnerHTML={{ __html: data.problemHeading }} />
@@ -188,6 +228,32 @@ export function SolutionPage({
           ) : null}
         </div>
       </section>
+
+      {data.workshop ? (
+        <section id="workshop" style="background:var(--dark2)">
+          <div class="wrap" style="max-width:760px">
+            <div class="cta-final" data-testid="solution-workshop">
+              <div class="eyebrow" style="display:inline-flex" {...cmsAttrs(cmsRef, "workshop.eyebrow")}>
+                {data.workshop.eyebrow}
+              </div>
+              <h2 {...cmsHtmlAttrs(cmsRef, "workshop.heading")} dangerouslySetInnerHTML={{ __html: data.workshop.heading }} />
+              <p class="lead" style="margin:18px auto 22px" {...cmsHtmlAttrs(cmsRef, "workshop.lead")} dangerouslySetInnerHTML={{ __html: data.workshop.lead }} />
+              <div class="flowchips" style="justify-content:center;margin-bottom:26px">
+                {data.workshop.bullets.map((b, i) => (
+                  <span class="flowchip" key={i} {...cmsAttrs(cmsRef, `workshop.bullets.${i}`)}>{b}</span>
+                ))}
+              </div>
+              <a class="btn" href={data.workshop.ctaHref} data-testid="solution-workshop-cta">
+                <span {...cmsAttrs(cmsRef, "workshop.ctaLabel")}>{data.workshop.ctaLabel}</span> <span class="ar">→</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {data.faq?.length ? (
+        <Faq items={data.faq} locale={locale} cmsRef={cmsRef} eyebrow={data.faqEyebrow} heading={data.faqHeading} />
+      ) : null}
 
       <section style="background:var(--dark2)">
         <div class="wrap">

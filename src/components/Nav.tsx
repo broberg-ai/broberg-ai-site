@@ -30,6 +30,8 @@ const COPY = {
     platformeSub: "Skræddersyet — det vi selv bygger på",
     aiIntegration: "AI Integration",
     aiIntegrationSub: "Rådgivning + integration i det I har",
+    agenticEngineering: "Agentic Engineering",
+    agenticEngineeringSub: "Sådan bygger vi — og hvordan I lærer det",
     consulting: "Consulting",
     consultingSub: "Rådgivning fra en der selv bygger",
     sadanByggerViDet: "Sådan bygger vi det",
@@ -65,6 +67,8 @@ const COPY = {
     platformeSub: "Custom-built — what we run on ourselves",
     aiIntegration: "AI Integration",
     aiIntegrationSub: "Advisory + integration into what you have",
+    agenticEngineering: "Agentic Engineering",
+    agenticEngineeringSub: "How we build — and how you learn it",
     consulting: "Consulting",
     consultingSub: "Advice from someone who builds it too",
     sadanByggerViDet: "How we build it",
@@ -190,6 +194,10 @@ export function Nav({
               <a href={`/${solutionsSeg}/ai-integration`} data-testid="dd-ai-integration">
                 <b {...g("aiIntegration")}>{t.aiIntegration}</b>
                 <span {...g("aiIntegrationSub")}>{t.aiIntegrationSub}</span>
+              </a>
+              <a href={`/${solutionsSeg}/agentic-engineering`} data-testid="dd-agentic-engineering">
+                <b {...g("agenticEngineering")}>{t.agenticEngineering}</b>
+                <span {...g("agenticEngineeringSub")}>{t.agenticEngineeringSub}</span>
               </a>
               {/* Christian 8/9: consulting skal med under Løsninger. Siden er en
                   FLAGSKIBS-node og ikke en /losninger/-side, så stien bygges af

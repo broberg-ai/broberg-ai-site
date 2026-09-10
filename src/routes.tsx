@@ -788,13 +788,25 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
   const bookLabel = (typeof globalsData.bookingCtaLabel === "string" && globalsData.bookingCtaLabel) || (locale === "en" ? "Book a meeting" : "Book et møde");
   const gv = (field: string, fallback: string): string => (typeof globalsData[field] === "string" && (globalsData[field] as string)) || fallback;
   const isEnSol = locale === "en";
+  // Overskrifterne over trin, funktioner og bevis er FÆLLES for løsningssiderne
+  // og bor i globals — ét sted at rette «Fra møde til live» for alle fire.
+  //
+  // F022: en side må overskrive dem for SIG SELV. Agentic Engineering handler
+  // ikke om «Kernefunktioner» men om principper, og uden en overskrivning ville
+  // valget stå mellem en forkert overskrift på den nye side eller en ændring der
+  // ramte de fire andre. Feltet er tomt på alle eksisterende dokumenter, så
+  // gv()-værdien er stadig den der vises overalt hvor ingen har bedt om andet.
+  const dv = (field: string, fallback: string): string => {
+    const eget = (doc.data as Record<string, unknown>)?.[field];
+    return typeof eget === "string" && eget ? eget : fallback;
+  };
   const labels = {
     losningerPrefix: gv("solLosningerPrefix", isEnSol ? "Solutions" : "Løsninger"),
-    howEyebrow: gv("solHowEyebrow", isEnSol ? "How it works" : "Sådan virker det"),
-    howHeading: gv("solHowHeading", isEnSol ? "From meeting to live" : "Fra møde til live"),
-    featuresEyebrow: gv("solFeaturesEyebrow", isEnSol ? "Core features" : "Kernefunktioner"),
-    featuresHeading: gv("solFeaturesHeading", isEnSol ? "Built into the platform." : "Bygget ind i platformen."),
-    proofEyebrow: gv("solProofEyebrow", isEnSol ? "The proof" : "Beviset"),
+    howEyebrow: dv("howEyebrow", gv("solHowEyebrow", isEnSol ? "How it works" : "Sådan virker det")),
+    howHeading: dv("howHeading", gv("solHowHeading", isEnSol ? "From meeting to live" : "Fra møde til live")),
+    featuresEyebrow: dv("featuresEyebrow", gv("solFeaturesEyebrow", isEnSol ? "Core features" : "Kernefunktioner")),
+    featuresHeading: dv("featuresHeading", gv("solFeaturesHeading", isEnSol ? "Built into the platform." : "Bygget ind i platformen.")),
+    proofEyebrow: dv("proofEyebrow", gv("solProofEyebrow", isEnSol ? "The proof" : "Beviset")),
   };
 
   return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} bookLabel={bookLabel} globalsRef={globalsRef} labels={labels} featured={(doc.data as Record<string, unknown>)?.featured === true} featuredEmblem={gv("featuredEmblem", "★ Featured")} />, {
