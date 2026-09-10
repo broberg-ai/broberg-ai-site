@@ -14,7 +14,8 @@
     "gate:testids": "cms check-testids --dir src --baseline .cms-testid-baseline",
     "gate:editable": "bun scripts/gate-editable.mjs",
     "gate:coverage": "bun scripts/gate-coverage.mjs",
-    "gate:cms-text": "bun scripts/gate-cms-text.mjs"
+    "gate:cms-text": "bun scripts/gate-cms-text.mjs",
+    "gate:featured": "bun scripts/gate-featured.mjs"
   },
   "dependencies": {
     "@broberg/ai-sdk": "0.39.0",

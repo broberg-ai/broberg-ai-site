@@ -69,6 +69,51 @@ function FeaturedVisual({ item }: { item: FeaturedItem }) {
   return <div class="f-illu"><Illustration k={pickNewsIllustration(item.slug)} /></div>;
 }
 
+/* F008.10 — hvor mange små kort på FORSIDEN.
+ *
+ * Christian 10/9: «optimalt skal det være 1 stor 2 små, hvis den store har en
+ * STOR Featured intro som "Byg jeres BI-dashboard fra bunden — hurtigere end
+ * at tæmme Power BI" SÅ må du vise 3 små eller altid kun 2 små.»
+ *
+ * DET ER STAKKEN DER GØR SEKTIONEN LANG, ikke den store boks. Målt på
+ * produktion 10/9, 1440px bred, med stræk slået fra så de naturlige højder
+ * kunne læses:
+ *
+ *   tegn i titlen   den store boks' NATURLIGE højde
+ *      67            609 px   «Byg jeres BI-dashboard fra bunden — …»
+ *      38            418 px   «Aidan — assistenten der voksede op her»
+ *      37            393 px   «Otte uger til en hel sundhedsplatform»
+ *      23            363 px   «Seletøjet, ikke agenten»
+ *       8            359 px   «helpdesk»
+ *
+ *   et lille kort er 215 px naturligt, mellemrum 16 px:
+ *      2 kort = 446 px      3 kort = 677 px      4 kort = 907 px
+ *
+ * Fladen tager den HØJESTE af de to spalter. Så fire kort tvang en 359 px boks
+ * op i 907 — det Christian så. To kort giver 446, altså det halve.
+ *
+ * Tre kort koster 677 px og er kun rimeligt når den store boks selv er høj:
+ * BI-titlen på 67 tegn er den eneste af de seks der er det (609 px), og det er
+ * netop den han peger på. Grænsen på 55 tegn ligger i det tomme spænd mellem
+ * de to grupper — nærmeste målinger er 38 og 67 — så den er ikke sat på en
+ * kant hvor et enkelt ord ville vippe den.
+ *
+ * Tegn og ikke pixels, fordi serveren ikke kan måle en browser. Porten
+ * scripts/gate-featured.mjs måler den FÆRDIGE side og fanger det hvis
+ * sammenhængen mellem de to skrider.
+ */
+export const FEATURED_SMAA_STANDARD = 2;
+export const FEATURED_SMAA_LANG = 3;
+export const FEATURED_LANG_TITEL_TEGN = 55;
+
+/** Antal små kort ved siden af den store — 2, eller 3 når den stores egen
+ *  overskrift er lang nok til at boksen bærer højden selv. */
+export function antalSmaa(storTitel: string): number {
+  return stripHtml(storTitel ?? "").trim().length >= FEATURED_LANG_TITEL_TEGN
+    ? FEATURED_SMAA_LANG
+    : FEATURED_SMAA_STANDARD;
+}
+
 export function FeaturedBoks({
   items,
   eyebrow,
@@ -88,10 +133,21 @@ export function FeaturedBoks({
 }) {
   if (!items.length) return null;
   const stor = items[0];
-  // ALLE resterende, ikke de to første. Loftet på 2 var en aflæsning af
-  // mockup'ens tre kasser, ikke et krav — ejeren taggede 4 og så kun 3
-  // (målt 6/9). Han styrer selv hvor mange der er featured; boksen viser dem.
-  const smaa = items.slice(1);
+  // F008.10 — Christian 9/9, med et skærmbillede af en forside med 1 stor + 4
+  // små: «Forsiden sektionen må aldrig vise så mange features … Der skal MAX
+  // være 1 stor og 3 små.»
+  //
+  // Her stod `items.slice(1)` — ALLE resterende — og kommentaren begrundede
+  // det med at loftet på 2 var «en aflæsning af mockup'ens tre kasser, ikke et
+  // krav». Det var rigtigt dengang der var tre dokumenter. Med seks vokser
+  // sektionen ubemærket hver gang nogen sætter en stjerne: ingen ændring at
+  // godkende, ingen commit, ingen der ser det ske. Ét ekstra kort ser ikke
+  // forkert ud — det er først ved fem-seks at forsiden er blevet en liste.
+  //
+  // Loftet gælder KUN forsiden. Listesiden (/featured) viser stadig alle;
+  // det er dét «Se alle featured»-linket nedenfor er til.
+  const maks = antalSmaa(stor.title);
+  const smaa = items.slice(1, 1 + maks);
   const storRef = refOf(stor);
   return (
     <section class="f-sektion" data-testid="featured-boks">
@@ -127,7 +183,7 @@ export function FeaturedBoks({
             </div>
           ) : null}
         </div>
-        {items.length > 2 ? (
+        {items.length > 1 + maks ? (
           <div class="f-flere">
             <a href={alleHref} data-testid="featured-alle" {...cmsAttrs(globalsRef, "featuredAlle")}>
               {alle} →
