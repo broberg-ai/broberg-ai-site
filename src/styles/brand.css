@@ -59,6 +59,13 @@
   --cms-farve-o: var(--orange-text);
   --cms-farve-o-navn: "Brandfarve";
   --orange-soft: rgba(243, 82, 44, 0.12);
+  /* F019 — oplæseren. Sætningen får en svag flade, ordet en kraftig: to lag,
+     fordi det er to lag på Mediums egen. Ordets par er MÅLT, ikke valgt efter
+     udseende — #04222f på #f3522c giver 4,75:1, og vi dumpede 4,5-kravet én
+     gang i forvejen (F013.3, hvid tekst gav 3,45:1). */
+  --oplaes-saetning-flade: rgba(255, 255, 255, 0.1);
+  --oplaes-ord-flade: #f3522c;
+  --oplaes-ord-tekst: #04222f;
   /* Topbjælkens højde — ÉN kilde. Båndet klæber under den. */
   --header-h: 65px;
   --fd: "Cormorant Garamond", Georgia, serif;
@@ -88,6 +95,10 @@
   --orange: #ec4e27;
   --orange-text: #c93a16;
   --orange-soft: rgba(236, 78, 39, 0.1);
+  /* Lyst tema: samme to lag, egne værdier. Målt 5,20:1. */
+  --oplaes-saetning-flade: rgba(0, 114, 168, 0.12);
+  --oplaes-ord-flade: #ec4e27;
+  --oplaes-ord-tekst: #1a0b06;
 }
 [data-theme="light"] body::after {
   background: radial-gradient(ellipse 50% 40% at 82% 6%, rgba(0, 150, 219, 0.06), transparent 60%),
@@ -4912,4 +4923,86 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   .nf-trio { gap: 1.4rem; }
   .nf-en, .nf-en--midt { width: min(62vw, 220px); }
   .nf-boble { min-height: 0; }
+}
+
+
+/* ── F019 — oplæseren: «Lyt» i toppen, og teksten der lyser med ──────────────
+   Markeringen males med CSS Custom Highlight API. Den rører ikke DOM'en, og
+   det er grunden til at den er valgt: de samme afsnit er inline-redigerbare,
+   så et indsat <mark> ville kunne blive gemt ind i selve indholdet.
+   Kender browseren ikke ::highlight, sker der ingenting — lyden spiller, og
+   teksten står stille. */
+::highlight(oplaes-saetning) {
+  background-color: var(--oplaes-saetning-flade);
+}
+::highlight(oplaes-ord) {
+  background-color: var(--oplaes-ord-flade);
+  color: var(--oplaes-ord-tekst);
+}
+
+.lyt { margin: 14px 0 0; }
+.lyt-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--light);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.lyt-start:hover { border-color: var(--blue); }
+.lyt-start:active { transform: translateY(1px); }
+.lyt-start:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.lyt-start[disabled] { opacity: 0.6; cursor: default; }
+.lyt-start .lyt-ikon { color: var(--orange-text); font-size: 0.7rem; line-height: 1; }
+.lyt-start.henter .lyt-ikon { animation: lyt-puls 1.1s ease-in-out infinite; }
+.lyt-start.fejl { border-color: var(--orange); }
+@keyframes lyt-puls { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Den flydende afspiller. Nederst til højre, som på forlægget — men over
+   Aidan-knappen på smalle skærme frem for oven i den. */
+.lyt-afspiller {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: auto 120px auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: var(--dark2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.lyt-afspil, .lyt-luk {
+  border: none;
+  background: transparent;
+  color: var(--light);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 6px;
+  border-radius: 8px;
+}
+.lyt-afspil { background: var(--blue); color: var(--paa-blaa); width: 32px; height: 32px; border-radius: 50%; }
+.lyt-afspil:hover, .lyt-luk:hover { filter: brightness(1.15); }
+.lyt-afspil:active, .lyt-luk:active { transform: translateY(1px); }
+.lyt-afspil:focus-visible, .lyt-luk:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.lyt-soejle {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--card-border);
+  cursor: pointer;
+}
+.lyt-soejle i { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--orange-text); }
+.lyt-tid { font-size: 0.7rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 560px) {
+  .lyt-afspiller { left: 18px; right: 18px; bottom: 84px; grid-template-columns: auto 1fr auto auto; }
 }

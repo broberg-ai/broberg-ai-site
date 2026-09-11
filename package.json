@@ -34,6 +34,7 @@
     "@tailwindcss/vite": "^4.0.0",
     "@types/bun": "^1.1.14",
     "@webhouse/cms-cli": "^0.4.27",
+    "happy-dom": "^20.14.3",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.6.0",
     "vite": "^6.0.7"

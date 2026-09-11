@@ -19,6 +19,7 @@ import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import type { Ord } from "@/markering.ts";
 import type { Context } from "hono";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import type { Locale } from "@/config.ts";
@@ -320,12 +321,19 @@ async function talSammenhaengende(tale: string, stemme: string, locale: Locale):
   return samlet;
 }
 
-/** Delt af /laes (afspilning) og /send-lyd (mail, F007.9): sti → lydfil.
- *  Server-autoritativ sti-validering + cache pr. (indhold, stemme). */
-export async function hentLyd(
+/**
+ * F019.6 — det ÉNE sted en sti bliver til tale, stemme og filnavn.
+ *
+ * Både lyden og dens tidskoder skal ramme NØJAGTIG samme cache-nøgle, ellers
+ * kan de to komme i utakt uden at nogen kan se det: markeringen ville følge en
+ * ældre udgave af teksten end den der blev læst højt. To beregninger af samme
+ * hash er præcis den dublet der er rigtig den dag den skrives og forkert den
+ * dag den ene rettes.
+ */
+async function talenFor(
   sti: string,
   persona: Persona,
-): Promise<{ audio: Uint8Array; mimeType: string; titel: string }> {
+): Promise<{ tale: string; titel: string; fil: string; stemme: string; locale: Locale }> {
   const post = (await indsigtsStier()).get(sti);
   if (!post) throw new LydFejl(404, "ikke_en_indsigt");
   // KILDEN ER ARTIKLENS EGET CMS-FELT, ikke sidens HTML (Christians GO 4/9):
@@ -347,6 +355,16 @@ export async function hentLyd(
   const stemme = STEMMER[persona][locale];
   await mkdir(CACHE_DIR, { recursive: true });
   const fil = path.join(CACHE_DIR, `${laesCacheNoegle(tale, `${stemme}:${ordbogNoegle(locale)}`)}.mp3`);
+  return { tale, titel, fil, stemme, locale };
+}
+
+/** Delt af /laes (afspilning) og /send-lyd (mail, F007.9): sti → lydfil.
+ *  Server-autoritativ sti-validering + cache pr. (indhold, stemme). */
+export async function hentLyd(
+  sti: string,
+  persona: Persona,
+): Promise<{ audio: Uint8Array; mimeType: string; titel: string }> {
+  const { tale, titel, fil, stemme, locale } = await talenFor(sti, persona);
   try {
     return { audio: new Uint8Array(await readFile(fil)), mimeType: "audio/mpeg", titel };
   } catch {
@@ -356,6 +374,48 @@ export async function hentLyd(
   await writeFile(fil, audio).catch(() => {}); // en fejlet cache-skrivning må aldrig koste svaret
   console.log(`[aidan-laes] genereret ${audio.byteLength} bytes (${stemme}) for ${sti}`);
   return { audio, mimeType: "audio/mpeg", titel };
+}
+
+/**
+ * F019.6 — ord-tidskoderne, hvis de findes.
+ *
+ * De ligger som `<samme hash>.word.json` ved siden af lydfilen, så de to deler
+ * livscyklus: rettes artiklen, peger begge nøgler et nyt sted hen, og der er
+ * ingen tilstand hvor den ene er ny og den anden gammel.
+ *
+ * I DAG SVARER DEN ALTID null, og det er ikke en fejl: ord-tidskoderne kræver
+ * Azures batch-rute, som kræver custom subdomain på Speech-resourcen — en
+ * infrastruktur-beslutning der ligger hos Christian. Oplæseren er bygget til
+ * at virke uden dem (lyd uden markering) og lyser op af sig selv den dag
+ * filen findes. Det er billigere end en knap der venter på en beslutning.
+ */
+export async function tidskoderFor(
+  sti: string,
+  persona: Persona,
+): Promise<{ tale: string; ord: Ord[] } | null> {
+  const { tale, fil } = await talenFor(sti, persona);
+  try {
+    const raa = JSON.parse(await readFile(fil.replace(/\.mp3$/, ".word.json"), "utf-8"));
+    const ord = (Array.isArray(raa) ? raa : raa?.ord) as Ord[] | undefined;
+    if (!Array.isArray(ord) || ord.length === 0) return null;
+    return { tale, ord };
+  } catch {
+    return null; // ingen tidskoder endnu — oplæseren spiller uden markering
+  }
+}
+
+export async function handleAidanTidskoder(c: Context): Promise<Response> {
+  if (rateLimited(c)) return c.json({ error: "rate_limited" }, 429);
+  const sti = String(c.req.query("sti") ?? "");
+  const persona: Persona = c.req.query("persona") === "airina" ? "airina" : "aidan";
+  try {
+    const t = await tidskoderFor(sti, persona);
+    if (!t) return c.json({ error: "ingen_tidskoder" }, 404);
+    return c.json(t, 200, { "Cache-Control": "private, max-age=86400" });
+  } catch (e) {
+    if (e instanceof LydFejl) return c.json({ error: e.message }, e.status);
+    throw e;
+  }
 }
 
 export async function handleAidanLaes(c: Context): Promise<Response> {

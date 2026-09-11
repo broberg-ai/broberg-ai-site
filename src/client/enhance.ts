@@ -19,6 +19,7 @@ import {
 import { noterSide, laesRegler, vaelgPills, sideForslag, harEksaktRegel } from "@/client/aidan-spor.ts";
 import { listSamtaler, hentSamtale, gemAktiv, sletSamtale, aktivId, saetAktiv, relativTid, erNaerBunden, type Tur } from "@/client/aidan-samtaler.ts";
 import { initInlineEdit, getConnectedToken, buildConnectUrl, disconnect } from "@broberg/cms-inline-edit";
+import { lavMarkoer, lavRulning, tid as lytTid, type Markoer, type Tidskoder } from "@/client/oplaeser.ts";
 
 // F157 — cms-admin connection shared by inline-edit + the /admin panel.
 const CMS = { cmsBaseUrl: "https://webhouse.app", siteId: "broberg-ai" };
@@ -1828,6 +1829,193 @@ function featuredBaand() {
   }, 6000);
 }
 
+/* F019.6 — oplæseren på artiklen: «Lyt» i toppen, en flydende afspiller, og
+ * teksten der lyser med.
+ *
+ * TRE TING DER ER VALGT, ikke faldet ud:
+ *
+ * · KNAPPEN ER SKJULT INDTIL HER. Markuppen sender den med `hidden`, fordi
+ *   oplæsningen er javascript hele vejen. En knap der ikke kan gøre noget er
+ *   værre end ingen knap.
+ * · TIDSKODERNE ER VALGFRIE. De findes ikke i dag (Azures batch-rute kræver en
+ *   infrastruktur-beslutning), så hentningen af dem må aldrig kunne vælte
+ *   afspilningen: fejler den, spiller lyden uden markering.
+ * · RULNINGEN SLIPPER når læseren selv ruller. En side der river sig løs under
+ *   fingeren er værre end ingen markering.
+ */
+function lytOplaeser() {
+  const rod = document.querySelector<HTMLElement>('[data-testid="lyt"]');
+  const krop = document.querySelector<HTMLElement>(".post-body");
+  const knap = rod?.querySelector<HTMLButtonElement>('[data-testid="lyt-knap"]');
+  if (!rod || !krop || !knap) return;
+  const d = rod.dataset;
+  rod.hidden = false;
+
+  const tekst = knap.querySelector<HTMLElement>("span:not(.lyt-ikon)")!;
+  const startTekst = tekst.textContent ?? "";
+  let åben = false;
+
+  const nulstilKnap = () => {
+    knap.disabled = false;
+    tekst.textContent = startTekst;
+    knap.classList.remove("henter", "fejl");
+  };
+
+  knap.addEventListener("click", () => {
+    if (åben) return;
+    åben = true;
+    knap.disabled = true;
+    knap.classList.add("henter");
+    tekst.textContent = d.henter ?? "";
+    void start().catch(() => {
+      åben = false;
+      knap.disabled = false;
+      knap.classList.remove("henter");
+      knap.classList.add("fejl");
+      tekst.textContent = d.fejl ?? "";
+    });
+  });
+
+  async function start() {
+    const sti = location.pathname;
+    // TIDSGRÆNSE, som på Aidans afspiller: en oplæsning laves første gang på op
+    // mod 30 sekunder, og en hentning uden frist ender i en knap der henter for
+    // evigt.
+    const ctl = new AbortController();
+    const frist = setTimeout(() => ctl.abort(), 90_000);
+    const svar = await fetch("/api/aidan/laes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sti, persona: "aidan" }),
+      signal: ctl.signal,
+    });
+    clearTimeout(frist);
+    if (!svar.ok) throw new Error(String(svar.status));
+    const lyd = new Audio(URL.createObjectURL(await svar.blob()));
+
+    // Tidskoderne er en EKSTRA, ikke en forudsætning. Derfor egen fangst.
+    let koder: Tidskoder | null = null;
+    try {
+      const t = await fetch(`/api/aidan/tidskoder?sti=${encodeURIComponent(sti)}&persona=aidan`);
+      if (t.ok) {
+        const j = (await t.json()) as Tidskoder;
+        if (j?.tale && Array.isArray(j.ord) && j.ord.length) koder = j;
+      }
+    } catch {
+      /* ingen tidskoder — lyden spiller uden markering */
+    }
+
+    const markoer: Markoer | null = koder ? lavMarkoer(krop!, koder) : null;
+    const rulning = lavRulning();
+    for (const h of rulning.hændelser) {
+      window.addEventListener(h, () => rulning.afbryd(), { passive: true });
+    }
+
+    nulstilKnap();
+    byggLytAfspiller(lyd, markoer, rulning, () => {
+      åben = false;
+      nulstilKnap();
+    }, d);
+    try {
+      await lyd.play();
+    } catch {
+      /* browseren kan afvise afspilning der ikke følger et klik — afspilleren
+         står så klar med en play-knap, hvilket er den rigtige tilstand. */
+    }
+  }
+}
+
+/** Den flydende afspiller. Alt der vises læses AF lyden — ingen tæller der
+ *  løber ved siden af og gætter (samme regel som podcast-afspilleren). */
+function byggLytAfspiller(
+  lyd: HTMLAudioElement,
+  markoer: Markoer | null,
+  rulning: ReturnType<typeof lavRulning>,
+  luk: () => void,
+  d: DOMStringMap,
+) {
+  const boks = document.createElement("div");
+  boks.className = "lyt-afspiller";
+  boks.dataset.testid = "lyt-afspiller";
+
+  const afspil = document.createElement("button");
+  afspil.type = "button";
+  afspil.className = "lyt-afspil";
+  afspil.dataset.testid = "lyt-afspil";
+  afspil.textContent = "\u23F8";
+  afspil.setAttribute("aria-label", d.pause ?? "");
+
+  const soejle = document.createElement("div");
+  soejle.className = "lyt-soejle";
+  soejle.dataset.testid = "lyt-soejle";
+  const fyld = document.createElement("i");
+  soejle.append(fyld);
+
+  const ur = document.createElement("span");
+  ur.className = "lyt-tid";
+  ur.dataset.testid = "lyt-tid";
+  ur.textContent = "0:00";
+
+  const kryds = document.createElement("button");
+  kryds.type = "button";
+  kryds.className = "lyt-luk";
+  kryds.dataset.testid = "lyt-luk";
+  kryds.textContent = "\u00D7";
+  kryds.setAttribute("aria-label", d.luk ?? "");
+
+  boks.append(afspil, soejle, ur, kryds);
+  document.body.append(boks);
+
+  const tegn = () => {
+    const v = Number.isFinite(lyd.duration) && lyd.duration > 0 ? lyd.duration : 0;
+    fyld.style.width = v ? `${Math.min(100, (lyd.currentTime / v) * 100)}%` : "0%";
+    ur.textContent = v ? `${lytTid(lyd.currentTime)} / ${lytTid(v)}` : lytTid(lyd.currentTime);
+    const spiller = !lyd.paused && !lyd.ended;
+    afspil.textContent = spiller ? "\u23F8" : "\u25B6";
+    afspil.setAttribute("aria-label", (spiller ? d.pause : d.afspil) ?? "");
+  };
+
+  let sidsteSaetning: Element | null = null;
+  lyd.addEventListener("timeupdate", () => {
+    tegn();
+    const m = markoer?.ved(lyd.currentTime * 1000);
+    const el = m?.saetning?.startContainer.parentElement ?? null;
+    if (!el || el === sidsteSaetning || !rulning.maaRulle()) return;
+    sidsteSaetning = el;
+    const r = el.getBoundingClientRect();
+    // Kun når sætningen er på vej UD af skærmen. En rulning ved hver sætning
+    // ville flytte siden konstant, også når læseren kan se den fint.
+    if (r.top < 80 || r.bottom > window.innerHeight - 120) {
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  });
+  lyd.addEventListener("loadedmetadata", tegn);
+  lyd.addEventListener("play", tegn);
+  lyd.addEventListener("pause", tegn);
+  lyd.addEventListener("ended", tegn);
+
+  afspil.addEventListener("click", () => {
+    if (lyd.paused) void lyd.play().catch(() => {});
+    else lyd.pause();
+  });
+  soejle.addEventListener("click", (e) => {
+    const r = soejle.getBoundingClientRect();
+    const v = Number.isFinite(lyd.duration) ? lyd.duration : 0;
+    if (!r.width || !v) return;
+    lyd.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * v;
+    rulning.nulstil(); // et spring er en ny hensigt om at følge med
+    tegn();
+  });
+  kryds.addEventListener("click", () => {
+    lyd.pause();
+    markoer?.ryd();
+    boks.remove();
+    luk();
+  });
+
+  tegn();
+}
+
 function safe(fn: () => void) {
   try {
     fn();
@@ -1852,6 +2040,7 @@ safe(adminPanel);
 safe(mountAdminChat);
 safe(aidan);
 safe(podcastAfspiller);
+safe(lytOplaeser);
 
 /* F012.1 — podcast-afspilleren.
  *

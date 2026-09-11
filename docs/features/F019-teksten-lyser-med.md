@@ -129,6 +129,12 @@ og endnu ikke bekræftet.
    re-basere — præcis det regnestykke der ser rigtigt ud og er 40 ms forkert til
    sidst.
 
+> **STREGET 11/9, af ai-sdk selv.** Her stod oprindeligt at batch-ruten også
+> ville løse vores udtale-ordbog. Det gør den ikke: *«Azure giver talte ord i
+> talt rækkefølge UDEN tekst-offset, altså præcis samme kortlægning som enhver
+> anden kilde.»* Fordelen eksisterede aldrig, og den blev stående i to dage som
+> et argument for en infrastruktur-ændring.
+
 **Prisen, stillet op ærligt:** batch er asynkron (Microsoft opgiver 10–20 s for
 50 %, op til 120 s for 95 %). For os er det uden betydning, fordi lyden allerede
 tager ~21 s og cachelagres pr. indholds-hash — det er en engangsomkostning pr.
@@ -168,3 +174,80 @@ UI-laget imens, eller vi prototyper målingen her og afleverer den til dem.
 - **Tilgængelighed:** markeringen må ikke være den eneste indikation.
   `aria-current` på den aktive sætning, og kontrasten skal holde 4,5:1 — vi har
   allerede dumpet én gang i dag på præcis det (F013.3, hvid tekst gav 3,45:1).
+
+
+## 11/9-2026 — F019.6: knappen og limen står. Og en tredje vej til tidskoderne
+
+**Christian: «Fortsæt hvor du slap.»** Sidste led er bygget.
+
+### Hvad en læser møder nu
+
+En **«Lyt til artiklen»**-knap ved forfatter/læsetid-linjen. Et tryk henter
+oplæsningen på den rute der allerede fandtes, og en lille afspiller lægger sig
+nederst til højre: afspil/pause, en søjle man kan springe i, uret, og et kryds.
+**Uden ord-tidskoder spiller den bare** — ingen markering, ingen fejl, intet der
+ser i stykker ud. Den dag tidskoderne findes, lyser teksten med af sig selv.
+
+### Fire valg der er truffet, ikke faldet ud
+
+**1. Markeringen skriver ALDRIG i artiklen.** CSS Custom Highlight API maler oven
+på teksten uden at røre DOM'en. Det er ikke en finesse: de samme afsnit er
+inline-redigerbare, så et indsat `<mark>` kunne blive gemt ind i selve indholdet
+af en redigering der begyndte mens oplæsningen kørte. En prøve sammenligner
+`.post-body`'s innerHTML før og efter og kræver at den er tegn-for-tegn den samme.
+
+**2. Tidskoderne er valgfrie, og hentningen af dem kan ikke vælte lyden.** De
+ligger som `<samme indholds-hash>.word.json` ved siden af MP3'en, så de to deler
+livscyklus — der er ingen tilstand hvor den ene er ny og den anden gammel.
+`GET /api/aidan/tidskoder` svarer **404 i dag**, og det er ærligt frem for
+skjult.
+
+**3. Rulningen slipper når læseren selv ruller.** Der lyttes på brugerens egne
+handlinger (hjul, finger, tastatur) — ikke på «scroll», som vores EGEN rulning
+også udløser, og hvor de to derfor ikke kan skelnes. Et spring i søjlen tæller
+som en ny hensigt om at følge med og tænder den igen.
+
+**4. `aria-current` på den aktive sætning er IKKE bygget, og det er et fravalg.**
+Planen bad om det, men attributten kan kun sættes ved at skrive i DOM'en — altså
+i modstrid med valg 1. Her er lyden selv den alternative kanal: teksten står
+uændret for en skærmlæser, og markeringen er en visuel støtte til en oplæsning
+der allerede findes. **Kontrastkravet er til gengæld holdt og MÅLT** (4,75:1 mørkt
+tema, 5,20:1 lyst) — som en prøve der regner forholdet ud af farverne i
+stylesheetet, ikke som en linje i et dokument.
+
+### Prøvet med syntetiske tidskoder — med vilje
+
+17 nye prøver på en rigtig DOM. At tidskoderne er opdigtede er ikke en nødløsning:
+de rammer grænserne præcist — nøjagtig på et ords start, midt inde i det, før det
+første — hvilket en rigtig lydfil aldrig gør. Og de findes: havde prøven ventet på
+Azure, var limen først blevet bevist efter den var rullet ud.
+
+**Mutations-bevist på tre spærrer.** Den fjerde — en klipning af Range-offsets —
+kunne ingen prøve gøre rød, fordi den ikke kan udløses. Den er **fjernet** frem
+for at stå og ligne beskyttelse.
+
+**Og prøven væltede to andre prøvefiler, før den blev rettet.** happy-doms globale
+registrering gør `localStorage` skrivebeskyttet, og bun kører alle filer i én
+proces. Vinduet er nu lokalt i filen.
+
+### Den tredje vej: mål tidskoderne selv
+
+**ai-sdk, efter at have rådført sig med voice-engine:** vi laver selv lyden, så vi
+ejer både lyden og teksten. Det er **forced alignment** — den nemme udgave af
+problemet. At bede Azure om tidskoderne er én vej; at måle dem på den lyd vi lige
+har lavet er en anden, **og den overlever at vi skifter TTS-motor.**
+
+Prøven er sendt til voice-engine 11/9: `/Users/cb/Delte-proever/f019-tidskoder/`
+— 289,7 s dansk lyd, manuskriptet på 4.192 tegn (ét stykke, altså ét TTS-kald og
+ingen offsets at re-basere) og de 35 udtale-poster.
+
+**Og den fandt en fejl i vores egen udledning, før nogen målte på den.** ai-sdk
+sendte matcherens regler ordret, og én af dem havde vi ikke: *et ord der støder op
+til en bindestreg får ikke sit alias.* Begge forekomster af `broberg.ai` i prøven
+står som `broberg.ai-drevet` / `broberg.ai-kunder` og udtales altså som ét ord —
+vi havde skrevet dem ud som «broberg punktum A I». 2 af 21 træf, og netop de to
+artiklen var valgt for. Det ville være blevet målt som modellens fejl.
+
+**Konsekvens for Christians beslutning:** Azure-valget (custom subdomain eller en
+dedikeret Speech-resource) **venter** til voice-engine har målt. Holder deres vej,
+skal kontoen slet ikke røres.

@@ -48,6 +48,7 @@ import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlide
 import { SolutionPage, type SolutionData, type SolutionLabel, type SolutionLabels } from "@/components/SolutionPage.tsx";
 import { Cases, Insights, About, cmsAttrs, cmsHtmlAttrs, cmsRichAttrs } from "@/components/sections.tsx";
 import type { CmsRef } from "@/content/types.ts";
+import { Lyt } from "@/components/Lyt.tsx";
 import { AidanWidget, aidanTekster } from "@/components/AidanWidget.tsx";
 import { AIDAN_STILL, AIRINA_STILL } from "@/components/Figur.tsx";
 import { aidanConfigured } from "@/aidan.ts";
@@ -909,6 +910,17 @@ export async function renderBlogPost(locale: Locale, category: string, slug: str
                 {str(d.readTime) ? <span {...cmsAttrs(postRef, "readTime")}>{str(d.readTime)}</span> : null}
               </p>
             ) : null}
+            <Lyt
+              globalsRef={globalsRef}
+              t={{
+                knap: g("lytKnap", locale === "en" ? "Listen to the article" : "Lyt til artiklen"),
+                henter: g("aidanLaesHenter", locale === "en" ? "Fetching the reading…" : "Henter oplæsningen…"),
+                fejl: g("aidanLaesFejl", locale === "en" ? "Couldn't fetch the reading — try again" : "Kunne ikke hente oplæsningen — prøv igen"),
+                afspil: g("lytAfspil", locale === "en" ? "Play" : "Afspil"),
+                pause: g("aidanLaesPause", "Pause"),
+                luk: g("lytLuk", locale === "en" ? "Close the player" : "Luk afspilleren"),
+              }}
+            />
             {tags.length ? (
               <div class="post-tags">
                 {tags.map((t, i) => (
