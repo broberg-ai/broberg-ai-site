@@ -201,12 +201,23 @@ async function indsigtsStier(): Promise<Map<string, { slug: string; locale: Loca
 const VINDUE_MS = 60_000;
 const MAX_PR_VINDUE = 3;
 const hits = new Map<string, number[]>();
-function rateLimited(c: Context): boolean {
+/**
+ * Spærren har EN SPAND PR. FORMÅL, og det er ikke pedanteri.
+ *
+ * Den findes for at beskytte en TTS-generering, der koster penge og et halvt
+ * minut. Tidskoderne ved siden af filen er en filindlæsning der kun overhovedet
+ * findes hvis lyden ER lavet — men de delte spand, og så brugte ÉN afspilning
+ * to af de tre kald man har pr. minut. Anden gang en læser trykkede Lyt, fik
+ * han lyd uden markering og ingen fejl at se.
+ *
+ * Målt af Lens, ikke gættet: 429 på /tidskoder i anden kørsel af samme flow.
+ */
+function rateLimited(c: Context, spand = "tts", maks = MAX_PR_VINDUE): boolean {
   const ip = c.req.header("fly-client-ip") || c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || "ukendt";
-  const key = createHash("sha256").update(ip).digest("hex").slice(0, 16);
+  const key = createHash("sha256").update(`${spand}:${ip}`).digest("hex").slice(0, 16);
   const nu = Date.now();
   const liste = (hits.get(key) ?? []).filter((t) => nu - t < VINDUE_MS);
-  if (liste.length >= MAX_PR_VINDUE) return true;
+  if (liste.length >= maks) return true;
   liste.push(nu);
   hits.set(key, liste);
   if (hits.size > 5000) hits.clear();
@@ -405,7 +416,10 @@ export async function tidskoderFor(
 }
 
 export async function handleAidanTidskoder(c: Context): Promise<Response> {
-  if (rateLimited(c)) return c.json({ error: "rate_limited" }, 429);
+  // Egen spand, og et rundhåndet loft: dette er en filindlæsning, ikke et
+  // TTS-kald. Der ER stadig et loft — ruten må ikke kunne bruges til at banke
+  // på disken i det uendelige.
+  if (rateLimited(c, "tidskoder", 60)) return c.json({ error: "rate_limited" }, 429);
   const sti = String(c.req.query("sti") ?? "");
   const persona: Persona = c.req.query("persona") === "airina" ? "airina" : "aidan";
   try {
