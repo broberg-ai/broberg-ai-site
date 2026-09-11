@@ -12,7 +12,7 @@ import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration } from "@/components/Illustrations.tsx";
 import { Icon } from "@/components/Icons.tsx";
 import { slugifyTag, withLocale } from "@/i18n.ts";
-import { cmsAttrs } from "@/components/sections.tsx";
+import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
 import type { CmsRef } from "@/content/types.ts";
 
 // F157 — dot-path field addressing (slides.<i>.eyebrow,
@@ -34,6 +34,17 @@ function blockBase(slideIdx: number, blockIdx: number): string {
 function seg(cmsRef: CmsRef | undefined, base: string | undefined, ...parts: (string | number)[]): Record<string, string> {
   if (!cmsRef || !base) return {};
   return cmsAttrs(cmsRef, [base, ...parts].join("."));
+}
+
+/** F197.2 — samme adressering som seg(), men som RIGT felt.
+ *
+ *  Værktøjslinjen (og dermed farvevælgeren) findes kun på felter med
+ *  data-cms-html="true". Brødtekst og overskrifter skal kunne formateres og
+ *  farves; korte værdier — øjenbryn, tal, tabelceller, chips, chat-replikker —
+ *  skal IKKE, fordi markup i dem er en fejl og ikke en mulighed. */
+function segRig(cmsRef: CmsRef | undefined, base: string | undefined, ...parts: (string | number)[]): Record<string, string> {
+  if (!cmsRef || !base) return {};
+  return cmsHtmlAttrs(cmsRef, [base, ...parts].join("."));
 }
 
 type Step = [string, string]; // [title, desc?] — desc may be ""
@@ -82,20 +93,40 @@ export interface FlagshipPage {
   tags?: string[]; // shown at the bottom, linking to /tags/<slug> (shared with posts)
 }
 
+/* Slide-overskriften. RIG (F197.2), så værktøjslinjen og farvevælgeren findes
+   på den — det er dét Christian bad om: at kunne farve «linje 2» selv.
+
+   headingHtml-grenen bar `data-cms-html="heading"` og INGEN collection/slug/field.
+   Pakken kræver værdien "true", så attributten gjorde ingenting; og uden de tre
+   andre attributter var feltet slet ikke bundet til cms. De tre slides der bruger
+   den (målt 11/9) var derfor ikke redigerbare overhovedet — og attributten fik
+   det til at ligne noget der var tænkt. Begge grene er nu rigtige felter. */
 const H = ({ s, cmsRef, idx }: { s: { heading: string; headingHtml?: string }; cmsRef?: CmsRef; idx: number }) =>
   s.headingHtml ? (
-    <h2 data-cms-html="heading" dangerouslySetInnerHTML={{ __html: s.headingHtml }} />
+    <h2
+      {...cmsHtmlAttrs(cmsRef, slidePath(idx, "headingHtml"))}
+      dangerouslySetInnerHTML={{ __html: s.headingHtml }}
+    />
   ) : (
-    <h2 {...cmsAttrs(cmsRef, slidePath(idx, "heading"))}>{s.heading}</h2>
+    <h2
+      {...cmsHtmlAttrs(cmsRef, slidePath(idx, "heading"))}
+      dangerouslySetInnerHTML={{ __html: s.heading }}
+    />
   );
 
 /* ---- block views ---- */
 
+/* Brødteksten. Samme to rettelser som overskriften: RIG, og html-grenen er nu
+   et rigtigt felt i stedet for en attribut der lignede et. */
 const Lead = ({ b, cmsRef, path }: { b: Extract<Block, { k: "lead" }>; cmsRef?: CmsRef; path: string }) =>
   b.html ? (
-    <p class="lead" data-cms-html="lead" dangerouslySetInnerHTML={{ __html: b.html }} />
+    <p
+      class="lead"
+      {...cmsHtmlAttrs(cmsRef, path.replace(/\.text$/, ".html"))}
+      dangerouslySetInnerHTML={{ __html: b.html }}
+    />
   ) : (
-    <p class="lead" {...cmsAttrs(cmsRef, path)}>{b.text}</p>
+    <p class="lead" {...cmsHtmlAttrs(cmsRef, path)} dangerouslySetInnerHTML={{ __html: b.text ?? "" }} />
   );
 
 const WorkSteps = ({ steps, cmsRef, base }: { steps: Step[]; cmsRef?: CmsRef; base?: string }) => (
@@ -103,7 +134,7 @@ const WorkSteps = ({ steps, cmsRef, base }: { steps: Step[]; cmsRef?: CmsRef; ba
     {steps.map(([t, d], i) => (
       <li key={i}>
         <div class="workstep-title" {...seg(cmsRef, base, "items", i, 0)}>{t}</div>
-        {d ? <p {...seg(cmsRef, base, "items", i, 1)}>{d}</p> : null}
+        {d ? <p {...segRig(cmsRef, base, "items", i, 1)} dangerouslySetInnerHTML={{ __html: d }} /> : null}
       </li>
     ))}
   </ol>
@@ -167,7 +198,7 @@ const Cards = ({ items, cmsRef, base }: { items: Card[]; cmsRef?: CmsRef; base?:
       <div class="card" key={i}>
         {icon ? <Icon name={icon} /> : null}
         <div class="case-h" {...seg(cmsRef, base, "items", i, 0)}>{t}</div>
-        <p {...seg(cmsRef, base, "items", i, 1)}>{desc}</p>
+        <p {...segRig(cmsRef, base, "items", i, 1)} dangerouslySetInnerHTML={{ __html: desc }} />
       </div>
     ))}
   </div>
@@ -206,9 +237,12 @@ const BlockView = ({ b, cmsRef, slideIdx, blockIdx }: { b: Block; cmsRef?: CmsRe
       return <Lead b={b} cmsRef={cmsRef} path={blockPath(slideIdx, blockIdx, "text")} />;
     case "prose":
       return (
-        <p class="lead" style="margin-top:12px" {...cmsAttrs(cmsRef, blockPath(slideIdx, blockIdx, "text"))}>
-          {b.text}
-        </p>
+        <p
+          class="lead"
+          style="margin-top:12px"
+          {...cmsHtmlAttrs(cmsRef, blockPath(slideIdx, blockIdx, "text"))}
+          dangerouslySetInnerHTML={{ __html: b.text }}
+        />
       );
     case "chips":
       return <Chips items={b.items} cmsRef={cmsRef} base={blockBase(slideIdx, blockIdx)} />;
