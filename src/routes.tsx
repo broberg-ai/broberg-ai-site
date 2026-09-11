@@ -45,7 +45,7 @@ import { Logo } from "@/components/Logos.tsx";
 import { Illustration, hasIllustration, pickNewsIllustration } from "@/components/Illustrations.tsx";
 import { Icon } from "@/components/Icons.tsx";
 import { FlagshipSlides, flagshipFromRegistry } from "@/components/FlagshipSlides.tsx";
-import { SolutionPage, type SolutionData } from "@/components/SolutionPage.tsx";
+import { SolutionPage, type SolutionData, type SolutionLabel, type SolutionLabels } from "@/components/SolutionPage.tsx";
 import { Cases, Insights, About, cmsAttrs, cmsHtmlAttrs, cmsRichAttrs } from "@/components/sections.tsx";
 import type { CmsRef } from "@/content/types.ts";
 import { AidanWidget, aidanTekster } from "@/components/AidanWidget.tsx";
@@ -796,17 +796,24 @@ export async function renderSolutionDetail(locale: Locale, slug: string): Promis
   // valget stå mellem en forkert overskrift på den nye side eller en ændring der
   // ramte de fire andre. Feltet er tomt på alle eksisterende dokumenter, så
   // gv()-værdien er stadig den der vises overalt hvor ingen har bedt om andet.
-  const dv = (field: string, fallback: string): string => {
-    const eget = (doc.data as Record<string, unknown>)?.[field];
-    return typeof eget === "string" && eget ? eget : fallback;
+  // Etiketten OG hvor den kom fra, som ét. Første udgave af overskrivningen
+  // hentede værdien fra sidens eget dokument og lod redigerings-bindingen blive
+  // stående på globals — så et inline-gem ramte alle fire andre løsningssider,
+  // og siden man stod på så uændret ud fordi dens egen værdi stadig vandt.
+  // Et gem der melder succes og intet gør. Nu kan de to ikke drifte fra hinanden.
+  const etiket = (egetFelt: string, globaltFelt: string, fallback: string): SolutionLabel => {
+    const eget = (doc.data as Record<string, unknown>)?.[egetFelt];
+    return typeof eget === "string" && eget
+      ? { tekst: eget, ref: solutionRef, felt: egetFelt }
+      : { tekst: gv(globaltFelt, fallback), ref: globalsRef, felt: globaltFelt };
   };
-  const labels = {
-    losningerPrefix: gv("solLosningerPrefix", isEnSol ? "Solutions" : "Løsninger"),
-    howEyebrow: dv("howEyebrow", gv("solHowEyebrow", isEnSol ? "How it works" : "Sådan virker det")),
-    howHeading: dv("howHeading", gv("solHowHeading", isEnSol ? "From meeting to live" : "Fra møde til live")),
-    featuresEyebrow: dv("featuresEyebrow", gv("solFeaturesEyebrow", isEnSol ? "Core features" : "Kernefunktioner")),
-    featuresHeading: dv("featuresHeading", gv("solFeaturesHeading", isEnSol ? "Built into the platform." : "Bygget ind i platformen.")),
-    proofEyebrow: dv("proofEyebrow", gv("solProofEyebrow", isEnSol ? "The proof" : "Beviset")),
+  const labels: SolutionLabels = {
+    losningerPrefix: etiket("losningerPrefix", "solLosningerPrefix", isEnSol ? "Solutions" : "Løsninger"),
+    howEyebrow: etiket("howEyebrow", "solHowEyebrow", isEnSol ? "How it works" : "Sådan virker det"),
+    howHeading: etiket("howHeading", "solHowHeading", isEnSol ? "From meeting to live" : "Fra møde til live"),
+    featuresEyebrow: etiket("featuresEyebrow", "solFeaturesEyebrow", isEnSol ? "Core features" : "Kernefunktioner"),
+    featuresHeading: etiket("featuresHeading", "solFeaturesHeading", isEnSol ? "Built into the platform." : "Bygget ind i platformen."),
+    proofEyebrow: etiket("proofEyebrow", "solProofEyebrow", isEnSol ? "The proof" : "Beviset"),
   };
 
   return await page(<SolutionPage data={data} locale={locale} secondaryCta={secondaryCta} cmsRef={solutionRef} bookLabel={bookLabel} globalsRef={globalsRef} labels={labels} featured={(doc.data as Record<string, unknown>)?.featured === true} featuredEmblem={gv("featuredEmblem", "★ Featured")} />, {

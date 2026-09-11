@@ -38,12 +38,12 @@ const render = (data: SolutionData) =>
       secondaryCta: { label: "Se mere", href: "#" },
       bookLabel: "Book et møde",
       labels: {
-        losningerPrefix: "Løsninger",
-        howEyebrow: "Sådan virker det",
-        howHeading: "Fra møde til live",
-        featuresEyebrow: "Kernefunktioner",
-        featuresHeading: "Bygget ind.",
-        proofEyebrow: "Beviset",
+        losningerPrefix: { tekst: "Løsninger", felt: "solLosningerPrefix" },
+        howEyebrow: { tekst: "Sådan virker det", felt: "solHowEyebrow" },
+        howHeading: { tekst: "Fra møde til live", felt: "solHowHeading" },
+        featuresEyebrow: { tekst: "Kernefunktioner", felt: "solFeaturesEyebrow" },
+        featuresHeading: { tekst: "Bygget ind.", felt: "solFeaturesHeading" },
+        proofEyebrow: { tekst: "Beviset", felt: "solProofEyebrow" },
       },
     }) as never,
   );

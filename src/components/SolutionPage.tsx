@@ -10,13 +10,31 @@ import type { CmsRef } from "@/content/types.ts";
 import { cmsAttrs, cmsHtmlAttrs } from "@/components/sections.tsx";
 import { Faq } from "@/components/Faq.tsx";
 
+/**
+ * En fælles etiket OG hvor den kom fra.
+ *
+ * Det var to felter før, og de kunne drifte: værdien blev hentet fra sidens
+ * eget dokument (F022's overskrivning), mens redigerings-bindingen pegede på
+ * globals. Et gem dér ville ramme ALLE løsningssider, og siden man stod på
+ * ville se uændret ud — fordi dens egen overskrivning stadig vandt. Altså et
+ * gem der melder succes og intet gør, hvilket er den dyreste slags.
+ *
+ * Nu følges de to ad pr. definition: den ref og det felt der leverede teksten,
+ * er det samme der redigeres.
+ */
+export interface SolutionLabel {
+  tekst: string;
+  ref?: CmsRef;
+  felt: string;
+}
+
 export interface SolutionLabels {
-  losningerPrefix: string;
-  howEyebrow: string;
-  howHeading: string;
-  featuresEyebrow: string;
-  featuresHeading: string;
-  proofEyebrow: string;
+  losningerPrefix: SolutionLabel;
+  howEyebrow: SolutionLabel;
+  howHeading: SolutionLabel;
+  featuresEyebrow: SolutionLabel;
+  featuresHeading: SolutionLabel;
+  proofEyebrow: SolutionLabel;
 }
 
 export type ProofType = "website" | "webshop" | "platform";
@@ -127,7 +145,7 @@ export function SolutionPage({
           <div>
             <FeaturedEmblem featured={featured === true} tekst={featuredEmblem ?? "★ Featured"} />
             <div class="eyebrow">
-              <span {...cmsAttrs(globalsRef, "solLosningerPrefix")}>{labels.losningerPrefix}</span> · <span {...cmsAttrs(cmsRef, "name")}>{data.name}</span>
+              <span {...cmsAttrs(labels.losningerPrefix.ref, labels.losningerPrefix.felt)}>{labels.losningerPrefix.tekst}</span> · <span {...cmsAttrs(cmsRef, "name")}>{data.name}</span>
             </div>
             <h2 style="margin-bottom:16px" {...cmsHtmlAttrs(cmsRef, "headingHtml")} dangerouslySetInnerHTML={{ __html: data.headingHtml }} />
             <p class="lead" {...cmsAttrs(cmsRef, "lead")}>{data.lead}</p>
@@ -177,10 +195,13 @@ export function SolutionPage({
       <section>
         <div class="wrap">
           <div class="sec-head" style="text-align:center;margin-left:auto;margin-right:auto">
-            <div class="eyebrow" style="justify-content:center" {...cmsAttrs(globalsRef, "solHowEyebrow")}>
-              {labels.howEyebrow}
+            <div class="eyebrow" style="justify-content:center" {...cmsAttrs(labels.howEyebrow.ref, labels.howEyebrow.felt)}>
+              {labels.howEyebrow.tekst}
             </div>
-            <h2 {...cmsAttrs(globalsRef, "solHowHeading")}>{labels.howHeading}</h2>
+            <h2
+              {...cmsHtmlAttrs(labels.howHeading.ref, labels.howHeading.felt)}
+              dangerouslySetInnerHTML={{ __html: labels.howHeading.tekst }}
+            />
           </div>
           <div class="steps3">
             {data.steps.map(([title, desc], i) => (
@@ -197,8 +218,11 @@ export function SolutionPage({
       <section style="background:var(--dark2)">
         <div class="wrap">
           <div class="sec-head">
-            <div class="eyebrow" {...cmsAttrs(globalsRef, "solFeaturesEyebrow")}>{labels.featuresEyebrow}</div>
-            <h2 {...cmsAttrs(globalsRef, "solFeaturesHeading")}>{labels.featuresHeading}</h2>
+            <div class="eyebrow" {...cmsAttrs(labels.featuresEyebrow.ref, labels.featuresEyebrow.felt)}>{labels.featuresEyebrow.tekst}</div>
+            <h2
+              {...cmsHtmlAttrs(labels.featuresHeading.ref, labels.featuresHeading.felt)}
+              dangerouslySetInnerHTML={{ __html: labels.featuresHeading.tekst }}
+            />
           </div>
           <div class="grid g3">
             {data.features.map(([title, desc, icon], i) => (
@@ -215,8 +239,8 @@ export function SolutionPage({
       <section id="bevis">
         <div class="wrap" style={data.proof.length > 1 ? "" : "max-width:760px"}>
           <div class="sec-head">
-            <div class="eyebrow" {...cmsAttrs(globalsRef, "solProofEyebrow")}>{labels.proofEyebrow}</div>
-            <h2 {...cmsAttrs(cmsRef, "proofHeading")}>{data.proofHeading}</h2>
+            <div class="eyebrow" {...cmsAttrs(labels.proofEyebrow.ref, labels.proofEyebrow.felt)}>{labels.proofEyebrow.tekst}</div>
+            <h2 {...cmsHtmlAttrs(cmsRef, "proofHeading")} dangerouslySetInnerHTML={{ __html: data.proofHeading }} />
           </div>
           <div class={data.proof.length > 1 ? "grid g2" : ""}>
             {data.proof.map((item, i) => (
