@@ -52,6 +52,12 @@
   /* Slightly lighter orange for TEXT/arrows so they clear WCAG AA on dark
      (the brand #f3522c is 4.28:1; this hits ≥4.5:1). Graphics keep --orange. */
   --orange-text: #ff6a45;
+  /* F197 — hvad redigerings-paletten må tilbyde. Klassen står i NAVNET
+     (--cms-farve-o → class="o"); værdien males kun på svatchen, så knappen
+     viser den rigtige farve i det tema redaktøren står i, mens det gemte
+     indhold kun indeholder klassen og dermed overlever et temaskift. */
+  --cms-farve-o: var(--orange-text);
+  --cms-farve-o-navn: "Brandfarve";
   --orange-soft: rgba(243, 82, 44, 0.12);
   /* Topbjælkens højde — ÉN kilde. Båndet klæber under den. */
   --header-h: 65px;
@@ -186,7 +192,11 @@ em {
   font-style: italic;
   color: var(--blue-text);
 }
-em.o {
+/* Brandets accent i tekst. Var «em.o» indtil F197, hvor farvevælgeren fik en
+   svatch der påfører klassen på et <span>. Et em.o-krav ville have gjort den
+   knap virkningsløs uden at noget så forkert ud. Udvidelsen er strengt
+   bredere: hvert eksisterende <em class="o"> matcher stadig. */
+.o {
   color: var(--orange-text);
 }
 .eyebrow {

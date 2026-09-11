@@ -195,3 +195,29 @@ test("den primære knap bruger tokenet, ikke temaets forgrund", () => {
   expect(krop, "knappens tekst skal følge den blå flade, ikke --dark")
     .toContain("color: var(--paa-blaa)");
 });
+
+// ── F197 — paletten kan nå brandfarven ──────────────────────────────────────
+//
+// Christian 11/9: «Jeg mangler den farve der er i .ai i logoet i paletten.»
+// Redigerings-paletten tilbyder de klasser sitet ERKLÆRER med --cms-farve-*.
+// Erklæringen er derfor ikke pynt — den er hele mekanismen, og uden den er
+// svatchen der skulle farve teksten væk uden at noget ser forkert ud.
+
+test("sitet erklærer brandfarven til redigerings-paletten", () => {
+  const css = readFileSync(new URL("./styles/brand.css", import.meta.url).pathname, "utf8");
+  expect(css).toContain("--cms-farve-o:");
+  // Værdien skal være TOKENET, ikke en hex. En hex her ville fryse svatchens
+  // farve til ét tema — og svatchen er netop det sted redaktøren aflæser
+  // hvilken farve hun vælger.
+  expect(css).toMatch(/--cms-farve-o:\s*var\(--orange-text\)/);
+});
+
+test(".o er IKKE bundet til <em> — ellers farver paletten ingenting", () => {
+  // Værktøjslinjen pakker markeringen i <span class="o">. Var reglen stadig
+  // «em.o», ville knappen tilføje klassen, gemme den korrekt, og teksten ville
+  // forblive grå. Den værste slags: hvert led rapporterer succes.
+  const css = readFileSync(new URL("./styles/brand.css", import.meta.url).pathname, "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "");
+  expect(css).toMatch(/(^|\n)\.o\s*\{/);
+  expect(css).not.toMatch(/(^|\n)em\.o\s*\{/);
+});
