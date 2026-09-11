@@ -89,7 +89,9 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
   test("bruttolisten (5/9): domæner som navne, bøjede låneord, www. siges aldrig", () => {
     expect(tilTale("Se www.trailmem.com her")).toBe("Se trailmem.com her");
     const da = udtaleFor("da");
-    expect(da).toContainEqual({ word: "trailmem.com", alias: "trail mem punktum com" });
+    // matchInCompounds hører MED i den strenge sammenligning: bliver flaget
+    // fjernet igen, skal denne prøve gå rød frem for at bestå på en delmængde.
+    expect(da).toContainEqual({ word: "trailmem.com", alias: "trail mem punktum com", matchInCompounds: true });
     expect(da).toContainEqual({ word: "stylet", alias: "stajlet" });
     expect(da).toContainEqual({ word: "workflow", ipa: "ˈwɜːkfloʊ" });
     expect(da).toContainEqual({ word: "lens", ipa: "lɛnz" });
@@ -117,5 +119,40 @@ describe("cache-nøglen", () => {
     expect(laesCacheNoegle("abc", "jeppe")).not.toBe(laesCacheNoegle("abd", "jeppe"));
     expect(laesCacheNoegle("abc", "jeppe")).not.toBe(laesCacheNoegle("abc", "christel"));
     expect(laesCacheNoegle("abc", "jeppe")).toMatch(/^[0-9a-f]{32}$/);
+  });
+});
+
+/* ── domænerne siges også midt i et sammensat ord (11/9-2026) ────────────────
+ *
+ * Ordbogen springer som standard et ord over der står ved en bindestreg. Reglen
+ * findes for at holde et kort almindeligt ord ude af en sammensætning («mail»
+ * inde i «e-mail») — og den ramte 14 af 37 omtaler af vores EGET domæne.
+ *
+ * MÅLT, ikke valgt: begge udgaver blev genereret og transskriberet.
+ *   uden flaget:  «…et brobjerg ejdrevet website»   ← domænet er væk
+ *   med flaget:   «…et brobær. AI drevet website»   ← «A I» overlever
+ */
+describe("domæner udtales også i sammensætninger", () => {
+  const domæner = ["broberg.ai", "trailmem.com", "webhouse.app", "xrt81.com", "fdsundhed.dk", "sanneandersen.dk"];
+
+  test("hvert domæne bærer matchInCompounds", () => {
+    const da = udtaleFor("da");
+    for (const d of domæner) {
+      expect(da.find((r) => r.word === d)?.matchInCompounds).toBe(true);
+    }
+  });
+
+  test("KONTROL: de korte, almindelige ord gør IKKE", () => {
+    // Uden denne ville «sæt flaget på alt» bestå prøven ovenfor — og så ville
+    // «AI» blive stavet ud inde i «ai-sdk», hvor det er et pakkenavn.
+    const da = udtaleFor("da");
+    for (const w of ["AI", "CMS", "SDK", "UI"]) {
+      expect(da.find((r) => r.word === w)?.matchInCompounds).toBeUndefined();
+    }
+  });
+
+  test("et domæne UDEN alias ville være meningsløst — alle seks har et", () => {
+    const da = udtaleFor("da");
+    for (const d of domæner) expect(da.find((r) => r.word === d)?.alias).toBeTruthy();
   });
 });

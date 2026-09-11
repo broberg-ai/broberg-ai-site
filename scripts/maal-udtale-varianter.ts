@@ -54,13 +54,18 @@ for (const doc of docs) {
 
   for (const m of tale.matchAll(re)) {
     const i = m.index!;
-    const post = sorteret.find((o) => o.word.toLowerCase() === m[0].toLowerCase())!;
+    const post = sorteret.find((o) => o.word.toLowerCase() === m[0].toLowerCase())! as
+      { word: string; alias?: string; ipa?: string; matchInCompounds?: true };
     fund.push({
       ord: m[0],
       post: post.word,
       alias: post.alias,
       ipa: post.ipa,
-      bindestreg: tale[i - 1] === "-" || tale[i + m[0].length] === "-",
+      // matchInCompounds slår bindestregs-undtagelsen fra for netop denne post
+      // (vores domæner, 11/9). Uden dette led ville målingen tælle domænerne som
+      // sprunget over længe efter at de holdt op med at være det.
+      bindestreg:
+        !post.matchInCompounds && (tale[i - 1] === "-" || tale[i + m[0].length] === "-"),
       artikel: `${locale}:${doc.slug}`,
       klip: tale.slice(Math.max(0, i - 28), i + m[0].length + 28).replace(/\s+/g, " "),
     });

@@ -75,7 +75,25 @@ export const FORKORTELSER = [
   "AI", "HTML", "CSS", "CMS", "API", "URL", "SEO", "GDPR", "SDK", "MCP", "PWA", "UI", "UX",
 ] as const;
 
-const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" | "da" }> = [
+/**
+ * `matchInCompounds` — sat KUN på domæner, og målt frem for valgt.
+ *
+ * Ordbogen springer som standard et ord over når det står ved en bindestreg;
+ * reglen findes for at holde et kort almindeligt ord ude af en sammensætning
+ * («mail» må ikke ramme inde i «e-mail»). Et domæne med et punktum i er
+ * hverken kort eller almindeligt — der findes ingen sammensætning hvor
+ * «broberg.ai» tilfældigvis dukker op og IKKE er domænet.
+ *
+ * MÅLT 11/9-2026: 14 af 37 omtaler af vores eget domæne står i en
+ * sammensætning. De to udgaver blev genereret og transskriberet:
+ *
+ *   uden flaget:  «…et brobjerg ejdrevet website»    ← domænet er væk
+ *   med flaget:   «…et brobær. AI drevet website»    ← «A I» overlever
+ *
+ * Transskriptionen er en anden models ØRE og ikke et facit — men netop det
+ * spørgsmål den skulle svare på, om «.ai» overhovedet er hørbart, svarer den på.
+ */
+const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" | "da"; matchInCompounds?: true }> = [
   // Christians princip 5/9: engelsk tale håndterer engelske ord og domæner
   // out-of-the-box — så NÆSTEN alt er da-scoped, og domæner siges med
   // «punktum» på dansk (ikke «dot»).
@@ -97,13 +115,13 @@ const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" 
   { word: "PWA", alias: "P W A", sprog: "da" },
   { word: "UI", alias: "U I", sprog: "da" },
   { word: "UX", alias: "U X", sprog: "da" },
-  { word: "broberg.ai", alias: "broberg punktum A I", sprog: "da" },
-  { word: "trailmem.com", alias: "trail mem punktum com", sprog: "da" },
+  { word: "broberg.ai", alias: "broberg punktum A I", sprog: "da", matchInCompounds: true },
+  { word: "trailmem.com", alias: "trail mem punktum com", sprog: "da", matchInCompounds: true },
   { word: "trailmem", alias: "trail mem", sprog: "alle" },
-  { word: "webhouse.app", alias: "web house punktum app", sprog: "da" },
-  { word: "xrt81.com", alias: "x r t 81 punktum com", sprog: "da" },
-  { word: "fdsundhed.dk", alias: "f d sundhed punktum d k", sprog: "da" },
-  { word: "sanneandersen.dk", alias: "sanne andersen punktum d k", sprog: "da" },
+  { word: "webhouse.app", alias: "web house punktum app", sprog: "da", matchInCompounds: true },
+  { word: "xrt81.com", alias: "x r t 81 punktum com", sprog: "da", matchInCompounds: true },
+  { word: "fdsundhed.dk", alias: "f d sundhed punktum d k", sprog: "da", matchInCompounds: true },
+  { word: "sanneandersen.dk", alias: "sanne andersen punktum d k", sprog: "da", matchInCompounds: true },
   { word: "gbrain", alias: "G brain", sprog: "alle" },
   { word: "webhooks", alias: "web-hooks", sprog: "da" },
   { word: "webhook", alias: "web-hook", sprog: "da" },
@@ -120,12 +138,17 @@ const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" 
   { word: "harness", ipa: "ˈhɑːnəs", sprog: "da" },
   { word: "lens", ipa: "lɛnz", sprog: "da" },
 ];
-export function udtaleFor(locale: Locale): Array<{ word: string; alias?: string; ipa?: string }> {
-  return ORDBOG.filter((r) => r.sprog === "alle" || r.sprog === locale).map(({ word, alias, ipa }) => ({
-    word,
-    ...(alias ? { alias } : {}),
-    ...(ipa ? { ipa } : {}),
-  }));
+export function udtaleFor(
+  locale: Locale,
+): Array<{ word: string; alias?: string; ipa?: string; matchInCompounds?: true }> {
+  return ORDBOG.filter((r) => r.sprog === "alle" || r.sprog === locale).map(
+    ({ word, alias, ipa, matchInCompounds }) => ({
+      word,
+      ...(alias ? { alias } : {}),
+      ...(ipa ? { ipa } : {}),
+      ...(matchInCompounds ? { matchInCompounds } : {}),
+    }),
+  );
 }
 /** Ordbogen er en del af lydens identitet: en ændret udtale SKAL give en ny
  *  fil, ellers serverer lageret den gamle lyd for evigt. */
