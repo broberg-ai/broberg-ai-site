@@ -1238,6 +1238,15 @@ footer {
   animation: sflow 3s linear infinite;
 }
 
+/* Svarloeftet under kontakt-knappen. Lille og daempet med vilje: det er en
+   oplysning der skal kunne findes naar man har besluttet sig for at skrive,
+   ikke et salgsargument der konkurrerer med knappen. */
+.cta-note {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* scope — de tre stemmer glider ind gennem linsen og videre ned i roeret.
    Prikkerne har hver sin animation-delay, saa de kommer EN AD GANGEN: en
    samtale er skiftevis, ikke tre mennesker der taler oveni hinanden.

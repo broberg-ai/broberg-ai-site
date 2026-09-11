@@ -146,6 +146,12 @@ export interface ContactData {
   email: string;
   formHref: string;
   ctaLabel: string;
+  /* Svarløftet under knappen. VALGFRIT: uden feltet står knappen som før, og
+     en tom linje under en knap ligner en fejl frem for et fravalg. Christian
+     11/9 valgte «Vi vender tilbage samme dag.» frem for at overbyde en
+     konkurrents «inden 2 timer» — et løfte der holder hver gang er mere værd
+     end et hurtigere der ikke gør. */
+  ctaNote?: string;
 }
 
 export interface FooterLink {

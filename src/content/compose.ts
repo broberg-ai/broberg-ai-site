@@ -324,6 +324,10 @@ function mapSection(d: Data, ctx: Ctx, slug: string): SectionData | null {
           // contact form on the sales landing instead (same rule as the footer).
           formHref: withLocale(ctx.locale, "/") + "#kontakt",
           ctaLabel: str(d.ctaPrimary) || fbCo?.ctaLabel || (ctx.locale === "en" ? "Get in touch" : "Skriv til os"),
+          // Ingen reservetekst: et svarløfte er et LØFTE, og et løfte må aldrig
+          // opstå af sig selv fordi et felt mangler. Står det ikke i cms, står
+          // det ikke på siden.
+          ctaNote: str(d.ctaNote) || fbCo?.ctaNote || undefined,
         },
         cmsRef,
       };
