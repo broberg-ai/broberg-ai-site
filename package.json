@@ -18,7 +18,7 @@
     "gate:featured": "bun scripts/gate-featured.mjs"
   },
   "dependencies": {
-    "@broberg/ai-sdk": "0.39.0",
+    "@broberg/ai-sdk": "0.45.1",
     "@broberg/cms-chat-client": "^0.4.16",
     "@broberg/cms-inline-edit": "0.12.0",
     "@broberg/forms-turnstile": "^0.1.0",
