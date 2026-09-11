@@ -170,10 +170,19 @@ a {
   color: inherit;
   text-decoration: none;
 }
+/* Sidens indholdsbredde har ÉN kilde. Tallene stod før kun her, og det var nok
+   indtil andet end .wrap skulle flugte med den — featured-båndet skal starte
+   hvor logoet starter og slutte hvor «Lad os bygge» slutter (F008.9). To steder
+   med 1140/32 ville se ens ud den dag de blev skrevet og drifte den dag ét af
+   dem blev rettet. */
+:root {
+  --wrap-max: 1140px;
+  --wrap-gutter: 32px;
+}
 .wrap {
-  max-width: 1140px;
+  max-width: var(--wrap-max);
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 var(--wrap-gutter);
 }
 h1,
 h2 {
@@ -446,8 +455,13 @@ header {
 
 /* Phone refinements — tighter rhythm, 2-up stats, full-width CTAs, scaled type. */
 @media (max-width: 620px) {
+  /* Gutteret ændres på TOKENET, ikke på .wrap alene — ellers ville
+     featured-båndet blive ved med at flugte med 32px mens teksten rykkede ind. */
+  :root {
+    --wrap-gutter: 20px;
+  }
   .wrap {
-    padding: 0 20px;
+    padding: 0 var(--wrap-gutter);
   }
   section {
     padding: 64px 0;
@@ -3091,14 +3105,28 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
    uden den startede båndet ved y=0 og lå HELT bag den (målt: bånd 0-46,
    header 0-65). Første sektion trækker båndets plads fra igen nedenfor, så
    toppen ikke får dobbelt luft. */
+/* Christian 11/9: båndet skal have «den samme bredde som fra logo og til Lad os
+   bygge» — altså .wrap's INDHOLDSKASSE, ikke dens ydre kasse. Derfor trækkes
+   gutteret fra på begge led:
+
+     width      100% minus to guttere  → flugter på smalle skærme
+     max-width  --wrap-max minus to    → flugter når .wrap er ved sit loft
+
+   Ét af de to alene ville ramme forkert i den anden ende: kun max-width gør
+   båndet fuldbredde under 1204px, kun width gør det 64px for bredt over. */
 .f-baand {
   margin-top: var(--header-h);
+  width: calc(100% - var(--wrap-gutter) * 2);
+  max-width: calc(var(--wrap-max) - var(--wrap-gutter) * 2);
+  margin-left: auto;
+  margin-right: auto;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 8px 24px;
+  padding: 8px 16px;
   background: linear-gradient(90deg, var(--blue-glow), transparent 75%);
-  border-bottom: 1px solid var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 10px;
   font-size: 0.8rem;
   min-height: 38px;
 }

@@ -221,3 +221,35 @@ test(".o er IKKE bundet til <em> — ellers farver paletten ingenting", () => {
   expect(css).toMatch(/(^|\n)\.o\s*\{/);
   expect(css).not.toMatch(/(^|\n)em\.o\s*\{/);
 });
+
+// ── F008.9 — featured-båndet flugter med sidens indhold ─────────────────────
+//
+// Christian 11/9: «gør featured banneret den samme bredde som fra logo og til
+// Lad os bygge». Båndet skal altså have .wrap's INDHOLDSKASSE, ikke dens ydre.
+//
+// Det farlige her er ikke bredden, det er at den kan drifte: gutteret skifter
+// til 20px på telefon, så et gentaget «32» ville flugte den dag det blev
+// skrevet og være forkert den dag nogen rettede det ene sted.
+
+test("båndets bredde udledes af wrap-tokens — ikke af gentagne tal", () => {
+  const css = readFileSync(new URL("./styles/brand.css", import.meta.url).pathname, "utf8");
+  const blok = css.slice(css.indexOf(".f-baand {"), css.indexOf("}", css.indexOf(".f-baand {")));
+  expect(blok).toContain("var(--wrap-gutter)");
+  expect(blok).toContain("var(--wrap-max)");
+  // Et hardkodet tal her ville se rigtigt ud og drifte i stilhed.
+  expect(blok).not.toMatch(/(width|max-width):[^;]*\b(1140|32|20)px/);
+});
+
+test("KONTROL: .wrap bruger de SAMME tokens — ellers er der to kilder igen", () => {
+  const css = readFileSync(new URL("./styles/brand.css", import.meta.url).pathname, "utf8");
+  const blok = css.slice(css.indexOf(".wrap {"), css.indexOf("}", css.indexOf(".wrap {")));
+  expect(blok).toContain("max-width: var(--wrap-max)");
+  expect(blok).toContain("padding: 0 var(--wrap-gutter)");
+});
+
+test("telefon-gutteret ændrer TOKENET, ikke kun .wrap", () => {
+  // Ændres kun .wrap's padding, bliver båndet ved med at flugte med 32px mens
+  // teksten rykker ind til 20px — og så flugter de ikke længere.
+  const css = readFileSync(new URL("./styles/brand.css", import.meta.url).pathname, "utf8");
+  expect(css).toMatch(/:root\s*\{\s*--wrap-gutter:\s*20px/);
+});
