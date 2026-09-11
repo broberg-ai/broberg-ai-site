@@ -251,3 +251,68 @@ artiklen var valgt for. Det ville være blevet målt som modellens fejl.
 **Konsekvens for Christians beslutning:** Azure-valget (custom subdomain eller en
 dedikeret Speech-resource) **venter** til voice-engine har målt. Holder deres vej,
 skal kontoen slet ikke røres.
+
+## 11/9-2026, senere samme dag — teksten LYSER, og Azure blev overflødig
+
+voice-engine målte ord-tidskoder på vores egen lydfil med **forced alignment**.
+Vejen ai-sdk foreslog holdt: vi laver selv lyden, så vi ejer både lyden og
+teksten — det er den nemme udgave af problemet, ikke den svære.
+
+| metode | median | p90 |
+|---|---|---|
+| whisper, segmenter | 50 ms | 210 ms |
+| whisper, dtw-tokens | 120 ms | 230 ms |
+| **forced alignment (Alvenir)** | **20 ms** | **60 ms** |
+| samme, men med ordene BLANDET | 180 ms | 480 ms |
+
+Sidste linje er den der gør resten til en måling frem for en påstand.
+
+**Deres forbehold, i deres egen form:** de 67 anslag er 10 % af ordene og står
+alle først i en sætning — ordgrænser MIDT i en sætning er der intet facit for.
+Og modellen er trænet på mennesker, ikke på syntetisk tale. Går en fremtidig
+stemme galt, betyder det «denne model på denne stemme», ikke at vejen er lukket.
+
+### Kontrolleret før vi stolede på dem
+
+```
+offsets der ikke passer på vores manuskript:   0 af 669
+skridt baglæns:                                 0
+tomme spænd:                                    0
+sidste ord slutter:                     288,70 s af 289,704 s
+```
+
+### Og så kørte hele kæden — for første gang på ægte data
+
+Lens-flow 9c3089c5, sitet kørende lokalt med tidskoderne som sidecar:
+
+- ved 86 % af lyden dækker ord-markeringen **nøjagtig «sanneandersen.dk»** —
+  netop det ord der udtales som fem (`sanne andersen punktum d k`), altså der
+  hvor et skævt spænd ville være mest synligt
+- sætningsmarkeringen dækker hele sætningen omkring det, og ikke naboen
+- markeringen har en synlig kasse på skærmen, og skærmbilledet er set
+
+### Kørslen fandt en fejl i vores egen kode
+
+Anden kørsel fejlede med **429 på tidskode-ruten**: den delte rate-limit-spand
+med TTS-genereringen (3 kald/minut), så ÉN afspilning brugte to. Anden gang en
+læser trykkede Lyt inden for et minut, fik han lyd uden markering og ingen fejl
+at se. Rettet med egen spand (60/minut, det er en filindlæsning), mutations-
+bevist, udrullet — og kontrolleret på produktionen: fem kald i træk, alle 404,
+ingen 429.
+
+## Det åbne valg: hvor bliver tidskoderne LAVET i drift? (F019.7)
+
+Aligneren kører på Christians Mac; sitet kører på Fly. Tre veje, og det er hans:
+
+| | hvad det koster | hvad det giver |
+|---|---|---|
+| **A. voice-engine pakker målingen som en tjeneste flåden kan kalde** | et par dage hos dem | alle vores sites får det, uafhængigt af TTS-udbyder |
+| **B. Macen laver dem, sitet henter dem via API** | mindst arbejde | kun artikler der er «kørt igennem» lyser; afhænger af at Macen er tændt |
+| **C. Azures batch-rute** | ét flueben hos Christian | Microsoft laver dem — og vi er bundet til Microsoft |
+
+**Anbefaling: A.** Det er en fælles evne, ikke en broberg.ai-detalje, og
+husets regel er genbrug frem for en lokal kopi. B er en god midlertidig bro hvis
+vi vil se det virke på alle 59 artikler i denne uge.
+
+**Indtil valget er truffet:** knappen virker på hver artikel, lyden spiller, og
+markeringen tænder af sig selv i samme øjeblik en sidecar-fil findes.
