@@ -121,6 +121,21 @@ export function Contact({ data, locale, cmsRef }: { data: ContactCopy; locale: L
             <button class="btn" type="submit" style="width:100%;justify-content:center;margin-top:8px" data-testid="contact-submit">
               <span {...fa("submit")}>{f("submit", isEn ? "Send inquiry" : "Send forespørgsel")}</span> <span class="ar">→</span>
             </button>
+            {/* Svarløftet. Det bruger IKKE f(), fordi f() kræver en reservetekst
+                — og et LØFTE må aldrig opstå fordi et felt er tomt. Står det
+                ikke i cms, står det ikke her. Christian 11/9 valgte «Vi vender
+                tilbage samme dag.» frem for at overbyde en konkurrents «inden
+                2 timer»: et løfte der holder hver gang er mere værd end et
+                hurtigere der ikke gør.
+
+                Det står EFTER knappen med vilje — man læser det når man har
+                besluttet sig for at skrive, i stedet for at det konkurrerer
+                med knappen. */}
+            {data.form?.svarloefte ? (
+              <p class="cta-note" data-testid="kontakt-svarloefte" {...fa("svarloefte")}>
+                {data.form.svarloefte}
+              </p>
+            ) : null}
             <p class="form-status" data-testid="contact-status"></p>
           </form>
         </div>

@@ -372,15 +372,6 @@ export function Contact({ data, cmsRef }: { data: ContactData; cmsRef?: CmsRef }
           <a href={data.formHref} class="btn" data-testid="kontakt-cta-mail">
             <span {...cmsAttrs(cmsRef, "ctaPrimary")}>{data.ctaLabel}</span> <span class="ar">→</span>
           </a>
-          {data.ctaNote ? (
-            <p
-              class="cta-note"
-              data-testid="kontakt-svarloefte"
-              {...cmsAttrs(cmsRef, "ctaNote")}
-            >
-              {data.ctaNote}
-            </p>
-          ) : null}
         </div>
       </div>
     </section>
