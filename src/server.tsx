@@ -8,7 +8,7 @@ import { serveStatic } from "hono/bun";
 import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
 import { handleAidanChat, handleAidanHealth, handleAidanStatus } from "@/aidan.ts";
-import { handleAidanIndsigter, handleAidanLaes, handleAidanTidskoder } from "@/aidan-laes.ts";
+import { handleAidanIndsigter, handleAidanLaes, handleAidanTidskoder, handleAidanGemTidskoder } from "@/aidan-laes.ts";
 import { handleAidanSendLyd, handleAidanSendSvar, handleAidanFeedback } from "@/aidan-mail.ts";
 import { handleTrailIngest } from "@/trail-push.ts";
 import { handleAdminChat, handleAdminChatApi } from "@/chat-relay.ts";
@@ -129,6 +129,8 @@ app.get("/api/aidan/indsigter", handleAidanIndsigter);
 app.post("/api/aidan/laes", handleAidanLaes);
 // F019.6 — ord-tidskoderne ved siden af lydfilen. 404 indtil de findes.
 app.get("/api/aidan/tidskoder", handleAidanTidskoder);
+// F019.7 — broen over Macen skubber tidskoderne ind. HMAC-signeret, ship-dark.
+app.post("/api/aidan/tidskoder", handleAidanGemTidskoder);
 app.post("/api/aidan/send-lyd", handleAidanSendLyd);
 app.post("/api/aidan/send-svar", handleAidanSendSvar);
 app.post("/api/aidan/feedback", handleAidanFeedback);

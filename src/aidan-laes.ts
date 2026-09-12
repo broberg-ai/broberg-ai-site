@@ -15,7 +15,7 @@
  * artikelversion koster præcis ét kald. Cachen er ephemeral (nulstilles ved
  * deploy) — det er den billige og rigtige afvejning her.
  */
-import { createHash } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -436,6 +436,131 @@ export async function tidskoderFor(
   } catch {
     return null; // ingen tidskoder endnu — oplæseren spiller uden markering
   }
+}
+
+/**
+ * F019.7 — modtageren for ord-tidskoder (broen over Macen).
+ *
+ * voice-engines aligner kører på Christians Mac; sitet kører i skyen. Indtil
+ * målingen kan kaldes som en tjeneste, skubbes den herind — gennem appens EGEN
+ * skrivevej, aldrig gennem SSH ind i den mappe appen selv skriver i.
+ *
+ * DEN BÆRENDE KONTROL ER IKKE SIGNATUREN, det er TEKSTEN. Tidskoder er
+ * tegnpositioner i et bestemt manuskript; hører de til en anden udgave af
+ * artiklen, peger hver eneste af dem et forkert sted hen — og resultatet er
+ * ikke en fejl, men en markering der lyser det forkerte ord. Derfor skal
+ * afsenderens `tale` være IDENTISK med den vi selv regner os frem til, og hvert
+ * eneste ord skal stå på sin påståede plads i den. 409 hvis ikke.
+ *
+ * Ship-dark uden TIDSKODER_SECRET, som trail-ingest.
+ */
+function ensHexTid(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && timingSafeEqual(ab, bb);
+}
+
+/** voice-engines eget format — vi tager imod DET frem for at bede dem oversætte.
+ *  `spoken` fortæller hvor mange TALTE ord spændet dækker (et alias som
+ *  «sanneandersen.dk» er fem), så markeringen dækker hele det skrevne ord. */
+export interface RaaTidskode {
+  word: string;
+  offset: number;
+  start: number;
+  end: number;
+  spoken?: number;
+}
+
+/** Fejlen er en sætning, ikke en kode: den skal kunne læses i et terminalvindue. */
+export function omsaetTidskoder(tale: string, raa: RaaTidskode[]): { ord: Ord[] } | { fejl: string } {
+  if (!Array.isArray(raa) || raa.length === 0) return { fejl: "tom liste" };
+  let sidst = -1;
+  const ord: Ord[] = [];
+  for (const [i, r] of raa.entries()) {
+    if (typeof r?.word !== "string" || !Number.isInteger(r.offset)) return { fejl: `ord ${i}: mangler word/offset` };
+    if (!(typeof r.start === "number" && typeof r.end === "number") || r.end < r.start) {
+      return { fejl: `ord ${i} («${r.word}»): ugyldigt tidsspænd ${r.start}–${r.end}` };
+    }
+    if (r.start < sidst) return { fejl: `ord ${i} («${r.word}») går BAGLÆNS i tid` };
+    sidst = r.start;
+    if (tale.slice(r.offset, r.offset + r.word.length) !== r.word) {
+      return {
+        fejl: `ord ${i}: «${r.word}» står ikke på plads ${r.offset} i vores manuskript — ` +
+          `dér står «${tale.slice(r.offset, r.offset + r.word.length)}». Tidskoderne hører til en ANDEN tekst.`,
+      };
+    }
+    ord.push({ fra: r.offset, laengde: r.word.length, msFra: Math.round(r.start * 1000), msTil: Math.round(r.end * 1000) });
+  }
+  return { ord };
+}
+
+export async function handleAidanGemTidskoder(c: Context): Promise<Response> {
+  const secret = process.env.TIDSKODER_SECRET;
+  if (!secret) return c.json({ error: "ikke_konfigureret" }, 503);
+
+  const raw = await c.req.text();
+  const given = (c.req.header("x-tidskoder-signature") || "").replace(/^sha256=/, "");
+  const expected = createHmac("sha256", secret).update(raw).digest("hex");
+  if (!given || !ensHexTid(expected, given)) return c.json({ error: "ugyldig_signatur" }, 401);
+
+  let krop: { sti?: string; persona?: string; tale?: string; lydHash?: string; ord?: RaaTidskode[] };
+  try {
+    krop = JSON.parse(raw);
+  } catch {
+    return c.json({ error: "ugyldig_krop" }, 400);
+  }
+  const persona: Persona = krop.persona === "airina" ? "airina" : "aidan";
+
+  let tale: string;
+  let fil: string;
+  try {
+    ({ tale, fil } = await talenFor(String(krop.sti ?? ""), persona));
+  } catch (e) {
+    if (e instanceof LydFejl) return c.json({ error: e.message }, e.status);
+    throw e;
+  }
+
+  // TEKSTEN FØRST. En signatur beviser hvem der ringer, ikke at de taler om det
+  // samme som os.
+  if (krop.tale !== tale) {
+    return c.json(
+      {
+        error: "tale_afviger",
+        detalje: `manuskriptet er ${krop.tale?.length ?? 0} tegn hos afsenderen og ${tale.length} hos os` +
+          (krop.tale?.length === tale.length ? " — samme længde, men ikke samme tekst" : ""),
+      },
+      409,
+    );
+  }
+
+  // OG LYDEN SKAL VÆRE PRÆCIS DEN FIL DER BLEV MÅLT PÅ.
+  //
+  // Tekst-kontrollen ovenfor er ikke nok, og det blev bevist samme dag den blev
+  // skrevet: vi ændrede UDTALEN af vores domæner, teksten var uændret, og lyden
+  // blev 1,18 s længere. Tidskoder målt på den gamle fil ville være sluppet
+  // igennem — og hvert eneste ord efter det første domæne ville lyse for tidligt.
+  // Et fingeraftryk af selve lyden er den eneste kontrol der fanger det.
+  let lyd: Uint8Array;
+  try {
+    lyd = new Uint8Array(await readFile(fil));
+  } catch {
+    return c.json({ error: "lyden_findes_ikke_endnu" }, 409);
+  }
+  const lydHash = createHash("sha256").update(lyd).digest("hex");
+  if (krop.lydHash !== lydHash) {
+    return c.json(
+      { error: "lyden_afviger", detalje: `vi har ${lydHash.slice(0, 12)}…, I målte på ${String(krop.lydHash ?? "intet").slice(0, 12)}…` },
+      409,
+    );
+  }
+
+  const ud = omsaetTidskoder(tale, krop.ord ?? []);
+  if ("fejl" in ud) return c.json({ error: "ugyldige_tidskoder", detalje: ud.fejl }, 422);
+
+  const sti = fil.replace(/\.mp3$/, ".word.json");
+  await writeFile(sti, JSON.stringify({ ord: ud.ord, kilde: "voice-engine forced alignment" }));
+  console.log(`[aidan-laes] tidskoder gemt: ${ud.ord.length} ord for ${krop.sti}`);
+  return c.json({ ok: true, ord: ud.ord.length });
 }
 
 export async function handleAidanTidskoder(c: Context): Promise<Response> {
