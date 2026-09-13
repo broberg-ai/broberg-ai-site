@@ -1846,6 +1846,10 @@ function featuredBaand() {
 function lytOplaeser() {
   const rod = document.querySelector<HTMLElement>('[data-testid="lyt"]');
   const krop = document.querySelector<HTMLElement>(".post-body");
+  // TITLEN LÆSES OGSÅ HØJT, og den står uden for brødteksten. Uden den som rod
+  // har de første ord intet sted at lyse — og det ser ud som om markeringen
+  // slet ikke virker, fordi det er dér man kigger når man lige har trykket play.
+  const titel = document.querySelector<HTMLElement>(".post-title");
   const knap = rod?.querySelector<HTMLButtonElement>('[data-testid="lyt-knap"]');
   if (!rod || !krop || !knap) return;
   const d = rod.dataset;
@@ -1905,7 +1909,9 @@ function lytOplaeser() {
       /* ingen tidskoder — lyden spiller uden markering */
     }
 
-    const markoer: Markoer | null = koder ? lavMarkoer(krop!, koder) : null;
+    const markoer: Markoer | null = koder
+      ? lavMarkoer([titel, krop!].filter(Boolean) as Element[], koder)
+      : null;
     const rulning = lavRulning();
     for (const h of rulning.hændelser) {
       window.addEventListener(h, () => rulning.afbryd(), { passive: true });

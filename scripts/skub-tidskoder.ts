@@ -24,6 +24,10 @@ import { readFile } from "node:fs/promises";
 
 const [, , sti, alignmentFil, ...rest] = process.argv;
 const base = rest.includes("--base") ? rest[rest.indexOf("--base") + 1]! : "https://broberg.ai";
+// Manuskriptet kan ligge i alignment-filen ELLER som sin egen fil ved siden af.
+// voice-engine sender det som en separat fil, og det er deres valg at leve med:
+// serveren dømmer alligevel om teksten er vores.
+const manuskriptFil = rest.includes("--manuskript") ? rest[rest.indexOf("--manuskript") + 1]! : null;
 const secret = process.env.TIDSKODER_SECRET;
 
 if (!sti || !alignmentFil) {
@@ -60,9 +64,12 @@ if (tidskoderSvar.ok) console.log("  (sitet har allerede tidskoder for denne udg
 
 // `tale` skal være sitets egen. Den eneste kilde vi har udefra er den vi selv
 // afleverede til aligneren, så den sendes med og serveren dømmer.
-const tale = String(alignment.tale ?? alignment.manuskript ?? "");
+const tale = manuskriptFil
+  ? await readFile(manuskriptFil, "utf-8")
+  : String(alignment.tale ?? alignment.manuskript ?? "");
 if (!tale) {
-  console.error("alignment-filen bærer ikke manuskriptet («tale»). Uden det kan serveren ikke");
+  console.error("intet manuskript: hverken i alignment-filen («tale») eller via --manuskript.");
+  console.error("Uden det kan serveren ikke");
   console.error("afgøre om tidskoderne hører til DENNE udgave af artiklen — og den afviser dem.");
   process.exit(1);
 }

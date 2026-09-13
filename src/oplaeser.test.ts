@@ -56,7 +56,7 @@ function artikel(html = ARTIKEL): HTMLElement {
   return dok.querySelector(".post-body") as HTMLElement;
 }
 
-const koder = (tale = TALE): Tidskoder => ({ tale, ord: syntetiske(tale) });
+const koder = (tale: string = TALE): Tidskoder => ({ tale, ord: syntetiske(tale) });
 
 /** En tegner der husker hvad den blev bedt om — så prøven kan måle malingen
  *  uden en browser der har CSS Custom Highlight API. */
@@ -262,5 +262,48 @@ describe("markeringen kan læses", () => {
   it("begge lag males af CSS, ikke af et element i teksten", () => {
     expect(CSS).toContain("::highlight(oplaes-ord)");
     expect(CSS).toContain("::highlight(oplaes-saetning)");
+  });
+});
+
+/* ── titlen læses højt, og den står UDEN FOR brødteksten ─────────────────────
+ *
+ * MÅLT PÅ PRODUKTIONEN, og det var Christians fejlmelding: lyden spillede
+ * (0:04 / 0:30), tidskoderne kom frem (svar 200), ingen JS-fejl — og der blev
+ * malt INTET. Oplæsningen begynder med artiklens titel, og med brødteksten som
+ * eneste rod havde de første ord intet sted at lyse.
+ *
+ * Det er dér man kigger når man lige har trykket play, så featuren så helt død
+ * ud selvom resten af kæden virkede.
+ */
+describe("markeringen dækker også det der står uden for brødteksten", () => {
+  const TITEL = "Chat med dit website";
+  const TALE_M_TITEL = `${TITEL}. ${TALE}`;
+
+  function sideMedTitel() {
+    dok.body.innerHTML = `<h1 class="post-title">${TITEL}</h1><div class="post-body">${ARTIKEL}</div>`;
+    return [dok.querySelector("h1")!, dok.querySelector(".post-body")!];
+  }
+
+  it("det FØRSTE ord lyser — i titlen", () => {
+    const m = lavMarkoer(sideMedTitel(), koder(TALE_M_TITEL), null);
+    expect(m.ved(10).ord?.toString()).toBe("Chat");
+  });
+
+  it("KONTROL: med kun brødteksten som rod lyser det IKKE", () => {
+    // Præcis fejlen der blev målt på produktionen. Uden denne ville prøven
+    // ovenfor bestå lige så grønt på en tilfældig anden rettelse.
+    const [, krop] = sideMedTitel();
+    const m = lavMarkoer(krop!, koder(TALE_M_TITEL), null);
+    expect(m.ved(10).ord?.toString()).not.toBe("Chat");
+  });
+
+  it("og markeringen finder STADIG tilbage til brødteksten bagefter", () => {
+    // Den sværeste del: efter titlen skal opslaget synkronisere igen, ellers
+    // havde vi byttet en død start for en død resten.
+    const m = lavMarkoer(sideMedTitel(), koder(TALE_M_TITEL), null);
+    const ord = [...TALE_M_TITEL.matchAll(/\S+/g)];
+    const i = ord.findIndex((o) => o[0] === "agenter");
+    expect(i).toBeGreaterThan(0);
+    expect(m.ved(i * 500 + 10).ord?.toString()).toContain("agenter");
   });
 });

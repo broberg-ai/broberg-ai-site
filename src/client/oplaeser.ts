@@ -54,7 +54,14 @@ export function cssTegner(): Tegner | null {
 }
 
 /**
- * Artiklens tekstknuder som stykker.
+ * Artiklens tekstknuder som stykker — fra FLERE rødder, og det er ikke en
+ * generalisering for dens egen skyld.
+ *
+ * Oplæsningen begynder med artiklens TITEL, og titlen står uden for
+ * brødteksten. Med brødteksten som eneste rod havde de første ord intet sted at
+ * lyse — målt på produktionen: lyden spillede (0:04 / 0:30), tidskoderne kom
+ * frem (svar 200), og der blev malt INTET. Ingen fejl nogen steder; præcis den
+ * tavse form featuren ellers er bygget til at undgå.
  *
  * SEPARATOREN ER DET BÆRENDE HER. To afsnit giver to tekstknuder uden noget
  * imellem, så en ren sammensætning ville lime «…slut» og «Start…» til ét ord
@@ -62,10 +69,12 @@ export function cssTegner(): Tegner | null {
  * Et enkelt mellemrum imellem koster ingenting: ord findes som \S+, så et
  * mellemrum kan aldrig blive valgt som træf.
  */
-export function tekststykker(rod: Element): Stykke<Text>[] {
+export function tekststykker(roeder: Element | readonly Element[]): Stykke<Text>[] {
+  const liste = Array.isArray(roeder) ? roeder : [roeder as Element];
   const ud: Stykke<Text>[] = [];
-  const gaa = (rod.ownerDocument ?? document).createTreeWalker(rod, 4 /* SHOW_TEXT */);
   let forrige: Text | null = null;
+  for (const rod of liste) {
+  const gaa = (rod.ownerDocument ?? document).createTreeWalker(rod, 4 /* SHOW_TEXT */);
   for (let n = gaa.nextNode(); n; n = gaa.nextNode()) {
     const t = n as Text;
     if (t.data === "") continue;
@@ -74,6 +83,7 @@ export function tekststykker(rod: Element): Stykke<Text>[] {
     }
     ud.push({ tekst: t.data, ref: t });
     forrige = t;
+  }
   }
   return ud;
 }
@@ -84,9 +94,14 @@ export interface Markoer {
   ryd(): void;
 }
 
-export function lavMarkoer(rod: Element, t: Tidskoder, tegner: Tegner | null = cssTegner()): Markoer {
-  const doc = rod.ownerDocument ?? document;
-  const stykker = tekststykker(rod);
+export function lavMarkoer(
+  roeder: Element | readonly Element[],
+  t: Tidskoder,
+  tegner: Tegner | null = cssTegner(),
+): Markoer {
+  const foerste = (Array.isArray(roeder) ? roeder[0] : (roeder as Element))!;
+  const doc = foerste.ownerDocument ?? document;
+  const stykker = tekststykker(roeder);
   const kort = byggKort(t.tale, stykker);
   const saetninger = saetningerFra(t.tale);
 
