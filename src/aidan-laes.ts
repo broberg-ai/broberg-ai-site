@@ -364,11 +364,35 @@ async function talSammenhaengende(tale: string, stemme: string, locale: Locale):
  * hash er præcis den dublet der er rigtig den dag den skrives og forkert den
  * dag den ene rettes.
  */
+/**
+ * En sti fra en browser er PROCENT-KODET. Facitlisten er det ikke.
+ *
+ * Christian meldte at oplæsningen fejlede på «Design i højere luftlag». Klienten
+ * sender `location.pathname`, og browseren giver den som
+ * «/indsigter/design-i-h%C3%B8jere-luftlag» — mens listen her rummer stien med
+ * ø'et. Opslaget ramte forbi, og svaret var «ikke_en_indsigt»: altså en artikel
+ * der findes, meldt som ikke-eksisterende.
+ *
+ * Normaliseringen ligger HER frem for i klienten, fordi det er opslaget der er
+ * kravet — enhver fremtidig kalder (mail-ruten, tidskoderne, et script) har
+ * samme problem, og en rettelse i browseren ville kun dække den ene.
+ *
+ * En ugyldig %-sekvens kaster; så bruges strengen som den kom, og opslaget
+ * fejler bagefter på normal vis frem for at vælte ruten.
+ */
+export function normaliserSti(sti: string): string {
+  try {
+    return decodeURIComponent(sti);
+  } catch {
+    return sti;
+  }
+}
+
 async function talenFor(
   sti: string,
   persona: Persona,
 ): Promise<{ tale: string; titel: string; fil: string; stemme: string; locale: Locale }> {
-  const post = (await indsigtsStier()).get(sti);
+  const post = (await indsigtsStier()).get(normaliserSti(sti));
   if (!post) throw new LydFejl(404, "ikke_en_indsigt");
   // KILDEN ER ARTIKLENS EGET CMS-FELT, ikke sidens HTML (Christians GO 4/9):
   // så hører oplæseren aldrig breadcrumb, meta-linje, tags eller outro — og
