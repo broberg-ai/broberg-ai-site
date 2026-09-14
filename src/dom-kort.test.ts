@@ -195,3 +195,32 @@ describe("tegnsætning alene er ikke et ord", () => {
     expect(kort[tale.length - 1]).not.toBeNull();
   });
 });
+
+/* ── ÉN afsporing må ikke være permanent ─────────────────────────────────────
+ *
+ * Christian: «den startede meget godt men så stoppede den - det er SLET ikke
+ * robust.» Og han havde ret: markøren gik kun fremad, så løb den først forbi
+ * det sted talen var nået til, fandt den aldrig tilbage. Resten af artiklen var
+ * dermed død, uanset hvor godt den havde ramt indtil da.
+ */
+describe("kortet finder tilbage efter en afsporing", () => {
+  it("et stykke tale der IKKE står i teksten koster ikke resten af artiklen", () => {
+    const tale =
+      "Første afsnit her. " +
+      "ET INDSKUD DER SLET IKKE FINDES PAA SIDEN OG SOM TRÆKKER MARKØREN FREM. " +
+      "Sidste afsnit skal stadig findes.";
+    const stykker = st("Første afsnit her. ", "Sidste afsnit skal stadig findes.");
+    const kort = byggKort(tale, stykker);
+    const sidsteOrd = tale.lastIndexOf("stadig");
+    expect(kort[sidsteOrd]).not.toBeNull();
+  });
+
+  it("KONTROL: gensynkroniseringen springer ikke bare til et tilfældigt ord", () => {
+    // Uden denne ville «hop altid frem til noget» bestå prøven ovenfor. Et ord
+    // der slet ikke står i teksten skal blive ved med at være null.
+    const tale = "Første afsnit her. FANTASIORD ingensteds. Sidste afsnit.";
+    const kort = byggKort(tale, st("Første afsnit her. ", "Sidste afsnit."));
+    const i = tale.indexOf("FANTASIORD");
+    expect(kort[i]).toBeNull();
+  });
+});

@@ -63,6 +63,8 @@ function ord(tekst: string): { ord: string; fra: number }[] {
  * synkronisere igen — et loft, så en artikel der VIRKELIG afviger ikke får os
  * til at lede resten af dokumentet igennem for hvert ord.
  */
+const TAAL_MISSER = 4;
+
 export function byggKort<R>(tale: string, stykker: readonly Stykke<R>[], maksSpring = 12): (Sted<R> | null)[] {
   const kort: (Sted<R> | null)[] = new Array(tale.length).fill(null);
 
@@ -80,6 +82,8 @@ export function byggKort<R>(tale: string, stykker: readonly Stykke<R>[], maksSpr
   let ti = 0;
   /** Hvor langt inde i det NUVÆRENDE tekstord vi er nået (i normaliseret form). */
   let forbrugt = 0;
+  /** Forgæves ord i træk. Nås loftet, forsøges en gensynkronisering. */
+  let misser = 0;
 
   for (const t of taleOrd) {
     const soegt = norm(t.ord);
@@ -106,7 +110,43 @@ export function byggKort<R>(tale: string, stykker: readonly Stykke<R>[], maksSpr
       // Derfor forbruges tekstordet stykkevis frem for at blive brugt op.
       if (rest.startsWith(soegt) || soegt.startsWith(rest)) { traef = i; start = fra; break; }
     }
-    if (traef === -1) continue; // ordet blev ikke genfundet — feltet står null
+    if (traef === -1) {
+      // GENSYNKRONISERING. Uden den er ÉN afsporing permanent: markøren går kun
+      // fremad, så er den først løbet forbi det sted talen er nået til, finder
+      // den aldrig tilbage — og markeringen «starter godt og stopper», hvilket
+      // er præcis den melding der fremtvang denne kode.
+      //
+      // Efter et antal forgæves ord i træk søges der i HELE den resterende
+      // tekst efter det næste ord der er langt nok til at være et holdepunkt.
+      // Korte ord duer ikke som anker: «og» findes overalt, og et anker dér
+      // ville rive markøren tilbage til ordets første forekomst.
+      //
+      // ÆRLIGT FORBEHOLD: netop dét led (soegt.length >= 5) er IKKE forseglet af
+      // en prøve — mit forsøg på en målte noget andet end det skulle, og jeg
+      // fjernede den frem for at lade en grøn prøve stå for en spærre den ikke
+      // dækker. De to andre led er mutations-bevist.
+      if (++misser >= TAAL_MISSER && soegt.length >= 5) {
+        // DER SØGES OGSÅ BAGUD, og det er hele pointen.
+        //
+        // Målt med en instrumenteret kørsel: ét tilfældigt sammenfald («FINDES»
+        // i et stykke der ikke stod på siden ramte artiklens sidste ord
+        // «findes.») trak markøren HELT til enden. Alt derefter var dødt. En
+        // gensynkronisering der kun må søge fremad kan pr. definition ikke
+        // rette dét — den står allerede efter målet.
+        //
+        // Fremad først, så et normalt forløb aldrig springer tilbage i en tekst
+        // hvor det samme ord optræder flere gange; bagud kun som sidste udvej.
+        const frem = tekstOrd.findIndex((o, i) => i >= ti && norm(o.ord) === soegt);
+        const nyt = frem !== -1 ? frem : tekstOrd.findIndex((o) => norm(o.ord) === soegt);
+        if (nyt !== -1) {
+          ti = nyt;
+          forbrugt = 0;
+          misser = 0;
+        }
+      }
+      continue; // ordet blev ikke genfundet — feltet står null
+    }
+    misser = 0;
 
     const mål = tekstOrd[traef]!;
     const n = norm(mål.ord);

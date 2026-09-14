@@ -403,8 +403,20 @@ async function talenFor(
   // Bælte også HER: titlen går i mailens emne/overskrift, og et rich-title-
   // felt kan bære HTML (målt i Christians mail 5/9: escaped <em> i overskriften).
   const titel = String(data.title ?? post.slug).replace(/<[^>]+>/g, "").trim();
+  // MANCHETTEN LÆSES IKKE OP, og det er en rettelse, ikke en forglemmelse.
+  //
+  // Den står ikke på artikelsiden — den bruges på oversigterne. Da oplæsningen
+  // skal kunne FØLGES på skærmen, betyder hvert ord uden et sted at stå to ting:
+  // der er tavse sekunder hvor intet kan lyse, OG sammenkoblingen mellem tale og
+  // side glider ud af trit. Christian så netop det: «den startede meget godt men
+  // så stoppede den».
+  //
+  // Målt: manchetten citerer en sætning der også står i brødteksten, så
+  // koblingen sprang FREM i teksten under manchetten og kunne ikke finde tilbage
+  // til brødtekstens begyndelse bagefter.
+  //
+  // Teksten der læses op er nu nøjagtig den der står på siden: titel + indhold.
   const dele = [titel];
-  if (data.excerpt) dele.push(String(data.excerpt));
   dele.push(String(data.content));
   const tale = tilTale(dele.join("\n\n"));
   if (tale.length < 200) throw new LydFejl(422, "for_tynd");
