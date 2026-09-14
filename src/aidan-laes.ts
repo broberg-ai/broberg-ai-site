@@ -109,7 +109,9 @@ const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" 
   { word: "URL", alias: "U R L", sprog: "da" },
   { word: "SEO", alias: "S E O", sprog: "da" },
   { word: "GDPR", alias: "G D P R", sprog: "da" },
-  { word: "SaaS", alias: "sas", sprog: "da" },
+  // «sas» blev hørt som «sås» — en sovs. Christian 14/9 valgte «sass» efter at
+  // have hørt fem udgaver.
+  { word: "SaaS", alias: "sass", sprog: "da" },
   { word: "SDK", alias: "S D K", sprog: "da" },
   { word: "MCP", alias: "M C P", sprog: "da" },
   { word: "PWA", alias: "P W A", sprog: "da" },

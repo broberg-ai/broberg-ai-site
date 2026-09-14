@@ -77,7 +77,9 @@ describe("udtale-ordbogen (ai-sdk 0.39.0 pronunciations — Christians formål 5
     }
     // SaaS er IKKE en bogstavrække — den udtales som et ord, og at stave den
     // ville gøre den værre. Den negative kontrol på reglen.
-    expect(da).toContainEqual({ word: "SaaS", alias: "sas" });
+    // «sas» blev hørt som «sås» — en sovs. Christian 14/9; «sass» er den
+    // engelske form han godkendte efter at have hørt fem udgaver.
+    expect(da).toContainEqual({ word: "SaaS", alias: "sass" });
     // Engelsk siger dem selv rigtigt; en dansk lydregel ville skade dem.
     const en = udtaleFor("en");
     expect(en.find((r) => r.word === "HTML")).toBeUndefined();
