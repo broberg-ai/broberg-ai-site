@@ -31,7 +31,7 @@ describe("justeringsordbogen må aldrig nå stemmen", () => {
 describe("justeringsFor", () => {
   it("giver danske tal-ord på dansk", () => {
     expect(justeringsFor("grundlagt i 1995 med 200 kunder", "da")).toEqual([
-      { word: "1995", alias: "nitten hundrede og femoghalvfems" },
+      { word: "1995", alias: "nitten hundrede femoghalvfems" },
       { word: "200", alias: "to hundrede" },
     ]);
   });

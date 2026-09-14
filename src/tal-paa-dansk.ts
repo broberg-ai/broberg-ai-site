@@ -35,12 +35,34 @@ function under100(n: number): string {
   return ener === 0 ? TIERE[tier]! : `${ENERE[ener]}og${TIERE[tier]}`;
 }
 
+/**
+ * «OG» STÅR IKKE I NOGET ALIAS, og grunden er ikke at det ikke siges.
+ *
+ * voice-engine forsøgte at måle det 14/9 og AFVISTE deres eget svar, fordi
+ * kontrollen vendte om: klippet der beviseligt IKKE indeholder «og» scorede
+ * bedre på «og» (-2,29) end klippet der gør (-2,77). Årsagen er fonetisk —
+ * dansk «og» er ét vokal-fonem [ɔ], klemt mellem «tusind» og «seksogtyve»,
+ * som selv indeholder lyden. Justeringen kan placere det hvor som helst i
+ * nabovokalerne gratis. «Hundrede» er tre stavelser og kan ikke gemme sig.
+ *
+ * Så et «og» i ordlisten er en USTABIL ANKRING uanset om det udtales — og en
+ * ustabil ankring midt i et tal kan trække markeringen skævt. Uden det koster
+ * det ét umarkeret lille ord dér hvor det faktisk siges. Det er den billige
+ * fejl, og det er den vi vælger.
+ *
+ * DET ER ET FRAVALG PÅ GRUND AF ANKRING, IKKE EN PÅSTAND OM UDTALEN. Skriv
+ * ikke om på den her uden en kontrol der beviseligt kan skelne.
+ */
 function under1000(n: number): string {
   if (n < 100) return under100(n);
   const hundreder = Math.floor(n / 100);
   const rest = n % 100;
-  const foran = `${hundreder === 1 ? "et" : ENERE[hundreder]} hundrede`;
-  return rest === 0 ? foran : `${foran} og ${under100(rest)}`;
+  // «129» siges «hundrede niogtyve» — ikke «ET hundrede». MÅLT: «et» scorer
+  // -11,13, samme signatur som det kendte fraværende «hundrede» (-11,54). Et
+  // ord på -11 kan ikke gemme sig, så dét er en ægte måling og ikke støj.
+  // Kun målt på et helt tal under tusind; «et tusind» beholder sit «et».
+  const foran = hundreder === 1 ? "hundrede" : `${ENERE[hundreder]} hundrede`;
+  return rest === 0 ? foran : `${foran} ${under100(rest)}`;
 }
 
 /**
@@ -75,11 +97,11 @@ function aarstal(n: number): string | null {
   const hundreder = Math.floor(n / 100);
   const rest = n % 100;
   if (hundreder >= 20) {
-    // 2000-tallet siges som tusinder: «to tusind og seks».
-    return rest === 0 ? "to tusind" : `to tusind og ${under100(rest)}`;
+    // 2000-tallet siges som tusinder: «to tusind seks».
+    return rest === 0 ? "to tusind" : `to tusind ${under100(rest)}`;
   }
   const foran = `${under100(hundreder)} hundrede`;
-  return rest === 0 ? foran : `${foran} og ${under100(rest)}`;
+  return rest === 0 ? foran : `${foran} ${under100(rest)}`;
 }
 
 /**
@@ -98,9 +120,7 @@ export function talPaaDansk(n: number, form: "antal" | "aarstal" = "antal"): str
   const rest = n % 1000;
   const foran = `${tusinder === 1 ? "et" : under1000(tusinder)} tusind`;
   if (rest === 0) return foran;
-  // «to tusind og seksogtyve», men «et tusind seks hundrede og femogtyve»:
-  // «og» binder kun det sidste led, og hundrederne er allerede et led.
-  return rest < 100 ? `${foran} og ${under100(rest)}` : `${foran} ${under1000(rest)}`;
+  return `${foran} ${rest < 100 ? under100(rest) : under1000(rest)}`;
 }
 
 /**
@@ -143,7 +163,9 @@ export function talPoster(tekst: string): Array<{ word: string; alias: string }>
  * kan snige sig forbi som «samme ordbog». Hæv den når reglen læser et tal
  * anderledes end før — ikke ved en kommentar eller en omdøbning.
  *
- * 2 — 14/9-2026: årstal læses som årstal («nitten hundrede femoghalvfems»),
- *     efter måling hos voice-engine. 1 læste dem som antal.
+ * 2 — 14/9-2026: årstal læses som årstal, efter måling hos voice-engine.
+ *     1 læste dem som antal.
+ * 3 — 14/9-2026: «og» ude af alle tal (kan ikke ankres — ét vokal-fonem), og
+ *     «et» ude foran «hundrede» under tusind («hundrede niogtyve»).
  */
-export const TAL_REGEL_VERSION = 2;
+export const TAL_REGEL_VERSION = 3;

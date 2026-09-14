@@ -20,10 +20,10 @@ describe("talPaaDansk", () => {
     expect(talPaaDansk(90)).toBe("halvfems");
   });
 
-  it("læser hundreder med «et», ikke «en»", () => {
-    expect(talPaaDansk(100)).toBe("et hundrede");
+  it("siger «hundrede», ikke «et hundrede» — målt, ikke valgt", () => {
+    expect(talPaaDansk(100)).toBe("hundrede");
     expect(talPaaDansk(200)).toBe("to hundrede");
-    expect(talPaaDansk(195)).toBe("et hundrede og femoghalvfems");
+    expect(talPaaDansk(195)).toBe("hundrede femoghalvfems");
   });
 
   it("læser årstallet som et årstal, ikke som et antal", () => {
@@ -34,22 +34,25 @@ describe("talPaaDansk", () => {
     // «og» inde i tallet er STADIG uafklaret og står med vilje: sidder det i
     // aliasset uden at blive sagt, får justeringen et ord uden lyd; mangler
     // det, bliver ét lille ord ikke markeret — hvilket er dagens opførsel.
-    expect(talPaaDansk(1995, "aarstal")).toBe("nitten hundrede og femoghalvfems");
-    expect(talPaaDansk(1952, "aarstal")).toBe("nitten hundrede og tooghalvtreds");
-    expect(talPaaDansk(2026, "aarstal")).toBe("to tusind og seksogtyve");
-    expect(talPaaDansk(2007, "aarstal")).toBe("to tusind og syv");
+    expect(talPaaDansk(1995, "aarstal")).toBe("nitten hundrede femoghalvfems");
+    expect(talPaaDansk(1952, "aarstal")).toBe("nitten hundrede tooghalvtreds");
+    expect(talPaaDansk(2026, "aarstal")).toBe("to tusind seksogtyve");
+    expect(talPaaDansk(2007, "aarstal")).toBe("to tusind syv");
     expect(talPaaDansk(2000, "aarstal")).toBe("to tusind");
   });
 
   it("er stadig et ANTAL når ingen beder om årstallet", () => {
-    expect(talPaaDansk(1995)).toBe("et tusind ni hundrede og femoghalvfems");
+    expect(talPaaDansk(1995)).toBe("et tusind ni hundrede femoghalvfems");
   });
 
-  it("binder «og» til det SIDSTE led, ikke til hundrederne", () => {
-    // 1.625 stod i en artikel om automatiske tests.
-    expect(talPaaDansk(1625)).toBe("et tusind seks hundrede og femogtyve");
-    expect(talPaaDansk(4841)).toBe("fire tusind otte hundrede og enogfyrre");
-    expect(talPaaDansk(16838)).toBe("seksten tusind otte hundrede og otteogtredive");
+  it("skriver aldrig «og» inde i et tal — det kan ikke ankres", () => {
+    // voice-engine forsøgte at måle om «og» siges og AFVISTE deres eget svar:
+    // klippet UDEN ordet scorede bedre på «og» (-2,29) end klippet MED (-2,77).
+    // Dansk «og» er ét vokal-fonem og kan placeres gratis i nabovokalerne. Et
+    // ord der ikke kan ankres hører ikke hjemme i ordlisten.
+    expect(talPaaDansk(1625)).toBe("et tusind seks hundrede femogtyve");
+    expect(talPaaDansk(4841)).toBe("fire tusind otte hundrede enogfyrre");
+    expect(talPaaDansk(16838)).toBe("seksten tusind otte hundrede otteogtredive");
   });
 
   it("nægter det den ikke er målt på frem for at gætte", () => {
@@ -64,17 +67,17 @@ describe("talPoster", () => {
     // Det er AFSENDEREN der afgør det, ikke et gæt på indholdet: dansk skriver
     // tusinder med punktum, så «1.995» er et antal og «1995» er et årstal.
     expect(talPoster("i 1995 blev det")).toEqual([
-      { word: "1995", alias: "nitten hundrede og femoghalvfems" },
+      { word: "1995", alias: "nitten hundrede femoghalvfems" },
     ]);
     expect(talPoster("hele 1.995 gange")).toEqual([
-      { word: "1.995", alias: "et tusind ni hundrede og femoghalvfems" },
+      { word: "1.995", alias: "et tusind ni hundrede femoghalvfems" },
     ]);
   });
 
   it("læser dansk tusind-punktum som tusinder, ikke som decimal", () => {
     // Fælden hele reglen findes for: 4.841 er fire tusind, ikke fire komma.
     expect(talPoster("en analyse af 4.841 artikler")).toEqual([
-      { word: "4.841", alias: "fire tusind otte hundrede og enogfyrre" },
+      { word: "4.841", alias: "fire tusind otte hundrede enogfyrre" },
     ]);
   });
 
