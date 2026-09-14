@@ -156,3 +156,23 @@ describe("domæner udtales også i sammensætninger", () => {
     for (const d of domæner) expect(da.find((r) => r.word === d)?.alias).toBeTruthy();
   });
 });
+
+describe("engelske ord siges engelsk", () => {
+  test("«vibe coding» — en vibe er ikke en fugl (Christian 14/9)", () => {
+    const da = udtaleFor("da");
+    expect(da).toContainEqual({ word: "vibe", alias: "vaib" });
+    expect(da).toContainEqual({ word: "coding", alias: "kow-ding" });
+  });
+
+  test("KONTROL: engelsk tale rører dem ikke — Andrew siger dem selv rigtigt", () => {
+    // Uden denne ville en post uden sprog-mærke blive lagt på den engelske
+    // stemme, som ville udtale «vaib» som et dansk ord.
+    const en = udtaleFor("en");
+    expect(en.find((r) => r.word === "vibe")).toBeUndefined();
+    expect(en.find((r) => r.word === "coding")).toBeUndefined();
+  });
+
+  test("en ændret udtale giver en NY lyd-nøgle — ellers serveres den gamle lyd for evigt", () => {
+    expect(ordbogNoegle("da")).toMatch(/^[0-9a-f]{8}$/);
+  });
+});

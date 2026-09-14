@@ -137,6 +137,12 @@ const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" 
   { word: "agentic", ipa: "eɪˈdʒɛntɪk", sprog: "da" },
   { word: "harness", ipa: "ˈhɑːnəs", sprog: "da" },
   { word: "lens", ipa: "lɛnz", sprog: "da" },
+  // «vibe coding» — Christian 14/9: «en vibe er en fugl, det skal udtales mere
+  // Vaib Coding». Fire udgaver blev genereret og hørt igennem; han valgte den
+  // hvor BEGGE ord siges engelsk. Skrevet som lyd frem for lydskrift, fordi
+  // netop den udgave var den han kunne høre var rigtig.
+  { word: "vibe", alias: "vaib", sprog: "da" },
+  { word: "coding", alias: "kow-ding", sprog: "da" },
 ];
 export function udtaleFor(
   locale: Locale,
