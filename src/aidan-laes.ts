@@ -143,6 +143,11 @@ const ORDBOG: Array<{ word: string; alias?: string; ipa?: string; sprog: "alle" 
   // Vaib Coding». Fire udgaver blev genereret og hørt igennem; han valgte den
   // hvor BEGGE ord siges engelsk. Skrevet som lyd frem for lydskrift, fordi
   // netop den udgave var den han kunne høre var rigtig.
+  // «agents» siges som det danske ord. Christian 14/9. Det er en anden slags
+  // post end de to ovenfor: her BYTTES ordet til et dansk ord stemmen allerede
+  // udtaler rigtigt, frem for at forsøge at få en dansk stemme til at lave en
+  // engelsk lyd — dét virkede ikke, og det er målt (se commit e054a3e).
+  { word: "agents", alias: "agenter", sprog: "da" },
   { word: "vibe", alias: "vaib", sprog: "da" },
   { word: "coding", alias: "kow-ding", sprog: "da" },
 ];

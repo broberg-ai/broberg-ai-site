@@ -178,3 +178,15 @@ describe("engelske ord siges engelsk", () => {
     expect(ordbogNoegle("da")).toMatch(/^[0-9a-f]{8}$/);
   });
 });
+
+describe("«agents» siges på dansk", () => {
+  test("ordet byttes til det danske — ikke en engelsk lyd", () => {
+    // Christian 14/9. Den slags post der VIRKER: et dansk ord stemmen allerede
+    // kan sige, frem for en lydskrift den ikke kan danne.
+    expect(udtaleFor("da")).toContainEqual({ word: "agents", alias: "agenter" });
+  });
+
+  test("KONTROL: engelsk tale rører den ikke", () => {
+    expect(udtaleFor("en").find((r) => r.word === "agents")).toBeUndefined();
+  });
+});
