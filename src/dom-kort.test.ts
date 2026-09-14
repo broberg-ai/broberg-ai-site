@@ -170,3 +170,28 @@ describe("kontroller", () => {
     }
   });
 });
+
+/* ── et tegnsætnings-«ord» må ikke kunne matche ──────────────────────────────
+ *
+ * MÅLT PÅ PRODUKTIONEN. Talen har et løsrevet anførselstegn dér hvor manchetten
+ * begynder med et citat. Som ord betragtet matchede det et anførselstegn langt
+ * nede i brødteksten, og markeringens slutpunkt landede 200 tegn fra dens
+ * begyndelse: overskrift + en illustrations tekst + første linje brødtekst lyste
+ * på én gang.
+ */
+describe("tegnsætning alene er ikke et ord", () => {
+  it("et anførselstegn i talen binder sig ikke til et vilkårligt anførselstegn i teksten", () => {
+    const tale = 'Overskriften "';
+    const stykker = st("Overskriften", " et langt stykke tekst imellem ", '"citat"');
+    const kort = byggKort(tale, stykker);
+    const sidste = kort[tale.length - 1]; // selve anførselstegnet
+    expect(sidste).toBeNull();
+  });
+
+  it("KONTROL: rigtige ord bindes stadig", () => {
+    const tale = "Overskriften her";
+    const kort = byggKort(tale, st("Overskriften her"));
+    expect(kort[0]).not.toBeNull();
+    expect(kort[tale.length - 1]).not.toBeNull();
+  });
+});

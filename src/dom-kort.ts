@@ -84,6 +84,14 @@ export function byggKort<R>(tale: string, stykker: readonly Stykke<R>[], maksSpr
   for (const t of taleOrd) {
     const soegt = norm(t.ord);
     if (soegt === "") continue; // et ord uden bogstaver matcher alt — og dermed intet
+    // ET TEGNSÆTNINGS-ORD MATCHER HVOR SOM HELST, og det er ikke teoretisk.
+    //
+    // Talen indeholder et løsrevet anførselstegn (efter overskriften, hvor
+    // manchetten begynder med et citat). Som «ord» betragtet matchede det et
+    // anførselstegn langt nede i brødteksten — og sætningens slutpunkt landede
+    // dermed 200 tegn væk fra dens begyndelse. Målt på produktionen: markeringen
+    // dækkede overskriften, en illustrations tekst og første linje brødtekst.
+    if (!/[\p{L}\p{N}]/u.test(soegt)) continue;
 
     let traef = -1;
     let start = 0;

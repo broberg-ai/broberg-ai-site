@@ -307,3 +307,57 @@ describe("markeringen dækker også det der står uden for brødteksten", () => 
     expect(m.ved(i * 500 + 10).ord?.toString()).toContain("agenter");
   });
 });
+
+/* ── et hul i teksten må ikke give en markering der sluger alt ───────────────
+ *
+ * MÅLT PÅ PRODUKTIONEN, på et skærmbillede Christian ville kalde «virker ikke»:
+ * sætningsmarkeringen dækkede overskriften, ordet «Kladde» inde i en
+ * illustration OG første linje af brødteksten på én gang.
+ *
+ * Årsagen er et hul: artiklens manchet læses op, men står ikke på siden. Findes
+ * hverken start eller slut inde i hullet, falder opslaget tilbage på de
+ * nærmeste kendte positioner på hver sin side — og spænder så over alt
+ * derimellem, inklusive tekst der intet har med sætningen at gøre.
+ */
+describe("en markering forlader ikke det afsnit den begynder i", () => {
+  /* MÅLT PÅ PRODUKTIONEN, på det skærmbillede Christian kaldte «virker ikke»:
+   * sætningsmarkeringen dækkede overskriften, ordet «Kladde» inde i en
+   * illustration OG første linje af brødteksten på én gang.
+   *
+   * Opbygningen her er den ægte: manchetten læses op uden at stå på siden, og
+   * den CITERER en sætning der også står i brødteksten — så sætningens slut
+   * genfindes langt nede på siden, og området sluger alt derimellem. */
+  const TALE_HUL =
+    "Chat med dit website opdater indhold. " +
+    'MANCHET DER IKKE STAAR PAA SIDEN. Du åbner en boks. ' +
+    "Resten af broedteksten.";
+
+  function sideMedHul() {
+    dok.body.innerHTML =
+      '<h1 class="post-title">Chat med dit website opdater indhold.</h1>' +
+      "<figure><figcaption>Kladde</figcaption></figure>" +
+      '<div class="post-body"><p>Du åbner en boks. Resten af broedteksten.</p></div>';
+    return [dok.querySelector("h1")!, dok.querySelector(".post-body")!];
+  }
+
+  it("markeringen tager IKKE illustrationens tekst med", () => {
+    const m = lavMarkoer(sideMedHul(), koder(TALE_HUL), null);
+    for (let ms = 10; ms < 4000; ms += 400) {
+      const s = m.ved(ms).saetning?.toString() ?? "";
+      expect(s).not.toContain("Kladde");
+    }
+  });
+
+  it("den bliver i overskriften mens overskriften læses", () => {
+    const m = lavMarkoer(sideMedHul(), koder(TALE_HUL), null);
+    const s = m.ved(10).saetning?.toString() ?? "";
+    expect(s).toContain("Chat med dit website");
+    expect(s).not.toContain("Du åbner");
+  });
+
+  it("KONTROL: en sætning INDE i ét afsnit males stadig i fuld længde", () => {
+    // Uden denne ville «klip altid til første ord» bestå prøverne ovenfor.
+    const m = lavMarkoer(artikel(), koder(), null);
+    expect((m.ved(10).saetning?.toString() ?? "").length).toBeGreaterThan(20);
+  });
+});

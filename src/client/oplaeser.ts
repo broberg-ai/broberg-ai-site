@@ -88,6 +88,29 @@ export function tekststykker(roeder: Element | readonly Element[]): Stykke<Text>
   return ud;
 }
 
+/** Nærmeste blok-element — det en sætning kan bo i. */
+function blokFor(n: Node | null): Element | null {
+  // nodeType frem for «instanceof Element»: den globale Element findes ikke i
+  // et vindue der ikke er globalt (prøverne kører sådan med vilje), og et
+  // instanceof mod en fremmed global kaster frem for at svare false.
+  let e: Element | null = n && n.nodeType === 1 ? (n as Element) : (n?.parentElement ?? null);
+  while (e && !/^(P|H1|H2|H3|H4|H5|H6|LI|BLOCKQUOTE|FIGCAPTION|TD|TH|DT|DD)$/.test(e.tagName)) {
+    e = e.parentElement;
+  }
+  return e;
+}
+
+/** Klipper et område så det slutter inde i den blok det begyndte i. */
+function klipTilBlok(r: Range): void {
+  const start = blokFor(r.startContainer);
+  if (!start || start.contains(r.endContainer)) return;
+  const gaa = (start.ownerDocument ?? document).createTreeWalker(start, 4 /* SHOW_TEXT */);
+  let sidst: Text | null = null;
+  for (let n = gaa.nextNode(); n; n = gaa.nextNode()) sidst = n as Text;
+  if (sidst) r.setEnd(sidst, sidst.data.length);
+  else r.collapse(true);
+}
+
 export interface Markoer {
   /** Hvad der lyder ved `ms` — og det er malt når funktionen vender tilbage. */
   ved(ms: number): { ord: Range | null; saetning: Range | null };
@@ -111,12 +134,26 @@ export function lavMarkoer(
     if (!sted) return null;
     // Offsettene stammer fra tegn der ER genfundet i en tekstknude, så de
     // ligger pr. konstruktion inden for knuden: slut er sidste tegn + 1, altså
-    // højst knudens længde — netop hvad et halvåbent Range skal have. Her stod
-    // en klipning og en tom-tjek; ingen af dem kunne gøres røde af en prøve, og
-    // en spærre der ikke kan udløses ser ud som beskyttelse uden at være det.
+    // højst knudens længde — netop hvad et halvåbent Range skal have.
     const r = doc.createRange();
     r.setStart(sted.start.ref, sted.start.offset);
     r.setEnd(sted.slut.ref, sted.slut.offset);
+
+    // EN MARKERING MÅ IKKE FORLADE DET AFSNIT DEN BEGYNDER I.
+    //
+    // Målt på produktionen: sætningsmarkeringen dækkede overskriften, ordet
+    // «Kladde» inde i en illustration OG første linje af brødteksten på én gang.
+    //
+    // Årsagen er et HUL: artiklens manchet læses op, men står ikke på siden.
+    // Opslaget finder da sætningens start i overskriften og dens slut langt nede
+    // i brødteksten — for manchetten citerer en sætning der OGSÅ står i
+    // brødteksten — og området spænder over alt derimellem.
+    //
+    // En længdesammenligning kan ikke fange det: den sætning der SIGES
+    // (overskrift + manchet) er LÆNGERE end det der males. Reglen er i stedet
+    // formens: en sætning bor i ét afsnit. Slutter området et andet sted end
+    // det begyndte, klippes det til afsnittets ende.
+    klipTilBlok(r);
     return r;
   };
 
