@@ -15,6 +15,7 @@
  * artikelversion koster præcis ét kald. Cachen er ephemeral (nulstilles ved
  * deploy) — det er den billige og rigtige afvejning her.
  */
+import { talPoster, TAL_REGEL_VERSION } from "./tal-paa-dansk.ts";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -167,6 +168,45 @@ export function udtaleFor(
  *  fil, ellers serverer lageret den gamle lyd for evigt. */
 export function ordbogNoegle(locale: Locale): string {
   return createHash("sha256").update(JSON.stringify(udtaleFor(locale))).digest("hex").slice(0, 8);
+}
+
+/**
+ * JUSTERINGS-ORDBOGEN — ord der BESKRIVER lyden i stedet for at ændre den.
+ *
+ * Forskellen er hele pointen, og jeg havde den forkert først. Et tal som
+ * «2026» siger stemmen allerede rigtigt; det er justeringen der ikke kan parre
+ * lyden med cifrene. Sender vi tallet til stemmen som et alias, ændrer vi lyd
+ * der ikke fejlede — og skal lave alle artikler om. Sender vi det kun til
+ * JUSTERINGEN, beskriver vi hvad der allerede blev sagt, og lyden er urørt.
+ *
+ * DERFOR MÅ DISSE POSTER ALDRIG NÅ ai.tts. De går kun i sidevognen.
+ *
+ * PRISEN FOR DET: aliasset skal ramme hvad stemmen FAKTISK siger, for lyden
+ * kan ikke længere rette sig efter os. Måles hos voice-engine med tvungen
+ * justering — to hypoteser mod samme klip, og en kontrol der skal bevæge sig.
+ * Første måling (14/9) tog et forkert gæt: «1995» siges «nitten HUNDREDE
+ * femoghalvfems», og kontrollen knækkede fra -0,02 til -11,54 da den blev
+ * holdt mod en lyd hvor «hundrede» ikke står. Uden det tal var målingen
+ * bare et tal der passede.
+ */
+export function justeringsFor(
+  tale: string,
+  locale: Locale,
+): Array<{ word: string; alias: string }> {
+  // Kun dansk: reglen skriver danske ord, og dem må en engelsk stemme ikke få.
+  return locale === "da" ? talPoster(tale) : [];
+}
+
+/** Justeringens egen nøgle — adskilt fra lydens, fordi de svarer på HVER SIT
+ *  spørgsmål. voice-engine gater på lyd-nøglen (hører tidskoderne til netop
+ *  denne optagelse?) og registrerer justerings-nøglen (hvilke beskrivelser
+ *  havde de, da de målte?). Var det ÉN nøgle, ville en forbedret tal-regel
+ *  ligne en ændret optagelse, og porten ville afvise en gen-måling af de
+ *  samme filer — en spærre mod noget der ikke er sket. */
+export function justeringsNoegle(tale: string, locale: Locale): string {
+  return createHash("sha256")
+    .update(JSON.stringify({ regel: TAL_REGEL_VERSION, poster: justeringsFor(tale, locale) }))
+    .digest("hex").slice(0, 8);
 }
 
 /** Artikel-markdown → noget et menneske gider HØRE (Christians GO 4/9 på

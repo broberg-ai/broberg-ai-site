@@ -123,3 +123,13 @@ export function talPoster(tekst: string): Array<{ word: string; alias: string }>
   }
   return [...set].map(([word, alias]) => ({ word, alias }));
 }
+
+/**
+ * Reglens version. Den indgår i justerings-nøglen, så en ÆNDRET læsemåde ikke
+ * kan snige sig forbi som «samme ordbog». Hæv den når reglen læser et tal
+ * anderledes end før — ikke ved en kommentar eller en omdøbning.
+ *
+ * 2 — 14/9-2026: årstal læses som årstal («nitten hundrede femoghalvfems»),
+ *     efter måling hos voice-engine. 1 læste dem som antal.
+ */
+export const TAL_REGEL_VERSION = 2;

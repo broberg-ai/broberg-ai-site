@@ -12,7 +12,8 @@
  */
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
-import { tilTale, udtaleFor, ordbogNoegle } from "@/aidan-laes.ts";
+import { tilTale, ordbogNoegle } from "@/aidan-laes.ts";
+import { sprogFor, udtaleordbogFil } from "./sidevogn.ts";
 
 const UD = "/Users/cb/Delte-proever/f019-alle";
 const BASE = "https://broberg.ai";
@@ -32,7 +33,10 @@ await mkdir(UD, { recursive: true });
 // udledningen forkert — og den ville se rigtig ud, for deres to veje ville stadig
 // være enige med hinanden. De spurgte selv, og de havde ret: ordbogen HAVDE
 // ændret sig samme dag (domæner udtales nu også midt i et sammensat ord).
-const ordbogFil = JSON.stringify({ noegle: ordbogNoegle("da"), ordbog: udtaleFor("da") }, null, 2);
+// ORDBOGEN ER PR. ARTIKEL, ikke pr. kørsel. Den gamle udgave hårdkodede dansk
+// for alle 59 — også de 27 engelske, hvis lyd blev lavet med den ENGELSKE
+// ordbog. Målt 14/9: 886 engelske ordforekomster fik dermed en dansk
+// udtale-regel de aldrig blev sagt med, «AI» alene 447 gange.
 console.log(`${stier.length} artikler\n`);
 
 let ok = 0, fejl = 0;
@@ -61,8 +65,8 @@ for (const [i, a] of stier.entries()) {
   await mkdir(mappe, { recursive: true });
   await writeFile(`${mappe}/lyd.mp3`, lyd);
   await writeFile(`${mappe}/manuskript.txt`, tale);
-  await writeFile(`${mappe}/udtaleordbog.json`, ordbogFil);
-  await writeFile(`${mappe}/info.json`, JSON.stringify({ sti: a.sti, slug, titel, tegn: tale.length, bytes: lyd.byteLength, audio_sha256: sha, ordbog_noegle: ordbogNoegle("da") }, null, 2));
+  await writeFile(`${mappe}/udtaleordbog.json`, udtaleordbogFil(tale, sprogFor(a.sti)));
+  await writeFile(`${mappe}/info.json`, JSON.stringify({ sti: a.sti, slug, titel, tegn: tale.length, bytes: lyd.byteLength, audio_sha256: sha, sprog: sprogFor(a.sti), ordbog_noegle: ordbogNoegle(sprogFor(a.sti)) }, null, 2));
   ok++;
   console.log(`${i + 1}/${stier.length} ${a.sti} — ${(lyd.byteLength / 1024 / 1024).toFixed(1)} MB · ${tale.length} tegn · ${sha.slice(0, 12)}…`);
   await new Promise((r) => setTimeout(r, 21_000)); // 3 pr. minut
