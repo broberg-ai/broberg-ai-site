@@ -27,8 +27,13 @@ describe("talPaaDansk", () => {
   });
 
   it("læser årstallet som et årstal, ikke som et antal", () => {
-    // MÅLT mod stemmen: «1995.» og «nitten hundrede og femoghalvfems.» varer
-    // begge 2,664 s. Antals-formen varer 3,288 s — altså et andet ord.
+    // MÅLT med tvungen justering hos voice-engine: «hundrede» scorer -0,00 mod
+    // klippet, og kontrollen knækker fra -0,02 til -11,54 på en lyd hvor ordet
+    // ikke står. Varighed kan IKKE afgøre det — se advarslen i tal-paa-dansk.ts.
+    //
+    // «og» inde i tallet er STADIG uafklaret og står med vilje: sidder det i
+    // aliasset uden at blive sagt, får justeringen et ord uden lyd; mangler
+    // det, bliver ét lille ord ikke markeret — hvilket er dagens opførsel.
     expect(talPaaDansk(1995, "aarstal")).toBe("nitten hundrede og femoghalvfems");
     expect(talPaaDansk(1952, "aarstal")).toBe("nitten hundrede og tooghalvtreds");
     expect(talPaaDansk(2026, "aarstal")).toBe("to tusind og seksogtyve");

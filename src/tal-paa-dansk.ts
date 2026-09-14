@@ -46,11 +46,25 @@ function under1000(n: number): string {
 /**
  * ÅRSTAL læses anderledes end antal, og det er ikke en smagssag.
  *
- * MÅLT 14/9-2026 mod stemmen selv: «1995.» varer 2,664 s, og «nitten hundrede
- * og femoghalvfems.» varer 2,664 s — samme længde på millisekundet. «Et tusind
- * ni hundrede og femoghalvfems.» varer 3,288 s. Stemmen siger altså årstallet
- * som et årstal, og den almindelige antals-regel ville have gjort 1995 til
- * noget ingen dansker siger.
+ * MÅLT 14/9-2026 hos voice-engine med TVUNGEN JUSTERING — to hypoteser mod
+ * samme klip, og en kontrol der skal bevæge sig:
+ *
+ *   «1995.» mod «nitten femoghalvfems»           femoghalvfems  -1,40
+ *   «1995.» mod «nitten HUNDREDE femoghalvfems»  hundrede -0,00 · -0,03
+ *   kontrol (klip hvor vi VED der ikke står «hundrede»)   -0,02  →  -11,54
+ *
+ * Kontrollen er det der gør målingen troværdig: uden den ved man kun at noget
+ * passede, ikke at metoden kan se forskel. Stemmen siger altså årstallet som
+ * et årstal, og den almindelige antals-regel ville have gjort 1995 til noget
+ * ingen dansker siger.
+ *
+ * OG ET ADVARSELSSKILT TIL DEN NÆSTE DER MÅLER DET HER: jeg afgjorde det
+ * først på LYDENS LÆNGDE, og det instrument duer ikke. Fem tal ramte på
+ * millisekundet og så ud som bevis; da jeg målte fem mere, lå de 24-168 ms
+ * fra hver eneste kandidat. mp3 kvantiserer i spring af 24 ms, så et «træf»
+ * er omtrent hvert tredje gæt. Længden kan ikke høre et lille ord — det kan
+ * kun justeringen. Talegenkendelse kan det heller ikke: den skriver tal
+ * tilbage som CIFRE og svarede det samme for alle fire prøveklip.
  *
  * Signalet er typografisk og står i teksten: dansk skriver tusinder med
  * punktum, så «1.625» er et ANTAL og «1995» er et ÅRSTAL. Det er derfor
