@@ -1,6 +1,6 @@
 import { describe, test as it, expect, afterEach } from "bun:test";
 import { readFileSync } from "node:fs";
-import { emneFor, kropFor, handleSupport, turnstileAktiv } from "./support.ts";
+import { emneFor, kropFor, handleSupport, handleSupportTriage, turnstileAktiv } from "./support.ts";
 
 /**
  * F024.2 — supportruten.
@@ -210,5 +210,86 @@ describe("Turnstile — mørkt indtil nøglen er sat, og så et rigtigt værn", 
     expect((svar.krop as { vej: string }).vej).toBe("ingen");
     // Kun Cloudflare må være kontaktet — hverken HelpDesk eller reservevejen.
     expect(kaldt.filter((u) => !u.includes("cloudflare"))).toEqual([]);
+  });
+});
+
+describe("F024.3 — Aidan triagerer samtalen til en sag", () => {
+  const gemFetch = globalThis.fetch;
+  const gemEnv = { ...process.env };
+  afterEach(() => { globalThis.fetch = gemFetch; Object.assign(process.env, gemEnv); });
+
+  function kontekst(krop: Record<string, unknown>) {
+    const svar: { status?: number; krop?: unknown } = {};
+    return {
+      ctx: {
+        req: { json: async () => krop, header: () => undefined },
+        json: (k: unknown, s = 200) => { svar.krop = k; svar.status = s; return new Response(null); },
+        get: () => undefined,
+      } as never,
+      svar,
+    };
+  }
+
+  const SAMTALE = [
+    { role: "user", content: "Min faktura mangler et bilag" },
+    { role: "assistant", content: "Jeg kan ikke se dine fakturaer." },
+    { role: "user", content: "Så må jeg tale med et menneske" },
+  ];
+
+  it("sagens krop bærer HELE samtalen, ikke kun den sidste sætning", async () => {
+    process.env.HELPDESK_KEY = "hd_live_test";
+    process.env.HELPDESK_TENANT = "broberg-ai";
+    let sendt = "";
+    globalThis.fetch = (async (_u: string, init?: RequestInit) => {
+      sendt = String(init?.body ?? "");
+      return new Response(JSON.stringify({ ticket: { ref: "BR-TRI1", state: "open", level: 0 }, created: true }), { status: 201 });
+    }) as unknown as typeof fetch;
+
+    const { ctx, svar } = kontekst({ samtaleId: "s-1", samtale: SAMTALE });
+    await handleSupportTriage(ctx);
+
+    expect((svar.krop as { ref: string }).ref).toBe("BR-TRI1");
+    const body = JSON.parse(sendt) as Record<string, string>;
+    // Det er DEN her assert der er hele historien: et menneske skal ikke
+    // starte forfra, så brugerens FØRSTE ord skal stå i sagen.
+    expect(body.body).toContain("Min faktura mangler et bilag");
+    expect(body.body).toContain("Jeg kan ikke se dine fakturaer.");
+    // Emnet er det hun kom for — ikke «må jeg tale med et menneske».
+    expect(body.subject).toBe("Min faktura mangler et bilag");
+    expect(body.requesterEmail).toBeUndefined();
+    expect(body.intent).toBeUndefined();
+    expect(body.intakeKey).toBe("aidan-s-1");
+  });
+
+  it("uden brugerord oprettes INGEN sag — en tom samtale er ikke en henvendelse", async () => {
+    let kaldt = false;
+    globalThis.fetch = (async () => { kaldt = true; return new Response("{}", { status: 200 }); }) as unknown as typeof fetch;
+    const { ctx, svar } = kontekst({ samtaleId: "s-2", samtale: [{ role: "assistant", content: "Hej!" }] });
+    await handleSupportTriage(ctx);
+    expect(svar.status).toBe(400);
+    expect(kaldt).toBe(false);
+  });
+
+  it("uden samtale-id oprettes INGEN sag — uden den bliver hvert genforsøg en dublet", async () => {
+    let kaldt = false;
+    globalThis.fetch = (async () => { kaldt = true; return new Response("{}", { status: 200 }); }) as unknown as typeof fetch;
+    const { ctx, svar } = kontekst({ samtale: SAMTALE });
+    await handleSupportTriage(ctx);
+    expect(svar.status).toBe(400);
+    expect(kaldt).toBe(false);
+  });
+
+  it("fejler HelpDesk, lyver den ikke om en sag — den falder tilbage og siger det", async () => {
+    delete process.env.HELPDESK_KEY;
+    let reserve = false;
+    globalThis.fetch = (async (u: string) => {
+      if (String(u).includes("webhouse.app")) { reserve = true; return new Response(JSON.stringify({ ok: true }), { status: 200 }); }
+      throw new Error("uventet");
+    }) as unknown as typeof fetch;
+    const { ctx, svar } = kontekst({ samtaleId: "s-3", samtale: SAMTALE });
+    await handleSupportTriage(ctx);
+    expect(reserve).toBe(true);
+    expect((svar.krop as { vej: string }).vej).toBe("reserve");
+    expect((svar.krop as { ref?: string }).ref).toBeUndefined();   // ingen opdigtet reference
   });
 });

@@ -165,6 +165,59 @@ export async function handleSupport(c: Context): Promise<Response> {
   }
 }
 
+/**
+ * F024.3 — Aidan triagerer: samtalen bliver til en sag.
+ *
+ * SAMTALEN ER SAGENS KROP, ikke kun den sidste sætning. Et menneske der åbner
+ * sagen skal kunne læse hvad der er prøvet, så hun ikke stiller de spørgsmål
+ * Aidan allerede har stillet. Det er hele forskellen på en triage og en
+ * henvisning.
+ *
+ * intakeKey er SAMTALENS id — stabilt på tværs af genforsøg, unikt pr. sag.
+ * Trykker den besøgende to gange, får hun den samme sag igen (created:false),
+ * ikke en dublet.
+ */
+export async function handleSupportTriage(c: Context): Promise<Response> {
+  const krop = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+  const samtale = Array.isArray(krop.samtale) ? (krop.samtale as Array<Record<string, unknown>>) : [];
+  const samtaleId = String(krop.samtaleId ?? "").trim();
+  const replikker = samtale
+    .map((m) => ({ rolle: String(m.role ?? ""), tekst: String(m.content ?? "").trim() }))
+    .filter((m) => m.tekst && (m.rolle === "user" || m.rolle === "assistant"));
+
+  const brugerensOrd = replikker.filter((m) => m.rolle === "user");
+  if (!brugerensOrd.length || !samtaleId) {
+    return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "ingen_samtale" }, 400);
+  }
+
+  const udskrift = replikker
+    .map((m) => `${m.rolle === "user" ? "Besøgende" : "Aidan"}: ${m.tekst}`)
+    .join("\n\n");
+
+  try {
+    const sag = await opretSag({
+      // Emnet er den besøgendes FØRSTE spørgsmål — det hun kom for. Det sidste
+      // er typisk «må jeg tale med et menneske», og det er ikke hvad sagen
+      // handler om.
+      emne: emneFor("", brugerensOrd[0]!.tekst),
+      krop: `Aidan kunne ikke svare, og den besøgende bad om et menneske.\n\nHELE SAMTALEN:\n\n${udskrift}`,
+      intakeKey: `aidan-${samtaleId}`,
+      // intent udelades: Aidan ved det ikke, og HelpDesks egen klassifikator er
+      // bedre til det end et gæt fra en chat-prompt.
+      // bekraeftetEmail udelades: en adresse i en chat er ikke mere bekræftet
+      // end en i et felt.
+    });
+    return c.json<SupportSvar>({ ok: true, ref: sag.ref, vej: "helpdesk" });
+  } catch (e) {
+    const reddet = await tilReserve("(via Aidan)", "", udskrift);
+    console.error("[triage] HelpDesk afviste — reservevej:", reddet ? "ok" : "FEJLEDE", String(e));
+    return c.json<SupportSvar>(
+      reddet ? { ok: true, vej: "reserve" } : { ok: false, vej: "ingen", fejl: "ingen_vej_naaede_frem" },
+      reddet ? 200 : 502,
+    );
+  }
+}
+
 async function fingeraftryk(s: string): Promise<string> {
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return `bai-${[...new Uint8Array(b)].slice(0, 8).map((x) => x.toString(16).padStart(2, "0")).join("")}`;

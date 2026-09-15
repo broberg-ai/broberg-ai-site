@@ -1664,7 +1664,59 @@ function aidan() {
     if (tid) return void spoerg((rod.dataset.tidBesked ?? "{tid}").replace("{tid}", tid.textContent?.trim() ?? ""));
     const vis = t.closest<HTMLElement>(".aidan-vis");
     if (vis) visPaaSiden(vis.dataset.anker ?? "");
+    const sag = t.closest<HTMLButtonElement>(".aidan-sag");
+    if (sag) void opretSupportsag(sag);
   });
+
+  /**
+   * F024.3 — triage. Knappen er den besøgendes HANDLING, ikke Aidans:
+   * markøren tilbyder, hun trykker. Sagen oprettes på serveren, hvor nøglen er.
+   */
+  const brugtSamtaleId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  async function opretSupportsag(knap: HTMLButtonElement): Promise<void> {
+    const isEn = samtaleSprog === "en";
+    const oprindelig = knap.textContent ?? "";
+    knap.disabled = true;
+    knap.textContent = isEn ? "Opening…" : "Opretter…";
+    const sig = (tekst: string, klasse: string) => {
+      const p = document.createElement("p");
+      p.className = `aidan-sagkvittering ${klasse}`;
+      p.dataset.testid = "aidan-sag-kvittering";
+      p.textContent = tekst;
+      knap.replaceWith(p);
+    };
+    try {
+      const r = await fetch("/api/support/triage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // SAMTALE-ID'ET ER STABILT for hele samtalen. Trykker hun to gange,
+        // får hun den SAMME sag igen frem for en dublet.
+        body: JSON.stringify({ samtaleId: brugtSamtaleId, samtale: historik.slice(-20) }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; ref?: string; vej?: string };
+      if (j.ok && j.vej === "helpdesk" && j.ref) {
+        sig(isEn ? `Case ${j.ref} is open — a human reads the whole conversation. Keep the reference.`
+                 : `Sag ${j.ref} er oprettet — et menneske læser hele samtalen. Gem referencen.`, "ok");
+      } else if (j.ok && j.vej === "reserve") {
+        sig(isEn ? "We have it, but our case system did not answer, so there is no reference this time."
+                 : "Vi har den, men vores sagssystem svarede ikke, så der er ingen reference denne gang.", "ok");
+      } else {
+        // Aidan LYVER IKKE om at der er oprettet en sag. Knappen kommer
+        // tilbage, så hun kan prøve igen frem for at tro det er sket.
+        knap.disabled = false;
+        knap.textContent = oprindelig;
+        const p = document.createElement("p");
+        p.className = "aidan-sagkvittering fejl";
+        p.dataset.testid = "aidan-sag-kvittering";
+        p.textContent = isEn ? "It did not get through. Try again." : "Den kom ikke igennem. Prøv igen.";
+        knap.insertAdjacentElement("afterend", p);
+      }
+    } catch {
+      knap.disabled = false;
+      knap.textContent = oprindelig;
+    }
+    rulNed();
+  }
 
   // ── F007.14: handlingsrække under hvert Aidan-svar (ejerens screenshot:
   // kopiér · 👍/👎 · tidsstempel — INGEN retry). Tidsstemplet renderes i

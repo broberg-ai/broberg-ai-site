@@ -102,6 +102,7 @@ const VALG_RE = /^\[valg:([^\]]+)\]$/;
 const VIDEO_RE = /^\[video:(\/uploads\/[a-zA-Z0-9._\/-]+\.mp4)\]$/;
 const STATUS_RE = /^\[status\]$/;
 const FEJR_RE = /^\[fejr\]$/;
+const SAG_RE = /^\[sag\]$/;
 const SPROG_RE = /^\[sprog:(da|en)\]$/;
 const TABELLINJE = /^\s*\|.+\|\s*$/;
 
@@ -145,6 +146,16 @@ function markoer(linje: string, ctx: Ctx): string | null {
     return `<video class="aidan-video" data-testid="aidan-video" controls preload="metadata" src="${m[1]}"></video>`;
   if (STATUS_RE.test(linje)) return `<div class="aidan-status" data-testid="aidan-status">…</div>`;
   if (FEJR_RE.test(linje)) return `<div class="aidan-fejr" data-testid="aidan-fejr" aria-hidden="true"></div>`;
+  // F024.3 — triage. Markøren opretter IKKE en sag af sig selv: den bliver en
+  // knap den besøgende trykker på.
+  //
+  // To grunde, og den anden er den vigtige. (1) Nøglen er server-side, så
+  // klienten kan alligevel ikke oprette sagen. (2) En sag er noget der lander
+  // hos et menneske med den besøgendes ord i — det skal hun VIDE at hun gør,
+  // ikke opdage. En markør der stille oprettede en sag, ville gøre en fejl i
+  // en strømmet tekst til en henvendelse ingen har bedt om.
+  if (SAG_RE.test(linje))
+    return `<button type="button" class="aidan-sag" data-testid="aidan-sag">Opret en supportsag</button>`;
   if ((m = SPROG_RE.exec(linje))) return `<span class="aidan-sprogskifte" data-sprog="${m[1]}" hidden></span>`;
   return null;
 }
