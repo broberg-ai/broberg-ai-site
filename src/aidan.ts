@@ -456,6 +456,14 @@ export async function trailOpslag(spoergsmaal: string): Promise<string> {
 const MAX_BESKED = 2000;
 const MAX_HISTORIK = 20;
 
+/** Hvornår processen startede. ALLE tællere på /health nulstilles ved en
+ *  udrulning, og uden det her tidspunkt kan en læser ikke skelne «nul fordi
+ *  ingen brugte den» fra «nul fordi vi lige har rullet ud». De to er lige
+ *  ubrugelige — men det er værd at vide HVILKEN slags ubrugelig man ser på.
+ *  helpdesk-sessionen bad om det, og de har ret: ellers er det et gæt hos
+ *  læseren. Ét felt, ikke ét pr. tæller — de nulstilles af samme hændelse. */
+const OPSTART = Date.now();
+
 /** GET /api/aidan/health — {ok} når chatten kan svare. */
 export function handleAidanHealth(c: Context): Response {
   // Vidensbasens bidrag er MÅLT her, ikke påstået. Uden tallet kan «Trail
@@ -464,6 +472,10 @@ export function handleAidanHealth(c: Context): Response {
   return c.json(
     {
       ok: aidanConfigured(),
+      // Millisekunder siden epoke — absolut tid. Læseren omregner selv; et
+      // formateret klokkeslæt herfra ville være containerens UTC og læses som
+      // dansk tid af den der ser på det.
+      tællerneSiden: OPSTART,
       trail: { konfigureret: trailConfigured(), ...trailTaeller },
       // F024.1 — samme grund som trail-blokken: «HelpDesk tager imod vores
       // sager» skal kunne LÆSES som et tal. En sagsoprettelse der stille
