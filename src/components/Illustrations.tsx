@@ -1368,6 +1368,76 @@ const scope = wrap(
   </g>,
 );
 
+
+/* Broberg ID — seks veje ind, ÉN dør, hele huset bagved.
+   Fortællingen er retningen: strømmen går fra mange metoder gennem ét
+   nøglehul og ud i alle apps. Nøglehullet er det eneste der lyser, fordi det
+   er det eneste sted der findes én gang. */
+const BID_VEJE = [
+  { y: 58, t: "mail" },
+  { y: 86, t: "passkey" },
+  { y: 114, t: "Google" },
+  { y: 142, t: "GitHub" },
+  { y: 170, t: "Microsoft" },
+  { y: 198, t: "Apple" },
+];
+const BID_APPS = [
+  [252, 52], [306, 52],
+  [252, 104], [306, 104],
+  [252, 156], [306, 156],
+  [252, 208], [306, 208],
+];
+const bid = wrap(
+  <g font-family="'DM Sans',sans-serif" font-size="9">
+    {/* de seks veje ind — ens i vægt, fordi ingen af dem er den rigtige */}
+    {BID_VEJE.map((v, i) => (
+      <g key={v.t} class="illu-ind" style={`--d:${i * 90}ms`}>
+        <rect x="14" y={v.y - 9} width="72" height="18" rx="9"
+          fill="color-mix(in srgb,var(--blue) 7%,transparent)"
+          stroke="var(--blue)" stroke-width="1.2" opacity=".75" />
+        <text x="50" y={v.y + 3.5} fill="var(--muted)" text-anchor="middle">{v.t}</text>
+      </g>
+    ))}
+
+    {/* de seks strømme samles i ét punkt — det er hele pointen */}
+    <g class="illu-flow" stroke="var(--blue)" stroke-dasharray="3 5" stroke-width="1.2" fill="none" opacity=".55">
+      {BID_VEJE.map((v) => (
+        <path key={v.t} d={`M88 ${v.y} C126 ${v.y} 128 128 150 128`} />
+      ))}
+    </g>
+
+    {/* DØREN. Ét panel, ét nøglehul. */}
+    <rect x="150" y="72" width="62" height="112" rx="10"
+      fill="color-mix(in srgb,var(--blue) 10%,transparent)"
+      stroke="var(--blue)" stroke-width="1.8" />
+    <path d="M150 96 H212" stroke="var(--blue)" stroke-width="1.1" opacity=".35" />
+    <g class="illu-glow">
+      <circle cx="181" cy="124" r="9" fill="none" stroke="var(--orange)" stroke-width="2" />
+      <path d="M181 131 v11" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" />
+    </g>
+    <text x="181" y="88" fill="var(--muted)" text-anchor="middle" font-size="8.5">id.broberg.ai</text>
+    <circle cx="205" cy="166" r="2.4" fill="var(--blue)" opacity=".6" />
+
+    {/* ud i alle apps — ÉN strøm, ikke seks */}
+    <g class="illu-flow" stroke="var(--orange)" stroke-dasharray="4 5" stroke-width="1.4" fill="none" opacity=".7">
+      <path d="M212 128 H238" />
+      {BID_APPS.map(([x, y]) => (
+        <path key={`${x}-${y}`} d={`M238 128 C244 128 246 ${y + 16} ${x - 4} ${y + 16}`} opacity=".45" />
+      ))}
+    </g>
+
+    {/* apps: alle åbne, ingen med egen lås */}
+    {BID_APPS.map(([x, y], i) => (
+      <g key={`${x}-${y}`} class="illu-ind" style={`--d:${540 + i * 70}ms`}>
+        <rect x={x} y={y} width="32" height="32" rx="8"
+          fill="color-mix(in srgb,var(--blue) 6%,transparent)"
+          stroke="var(--blue)" stroke-width="1.3" opacity=".8" />
+        <circle cx={x + 16} cy={y + 16} r="3.2" fill="var(--blue)" opacity=".5" />
+      </g>
+    ))}
+  </g>,
+);
+
 const REGISTRY: Record<string, JSX.Element> = {
   scope,
   components,
@@ -1383,6 +1453,7 @@ const REGISTRY: Record<string, JSX.Element> = {
   consulting,
   docs,
   helpdesk,
+  bid,
   "ao-otte-skridt": aoOtteSkridt,
   "fysio-dk-sport": fysioDkSport,
   "fysio-dk-aalborg": fysioDkAalborg,

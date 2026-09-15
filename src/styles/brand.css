@@ -1273,7 +1273,10 @@ footer {
    samtale er skiftevis, ikke tre mennesker der taler oveni hinanden.
    Reduced-motion er daekket af den globale *-regel laengere nede. */
 .illu-ind {
+  /* --d forskyder starten, så en række elementer kommer ind EFTER hinanden
+     frem for samtidig. Uden den ser seks veje ind ud som én. */
   animation: illu-ind 3.6s ease-in-out infinite;
+  animation-delay: var(--d, 0ms);
   transform-box: fill-box;
   transform-origin: center;
 }

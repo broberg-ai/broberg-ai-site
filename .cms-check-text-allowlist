@@ -16,6 +16,10 @@ bevægelse
 broberg
 broberg.ai
 broberg.ai-universet
+# Domaenet i Broberg ID-tegningen (Illustrations.tsx). Samme slags som
+# broberg.ai ovenfor: det navngiver DOeREN i en SVG og er en streg, ikke
+# redaktionel tekst. AEndres adressen, skal tegningen tegnes om.
+id.broberg.ai
 Christian Broberg
 Command palette
 Enter sender · Shift + Enter = ny linje
