@@ -53,6 +53,7 @@ import { AidanWidget, aidanTekster } from "@/components/AidanWidget.tsx";
 import { AIDAN_STILL, AIRINA_STILL } from "@/components/Figur.tsx";
 import { aidanConfigured } from "@/aidan.ts";
 import { Faq } from "@/components/Faq.tsx";
+import { Support } from "@/components/Support.tsx";
 import { Contact } from "@/components/Contact.tsx";
 import { Podcast, type PodcastData } from "@/components/Podcast.tsx";
 import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
@@ -527,6 +528,55 @@ export async function renderHome(locale: Locale): Promise<string> {
 // "Fik du læst disse nyheder?" surfaces the latest post per category — 0..N
 // cards depending on what's actually published (no hardcoded count; a
 // category with nothing yet just doesn't get a card).
+/**
+ * F024.2 — /support. Indgang 1 af to til support (den anden er Aidan).
+ *
+ * Egen side frem for et felt i bunden af forsiden: en der SØGER hjælp skal
+ * kunne lande ét sted, og adressen skal kunne siges i en telefon.
+ */
+export async function renderSupport(locale: Locale): Promise<string> {
+  const isEn = locale === "en";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+  return await page(
+    <>
+      <section id="top">
+        <div class="wrap" style="padding-top:150px;max-width:720px">
+          <div class="eyebrow" {...cmsAttrs(globalsRef, "supportEyebrow")}>
+            {g("supportEyebrow", "Support")}
+          </div>
+          <h1 {...cmsAttrs(globalsRef, "supportHeading")}>
+            {g("supportHeading", isEn ? "Something not working?" : "Er der noget der driller?")}
+          </h1>
+        </div>
+      </section>
+      <Support
+        data={{
+          overskrift: g("supportEyebrow", "Support"),
+          // Hvert felt læses fra CMS. Reserveteksten i komponenten er en
+          // NØDBREMSE, ikke et hjem: står værdien ikke i CMS, kan Christian
+          // hverken søge den frem eller rette den.
+          felter: Object.fromEntries(
+            ["heading", "lead", "emne", "besked", "navn", "email", "emailNote", "submit"]
+              .map((k) => [k, g(`supportForm.${k}`, "")])
+              .filter(([, v]) => v),
+          ),
+        }}
+        locale={locale}
+        cmsRef={globalsRef}
+      />
+    </>,
+    {
+      locale,
+      title: isEn ? "Support — broberg.ai" : "Support — broberg.ai",
+      description: isEn
+        ? "Write to us and get a case reference straight away."
+        : "Skriv til os og få en sagsreference med det samme.",
+      canonical: isEn ? "/en/support" : "/support",
+      altHref: isEn ? "/support" : "/en/support",
+    },
+  );
+}
+
 export async function renderThanks(locale: Locale): Promise<string> {
   const isEn = locale === "en";
   const news = await loadLatestNewsPerCategory(locale);

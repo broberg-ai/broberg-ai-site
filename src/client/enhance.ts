@@ -414,6 +414,79 @@ function faqAccordion() {
 // Contact form (F156.3/F156.6) — custom pill selector synced to a hidden
 // input (never a native <select>), submitted via fetch to the F30 Form
 // Engine's public endpoint. No page reload; inline success/error status.
+/**
+ * F024.2 — supportformularen. Poster til VORES egen rute, ikke til HelpDesk:
+ * nøglen må aldrig nå et bundt.
+ *
+ * Svaret bærer `vej`, og den vises. Gik henvendelsen ad reservevejen fordi
+ * HelpDesk ikke svarede, SIGER siden det — frem for at kvittere ens i begge
+ * tilfælde og lade en nedbrudt sagsoprettelse se ud som en velfungerende.
+ */
+function supportFormular(): void {
+  const form = document.querySelector<HTMLFormElement>("#support-form");
+  if (!form) return;
+  const isEn = form.dataset.lang === "en";
+  const status = form.querySelector<HTMLElement>(".form-status");
+  const knap = form.querySelector<HTMLButtonElement>('[data-testid="support-submit"]');
+  const besked = form.querySelector<HTMLTextAreaElement>("#sf-besked");
+  if (!status || !knap || !besked) return;
+
+  const vis = (klasse: string, tekst: string) => {
+    status.className = `form-status show ${klasse}`;
+    status.textContent = tekst;
+  };
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!besked.value.trim()) {
+      vis("err", isEn ? "Please write what happened." : "Skriv venligst hvad der er sket.");
+      besked.focus();
+      return;
+    }
+    const oprindelig = knap.textContent ?? "";
+    knap.disabled = true;
+    knap.textContent = isEn ? "Sending…" : "Sender…";
+    try {
+      const d = new FormData(form);
+      const r = await fetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          emne: String(d.get("emne") ?? ""),
+          besked: String(d.get("besked") ?? ""),
+          navn: String(d.get("navn") ?? ""),
+          email: String(d.get("email") ?? ""),
+          _gotcha: String(d.get("_gotcha") ?? ""),
+        }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; ref?: string; vej?: string };
+      if (j.ok && j.vej === "helpdesk" && j.ref) {
+        form.reset();
+        vis("ok", isEn
+          ? `Received. Your case reference is ${j.ref} — keep it.`
+          : `Modtaget. Din sagsreference er ${j.ref} — gem den.`);
+      } else if (j.ok && j.vej === "reserve") {
+        // Ærligt frem for pænt: henvendelsen NÅEDE frem, men der er ingen
+        // sagsreference at give, og det skal hun vide nu i stedet for at
+        // vente på en reference der aldrig kommer.
+        form.reset();
+        vis("ok", isEn
+          ? "Received — we have it, but our case system did not answer, so there is no reference this time."
+          : "Modtaget — vi har den, men vores sagssystem svarede ikke, så der er ingen reference denne gang.");
+      } else {
+        vis("err", isEn
+          ? "It did not get through. Try again, or write to us on the contact form."
+          : "Den kom ikke igennem. Prøv igen, eller skriv til os via kontaktformularen.");
+      }
+    } catch {
+      vis("err", isEn ? "It did not get through. Try again." : "Den kom ikke igennem. Prøv igen.");
+    } finally {
+      knap.disabled = false;
+      knap.textContent = oprindelig;
+    }
+  });
+}
+
 function contactForm() {
   const form = document.querySelector<HTMLFormElement>("#contact-form");
   if (!form) return;
@@ -2041,6 +2114,7 @@ safe(mountCmdk);
 safe(faqAccordion);
 safe(mountTurnstile);
 safe(contactForm);
+safe(supportFormular);   // F024.2
 safe(inlineEdit);
 safe(adminPanel);
 safe(mountAdminChat);

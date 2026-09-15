@@ -27,6 +27,7 @@ import {
   render404,
   renderSolutions,
   renderSolutionDetail,
+  renderSupport,
   renderThanks,
   renderSiteIndex,
   renderAllNews,
@@ -316,6 +317,10 @@ app.get("/en/solutions/:slug", async (c) => {
 
 // "Tak" (F156.7) — dedicated post-submit confirmation page the contact form
 // redirects to. Same literal-before-dynamic ordering requirement as above.
+// F024.2 — supportformularen. Literal rute, så den SKAL stå før /:slug.
+app.get("/support", async () => html(await renderSupport("da")));
+app.get("/en/support", async () => html(await renderSupport("en")));
+
 app.get("/tak", async () => html(await renderThanks("da")));
 app.get("/en/thanks", async () => html(await renderThanks("en")));
 
