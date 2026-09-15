@@ -1,6 +1,6 @@
 import { describe, test as it, expect, afterEach } from "bun:test";
 import { readFileSync } from "node:fs";
-import { emneFor, kropFor, handleSupport } from "./support.ts";
+import { emneFor, kropFor, handleSupport, turnstileAktiv } from "./support.ts";
 
 /**
  * F024.2 — supportruten.
@@ -146,5 +146,69 @@ describe("opførslen, ikke kildeteksten", () => {
     const sendt = JSON.parse(sendtKrop) as Record<string, unknown>;
     expect(sendt.requesterEmail).toBeUndefined();       // ← hele pointen
     expect(String(sendt.body)).toContain("fremmed@eksempel.dk");   // men et menneske kan læse den
+  });
+});
+
+describe("Turnstile — mørkt indtil nøglen er sat, og så et rigtigt værn", () => {
+  const gemEnv = { ...process.env };
+  const gemFetch = globalThis.fetch;
+  afterEach(() => { globalThis.fetch = gemFetch; Object.assign(process.env, gemEnv); delete process.env.TURNSTILE_SECRET_KEY; });
+
+  function kontekst(krop: Record<string, unknown>) {
+    const svar: { status?: number; krop?: unknown } = {};
+    return {
+      ctx: {
+        req: { json: async () => krop, header: () => undefined },
+        json: (k: unknown, s = 200) => { svar.krop = k; svar.status = s; return new Response(null); },
+        get: () => undefined,
+      } as never,
+      svar,
+    };
+  }
+
+  it("uden nøglen slipper en indsendelse UDEN bevis igennem — de to andre værn bærer", async () => {
+    delete process.env.TURNSTILE_SECRET_KEY;
+    delete process.env.HELPDESK_KEY;
+    expect(turnstileAktiv()).toBe(false);
+    globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind" });
+    await handleSupport(ctx);
+    expect((svar.krop as { ok: boolean }).ok).toBe(true);   // nåede reservevejen, altså forbi spam-porten
+  });
+
+  it("MED nøglen afvises en indsendelse uden bevis — et tomt felt er ikke en undtagelse", async () => {
+    process.env.TURNSTILE_SECRET_KEY = "0x-test";
+    expect(turnstileAktiv()).toBe(true);
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind" });
+    await handleSupport(ctx);
+    expect((svar.krop as { ok: boolean }).ok).toBe(false);
+    expect(svar.status).toBe(400);
+  });
+
+  it("MED nøglen afvises et bevis Cloudflare siger nej til", async () => {
+    // FØRSTE UDGAVE AF DEN HER PRØVE BESTOD AF DEN FORKERTE GRUND, og det blev
+    // fanget af mutationen, ikke af mig: ignorerede jeg Cloudflares nej, gik
+    // kaldet videre, HelpDesk fejlede (ingen nøgle), reservevejen fejlede på
+    // den samme stubbede fetch — og svaret blev ok:false alligevel. Prøven
+    // målte altså to veje ned ad, ikke spam-porten.
+    //
+    // Derfor asserteres nu på 400 (blokeret i porten) OG på at der aldrig blev
+    // ringet videre. 502 ville betyde «kom forbi porten og fejlede bagefter».
+    process.env.TURNSTILE_SECRET_KEY = "0x-test";
+    process.env.HELPDESK_KEY = "hd_live_test";
+    process.env.HELPDESK_TENANT = "broberg-ai";
+    const kaldt: string[] = [];
+    globalThis.fetch = (async (u: string) => {
+      kaldt.push(String(u));
+      return new Response(JSON.stringify({ success: false }), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", turnstileToken: "forfalsket" });
+    await handleSupport(ctx);
+
+    expect(svar.status).toBe(400);
+    expect((svar.krop as { vej: string }).vej).toBe("ingen");
+    // Kun Cloudflare må være kontaktet — hverken HelpDesk eller reservevejen.
+    expect(kaldt.filter((u) => !u.includes("cloudflare"))).toEqual([]);
   });
 });

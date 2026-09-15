@@ -21,7 +21,7 @@
  * KROP som en oplyst formodning, aldrig i requesterEmail.
  */
 import type { Context } from "hono";
-import { isHoneypotTriggered, hashIp, isRateLimited } from "@broberg/forms-turnstile/server";
+import { isHoneypotTriggered, hashIp, isRateLimited, validateTurnstile } from "@broberg/forms-turnstile/server";
 import { opretSag, HelpDeskFejl } from "@/helpdesk.ts";
 
 const CMS_FORMULAR = "https://webhouse.app/api/forms/contact?site=broberg-ai";
@@ -83,23 +83,42 @@ async function tilReserve(navn: string, email: string, besked: string): Promise<
 }
 
 /**
- * Spam-porten. TO af de tre værn kører; det tredje er navngivet frem for
- * underforstået.
+ * Spam-porten. TRE værn, og det tredje er MØRKT indtil en hemmelighed er sat.
  *
- * honeypot + hastighedsgrænse kommer fra @broberg/forms-turnstile og kræver
- * ingen hemmelighed. TURNSTILE er IKKE verificeret her: hemmeligheden ligger
- * hos CMS'et, som verificerer den for kontaktformularen, og broberg.ai har
- * den ikke. At sætte den er en secret-flip og kræver Christians egne ord.
+ * honeypot + hastighedsgrænse kræver ingen tredjepart og sender ikke én
+ * personoplysning ud af huset. De kører altid.
  *
- * Det står her frem for i en TODO, fordi forskellen på «vi har tre værn» og
- * «vi har to» er præcis den slags der ellers bliver husket forkert.
+ * TURNSTILE er en anden slags handel, og den er Christians at tage:
+ * widgeten sender den besøgendes IP-ADRESSE, TLS-FINGERAFTRYK og USER-AGENT
+ * til Cloudflare. Målt 15/9-2026 i Cloudflares eget Turnstile-tillæg: det
+ * oplyser HVAD der indsamles og IKKE hvor behandlingen sker — hverken region,
+ * land eller overførselsgrundlag. En IP-adresse er en personoplysning efter
+ * GDPR uanset at Cloudflare skriver at de ikke selv kan sætte navn på den.
+ *
+ * Derfor er koden her og slukket: uden TURNSTILE_SECRET_KEY springes
+ * verifikationen over, og de to andre værn bærer alene. Sættes nøglen, virker
+ * det tredje fra samme sekund uden en udrulning.
+ *
+ * SHIP DARK ER RIGTIGT HER OG FORKERT FOR SAGSOPRETTELSEN. Forskellen er den
+ * samme som mod Trail: et manglende værn gør formularen svagere, en tabt
+ * henvendelse taber et menneske.
  */
 const MAKS_PR_TIME = 10;
 
-function spamBlokeret(c: Context, krop: Record<string, unknown>): boolean {
+export function turnstileAktiv(): boolean {
+  return Boolean(process.env.TURNSTILE_SECRET_KEY);
+}
+
+async function spamBlokeret(c: Context, krop: Record<string, unknown>): Promise<boolean> {
   if (isHoneypotTriggered(krop)) return true;
   const ip = c.req.header("CF-Connecting-IP") ?? c.req.header("x-forwarded-for") ?? "";
-  return ip ? isRateLimited(hashIp(ip), "support", MAKS_PR_TIME) : false;
+  if (ip && isRateLimited(hashIp(ip), "support", MAKS_PR_TIME)) return true;
+  if (!turnstileAktiv()) return false;
+  // Er værnet TÆNDT, er en manglende bevis-streng et afslag — ikke en
+  // undtagelse. Ellers ville enhver kunne slippe forbi ved at lade feltet tomt.
+  const bevis = String(krop.turnstileToken ?? "");
+  if (!bevis) return true;
+  return !(await validateTurnstile(bevis, process.env.TURNSTILE_SECRET_KEY!, ip || undefined));
 }
 
 /** POST /api/support */
@@ -107,7 +126,7 @@ export async function handleSupport(c: Context): Promise<Response> {
   const krop = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
   // Et blokeret forsøg får SAMME svar som et tomt felt. En bot skal ikke
   // kunne læse af svaret om den blev opdaget.
-  if (spamBlokeret(c, krop)) {
+  if (await spamBlokeret(c, krop)) {
     return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "skriv_en_besked" }, 400);
   }
   const besked = String(krop.besked ?? "").trim();
