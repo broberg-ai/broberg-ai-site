@@ -130,22 +130,47 @@ describe("opførslen, ikke kildeteksten", () => {
     expect(svar.status).toBe(502);
   });
 
-  it("den besøgendes mail når ALDRIG HelpDesk som modtager", async () => {
+  it("adressen hun gav FOR at blive kontaktet, sendes med", async () => {
+    // FØR 15/9 sendte vi den ALDRIG — og HelpDesk målte 18 sager uden nogen
+    // måde at svare på. Christian: «hvordan skal vi komme i kontakt med et
+    // menneske vi ikke kender?»
+    //
+    // Skelnen jeg missede: deres afsnit 6 forbyder at sende til en adresse man
+    // ikke har grund til at tro på. En adresse skrevet i et felt der siger
+    // «så vi kan vende tilbage», ER en grund.
     process.env.HELPDESK_KEY = "hd_live_test";
     process.env.HELPDESK_TENANT = "broberg-ai";
     let sendtKrop = "";
-    globalThis.fetch = (async (u: string, init?: RequestInit) => {
+    globalThis.fetch = (async (_u: string, init?: RequestInit) => {
       sendtKrop = String(init?.body ?? "");
       return new Response(JSON.stringify({ ticket: { ref: "BR-TEST1", state: "open", level: 0 }, created: true }), { status: 201 });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
 
-    const { ctx, svar } = fakeKontekst({ besked: "hjælp mig", email: "fremmed@eksempel.dk" });
+    const { ctx, svar } = fakeKontekst({ besked: "hjælp mig", email: "ida@eksempel.dk" });
     await handleSupport(ctx);
 
     expect((svar.krop as { vej: string }).vej).toBe("helpdesk");
     const sendt = JSON.parse(sendtKrop) as Record<string, unknown>;
-    expect(sendt.requesterEmail).toBeUndefined();       // ← hele pointen
-    expect(String(sendt.body)).toContain("fremmed@eksempel.dk");   // men et menneske kan læse den
+    expect(sendt.requesterEmail).toBe("ida@eksempel.dk");
+    expect(String(sendt.body)).toContain("ida@eksempel.dk");   // også læsbar for et menneske
+  });
+
+  it("uden en adresse opfinder vi ingen — feltet udelades helt", async () => {
+    // Den halvdel der stadig gælder: vi må ikke fylde noget i for at få en
+    // sag til at se besvarbar ud. En tom adresse er ærlig.
+    process.env.HELPDESK_KEY = "hd_live_test";
+    process.env.HELPDESK_TENANT = "broberg-ai";
+    let sendtKrop = "";
+    globalThis.fetch = (async (_u: string, init?: RequestInit) => {
+      sendtKrop = String(init?.body ?? "");
+      return new Response(JSON.stringify({ ticket: { ref: "BR-TEST2", state: "open", level: 0 }, created: true }), { status: 201 });
+    }) as unknown as typeof fetch;
+
+    const { ctx } = fakeKontekst({ besked: "hjælp mig" });
+    await handleSupport(ctx);
+
+    const sendt = JSON.parse(sendtKrop) as Record<string, unknown>;
+    expect(sendt.requesterEmail).toBeUndefined();
   });
 });
 

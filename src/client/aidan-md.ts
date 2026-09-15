@@ -147,7 +147,15 @@ function markoer(linje: string, ctx: Ctx): string | null {
   if (STATUS_RE.test(linje)) return `<div class="aidan-status" data-testid="aidan-status">…</div>`;
   if (FEJR_RE.test(linje)) return `<div class="aidan-fejr" data-testid="aidan-fejr" aria-hidden="true"></div>`;
   // F024.3 — triage. Markøren opretter IKKE en sag af sig selv: den bliver en
-  // knap den besøgende trykker på.
+  // lille boks den besøgende selv udfylder.
+  //
+  // ADRESSEN SPØRGES HER, og kun her. Målt 15/9 af HelpDesk: 18 sager uden
+  // nogen måde at svare på, fordi ingen nogensinde blev bedt om en. Christian:
+  // «hvordan skal vi komme i kontakt med et menneske vi ikke kender?»
+  //
+  // «Opret uden mail» står ved siden af og er et RIGTIGT valg, ikke en
+  // høflighed: en henvendelse der forsvinder fordi hun ikke ville skrive sin
+  // adresse, er tabt for alle. Sagen bliver oprettet og mærket som ubesvarbar.
   //
   // To grunde, og den anden er den vigtige. (1) Nøglen er server-side, så
   // klienten kan alligevel ikke oprette sagen. (2) En sag er noget der lander
@@ -155,7 +163,13 @@ function markoer(linje: string, ctx: Ctx): string | null {
   // ikke opdage. En markør der stille oprettede en sag, ville gøre en fejl i
   // en strømmet tekst til en henvendelse ingen har bedt om.
   if (SAG_RE.test(linje))
-    return `<button type="button" class="aidan-sag" data-testid="aidan-sag">Opret en supportsag</button>`;
+    return `<div class="aidan-sagboks" data-testid="aidan-sag">`
+      + `<p class="aidan-sagboks-hvorfor">Hvor kan vi fange dig? Uden en adresse kan vi kun svare, hvis du selv vender tilbage med referencen.</p>`
+      + `<input type="email" class="aidan-sag-email" data-testid="aidan-sag-email" placeholder="din@mail.dk" autocomplete="email" inputmode="email">`
+      + `<div class="aidan-sagboks-knapper">`
+      + `<button type="button" class="aidan-sag" data-testid="aidan-sag-knap">Opret sagen</button>`
+      + `<button type="button" class="aidan-sag-uden" data-testid="aidan-sag-uden">Opret uden mail</button>`
+      + `</div></div>`;
   if ((m = SPROG_RE.exec(linje))) return `<span class="aidan-sprogskifte" data-sprog="${m[1]}" hidden></span>`;
   return null;
 }

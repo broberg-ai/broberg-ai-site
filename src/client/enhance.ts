@@ -1665,7 +1665,9 @@ function aidan() {
     const vis = t.closest<HTMLElement>(".aidan-vis");
     if (vis) visPaaSiden(vis.dataset.anker ?? "");
     const sag = t.closest<HTMLButtonElement>(".aidan-sag");
-    if (sag) void opretSupportsag(sag);
+    if (sag) void opretSupportsag(sag, true);
+    const uden = t.closest<HTMLButtonElement>(".aidan-sag-uden");
+    if (uden) void opretSupportsag(uden, false);
   });
 
   /**
@@ -1673,8 +1675,21 @@ function aidan() {
    * markøren tilbyder, hun trykker. Sagen oprettes på serveren, hvor nøglen er.
    */
   const brugtSamtaleId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  async function opretSupportsag(knap: HTMLButtonElement): Promise<void> {
+  async function opretSupportsag(knap: HTMLButtonElement, medMail: boolean): Promise<void> {
     const isEn = samtaleSprog === "en";
+    const boks = knap.closest<HTMLElement>(".aidan-sagboks");
+    const felt = boks?.querySelector<HTMLInputElement>(".aidan-sag-email");
+    const email = medMail ? (felt?.value ?? "").trim() : "";
+
+    // Trykker hun «Opret sagen» uden at have skrevet noget, er det en
+    // forglemmelse — ikke et fravalg. Fravalget har sin egen knap.
+    if (medMail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (felt) {
+        felt.focus();
+        felt.setAttribute("aria-invalid", "true");
+      }
+      return;
+    }
     const oprindelig = knap.textContent ?? "";
     knap.disabled = true;
     knap.textContent = isEn ? "Opening…" : "Opretter…";
@@ -1686,6 +1701,7 @@ function aidan() {
       p.className = "aidan-sagkvittering";
       p.dataset.testid = "aidan-sag-kvittering";
       p.append(foer);
+      void 0;
       if (ref) {
         const r = document.createElement("span");
         r.className = "ref";
@@ -1693,7 +1709,7 @@ function aidan() {
         r.textContent = ref;
         p.append(r, efter);
       }
-      knap.replaceWith(p);
+      (boks ?? knap).replaceWith(p);
     };
     try {
       const r = await fetch("/api/support/triage", {
@@ -1701,7 +1717,7 @@ function aidan() {
         headers: { "Content-Type": "application/json" },
         // SAMTALE-ID'ET ER STABILT for hele samtalen. Trykker hun to gange,
         // får hun den SAMME sag igen frem for en dublet.
-        body: JSON.stringify({ samtaleId: brugtSamtaleId, samtale: historik.slice(-20) }),
+        body: JSON.stringify({ samtaleId: brugtSamtaleId, samtale: historik.slice(-20), email }),
       });
       const j = (await r.json().catch(() => ({}))) as { ok?: boolean; ref?: string; vej?: string };
       if (j.ok && j.vej === "helpdesk" && j.ref) {
@@ -1716,11 +1732,12 @@ function aidan() {
         // tilbage, så hun kan prøve igen frem for at tro det er sket.
         knap.disabled = false;
         knap.textContent = oprindelig;
+        boks?.querySelector(".aidan-sagkvittering")?.remove();
         const p = document.createElement("p");
         p.className = "aidan-sagkvittering fejl";
         p.dataset.testid = "aidan-sag-kvittering";
         p.textContent = isEn ? "It did not get through. Try again." : "Den kom ikke igennem. Prøv igen.";
-        knap.insertAdjacentElement("afterend", p);
+        (boks ?? knap).append(p);
       }
     } catch {
       knap.disabled = false;

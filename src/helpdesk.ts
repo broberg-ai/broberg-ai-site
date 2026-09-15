@@ -56,15 +56,25 @@ export interface NySag {
    */
   intakeKey: string;
   /**
-   * KUN en adresse vi kan stå inde for. Deres regel, afsnit 6: sender vi den
-   * gennem vores nøgle, STOLER de på den — vi hæfter. En adresse en anonym
-   * besøgende har tastet er et HINT, ikke en modtager, og skal blive her:
-   * en tom adresse er ærlig, en forkert er en sag sendt til en fremmed.
+   * ADRESSEN DEN BESØGENDE GAV FOR AT BLIVE KONTAKTET.
    *
-   * Feltet hedder derfor det det er, så et kaldested ikke kan udfylde det i
-   * god tro.
+   * Første udgave af dette felt hed `bekraeftetEmail` og blev ALDRIG udfyldt,
+   * fordi jeg læste HelpDesks afsnit 6 som «send kun en adresse du har
+   * verificeret». Resultatet, målt af dem 15/9: 18 sager uden nogen måde at
+   * svare på. Christian så det i indbakken: «hvordan skal vi komme i kontakt
+   * med et menneske vi ikke kender?»
+   *
+   * SKELNEN JEG MISSEDE: afsnit 6 handler om ikke at SENDE til en adresse man
+   * ikke har grund til at tro på. En adresse tastet i forbifarten er sådan en.
+   * En adresse en person selv skriver i svaret på «hvordan får vi fat i dig?»
+   * er præcis dét: en grund til at tro på den. De to ser ens ud i et felt og
+   * er forskellige i hensigt.
+   *
+   * Så: udfyld den KUN når den besøgende gav adressen for at blive kontaktet
+   * om DENNE sag. Aldrig en adresse hentet fra en profil, en tidligere
+   * formular eller en sætning i en samtale der handlede om noget andet.
    */
-  bekraeftetEmail?: string;
+  kontaktEmail?: string;
   /**
    * Udelades med vilje når vi ikke VED det. Deres ord: et forkert intent er
    * værre end intet, fordi det ser målt ud. Uden feltet klassificerer de selv.
@@ -117,7 +127,7 @@ export async function opretSag(sag: NySag): Promise<Sag> {
         subject: sag.emne,
         body: sag.krop,
         intakeKey: sag.intakeKey,
-        ...(sag.bekraeftetEmail ? { requesterEmail: sag.bekraeftetEmail } : {}),
+        ...(sag.kontaktEmail ? { requesterEmail: sag.kontaktEmail } : {}),
         ...(sag.intent ? { intent: sag.intent } : {}),
       }),
     });

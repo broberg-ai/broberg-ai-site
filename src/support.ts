@@ -14,11 +14,19 @@
  * fattigere oplevelse og et tabt menneske. Og svaret SIGER hvilken vej der
  * blev brugt, så «det virkede» ikke dækker over at HelpDesk var nede i en uge.
  *
- * ── MAILADRESSEN ER ET HINT, ALDRIG EN MODTAGER ──────────────────────────
- * HelpDesks afsnit 6: sender vi en adresse gennem VORES nøgle, stoler de på
- * den, og vi hæfter. En adresse en anonym besøgende har tastet, har vi ingen
- * grund til at tro på — den kan være en fremmeds. Den går derfor i sagens
- * KROP som en oplyst formodning, aldrig i requesterEmail.
+ * ── MAILADRESSEN: HUN GAV DEN FOR AT BLIVE KONTAKTET ─────────────────────
+ * Første udgave sendte den ALDRIG videre. Formularen spurgte om den, skrev
+ * «så vi kan vende tilbage» under feltet — og smed den væk. Et løfte jeg
+ * gjorde umuligt at holde. Målt af HelpDesk 15/9: 18 sager uden nogen måde at
+ * svare på.
+ *
+ * Fejlen var min læsning af deres afsnit 6. Det handler om ikke at SENDE til
+ * en adresse man ikke har grund til at tro på. En adresse en person selv
+ * skriver i et felt der siger «så vi kan vende tilbage», ER en grund til at
+ * tro på den — det er hele formålet hun skrev den til.
+ *
+ * Den går derfor med som requesterEmail OG står i kroppen, så mennesket kan se
+ * hvor den kom fra.
  */
 import type { Context } from "hono";
 import { isHoneypotTriggered, hashIp, isRateLimited, validateTurnstile } from "@broberg/forms-turnstile/server";
@@ -148,7 +156,7 @@ export async function handleSupport(c: Context): Promise<Response> {
       intakeKey: await fingeraftryk(`${emne}\n${besked}\n${email}`),
       // intent udelades: vi ved det ikke, og et forkert intent er værre end
       // intet, fordi det ser målt ud.
-      // bekraeftetEmail udelades: se modulets hoved.
+      ...(email ? { kontaktEmail: email } : {}),
     });
     return c.json<SupportSvar>({ ok: true, ref: sag.ref, vej: "helpdesk" });
   } catch (e) {
@@ -181,6 +189,10 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
   const krop = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
   const samtale = Array.isArray(krop.samtale) ? (krop.samtale as Array<Record<string, unknown>>) : [];
   const samtaleId = String(krop.samtaleId ?? "").trim();
+  // Adressen hun skrev i boksen da hun bad om et menneske. Tom = hun valgte
+  // «opret uden mail», og DET skal kunne ses på sagen frem for at ligne en
+  // forglemmelse.
+  const email = String(krop.email ?? "").trim();
   const replikker = samtale
     .map((m) => ({ rolle: String(m.role ?? ""), tekst: String(m.content ?? "").trim() }))
     .filter((m) => m.tekst && (m.rolle === "user" || m.rolle === "assistant"));
@@ -200,8 +212,18 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
       // er typisk «må jeg tale med et menneske», og det er ikke hvad sagen
       // handler om.
       emne: emneFor("", brugerensOrd[0]!.tekst),
-      krop: `Aidan kunne ikke svare, og den besøgende bad om et menneske.\n\nHELE SAMTALEN:\n\n${udskrift}`,
+      krop: [
+        "Aidan kunne ikke svare, og den besøgende bad om et menneske.",
+        email
+          ? `Hun oplyste ${email} da hun bad om at blive kontaktet.`
+          : "HUN VALGTE AT IKKE OPLYSE EN ADRESSE. Sagen kan ikke besvares — hun har kun referencen.",
+        "",
+        "HELE SAMTALEN:",
+        "",
+        udskrift,
+      ].join("\n"),
       intakeKey: `aidan-${samtaleId}`,
+      ...(email ? { kontaktEmail: email } : {}),
       // intent udelades: Aidan ved det ikke, og HelpDesks egen klassifikator er
       // bedre til det end et gæt fra en chat-prompt.
       // bekraeftetEmail udelades: en adresse i en chat er ikke mere bekræftet

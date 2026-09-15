@@ -5074,3 +5074,64 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   letter-spacing: 0.04em;
   user-select: all;
 }
+
+/* F024.3 — boksen der spørger om adressen, dér hvor hun beder om et menneske.
+   18 sager blev oprettet uden nogen måde at svare på, fordi ingen spurgte. */
+.aidan-sagboks {
+  margin: 10px 0 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--card);
+}
+.aidan-sagboks-hvorfor {
+  margin: 0 0 9px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.aidan-sag-email {
+  width: 100%;
+  padding: 7px 11px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--light);
+  font: inherit;
+  font-size: 0.85rem;
+}
+.aidan-sag-email:focus-visible {
+  outline: 2px solid var(--blue-light);
+  outline-offset: 1px;
+}
+.aidan-sag-email[aria-invalid="true"] {
+  border-color: var(--orange);
+}
+.aidan-sagboks-knapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 9px;
+}
+/* Fravalget er et RIGTIGT valg, ikke en høflighed — men det er ikke det
+   primære. Dæmpet, ikke skjult: skjuler man det, tvinger man en adresse frem
+   der ikke er hendes. */
+.aidan-msg .aidan-sag-uden {
+  padding: 6px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.aidan-msg .aidan-sag-uden:hover {
+  color: var(--light);
+  border-color: var(--blue);
+}
+.aidan-msg .aidan-sag-uden:focus-visible {
+  outline: 2px solid var(--blue-light);
+  outline-offset: 3px;
+}
