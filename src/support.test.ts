@@ -1,6 +1,6 @@
-import { describe, test as it, expect, afterEach } from "bun:test";
+import { describe, test as it, expect, afterEach, beforeEach } from "bun:test";
 import { readFileSync } from "node:fs";
-import { emneFor, kropFor, handleSupport, handleSupportTriage, turnstileAktiv } from "./support.ts";
+import { emneFor, kropFor, handleSupport, handleSupportTriage, turnstileAktiv, taelTilbudtSag, triageTaeller } from "./support.ts";
 
 /**
  * F024.2 — supportruten.
@@ -316,5 +316,49 @@ describe("F024.3 — Aidan triagerer samtalen til en sag", () => {
     expect(reserve).toBe(true);
     expect((svar.krop as { vej: string }).vej).toBe("reserve");
     expect((svar.krop as { ref?: string }).ref).toBeUndefined();   // ingen opdigtet reference
+  });
+});
+
+describe("frafaldet — tilbudt mod oprettet", () => {
+  beforeEach(() => Object.assign(triageTaeller, { tilbudt: 0, oprettet: 0, udenMail: 0 }));
+
+  it("tæller ÉT tilbud pr. svar, ikke pr. linje", () => {
+    taelTilbudtSag("Det kan jeg ikke slå op.\n[sag]\n[sag]");
+    expect(triageTaeller.tilbudt).toBe(1);
+  });
+
+  it("tæller IKKE når markøren kun er nævnt i en sætning", () => {
+    // Markøren gælder kun alene på sin egen linje — samme regel som
+    // gengivelsen. Ellers ville et svar der FORKLARER markøren tælle som et
+    // tilbud, og frafaldet ville se mindre ud end det er.
+    taelTilbudtSag("Du kan skrive [sag] hvis du vil have et menneske.");
+    expect(triageTaeller.tilbudt).toBe(0);
+  });
+
+  it("tæller intet på et almindeligt svar", () => {
+    taelTilbudtSag("Vi bygger websites, webshops og platforme.");
+    expect(triageTaeller.tilbudt).toBe(0);
+  });
+
+  it("et fravalgt mailfelt tælles for sig — ellers ligner det en forglemmelse", async () => {
+    process.env.HELPDESK_KEY = "hd_live_test";
+    process.env.HELPDESK_TENANT = "broberg-ai";
+    const gemFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ ticket: { ref: "BR-T", state: "open", level: 0 }, created: true }), { status: 201 })
+    ) as unknown as typeof fetch;
+
+    const lav = (email: string) => ({
+      req: { json: async () => ({ samtaleId: `s-${email || "tom"}`, samtale: [{ role: "user", content: "hjælp" }], email }), header: () => undefined },
+      json: () => new Response(null),
+      get: () => undefined,
+    } as never);
+
+    await handleSupportTriage(lav("ida@eksempel.dk"));
+    await handleSupportTriage(lav(""));
+    globalThis.fetch = gemFetch;
+
+    expect(triageTaeller.oprettet).toBe(2);
+    expect(triageTaeller.udenMail).toBe(1);
   });
 });

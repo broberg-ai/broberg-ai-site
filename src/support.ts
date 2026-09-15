@@ -34,6 +34,26 @@ import { opretSag, HelpDeskFejl } from "@/helpdesk.ts";
 
 const CMS_FORMULAR = "https://webhouse.app/api/forms/contact?site=broberg-ai";
 
+/**
+ * F024.3 — FRAFALDET, målt frem for gættet.
+ *
+ * HelpDesks deflection-tal kan ikke se hvor tit Aidan giver op. Det tæller
+ * «Aidan gav op OG hun trykkede» — og siden vi begyndte at spørge om en
+ * mailadresse, er der endnu et sted hun kan falde fra.
+ *
+ * `tilbudt` tælles på SERVEREN når markøren står i Aidans svar, ikke i
+ * browseren: en tæller der kræver et ekstra kald fra klienten mangler præcis
+ * de gange nogen lukkede fanen — altså den halvdel vi måler for at finde.
+ *
+ * Forskellen mellem de to tal ER frafaldet. Hverken tallet alene siger noget.
+ */
+export const triageTaeller = { tilbudt: 0, oprettet: 0, udenMail: 0 };
+
+/** Kaldes med Aidans færdige svar. Tæller ét tilbud pr. svar, ikke pr. linje. */
+export function taelTilbudtSag(svar: string): void {
+  if (/^\s*\[sag\]\s*$/m.test(svar)) triageTaeller.tilbudt++;
+}
+
 export interface SupportSvar {
   ok: boolean;
   /** Sagens reference — kun når HelpDesk tog imod. Kan læses op i telefonen. */
@@ -229,6 +249,8 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
       // bekraeftetEmail udelades: en adresse i en chat er ikke mere bekræftet
       // end en i et felt.
     });
+    triageTaeller.oprettet++;
+    if (!email) triageTaeller.udenMail++;
     return c.json<SupportSvar>({ ok: true, ref: sag.ref, vej: "helpdesk" });
   } catch (e) {
     const reddet = await tilReserve("(via Aidan)", "", udskrift);

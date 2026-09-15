@@ -19,6 +19,7 @@
  */
 import type { Context } from "hono";
 import { helpdeskStatus } from "@/helpdesk.ts";
+import { taelTilbudtSag, triageTaeller } from "@/support.ts";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import { createHash } from "node:crypto";
 import { buildSearchIndex } from "@/content/compose.ts";
@@ -468,6 +469,9 @@ export function handleAidanHealth(c: Context): Response {
       // sager» skal kunne LÆSES som et tal. En sagsoprettelse der stille
       // begynder at fejle, er værre end en der aldrig virkede.
       helpdesk: helpdeskStatus(),
+      // F024.3 — forskellen mellem `tilbudt` og `oprettet` ER frafaldet.
+      // Hverken tal siger noget alene, og HelpDesk kan kun se det sidste.
+      triage: { ...triageTaeller },
     },
     aidanConfigured() ? 200 : 503,
   );
@@ -514,10 +518,16 @@ export async function handleAidanChat(c: Context): Promise<Response> {
         ]);
         const system = [grund, side, opslag && `=== ${opslag}`].filter(Boolean).join("\n\n");
         send("status", { trin: locale === "en" ? "Writing the answer…" : "Skriver svar…" });
+        // Svaret samles KUN for at kunne se om triage blev tilbudt. Teksten
+        // gemmes ikke og forlader ikke denne funktion.
+        let samlet = "";
         for await (const ev of ai().chatStream({ tier: "smart", system, messages, maxTokens: 1200 })) {
-          if (ev.type === "text") send("text", { delta: ev.delta });
-          else if (ev.type === "error") send("error", { message: "model_error" });
+          if (ev.type === "text") {
+            samlet += ev.delta;
+            send("text", { delta: ev.delta });
+          } else if (ev.type === "error") send("error", { message: "model_error" });
         }
+        taelTilbudtSag(samlet);
         send("done", {});
       } catch {
         // Detaljen hører til i loggen, ikke hos en fremmed i browseren.
