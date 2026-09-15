@@ -187,6 +187,21 @@ const logos: Record<string, JSX.Element> = {
      niveau 1, hvor svaret bliver givet; de to blå ovenover er eskalationen.
      Faste farver som cardmems mærke: et logo der skifter farve med temaet er
      ikke længere det samme logo. */
+  /* Broberg ID — døren med nøglehullet.
+     Ved 24 px kan et mærke sige ÉN ting (se scope ovenfor), og navnet siger
+     allerede «ID». Så mærket siger DØREN: ét panel, ét hul. Nøglehullet er
+     orange fordi det er det eneste sted i flagskibets tegning der lyser — de
+     to skal kunne genkendes som samme historie.
+     Faste farver, som resten af registret: et logo der skifter med temaet er
+     ikke længere det samme logo. */
+  bid: (
+    <svg viewBox="0 0 32 32" width="24" height="24">
+      <rect x="5.5" y="3" width="21" height="26" rx="5.5" fill="#2b3442" stroke="#38bdf8" stroke-width="1.5" />
+      <circle cx="16" cy="14" r="3.5" fill="#f3522c" />
+      <path d="M14.5 16.6h3l1.15 5.4h-5.3z" fill="#f3522c" />
+      <circle cx="22.3" cy="16" r="1.05" fill="#38bdf8" opacity=".75" />
+    </svg>
+  ),
   helpdesk: (
     <svg viewBox="0 0 32 32" width="24" height="24">
       <path
