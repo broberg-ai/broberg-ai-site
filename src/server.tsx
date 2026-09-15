@@ -7,6 +7,7 @@ import { beregnUdsnit } from "@/range.ts";
 import { serveStatic } from "hono/bun";
 import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
+import { handleSupport } from "@/support.ts";
 import { handleAidanChat, handleAidanHealth, handleAidanStatus } from "@/aidan.ts";
 import { handleAidanIndsigter, handleAidanLaes, handleAidanTidskoder, handleAidanGemTidskoder } from "@/aidan-laes.ts";
 import { handleAidanSendLyd, handleAidanSendSvar, handleAidanFeedback } from "@/aidan-mail.ts";
@@ -121,6 +122,11 @@ app.post("/icd", handleIcd);
 // F007.3 — Trail-ingest-webhook: CMS'ets F35-stage kalder hertil ved udgiv/ret
 // (registreret pr. site i CMS-admin → contentWebhooks). HMAC-verificeret.
 app.post("/api/trail-ingest", handleTrailIngest);
+
+// F024.2 — supportformularen. Server til server mod HelpDesk; nøglen når
+// aldrig et JS-bundt. Fejler HelpDesk, falder ruten tilbage til CMS'ets
+// formular-motor frem for at tabe henvendelsen.
+app.post("/api/support", handleSupport);
 
 app.post("/api/aidan/chat", handleAidanChat);
 app.get("/api/aidan/health", handleAidanHealth);
