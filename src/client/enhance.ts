@@ -1678,11 +1678,21 @@ function aidan() {
     const oprindelig = knap.textContent ?? "";
     knap.disabled = true;
     knap.textContent = isEn ? "Opening…" : "Opretter…";
-    const sig = (tekst: string, klasse: string) => {
+    // Referencen sættes som sit EGET element, ikke som tekst i en sætning:
+    // den er det eneste den besøgende skal tage med sig, og den skal kunne
+    // markeres i ét klik (user-select: all).
+    const sig = (foer: string, ref: string | null, efter: string) => {
       const p = document.createElement("p");
-      p.className = `aidan-sagkvittering ${klasse}`;
+      p.className = "aidan-sagkvittering";
       p.dataset.testid = "aidan-sag-kvittering";
-      p.textContent = tekst;
+      p.append(foer);
+      if (ref) {
+        const r = document.createElement("span");
+        r.className = "ref";
+        r.dataset.testid = "aidan-sag-ref";
+        r.textContent = ref;
+        p.append(r, efter);
+      }
       knap.replaceWith(p);
     };
     try {
@@ -1695,11 +1705,12 @@ function aidan() {
       });
       const j = (await r.json().catch(() => ({}))) as { ok?: boolean; ref?: string; vej?: string };
       if (j.ok && j.vej === "helpdesk" && j.ref) {
-        sig(isEn ? `Case ${j.ref} is open — a human reads the whole conversation. Keep the reference.`
-                 : `Sag ${j.ref} er oprettet — et menneske læser hele samtalen. Gem referencen.`, "ok");
+        sig(isEn ? "Case " : "Sag ", j.ref,
+            isEn ? " is open — a human reads the whole conversation. Keep the reference."
+                 : " er oprettet — et menneske læser hele samtalen. Gem referencen.");
       } else if (j.ok && j.vej === "reserve") {
         sig(isEn ? "We have it, but our case system did not answer, so there is no reference this time."
-                 : "Vi har den, men vores sagssystem svarede ikke, så der er ingen reference denne gang.", "ok");
+                 : "Vi har den, men vores sagssystem svarede ikke, så der er ingen reference denne gang.", null, "");
       } else {
         // Aidan LYVER IKKE om at der er oprettet en sag. Knappen kommer
         // tilbage, så hun kan prøve igen frem for at tro det er sket.

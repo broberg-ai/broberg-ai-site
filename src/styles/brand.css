@@ -5009,3 +5009,68 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 @media (max-width: 560px) {
   .lyt-afspiller { left: 18px; right: 18px; bottom: 84px; grid-template-columns: auto 1fr auto auto; }
 }
+
+/* F024.3 — triage-knappen i Aidans svar, og kvitteringen der afløser den.
+
+   BLÅ SOM SVARETS ØVRIGE HANDLINGER (.aidan-lenke). Christian så den i drift
+   og kunne ikke få øje på den — fordi den slet ikke havde nogen styling:
+   reglerne blev skrevet i en kommando hvor `grep | head || python` aldrig
+   udløste reservegrenen (head returnerer 0 på tom input). Knappen har altså
+   stået som en nøgen <button> hele vejen.
+
+   Den er nu samme pille, samme blå og samme hover som resten. En handling der
+   ser anderledes ud end sprogets øvrige handlinger, ligner ikke en knap. */
+.aidan-msg .aidan-sag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 2px;
+  padding: 6px 14px;
+  border: 1px solid var(--blue);
+  border-radius: 999px;
+  background: var(--blue-glow);
+  color: var(--blue-light);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.08s;
+}
+.aidan-msg .aidan-sag:hover {
+  background: color-mix(in srgb, var(--blue) 20%, transparent);
+  border-color: var(--blue-light);
+}
+.aidan-msg .aidan-sag:active {
+  transform: translateY(1px);
+}
+.aidan-msg .aidan-sag:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.aidan-msg .aidan-sag:focus-visible {
+  outline: 2px solid var(--blue-light);
+  outline-offset: 3px;
+}
+
+/* Kvitteringen. Sagsreferencen er det ENESTE den besøgende skal tage med sig,
+   så den skal kunne ses og markeres i ét klik — ikke gemme sig i en sætning. */
+.aidan-sagkvittering {
+  margin: 8px 0 2px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.aidan-sagkvittering.fejl {
+  color: var(--orange-text);
+}
+.aidan-sagkvittering .ref {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+  background: var(--blue-glow);
+  color: var(--blue-light);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  user-select: all;
+}
