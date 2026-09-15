@@ -18,6 +18,7 @@
  * Trail-KB kobles på, afløser den søgeindeks-digestet som lag 3.
  */
 import type { Context } from "hono";
+import { helpdeskStatus } from "@/helpdesk.ts";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import { createHash } from "node:crypto";
 import { buildSearchIndex } from "@/content/compose.ts";
@@ -434,7 +435,14 @@ export function handleAidanHealth(c: Context): Response {
   // bidrager til svarene» stå som sandt i måneder mens hvert opslag
   // tidsudløber — det var præcis tilstanden 9/9-2026.
   return c.json(
-    { ok: aidanConfigured(), trail: { konfigureret: trailConfigured(), ...trailTaeller } },
+    {
+      ok: aidanConfigured(),
+      trail: { konfigureret: trailConfigured(), ...trailTaeller },
+      // F024.1 — samme grund som trail-blokken: «HelpDesk tager imod vores
+      // sager» skal kunne LÆSES som et tal. En sagsoprettelse der stille
+      // begynder at fejle, er værre end en der aldrig virkede.
+      helpdesk: helpdeskStatus(),
+    },
     aidanConfigured() ? 200 : 503,
   );
 }
