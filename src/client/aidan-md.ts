@@ -196,6 +196,16 @@ export function aidanTilHtml(raa: string, gyldigeStier?: Set<string>): string {
     .map((blok) => {
       const linjer = blok.split("\n").filter((l) => l.trim());
       if (!linjer.length) return "";
+      // EN INDRAMMET KODEBLOK ER TEKST, IKKE EN INSTRUKS. Uden den her ville
+      // ```\n[sag]\n``` — altså Aidan der VISER hvordan markøren ser ud —
+      // rendre en rigtig sagsboks midt i en forklaring. Et falsk positivt
+      // triage-tilbud opdages aldrig af os: det lander som støj hos HelpDesk
+      // og som forvirring hos en der bare spurgte hvordan support virker.
+      // (Fundet af den negative prøve, ikke af en gennemlæsning.)
+      if (linjer[0]!.startsWith("```")) {
+        const krop = linjer.filter((l) => !l.trim().startsWith("```"));
+        return krop.length ? `<pre class="aidan-kode"><code>${krop.join("\n")}</code></pre>` : "";
+      }
       // En blok kan blande indledning og liste («Det indeholder:\n- x\n- y»)
       // — Christians screenshot. Derfor runs af ens linjetyper, ikke
       // alt-eller-intet: hver run bliver <ul>/<ol>/afsnit for sig.

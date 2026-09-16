@@ -137,3 +137,34 @@ describe("ingen bekræftelsesknap i en mail vi selv sender", () => {
     expect(syndere).toEqual([]);
   });
 });
+
+/**
+ * HelpDesks kontrakt, oplyst 16/9: OPSLAGET (GET) svarer 200 med `used` /
+ * `expired` som booleans og bærer KUN `reason` på 404. To kilder til de samme
+ * tre tilstande, med hver sin form — deres arv, vores oversættelse.
+ */
+describe("opslagets flag oversættes til den rigtige tilstand", () => {
+  it("et BRUGT token bliver «used», ikke «ukendt-grund»", async () => {
+    // Uden flag-læsningen ville en bruger der svarer for anden gang få «det
+    // er vores side der driller» i stedet for «du har allerede svaret».
+    svarer(200, { redeemable: false, used: true, expired: false, ref: "BR-X" });
+    expect((await slaaOp("tok")).grund).toBe("used");
+  });
+
+  it("et UDLØBET token bliver «expired»", async () => {
+    svarer(200, { redeemable: false, used: false, expired: true, ref: "BR-X" });
+    expect((await slaaOp("tok")).grund).toBe("expired");
+  });
+
+  it("404 med reason virker stadig — den anden kilde", async () => {
+    svarer(404, { redeemable: false, reason: "unknown" });
+    expect((await slaaOp("tok")).grund).toBe("unknown");
+  });
+
+  it("knappen gates på `redeemable`, ikke på flagene hver for sig", async () => {
+    svarer(200, { redeemable: true, used: false, expired: false, ref: "BR-X", subject: "Emnet" });
+    const b = await slaaOp("tok");
+    expect(b.brugbar).toBe(true);
+    expect(b.emne).toBe("Emnet");
+  });
+});

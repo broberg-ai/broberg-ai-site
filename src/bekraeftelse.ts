@@ -59,9 +59,21 @@ export async function slaaOp(token: string): Promise<Bekraeftelse> {
       headers: { accept: "application/json" },
     });
     const j = (await r.json().catch(() => ({}))) as Record<string, unknown>;
+    // TO KILDER TIL DE SAMME TRE TILSTANDE, og de har forskellig form.
+    // HelpDesk 16/9: opslaget svarer 200 med `used`/`expired` som booleans og
+    // bærer KUN `reason` på 404. Læste vi blindt `reason`, ville et BRUGT
+    // token blive til «ukendt-grund» — altså «det er vores side der driller»
+    // til en bruger der bare har svaret én gang før. Flagene først, `reason`
+    // som reserve.
     if (!r.ok || j.redeemable === false) {
-      return { brugbar: false, grund: somGrund(j.reason), ref: str(j.ref), emne: str(j.subject) };
+      const grund: Afvist = j.used === true ? "used"
+        : j.expired === true ? "expired"
+        : somGrund(j.reason);
+      return { brugbar: false, grund, ref: str(j.ref), emne: str(j.subject) };
     }
+    // `redeemable` er sammensat af begge flag i deres ende, så knappen gates
+    // på DEN ene frem for på `used` og `expired` hver for sig — så kan vi ikke
+    // komme til at glemme den ene.
     return { brugbar: true, ref: str(j.ref), emne: str(j.subject) };
   } catch {
     return { brugbar: false, grund: "ukendt-grund" };

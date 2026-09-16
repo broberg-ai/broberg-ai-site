@@ -23,7 +23,19 @@
  * Kontraktprøven er kørt mod vores egen tenant 15/9-2026 og var grøn hele
  * vejen, inkl. de negative kontroller (uden nøgle → 401).
  */
-const BASE = process.env.HELPDESK_BASE ?? "https://api.helpdesk.broberg.ai";
+/**
+ * Adressen læses PR. KALD, ikke én gang ved import.
+ *
+ * Som konstant var den frosset i det øjeblik modulet blev indlæst — altså før
+ * en prøve nåede at sætte HELPDESK_BASE. Følgen var ikke at prøven blev
+ * langsom: den RAMTE PRODUKTIONEN med en falsk nøgle og bestod, fordi 401 også
+ * kaster. «ingen lytter på port 1» stod i kommentaren og var ikke sandt.
+ *
+ * Målt 16/9: 79 ms, svar «Ugyldig eller tilbagekaldt nøgle» fra deres rigtige
+ * API. Hver fuld testkørsel sendte altså en ugyldig hd_live-nøgle til en
+ * fremmed produktionstjeneste — og prøven var grøn af den forkerte grund.
+ */
+const base = () => process.env.HELPDESK_BASE ?? "https://api.helpdesk.broberg.ai";
 const TIMEOUT_MS = 8_000;
 
 export function helpdeskKonfigureret(): boolean {
@@ -94,7 +106,7 @@ async function kald(sti: string, init: RequestInit = {}): Promise<Response> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
   try {
-    return await fetch(`${BASE}${sti}`, {
+    return await fetch(`${base()}${sti}`, {
       ...init,
       signal: ctl.signal,
       headers: {

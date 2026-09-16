@@ -67,9 +67,33 @@ describe("en henvendelse må ikke forsvinde tavst", () => {
     process.env.HELPDESK_KEY = "hd_live_test";
     process.env.HELPDESK_TENANT = "broberg-ai";
     process.env.HELPDESK_BASE = "http://127.0.0.1:1";  // ingen lytter
+
+    // MÅLT PÅ FORSKELLEN, ikke på det absolutte tal. Tælleren er et
+    // modul-niveau objekt som ALLE prøvefiler i kørslen deler, så et absolut
+    // «fejl === 1» beviser kun at denne fil kørte først. Den bestod i
+    // isolation og faldt i den fulde kørsel — en kontrol der afhænger af
+    // global tilstand den ikke selv styrer.
+    const foer = { ...helpdeskStatus() };
     await expect(opretSag({ emne: "x", krop: "y", intakeKey: "k" })).rejects.toThrow();
-    expect(helpdeskStatus().fejl).toBe(1);
-    expect(helpdeskStatus().ok).toBe(0);
+    expect(helpdeskStatus().fejl).toBe(foer.fejl + 1);
+    expect(helpdeskStatus().ok).toBe(foer.ok);
+  });
+
+  it("HELPDESK_BASE VIRKER — ellers rammer prøven ovenfor produktionen", async () => {
+    // Den her er den vigtige af de to. Adressen var en konstant læst ved
+    // import, altså FØR prøven satte env — så «ingen lytter på port 1» var
+    // usandt: kaldet gik til deres rigtige API med en falsk nøgle og bestod,
+    // fordi 401 også kaster. Grøn af den forkerte grund, og hver fuld kørsel
+    // sendte en ugyldig hd_live-nøgle til en fremmed produktionstjeneste.
+    process.env.HELPDESK_KEY = "hd_live_test";
+    process.env.HELPDESK_TENANT = "broberg-ai";
+    process.env.HELPDESK_BASE = "http://127.0.0.1:1";
+    const fejl = await opretSag({ emne: "x", krop: "y", intakeKey: "k" }).then(
+      () => "(lykkedes uventet)",
+      (e) => String(e),
+    );
+    // Deres 401-tekst må ALDRIG kunne ses her: ses den, gik kaldet udenbys.
+    expect(fejl).not.toContain("Ugyldig eller tilbagekaldt");
   });
 
   it("også læsning kaster frem for at give et tomt svar der ligner en sag", async () => {
