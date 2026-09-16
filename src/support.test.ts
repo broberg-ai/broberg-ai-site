@@ -1,6 +1,8 @@
 import { describe, test as it, expect, afterEach, beforeEach } from "bun:test";
 import { readFileSync } from "node:fs";
-import { emneFor, kropFor, handleSupport, handleSupportTriage, turnstileAktiv, taelTilbudtSag, triageTaeller } from "./support.ts";
+import { emneFor, kropFor, handleSupport, handleSupportTriage, turnstileAktiv, taelTilbudtSag, triageTaeller, spamTaeller } from "./support.ts";
+import { handleAidanHealth } from "./aidan.ts";
+import { HONEYPOT_FIELD, _resetRateLimiter } from "@broberg/forms-turnstile/server";
 
 /**
  * F024.2 — supportruten.
@@ -360,5 +362,114 @@ describe("frafaldet — tilbudt mod oprettet", () => {
 
     expect(triageTaeller.oprettet).toBe(2);
     expect(triageTaeller.udenMail).toBe(1);
+  });
+});
+
+/**
+ * F024.5 — PORTEN SKAL KUNNE AFLÆSES.
+ *
+ * Turnstile er slukket for altid: Cloudflare er DATAANSVARLIG for signalerne,
+ * så der findes ingen EU-indstilling at slå til. Christian skal vælge en
+ * erstatning, og valget skal tages på et tal frem for en formodning.
+ *
+ * Den bærende prøve i blokken er den NEGATIVE KONTROL. Uden den ville en
+ * tæller der voksede på noget helt andet bestå alle de øvrige.
+ */
+describe("F024.5 — spam-porten kan aflæses", () => {
+  const gemEnv = { ...process.env };
+  const gemFetch = globalThis.fetch;
+
+  beforeEach(() => {
+    _resetRateLimiter();
+    spamTaeller.ialt = 0;
+    spamTaeller.honeypot = 0;
+    spamTaeller.hastighed = 0;
+    spamTaeller.turnstile = 0;
+    delete process.env.TURNSTILE_SECRET_KEY;
+    delete process.env.HELPDESK_KEY;
+  });
+  afterEach(() => {
+    globalThis.fetch = gemFetch;
+    Object.assign(process.env, gemEnv);
+    delete process.env.TURNSTILE_SECRET_KEY;
+  });
+
+  function kontekst(krop: Record<string, unknown>, ip?: string) {
+    const svar: { status?: number; krop?: unknown } = {};
+    return {
+      ctx: {
+        req: { json: async () => krop, header: (n: string) => (ip && n === "CF-Connecting-IP" ? ip : undefined) },
+        json: (k: unknown, s = 200) => { svar.krop = k; svar.status = s; return new Response(null); },
+        get: () => undefined,
+      } as never,
+      svar,
+    };
+  }
+
+  /** Slipper alt igennem til reservevejen, så en indsendelse der PASSEREDE
+   *  porten ikke fejler af en grund der intet har med porten at gøre. */
+  function reservevejSvarer() {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+  }
+
+  it("honeypot tælles for sig — og rører ikke de to andre grunde", async () => {
+    reservevejSvarer();
+    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind", [HONEYPOT_FIELD]: "bot@eksempel.dk" });
+    await handleSupport(ctx);
+    expect(spamTaeller.honeypot).toBe(1);
+    expect(spamTaeller.hastighed).toBe(0);
+    expect(spamTaeller.turnstile).toBe(0);
+  });
+
+  it("hastighedsgrænsen tælles for sig", async () => {
+    reservevejSvarer();
+    // Grænsen er 10 i timen. Nr. 11 fra samme adresse er den første afviste.
+    for (let i = 0; i < 11; i++) {
+      const { ctx } = kontekst({ besked: `henvendelse ${i}` }, "203.0.113.9");
+      await handleSupport(ctx);
+    }
+    expect(spamTaeller.hastighed).toBe(1);
+    expect(spamTaeller.honeypot).toBe(0);
+    expect(spamTaeller.ialt).toBe(11);
+  });
+
+  it("MED nøglen tæller et forfalsket bevis på `turnstile`", async () => {
+    process.env.TURNSTILE_SECRET_KEY = "0x-test";
+    globalThis.fetch = (async () => new Response(JSON.stringify({ success: false }), { status: 200 })) as unknown as typeof fetch;
+    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind", turnstileToken: "forfalsket" });
+    await handleSupport(ctx);
+    expect(spamTaeller.turnstile).toBe(1);
+  });
+
+  it("NEGATIV KONTROL: uden nøglen tæller en indsendelse uden bevis NUL på `turnstile`", async () => {
+    // Uden den her prøve ville en tæller der voksede hver gang porten blev
+    // passeret bestå alle de øvrige — og `turnstile` ville rapportere et værn
+    // der er slukket. Et nul der betyder to ting er ikke en måling.
+    reservevejSvarer();
+    expect(turnstileAktiv()).toBe(false);
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind" });
+    await handleSupport(ctx);
+    expect((svar.krop as { ok: boolean }).ok).toBe(true);   // slap FAKTISK igennem
+    expect(spamTaeller.turnstile).toBe(0);
+  });
+
+  it("`ialt` tæller også dem der slipper igennem — ellers kan afvist/ialt ikke regnes ud", async () => {
+    reservevejSvarer();
+    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind" });
+    await handleSupport(ctx);
+    expect(spamTaeller.ialt).toBe(1);
+    expect(spamTaeller.honeypot + spamTaeller.hastighed + spamTaeller.turnstile).toBe(0);
+  });
+
+  it("health viser tallene MED `turnstileAktiv` — et nul skal kunne skelnes fra en slukket vagt", () => {
+    delete process.env.TURNSTILE_SECRET_KEY;
+    const svar: { krop?: unknown } = {};
+    const ctx = { json: (k: unknown) => { svar.krop = k; return new Response(null); } } as never;
+    handleAidanHealth(ctx);
+    const spam = (svar.krop as { spam: Record<string, unknown> }).spam;
+    expect(spam).toBeDefined();
+    expect(spam.turnstileAktiv).toBe(false);
+    expect(spam.ialt).toBe(0);
+    expect(spam.turnstile).toBe(0);
   });
 });

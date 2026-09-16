@@ -19,7 +19,7 @@
  */
 import type { Context } from "hono";
 import { helpdeskStatus } from "@/helpdesk.ts";
-import { taelTilbudtSag, triageTaeller } from "@/support.ts";
+import { taelTilbudtSag, triageTaeller, spamTaeller, turnstileAktiv } from "@/support.ts";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import { createHash } from "node:crypto";
 import { buildSearchIndex } from "@/content/compose.ts";
@@ -484,6 +484,14 @@ export function handleAidanHealth(c: Context): Response {
       // F024.3 — forskellen mellem `tilbudt` og `oprettet` ER frafaldet.
       // Hverken tal siger noget alene, og HelpDesk kan kun se det sidste.
       triage: { ...triageTaeller },
+      // F024.5 — `turnstileAktiv` står FØRST og er ikke pynt: uden den kan
+      // `turnstile: 0` ikke skelnes fra en slukket vagt. Et nul der betyder to
+      // ting er ikke en måling.
+      //
+      // Bemærk hvad tallet IKKE dækker: kun /api/support. Triage-ruten har
+      // ingen port og tæller derfor intet — nul her er ikke et bevis for at
+      // ingen bots nåede HelpDesk.
+      spam: { turnstileAktiv: turnstileAktiv(), ...spamTaeller },
     },
     aidanConfigured() ? 200 : 503,
   );

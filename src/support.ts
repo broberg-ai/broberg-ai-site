@@ -137,24 +137,59 @@ export function turnstileAktiv(): boolean {
   return Boolean(process.env.TURNSTILE_SECRET_KEY);
 }
 
-async function spamBlokeret(c: Context, krop: Record<string, unknown>): Promise<boolean> {
-  if (isHoneypotTriggered(krop)) return true;
+/**
+ * F024.5 — PORTEN AFVISTE TAVST.
+ *
+ * Indtil nu returnerede den en boolean, ruten svarede det samme som ved et
+ * tomt felt, og der blev ikke skrevet en linje. Porten virkede — og var
+ * usynlig for alt andet end en læsning af kildeteksten.
+ *
+ * Den koster os et svar vi skal bruge: Turnstile er slukket for altid
+ * (Cloudflare er DATAANSVARLIG for signalerne, så der findes ingen
+ * EU-indstilling), og valget af erstatning skal tages på et tal frem for en
+ * formodning. Uden en tæller ved vi ikke om vi har et bot-problem overhovedet.
+ *
+ * OPDELT PÅ GRUND, ikke ét samlet tal. «17 afvist» kan ikke svare på om en
+ * captcha ville have hjulpet; honeypot og hastighedsgrænse fanger noget helt
+ * andet end et bevis-tjek gør.
+ *
+ * NUL BETYDER TO TING, og det er hele grunden til at `turnstileAktiv` står ved
+ * siden af tallene i health-svaret: `turnstile: 0` er enten «ingen forsøgte at
+ * snyde» eller «vagten er slukket». De renderer ens. Et tal uden sin egen
+ * tilstand er præcis det instrument der fejler i den grønne retning.
+ */
+export const spamTaeller = { ialt: 0, honeypot: 0, hastighed: 0, turnstile: 0 };
+
+type SpamGrund = "honeypot" | "hastighed" | "turnstile";
+
+/** Grunden til afvisning, eller null når indsendelsen slap igennem. */
+async function spamGrund(c: Context, krop: Record<string, unknown>): Promise<SpamGrund | null> {
+  if (isHoneypotTriggered(krop)) return "honeypot";
   const ip = c.req.header("CF-Connecting-IP") ?? c.req.header("x-forwarded-for") ?? "";
-  if (ip && isRateLimited(hashIp(ip), "support", MAKS_PR_TIME)) return true;
-  if (!turnstileAktiv()) return false;
+  if (ip && isRateLimited(hashIp(ip), "support", MAKS_PR_TIME)) return "hastighed";
+  // ER VAGTEN SLUKKET, TÆLLER DEN INTET. Talte vi her, ville `turnstile`
+  // vokse på indsendelser ingen vagt så på — og tallet ville se ud som om et
+  // værn arbejdede. Den negative kontrol i testen holder præcis denne linje.
+  if (!turnstileAktiv()) return null;
   // Er værnet TÆNDT, er en manglende bevis-streng et afslag — ikke en
   // undtagelse. Ellers ville enhver kunne slippe forbi ved at lade feltet tomt.
   const bevis = String(krop.turnstileToken ?? "");
-  if (!bevis) return true;
-  return !(await validateTurnstile(bevis, process.env.TURNSTILE_SECRET_KEY!, ip || undefined));
+  if (!bevis) return "turnstile";
+  const gyldigt = await validateTurnstile(bevis, process.env.TURNSTILE_SECRET_KEY!, ip || undefined);
+  return gyldigt ? null : "turnstile";
 }
 
 /** POST /api/support */
 export async function handleSupport(c: Context): Promise<Response> {
   const krop = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+  // `ialt` tælles FØR porten, så afvist/ialt kan regnes ud. Tælles den efter,
+  // mangler præcis de forsøg vi måler for at finde.
+  spamTaeller.ialt++;
+  const grund = await spamGrund(c, krop);
   // Et blokeret forsøg får SAMME svar som et tomt felt. En bot skal ikke
-  // kunne læse af svaret om den blev opdaget.
-  if (await spamBlokeret(c, krop)) {
+  // kunne læse af svaret om den blev opdaget. Tælleren er vores, ikke dens.
+  if (grund) {
+    spamTaeller[grund]++;
     return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "skriv_en_besked" }, 400);
   }
   const besked = String(krop.besked ?? "").trim();
