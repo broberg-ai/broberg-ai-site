@@ -21,6 +21,7 @@ import type { Context } from "hono";
 import { helpdeskStatus } from "@/helpdesk.ts";
 import { taelTilbudtSag, triageTaeller, spamTaeller, turnstileAktiv } from "@/support.ts";
 import { bekraeftTaeller } from "@/bekraeft-rute.ts";
+import { webhookTaeller, webhookKonfigureret } from "@/helpdesk-webhook.ts";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import { createHash } from "node:crypto";
 import { buildSearchIndex } from "@/content/compose.ts";
@@ -496,6 +497,10 @@ export function handleAidanHealth(c: Context): Response {
       // F024.4 — `nej` står for sig. Et samlet «bekræftet» ville skjule
       // præcis det signal der kan gøre supporten bedre.
       bekraeft: { ...bekraeftTaeller },
+      // F024.6 — `konfigureret` står FØRST, af samme grund som turnstileAktiv:
+      // nul modtagne hændelser betyder enten «der er ikke sket noget» eller
+      // «døren er lukket fordi hemmeligheden mangler». De renderer ens.
+      webhook: { konfigureret: webhookKonfigureret(), ...webhookTaeller },
     },
     aidanConfigured() ? 200 : 503,
   );
