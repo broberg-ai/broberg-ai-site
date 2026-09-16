@@ -76,8 +76,25 @@ export function emneFor(emne: string, besked: string): string {
  * Sagens krop. Navn og mail står HER som oplyste formodninger, ikke som
  * felter nogen kan handle på uden at læse dem.
  */
-export function kropFor(besked: string, navn?: string, email?: string): string {
+export function kropFor(
+  besked: string,
+  navn?: string,
+  email?: string,
+  /**
+   * F024.2 — DØREN FOR FREMTIDIGE FELTER. Etiket → værdi, i den rækkefølge de
+   * står på formularen.
+   *
+   * Uden den kræver hvert nyt felt en ny parameter her OG en ændring i kaldet
+   * til HelpDesk. Med den kræver det ingen af delene: feltet lander i sagens
+   * krop, og `opretSag` ser det aldrig. Det er dét Christian bad om da han
+   * sagde at formularen «kan udbygges med mere eller mindre avanceret input».
+   */
+  ekstra?: Array<[string, string]>,
+): string {
   const linjer = [besked.trim()];
+  for (const [etiket, vaerdi] of ekstra ?? []) {
+    if (vaerdi.trim()) linjer.push("", `${etiket}: ${vaerdi.trim()}`);
+  }
   const oplyst: string[] = [];
   if (navn?.trim()) oplyst.push(`navn: ${navn.trim()}`);
   if (email?.trim()) oplyst.push(`mail: ${email.trim()}`);
@@ -193,6 +210,8 @@ export async function handleSupport(c: Context): Promise<Response> {
     return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "skriv_en_besked" }, 400);
   }
   const besked = String(krop.besked ?? "").trim();
+  // Det mest brugbare ekstra felt i support: hvilken side stod hun på.
+  const hvor = String(krop.hvor ?? "").trim();
   const navn = String(krop.navn ?? "").trim();
   const email = String(krop.email ?? "").trim();
   const emne = emneFor(String(krop.emne ?? ""), besked);
@@ -204,7 +223,7 @@ export async function handleSupport(c: Context): Promise<Response> {
   try {
     const sag = await opretSag({
       emne,
-      krop: kropFor(besked, navn, email),
+      krop: kropFor(besked, navn, email, [["Hvor skete det", hvor]]),
       // STABIL pr. henvendelse, ENS ved genforsøg: indholdets fingeraftryk.
       // Ikke et tidsstempel — så ville nøglen være værdiløs ved netop det
       // genforsøg den findes for.

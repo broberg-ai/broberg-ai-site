@@ -454,6 +454,7 @@ function supportFormular(): void {
         body: JSON.stringify({
           emne: String(d.get("emne") ?? ""),
           besked: String(d.get("besked") ?? ""),
+          hvor: String(d.get("hvor") ?? ""),
           navn: String(d.get("navn") ?? ""),
           email: String(d.get("email") ?? ""),
           _gotcha: String(d.get("_gotcha") ?? ""),

@@ -54,6 +54,16 @@ export function Support({ data, locale, cmsRef }: { data: SupportCopy; locale: L
               <label for="sf-besked"><span {...fa("besked")}>{f("besked", isEn ? "What happened?" : "Hvad er der sket?")}</span></label>
               <textarea id="sf-besked" name="besked" rows={5} required data-testid="support-input-besked" />
             </div>
+            {/* F024.2 — BEVISET PÅ AT FORMEN KAN UDBYGGES. Feltet er tilføjet
+                efter at sagsoprettelsen kørte i drift, og kaldet til HelpDesk
+                blev IKKE rørt: værdien går med i sagens krop gennem `ekstra`.
+                Det er også det mest brugbare felt i support — «på hvilken
+                side» er det første et menneske ellers skal spørge om. */}
+            <div class="form-field">
+              <label for="sf-hvor"><span {...fa("hvor")}>{f("hvor", isEn ? "Where did it happen? (optional)" : "Hvor skete det? (valgfrit)")}</span></label>
+              <input id="sf-hvor" name="hvor" data-testid="support-input-hvor"
+                     placeholder={f("hvorPlaceholder", isEn ? "e.g. the page address" : "fx sidens adresse")} />
+            </div>
             <div class="form-field">
               <label for="sf-navn"><span {...fa("navn")}>{f("navn", isEn ? "Name (optional)" : "Navn (valgfrit)")}</span></label>
               <input id="sf-navn" name="navn" data-testid="support-input-navn" />

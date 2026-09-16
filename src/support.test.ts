@@ -473,3 +473,36 @@ describe("F024.5 — spam-porten kan aflæses", () => {
     expect(spam.turnstile).toBe(0);
   });
 });
+
+/**
+ * F024.2 / AC#5 — «et nyt felt kan tilføjes uden at røre kaldet til HelpDesk».
+ *
+ * Påstanden var ikke sand da den blev skrevet: `kropFor` tog navn og mail som
+ * hver sin parameter, så feltet efter dem ville have krævet en tredje. Nu er
+ * der én dør — `ekstra` — og «Hvor skete det» er det første felt der går
+ * igennem den. Prøven måler døren, ikke det ene felt.
+ */
+describe("F024.2 — formen kan udbygges", () => {
+  it("et ekstra felt lander i sagens krop med sin etiket", () => {
+    const k = kropFor("Knappen svarer ikke", "", "", [["Hvor skete det", "/flagskibe/cms"]]);
+    expect(k).toContain("Hvor skete det: /flagskibe/cms");
+    expect(k).toContain("Knappen svarer ikke");
+  });
+
+  it("et TOMT ekstra felt tilføjer INTET — ingen tom etiket i sagen", () => {
+    // Et menneske der åbner sagen skal ikke læse «Hvor skete det:» og et
+    // blankt felt. Ingenting er et bedre svar end en tom rubrik.
+    expect(kropFor("Knappen svarer ikke", "", "", [["Hvor skete det", "   "]]))
+      .not.toContain("Hvor skete det");
+  });
+
+  it("flere ekstra felter bevarer formularens rækkefølge", () => {
+    const k = kropFor("x", "", "", [["A", "1"], ["B", "2"]]);
+    expect(k.indexOf("A: 1")).toBeLessThan(k.indexOf("B: 2"));
+  });
+
+  it("den besøgendes egne ord står ØVERST — feltet skubber dem ikke ned", () => {
+    const k = kropFor("Knappen svarer ikke", "", "", [["Hvor skete det", "/x"]]);
+    expect(k.startsWith("Knappen svarer ikke")).toBe(true);
+  });
+});
