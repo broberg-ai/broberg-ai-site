@@ -589,7 +589,7 @@ export async function renderSupport(locale: Locale): Promise<string> {
           // NØDBREMSE, ikke et hjem: står værdien ikke i CMS, kan Christian
           // hverken søge den frem eller rette den.
           felter: Object.fromEntries(
-            ["heading", "lead", "emne", "besked", "hvor", "hvorPlaceholder", "navn", "email", "emailNote", "submit"]
+            ["heading", "lead", "emne", "besked", "hvor", "hvorPlaceholder", "navn", "email", "telefon", "emailNote", "kontaktKraeves", "submit"]
               .map((k) => [k, g(`supportForm.${k}`, "")])
               .filter(([, v]) => v),
           ),

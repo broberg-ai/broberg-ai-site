@@ -443,6 +443,18 @@ function supportFormular(): void {
       besked.focus();
       return;
     }
+    // MAIL ELLER TELEFON. Kontrollen her er en HØFLIGHED — den sparer hende en
+    // rundtur til serveren. Porten er serverens, og den svarer det samme på en
+    // indsendelse der går uden om siden.
+    const mailFelt = form.querySelector<HTMLInputElement>("#sf-email");
+    const telFelt = form.querySelector<HTMLInputElement>("#sf-telefon");
+    if (!mailFelt?.value.trim() && !telFelt?.value.trim()) {
+      vis("err", isEn
+        ? "Please give us an email or a phone number — otherwise we can't answer you."
+        : "Skriv din mail eller dit telefonnummer — ellers kan vi ikke svare dig.");
+      mailFelt?.focus();
+      return;
+    }
     const oprindelig = knap.textContent ?? "";
     knap.disabled = true;
     knap.textContent = isEn ? "Sending…" : "Sender…";
@@ -455,12 +467,22 @@ function supportFormular(): void {
           emne: String(d.get("emne") ?? ""),
           besked: String(d.get("besked") ?? ""),
           hvor: String(d.get("hvor") ?? ""),
+          telefon: String(d.get("telefon") ?? ""),
           navn: String(d.get("navn") ?? ""),
           email: String(d.get("email") ?? ""),
           _gotcha: String(d.get("_gotcha") ?? ""),
         }),
       });
-      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; ref?: string; vej?: string };
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; ref?: string; vej?: string; fejl?: string };
+      // Serveren afviste fordi der hverken var mail eller telefon. Den besked
+      // skal være DEN SAMME som høflighedskontrollen ovenfor — to formuleringer
+      // af samme krav lærer hende at det er to forskellige ting.
+      if (j.fejl === "kontakt_kraeves") {
+        vis("err", isEn
+          ? "Please give us an email or a phone number — otherwise we can't answer you."
+          : "Skriv din mail eller dit telefonnummer — ellers kan vi ikke svare dig.");
+        return;
+      }
       if (j.ok && j.vej === "helpdesk" && j.ref) {
         form.reset();
         vis("ok", isEn

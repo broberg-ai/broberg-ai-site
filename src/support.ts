@@ -212,6 +212,7 @@ export async function handleSupport(c: Context): Promise<Response> {
   const besked = String(krop.besked ?? "").trim();
   // Det mest brugbare ekstra felt i support: hvilken side stod hun på.
   const hvor = String(krop.hvor ?? "").trim();
+  const telefon = String(krop.telefon ?? "").trim();
   const navn = String(krop.navn ?? "").trim();
   const email = String(krop.email ?? "").trim();
   const emne = emneFor(String(krop.emne ?? ""), besked);
@@ -220,10 +221,29 @@ export async function handleSupport(c: Context): Promise<Response> {
     return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "skriv_en_besked" }, 400);
   }
 
+  /**
+   * MAIL ELLER TELEFON ER PÅKRÆVET. Christian, 16/9:
+   *
+   *   «En support formular der skal forstyrre os med et kunde problem SKAL
+   *    have en mail eller et telefon nummer ellers kan den ikke afsendes.
+   *    Vi gider ikke spilde tiden på den slags spam.»
+   *
+   * To ting på én gang, og begge er rigtige. En henvendelse uden en vej
+   * tilbage kan ikke besvares — mennesket bliver siddende og venter på et
+   * svar der aldrig kan komme. Og et felt ingen behøver udfylde er dét en
+   * bot udfylder mindst.
+   *
+   * SPÆRREN LIGGER HER, PÅ SERVEREN. Browseren spørger også, men det er en
+   * høflighed: en indsendelse uden om siden skal ramme den samme mur.
+   */
+  if (!email && !telefon) {
+    return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "kontakt_kraeves" }, 400);
+  }
+
   try {
     const sag = await opretSag({
       emne,
-      krop: kropFor(besked, navn, email, [["Hvor skete det", hvor]]),
+      krop: kropFor(besked, navn, email, [["Telefon", telefon], ["Hvor skete det", hvor]]),
       // STABIL pr. henvendelse, ENS ved genforsøg: indholdets fingeraftryk.
       // Ikke et tidsstempel — så ville nøglen være værdiløs ved netop det
       // genforsøg den findes for.

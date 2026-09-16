@@ -124,7 +124,7 @@ describe("opførslen, ikke kildeteksten", () => {
     delete process.env.HELPDESK_KEY;
     globalThis.fetch = (async () => new Response("nej", { status: 500 })) as unknown as typeof fetch;
 
-    const { ctx, svar } = fakeKontekst({ besked: "Jeg kan ikke logge ind" });
+    const { ctx, svar } = fakeKontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
     await handleSupport(ctx);
 
     expect((svar.krop as { ok: boolean }).ok).toBe(false);
@@ -168,7 +168,9 @@ describe("opførslen, ikke kildeteksten", () => {
       return new Response(JSON.stringify({ ticket: { ref: "BR-TEST2", state: "open", level: 0 }, created: true }), { status: 201 });
     }) as unknown as typeof fetch;
 
-    const { ctx } = fakeKontekst({ besked: "hjælp mig" });
+    // Kontakten er et TELEFONNUMMER. Kravet er opfyldt, og der er stadig ingen
+    // mail — så prøven måler præcis det den hed: at vi ikke opfinder en.
+    const { ctx } = fakeKontekst({ besked: "hjælp mig", telefon: "+45 20 12 34 56" });
     await handleSupport(ctx);
 
     const sendt = JSON.parse(sendtKrop) as Record<string, unknown>;
@@ -198,7 +200,7 @@ describe("Turnstile — mørkt indtil nøglen er sat, og så et rigtigt værn", 
     delete process.env.HELPDESK_KEY;
     expect(turnstileAktiv()).toBe(false);
     globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
-    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind" });
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
     await handleSupport(ctx);
     expect((svar.krop as { ok: boolean }).ok).toBe(true);   // nåede reservevejen, altså forbi spam-porten
   });
@@ -447,7 +449,7 @@ describe("F024.5 — spam-porten kan aflæses", () => {
     // der er slukket. Et nul der betyder to ting er ikke en måling.
     reservevejSvarer();
     expect(turnstileAktiv()).toBe(false);
-    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind" });
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
     await handleSupport(ctx);
     expect((svar.krop as { ok: boolean }).ok).toBe(true);   // slap FAKTISK igennem
     expect(spamTaeller.turnstile).toBe(0);
@@ -504,5 +506,71 @@ describe("F024.2 — formen kan udbygges", () => {
   it("den besøgendes egne ord står ØVERST — feltet skubber dem ikke ned", () => {
     const k = kropFor("Knappen svarer ikke", "", "", [["Hvor skete det", "/x"]]);
     expect(k.startsWith("Knappen svarer ikke")).toBe(true);
+  });
+});
+
+/**
+ * Christian, 16/9, efter at have set en sag uden nogen vej tilbage:
+ *
+ *   «En support formular der skal forstyrre os med et kunde problem SKAL have
+ *    en mail eller et telefon nummer ellers kan den ikke afsendes. Vi gider
+ *    ikke spilde tiden på den slags spam.»
+ *
+ * To ting på én gang, og begge holder. En henvendelse uden en vej tilbage kan
+ * ikke besvares — hun venter på et svar der aldrig kan komme. Og et felt ingen
+ * behøver udfylde er dét en bot udfylder mindst.
+ */
+describe("mail ELLER telefon er påkrævet", () => {
+  const gemFetch2 = globalThis.fetch;
+  afterEach(() => { globalThis.fetch = gemFetch2; });
+
+  function ctx(krop: Record<string, unknown>) {
+    const svar: { status?: number; krop?: unknown } = {};
+    return {
+      c: {
+        req: { json: async () => krop, header: () => undefined },
+        json: (k: unknown, s = 200) => { svar.krop = k; svar.status = s; return new Response(null); },
+        get: () => undefined,
+      } as never,
+      svar,
+    };
+  }
+
+  it("uden BEGGE afvises den — og INTET kald forlader huset", async () => {
+    // Det er den halvdel der gør det til en spærre frem for en besked: en
+    // afvist henvendelse må ikke koste HelpDesk en sag eller reservevejen en
+    // mail. Bliver der ringet ud, er den sluppet forbi.
+    const kaldt: string[] = [];
+    globalThis.fetch = (async (u: string) => { kaldt.push(String(u)); return new Response("{}", { status: 200 }); }) as unknown as typeof fetch;
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind" });
+    await handleSupport(c);
+    expect(svar.status).toBe(400);
+    expect((svar.krop as { fejl: string }).fejl).toBe("kontakt_kraeves");
+    expect(kaldt).toEqual([]);
+  });
+
+  it("KUN mail slipper igennem", async () => {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
+    await handleSupport(c);
+    expect(svar.status).not.toBe(400);
+  });
+
+  it("KUN telefon slipper igennem — ellers var det ikke «eller»", async () => {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", telefon: "+45 20 12 34 56" });
+    await handleSupport(c);
+    expect(svar.status).not.toBe(400);
+  });
+
+  it("mellemrum tæller ikke som et telefonnummer", async () => {
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", telefon: "   ", email: "  " });
+    await handleSupport(c);
+    expect(svar.status).toBe(400);
+  });
+
+  it("telefonnummeret står i sagens krop, så mennesket kan ringe", () => {
+    const k = kropFor("Jeg kan ikke logge ind", "", "", [["Telefon", "+45 20 12 34 56"]]);
+    expect(k).toContain("Telefon: +45 20 12 34 56");
   });
 });

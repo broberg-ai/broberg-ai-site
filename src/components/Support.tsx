@@ -65,11 +65,22 @@ export function Support({ data, locale, cmsRef }: { data: SupportCopy; locale: L
                      placeholder={f("hvorPlaceholder", isEn ? "e.g. the page address" : "fx sidens adresse")} />
             </div>
             <div class="form-field">
+              <label for="sf-telefon"><span {...fa("telefon")}>{f("telefon", isEn ? "Phone" : "Telefon")}</span></label>
+              <input id="sf-telefon" name="telefon" type="tel" data-testid="support-input-telefon"
+                     autocomplete="tel" />
+            </div>
+            <div class="form-field">
               <label for="sf-navn"><span {...fa("navn")}>{f("navn", isEn ? "Name (optional)" : "Navn (valgfrit)")}</span></label>
               <input id="sf-navn" name="navn" data-testid="support-input-navn" />
             </div>
+            {/* MAIL ELLER TELEFON ER PÅKRÆVET — Christian 16/9. En henvendelse
+                uden en vej tilbage kan ikke besvares, og et felt ingen behøver
+                udfylde er dét en bot udfylder mindst. `required` står IKKE på
+                felterne hver for sig: det er ET af de to der kræves, og en
+                browser kan ikke udtrykke «enten-eller». Kontrollen ligger i
+                enhance.ts og — det bærende — på serveren. */}
             <div class="form-field">
-              <label for="sf-email"><span {...fa("email")}>{f("email", isEn ? "Email (optional)" : "Email (valgfrit)")}</span></label>
+              <label for="sf-email"><span {...fa("email")}>{f("email", isEn ? "Email" : "Email")}</span></label>
               <input id="sf-email" name="email" type="email" data-testid="support-input-email" />
               {/* Ærligt om hvad adressen bruges til. Den er et HINT hos
                   HelpDesk, ikke en bekræftet modtager — så vi lover ikke et
