@@ -168,3 +168,35 @@ describe("opslagets flag oversættes til den rigtige tilstand", () => {
     expect(b.emne).toBe("Emnet");
   });
 });
+
+/**
+ * STIEN ER ET LØFTE TIL HELPDESK, ikke en detalje.
+ *
+ * De skriver linket ind i deres mails. Flytter vi ruten, brækker hver mail de
+ * nogensinde har sendt på vores vegne — med tilbagevirkende kraft, og ingen af
+ * dem fejler synligt: modtageren møder bare en 404 på et brev om HENDES sag.
+ *
+ * HelpDesk valgte URL frem for cid netop fordi filen og ruten ligger hos OS:
+ * flytter vi dem, går vores eget site i stykker samtidig — synligt for os frem
+ * for tavst for dem. Den handel har en anden halvdel, og det er den her prøve.
+ * Uden den lever løftet kun i en intercom-besked, og en intercom-besked
+ * overlever ikke en komprimering.
+ */
+describe("bekræftelsesstien må ikke flytte sig", () => {
+  const server = readFileSync("src/server.tsx", "utf-8");
+
+  it("/bekraeft/:token er den aftalte danske sti", () => {
+    expect(server).toContain('app.get("/bekraeft/:token"');
+  });
+
+  it("/en/confirm/:token er den aftalte engelske sti", () => {
+    expect(server).toContain('app.get("/en/confirm/:token"');
+  });
+
+  it("tokenet står i STIEN, aldrig som en forespørgsel", () => {
+    // Et ?token= havner i Referer-headeren mod ethvert eksternt domæne siden
+    // rører, og i logfiler hos hvert led undervejs. Stien gør ingen af delene.
+    expect(server).not.toContain('"/bekraeft?');
+    expect(server).not.toContain('"/en/confirm?');
+  });
+});
