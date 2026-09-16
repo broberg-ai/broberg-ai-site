@@ -1688,9 +1688,7 @@ function aidan() {
     const vis = t.closest<HTMLElement>(".aidan-vis");
     if (vis) visPaaSiden(vis.dataset.anker ?? "");
     const sag = t.closest<HTMLButtonElement>(".aidan-sag");
-    if (sag) void opretSupportsag(sag, true);
-    const uden = t.closest<HTMLButtonElement>(".aidan-sag-uden");
-    if (uden) void opretSupportsag(uden, false);
+    if (sag) void opretSupportsag(sag);
   });
 
   /**
@@ -1698,21 +1696,28 @@ function aidan() {
    * markøren tilbyder, hun trykker. Sagen oprettes på serveren, hvor nøglen er.
    */
   const brugtSamtaleId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  async function opretSupportsag(knap: HTMLButtonElement, medMail: boolean): Promise<void> {
+  async function opretSupportsag(knap: HTMLButtonElement): Promise<void> {
     const isEn = samtaleSprog === "en";
     const boks = knap.closest<HTMLElement>(".aidan-sagboks");
+    const navnFelt = boks?.querySelector<HTMLInputElement>(".aidan-sag-navn");
     const felt = boks?.querySelector<HTMLInputElement>(".aidan-sag-email");
-    const email = medMail ? (felt?.value ?? "").trim() : "";
+    const telFelt = boks?.querySelector<HTMLInputElement>(".aidan-sag-telefon");
+    const navn = (navnFelt?.value ?? "").trim();
+    const email = (felt?.value ?? "").trim();
+    const telefon = (telFelt?.value ?? "").trim();
 
-    // Trykker hun «Opret sagen» uden at have skrevet noget, er det en
-    // forglemmelse — ikke et fravalg. Fravalget har sin egen knap.
-    if (medMail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      if (felt) {
-        felt.focus();
-        felt.setAttribute("aria-invalid", "true");
-      }
-      return;
-    }
+    // NAVN + ÉN KONTAKTVEJ. Markér det felt der mangler, og sæt markøren der —
+    // en samlet fejltekst over tre felter lader hende lede efter hvilket.
+    const maerk = (f?: HTMLInputElement | null) => {
+      if (!f) return;
+      f.focus();
+      f.setAttribute("aria-invalid", "true");
+    };
+    for (const f of [navnFelt, felt, telFelt]) f?.removeAttribute("aria-invalid");
+    if (!navn) { maerk(navnFelt); return; }
+    const mailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!mailOk && !telefon) { maerk(email ? felt : telFelt ?? felt); return; }
+    if (email && !mailOk) { maerk(felt); return; }
     const oprindelig = knap.textContent ?? "";
     knap.disabled = true;
     knap.textContent = isEn ? "Opening…" : "Opretter…";
@@ -1740,7 +1745,7 @@ function aidan() {
         headers: { "Content-Type": "application/json" },
         // SAMTALE-ID'ET ER STABILT for hele samtalen. Trykker hun to gange,
         // får hun den SAMME sag igen frem for en dublet.
-        body: JSON.stringify({ samtaleId: brugtSamtaleId, samtale: historik.slice(-20), email }),
+        body: JSON.stringify({ samtaleId: brugtSamtaleId, samtale: historik.slice(-20), navn, email, telefon }),
       });
       const j = (await r.json().catch(() => ({}))) as { ok?: boolean; ref?: string; vej?: string };
       if (j.ok && j.vej === "helpdesk" && j.ref) {

@@ -163,12 +163,21 @@ function markoer(linje: string, ctx: Ctx): string | null {
   // ikke opdage. En markør der stille oprettede en sag, ville gøre en fejl i
   // en strømmet tekst til en henvendelse ingen har bedt om.
   if (SAG_RE.test(linje))
+    // NAVN OG ÉN KONTAKTVEJ ER PÅKRÆVET. Christian, 17/9: «chat skal kunne
+    // sige at hvis jeg skal hjælpe dig bliver jeg nødt til at få dit navn og
+    // en e-mail adresse eller et telefonnummer.»
+    //
+    // «Opret uden mail» er VÆK. Den var et rigtigt valg dengang alternativet
+    // var en tabt henvendelse — men en sag der ikke kan besvares forstyrrer et
+    // menneske uden at kunne hjælpe nogen. Nu er det samme krav som på
+    // formularen, fra samme dør.
     return `<div class="aidan-sagboks" data-testid="aidan-sag">`
-      + `<p class="aidan-sagboks-hvorfor">Hvor kan vi fange dig? Uden en adresse kan vi kun svare, hvis du selv vender tilbage med referencen.</p>`
+      + `<p class="aidan-sagboks-hvorfor">Skal jeg hjælpe dig videre, bliver jeg nødt til at få dit navn og enten en mailadresse eller et telefonnummer — ellers kan vi ikke svare dig.</p>`
+      + `<input type="text" class="aidan-sag-navn" data-testid="aidan-sag-navn" placeholder="Dit navn" autocomplete="name">`
       + `<input type="email" class="aidan-sag-email" data-testid="aidan-sag-email" placeholder="din@mail.dk" autocomplete="email" inputmode="email">`
+      + `<input type="tel" class="aidan-sag-telefon" data-testid="aidan-sag-telefon" placeholder="Telefon" autocomplete="tel">`
       + `<div class="aidan-sagboks-knapper">`
       + `<button type="button" class="aidan-sag" data-testid="aidan-sag-knap">Opret sagen</button>`
-      + `<button type="button" class="aidan-sag-uden" data-testid="aidan-sag-uden">Opret uden mail</button>`
       + `</div></div>`;
   if ((m = SPROG_RE.exec(linje))) return `<span class="aidan-sprogskifte" data-sprog="${m[1]}" hidden></span>`;
   return null;

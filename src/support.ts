@@ -287,6 +287,8 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
   // «opret uden mail», og DET skal kunne ses på sagen frem for at ligne en
   // forglemmelse.
   const email = String(krop.email ?? "").trim();
+  const navn = String(krop.navn ?? "").trim();
+  const telefon = String(krop.telefon ?? "").trim();
   const replikker = samtale
     .map((m) => ({ rolle: String(m.role ?? ""), tekst: String(m.content ?? "").trim() }))
     .filter((m) => m.tekst && (m.rolle === "user" || m.rolle === "assistant"));
@@ -294,6 +296,21 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
   const brugerensOrd = replikker.filter((m) => m.rolle === "user");
   if (!brugerensOrd.length || !samtaleId) {
     return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "ingen_samtale" }, 400);
+  }
+
+  /**
+   * SAMME KRAV SOM FORMULAREN. Christian, 17/9: «samme krav i chatten … hvis
+   * jeg skal hjælpe dig bliver jeg nødt til at få dit navn og en e-mail
+   * adresse eller et telefonnummer.»
+   *
+   * «Opret uden mail» er dermed væk. Den var rigtig dengang alternativet var
+   * en TABT henvendelse — men en sag der ikke kan besvares forstyrrer et
+   * menneske uden at kunne hjælpe nogen, og det var ikke handlen.
+   *
+   * Spærren ligger HER og ikke kun i chat-boksen: browseren er en høflighed.
+   */
+  if (!navn || (!email && !telefon)) {
+    return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "kontakt_kraeves" }, 400);
   }
 
   const udskrift = replikker
@@ -308,9 +325,10 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
       emne: emneFor("", brugerensOrd[0]!.tekst),
       krop: [
         "Aidan kunne ikke svare, og den besøgende bad om et menneske.",
-        email
-          ? `Hun oplyste ${email} da hun bad om at blive kontaktet.`
-          : "HUN VALGTE AT IKKE OPLYSE EN ADRESSE. Sagen kan ikke besvares — hun har kun referencen.",
+        `Oplyst da hun bad om at blive kontaktet: ${navn}`
+          + (email ? ` · ${email}` : "")
+          + (telefon ? ` · tlf. ${telefon}` : ""),
+        "  (skrevet i chatten på broberg.ai; ingen har bevist at de er hendes)",
         "",
         "HELE SAMTALEN:",
         "",

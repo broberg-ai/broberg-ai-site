@@ -20,11 +20,27 @@ describe("triage-boksen kommer KUN på markøren", () => {
     expect(box("Det kan jeg ikke hjælpe med.\n\n[sag]")).toBe(true);
   });
 
-  it("boksen bærer BÅDE mailfelt og fravalg — ikke en bar knap", () => {
+  it("boksen beder om NAVN og begge kontaktveje — ikke en bar knap", () => {
     const h = aidanTilHtml("[sag]");
+    expect(h).toContain('data-testid="aidan-sag-navn"');
     expect(h).toContain('data-testid="aidan-sag-email"');
+    expect(h).toContain('data-testid="aidan-sag-telefon"');
     expect(h).toContain('data-testid="aidan-sag-knap"');
-    expect(h).toContain('data-testid="aidan-sag-uden"');
+  });
+
+  it("«Opret uden mail» findes IKKE mere", () => {
+    // Christian 17/9: samme krav som formularen. Knappen var rigtig dengang
+    // alternativet var en TABT henvendelse — men en sag der ikke kan besvares
+    // forstyrrer et menneske uden at kunne hjælpe nogen.
+    expect(aidanTilHtml("[sag]")).not.toContain("aidan-sag-uden");
+  });
+
+  it("boksen SIGER hvorfor den spørger", () => {
+    // Felterne alene er et krav uden en grund. Teksten er det der gør
+    // forskellen på en formular og en forklaring.
+    const h = aidanTilHtml("[sag]");
+    expect(h).toContain("navn");
+    expect(h).toContain("ellers kan vi ikke svare dig");
   });
 
   // ── den negative halvdel ────────────────────────────────────────────────

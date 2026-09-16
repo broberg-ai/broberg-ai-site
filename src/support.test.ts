@@ -274,7 +274,7 @@ describe("F024.3 — Aidan triagerer samtalen til en sag", () => {
       return new Response(JSON.stringify({ ticket: { ref: "BR-TRI1", state: "open", level: 0 }, created: true }), { status: 201 });
     }) as unknown as typeof fetch;
 
-    const { ctx, svar } = kontekst({ samtaleId: "s-1", samtale: SAMTALE });
+    const { ctx, svar } = kontekst({ samtaleId: "s-1", navn: "Hanne", email: "hun@eksempel.dk", samtale: SAMTALE });
     await handleSupportTriage(ctx);
 
     expect((svar.krop as { ref: string }).ref).toBe("BR-TRI1");
@@ -285,8 +285,13 @@ describe("F024.3 — Aidan triagerer samtalen til en sag", () => {
     expect(body.body).toContain("Jeg kan ikke se dine fakturaer.");
     // Emnet er det hun kom for — ikke «må jeg tale med et menneske».
     expect(body.subject).toBe("Min faktura mangler et bilag");
-    expect(body.requesterEmail).toBeUndefined();
+    // Adressen går MED nu. Den stod som «undefined» her da triagen kunne
+    // oprette en sag uden kontakt — den mulighed findes ikke længere, og en
+    // prøve der stadig krævede undefined ville forsegle den gamle verden.
+    expect(body.requesterEmail).toBe("hun@eksempel.dk");
     expect(body.intent).toBeUndefined();
+    // Navnet står i KROPPEN, ikke i et felt hos dem — de har ikke et.
+    expect(body.body).toContain("Hanne");
     expect(body.intakeKey).toBe("aidan-s-1");
   });
 
@@ -315,7 +320,7 @@ describe("F024.3 — Aidan triagerer samtalen til en sag", () => {
       if (String(u).includes("webhouse.app")) { reserve = true; return new Response(JSON.stringify({ ok: true }), { status: 200 }); }
       throw new Error("uventet");
     }) as unknown as typeof fetch;
-    const { ctx, svar } = kontekst({ samtaleId: "s-3", samtale: SAMTALE });
+    const { ctx, svar } = kontekst({ samtaleId: "s-3", navn: "Hanne", email: "hun@eksempel.dk", samtale: SAMTALE });
     await handleSupportTriage(ctx);
     expect(reserve).toBe(true);
     expect((svar.krop as { vej: string }).vej).toBe("reserve");
@@ -344,7 +349,11 @@ describe("frafaldet — tilbudt mod oprettet", () => {
     expect(triageTaeller.tilbudt).toBe(0);
   });
 
-  it("et fravalgt mailfelt tælles for sig — ellers ligner det en forglemmelse", async () => {
+  it("`udenMail` tæller nu en sag med KUN telefon — fravalget findes ikke mere", async () => {
+    // Prøven målte tidligere «Opret uden mail». Den knap er væk (Christian
+    // 17/9: samme krav som formularen), så tælleren har fået en ny betydning
+    // frem for at blive slettet: en sag HelpDesk ikke kan maile, fordi
+    // kontakten er et telefonnummer. Den skelnen er stadig værd at kende.
     process.env.HELPDESK_KEY = "hd_live_test";
     process.env.HELPDESK_TENANT = "broberg-ai";
     const gemFetch = globalThis.fetch;
@@ -352,18 +361,50 @@ describe("frafaldet — tilbudt mod oprettet", () => {
       new Response(JSON.stringify({ ticket: { ref: "BR-T", state: "open", level: 0 }, created: true }), { status: 201 })
     ) as unknown as typeof fetch;
 
-    const lav = (email: string) => ({
-      req: { json: async () => ({ samtaleId: `s-${email || "tom"}`, samtale: [{ role: "user", content: "hjælp" }], email }), header: () => undefined },
+    const lav = (k: Record<string, unknown>) => ({
+      req: { json: async () => ({ samtaleId: `s-${JSON.stringify(k)}`, samtale: [{ role: "user", content: "hjælp" }], navn: "Hanne", ...k }), header: () => undefined },
       json: () => new Response(null),
       get: () => undefined,
     } as never);
 
-    await handleSupportTriage(lav("ida@eksempel.dk"));
-    await handleSupportTriage(lav(""));
+    triageTaeller.oprettet = 0; triageTaeller.udenMail = 0;
+    await handleSupportTriage(lav({ email: "hun@eksempel.dk" }));
+    await handleSupportTriage(lav({ telefon: "+45 20 12 34 56" }));
     globalThis.fetch = gemFetch;
 
     expect(triageTaeller.oprettet).toBe(2);
     expect(triageTaeller.udenMail).toBe(1);
+  });
+
+  function triageKtx(krop: Record<string, unknown>) {
+    const svar: { status?: number; krop?: unknown } = {};
+    return {
+      ctx: {
+        req: { json: async () => krop, header: () => undefined },
+        json: (k: unknown, st = 200) => { svar.krop = k; svar.status = st; return new Response(null); },
+        get: () => undefined,
+      } as never,
+      svar,
+    };
+  }
+
+  it("uden NAVN oprettes ingen sag, uanset kontakt", async () => {
+    const kaldt: string[] = [];
+    globalThis.fetch = (async (u: string) => { kaldt.push(String(u)); return new Response("{}", { status: 200 }); }) as unknown as typeof fetch;
+    const { ctx, svar } = triageKtx({ samtaleId: "s-n", samtale: [{ role: "user", content: "hjælp" }], email: "hun@eksempel.dk" });
+    await handleSupportTriage(ctx);
+    expect(svar.status).toBe(400);
+    expect((svar.krop as { fejl: string }).fejl).toBe("kontakt_kraeves");
+    expect(kaldt).toEqual([]);
+  });
+
+  it("med navn men UDEN både mail og telefon oprettes ingen sag", async () => {
+    const kaldt: string[] = [];
+    globalThis.fetch = (async (u: string) => { kaldt.push(String(u)); return new Response("{}", { status: 200 }); }) as unknown as typeof fetch;
+    const { ctx, svar } = triageKtx({ samtaleId: "s-k", samtale: [{ role: "user", content: "hjælp" }], navn: "Hanne" });
+    await handleSupportTriage(ctx);
+    expect(svar.status).toBe(400);
+    expect(kaldt).toEqual([]);
   });
 });
 
