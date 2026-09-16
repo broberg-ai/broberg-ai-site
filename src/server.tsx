@@ -8,6 +8,7 @@ import { serveStatic } from "hono/bun";
 import { config } from "@/config.ts";
 import { handleIcd } from "@/content/icd.ts";
 import { handleSupport, handleSupportTriage } from "@/support.ts";
+import { handleBekraeft } from "@/bekraeft-rute.ts";
 import { handleAidanChat, handleAidanHealth, handleAidanStatus } from "@/aidan.ts";
 import { handleAidanIndsigter, handleAidanLaes, handleAidanTidskoder, handleAidanGemTidskoder } from "@/aidan-laes.ts";
 import { handleAidanSendLyd, handleAidanSendSvar, handleAidanFeedback } from "@/aidan-mail.ts";
@@ -28,6 +29,7 @@ import {
   renderSolutions,
   renderSolutionDetail,
   renderSupport,
+  renderBekraeftelse,
   renderThanks,
   renderSiteIndex,
   renderAllNews,
@@ -129,6 +131,7 @@ app.post("/api/trail-ingest", handleTrailIngest);
 // formular-motor frem for at tabe henvendelsen.
 app.post("/api/support", handleSupport);
 app.post("/api/support/triage", handleSupportTriage);   // F024.3
+app.post("/api/bekraeft", handleBekraeft);                 // F024.4
 
 app.post("/api/aidan/chat", handleAidanChat);
 app.get("/api/aidan/health", handleAidanHealth);
@@ -321,6 +324,10 @@ app.get("/en/solutions/:slug", async (c) => {
 // F024.2 — supportformularen. Literal rute, så den SKAL stå før /:slug.
 app.get("/support", async () => html(await renderSupport("da")));
 app.get("/en/support", async () => html(await renderSupport("en")));
+// F024.4 — bekræftelsessiden. Tokenet står i stien, ikke i en forespørgsel:
+// et `?token=` ryger med i henvisninger og i logfiler hos alle led undervejs.
+app.get("/bekraeft/:token", async (c) => html(await renderBekraeftelse("da", c.req.param("token"))));
+app.get("/en/confirm/:token", async (c) => html(await renderBekraeftelse("en", c.req.param("token"))));
 
 app.get("/tak", async () => html(await renderThanks("da")));
 app.get("/en/thanks", async () => html(await renderThanks("en")));

@@ -54,6 +54,8 @@ import { AIDAN_STILL, AIRINA_STILL } from "@/components/Figur.tsx";
 import { aidanConfigured } from "@/aidan.ts";
 import { Faq } from "@/components/Faq.tsx";
 import { Support } from "@/components/Support.tsx";
+import { Bekraeftelse } from "@/components/Bekraeftelse.tsx";
+import { slaaOp } from "@/bekraeftelse.ts";
 import { Contact } from "@/components/Contact.tsx";
 import { Podcast, type PodcastData } from "@/components/Podcast.tsx";
 import type { PlatformsData, CasesData, CaseItem } from "@/content/types.ts";
@@ -534,6 +536,37 @@ export async function renderHome(locale: Locale): Promise<string> {
  * Egen side frem for et felt i bunden af forsiden: en der SØGER hjælp skal
  * kunne lande ét sted, og adressen skal kunne siges i en telefon.
  */
+export async function renderBekraeftelse(locale: Locale, token: string): Promise<string> {
+  const isEn = locale === "en";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+  // OPSLAGET FORBRUGER IKKE TOKENET. Det er et GET; indløsningen er et POST
+  // på brugerens tryk. Blandede vi dem, ville selve rendringen bruge
+  // bekræftelsen op — og en mailscanner der forklikker linket ville afgive
+  // svaret på brugerens vegne. Præcis det problem siden findes for at undgå.
+  const b = await slaaOp(token);
+  return await page(
+    <Bekraeftelse
+      token={token}
+      brugbar={b.brugbar}
+      ref={b.ref}
+      emne={b.emne}
+      grund={b.grund}
+      locale={locale}
+      g={(k, f) => g(`bekraeft.${k}`, f)}
+      cmsRef={globalsRef}
+    />,
+    {
+      locale,
+      title: isEn ? "Did we solve it? — broberg.ai" : "Blev det løst? — broberg.ai",
+      description: isEn ? "Confirm whether your case is solved." : "Bekræft om din sag er løst.",
+      canonical: isEn ? `/en/confirm/${token}` : `/bekraeft/${token}`,
+      // INGEN alternativ-henvisning og ingen indeksering: siden er personlig
+      // og findes kun for den der har linket.
+      noindex: true,
+    },
+  );
+}
+
 export async function renderSupport(locale: Locale): Promise<string> {
   const isEn = locale === "en";
   const { ref: globalsRef, g } = await globalsChrome(locale);

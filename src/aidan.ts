@@ -20,6 +20,7 @@
 import type { Context } from "hono";
 import { helpdeskStatus } from "@/helpdesk.ts";
 import { taelTilbudtSag, triageTaeller, spamTaeller, turnstileAktiv } from "@/support.ts";
+import { bekraeftTaeller } from "@/bekraeft-rute.ts";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import { createHash } from "node:crypto";
 import { buildSearchIndex } from "@/content/compose.ts";
@@ -492,6 +493,9 @@ export function handleAidanHealth(c: Context): Response {
       // ingen port og tæller derfor intet — nul her er ikke et bevis for at
       // ingen bots nåede HelpDesk.
       spam: { turnstileAktiv: turnstileAktiv(), ...spamTaeller },
+      // F024.4 — `nej` står for sig. Et samlet «bekræftet» ville skjule
+      // præcis det signal der kan gøre supporten bedre.
+      bekraeft: { ...bekraeftTaeller },
     },
     aidanConfigured() ? 200 : 503,
   );

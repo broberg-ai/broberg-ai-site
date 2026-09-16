@@ -2195,6 +2195,7 @@ safe(faqAccordion);
 safe(mountTurnstile);
 safe(contactForm);
 safe(supportFormular);   // F024.2
+safe(bekraeftKnapper);   // F024.4
 safe(inlineEdit);
 safe(adminPanel);
 safe(mountAdminChat);
@@ -2309,4 +2310,66 @@ function podcastAfspiller() {
       tegn();
     });
   });
+}
+
+/* F024.4 — bekræftelsessiden. To knapper, ét tryk.
+ *
+ * KNAPPEN LÅSES MENS DEN ARBEJDER, og BEGGE låses — ikke kun den der blev
+ * trykket på. Trykker nogen «ja» og fortryder i samme sekund, må «nej» ikke
+ * kunne nå frem bagefter: tokenet er brugt op af det første, og brugeren ville
+ * få «du har allerede svaret» på det svar hun mente. */
+function bekraeftKnapper(): void {
+  const form = document.querySelector<HTMLFormElement>("#bekraeft-form");
+  if (!form) return;
+  const token = form.dataset.token ?? "";
+  const isEn = form.dataset.lang === "en";
+  const status = document.querySelector<HTMLElement>('[data-testid="bekraeft-status"]');
+  const knapper = [...form.querySelectorAll<HTMLButtonElement>("[data-svar]")];
+  if (!status || !knapper.length) return;
+
+  const vis = (klasse: string, tekst: string) => {
+    status.className = `form-status show ${klasse}`;
+    status.textContent = tekst;
+  };
+
+  const AFVIST: Record<string, [string, string]> = {
+    used: ["Du har allerede svaret på den her sag.", "You have already answered for this case."],
+    expired: ["Linket er udløbet. Skriv til os, så tager vi den derfra.", "The link has expired. Write to us and we'll pick it up."],
+    unknown: ["Vi kan ikke finde linket.", "We can't find that link."],
+  };
+
+  for (const knap of knapper) {
+    knap.addEventListener("click", async () => {
+      const svar = knap.dataset.svar ?? "";
+      const oprindelig = knap.textContent ?? "";
+      for (const k of knapper) k.disabled = true;
+      knap.textContent = isEn ? "Sending…" : "Sender…";
+      try {
+        const r = await fetch("/api/bekraeft", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, svar }),
+        });
+        const j = (await r.json().catch(() => ({}))) as { ok?: boolean; grund?: string };
+        if (j.ok) {
+          form.hidden = true;
+          // TEKSTEN KVITTERER FOR DET SVAR DER BLEV GIVET. Et fælles «tak for
+          // dit svar» ville lade et «nej» se ud som om sagen er lukket.
+          vis("ok", svar === "solved"
+            ? (isEn ? "Great — thanks for letting us know." : "Dejligt — tak fordi du siger til.")
+            : (isEn ? "Thanks. We've reopened the case — a human picks it up." : "Tak. Vi har åbnet sagen igen — et menneske tager over."));
+          return;
+        }
+        const t = AFVIST[j.grund ?? ""];
+        vis("err", t ? t[isEn ? 1 : 0] : (isEn ? "That didn't go through. Try again in a moment." : "Det gik ikke igennem. Prøv igen om lidt."));
+      } catch {
+        vis("err", isEn ? "No connection. Try again in a moment." : "Ingen forbindelse. Prøv igen om lidt.");
+      } finally {
+        knap.textContent = oprindelig;
+        // Låst op IGEN kun hvis det gik galt — status-teksten står, så
+        // brugeren kan se hvorfor der stadig er knapper.
+        if (!form.hidden) for (const k of knapper) k.disabled = false;
+      }
+    });
+  }
 }
