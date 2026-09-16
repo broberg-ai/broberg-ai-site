@@ -252,6 +252,7 @@ export async function handleSupport(c: Context): Promise<Response> {
       // genforsøg den findes for.
       intakeKey: await fingeraftryk(`${emne}\n${besked}\n${email}`),
       kanal: "formular",
+      ...(telefon ? { kontaktTelefon: telefon } : {}),
       // intent udelades: vi ved det ikke, og et forkert intent er værre end
       // intet, fordi det ser målt ud.
       ...(email ? { kontaktEmail: email } : {}),
@@ -340,6 +341,7 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
       ].join("\n"),
       intakeKey: `aidan-${samtaleId}`,
       kanal: "chat",
+      ...(telefon ? { kontaktTelefon: telefon } : {}),
       ...(email ? { kontaktEmail: email } : {}),
       // intent udelades: Aidan ved det ikke, og HelpDesks egen klassifikator er
       // bedre til det end et gæt fra en chat-prompt.

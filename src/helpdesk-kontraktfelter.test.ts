@@ -17,7 +17,7 @@ import { opretSag } from "@/helpdesk.ts";
  * usynligt for et blik på kildeteksten — det var netop sådan `intent` undslap
  * min egen udtrækning med et regulært udtryk.
  */
-const TILLADTE = new Set(["subject", "body", "requesterEmail", "intent", "intakeKey", "erProeve", "kanal"]);
+const TILLADTE = new Set(["subject", "body", "requesterEmail", "intent", "intakeKey", "erProeve", "kanal", "requesterPhone"]);
 
 const gemFetch = globalThis.fetch;
 afterEach(() => { globalThis.fetch = gemFetch; });
@@ -80,5 +80,30 @@ describe("§3.5 — kanalen siger hvilken af VORES flader sagen kom fra", () => 
     // skelnen vi to har brugt to døgn på.
     const krop = await kropFraEtRigtigtKald({ emne: "x", krop: "y", intakeKey: "k" });
     expect("kanal" in krop).toBe(false);
+  });
+});
+
+describe("§6b — telefonnummeret er et FELT, ikke prosa", () => {
+  it("nummeret sendes som requesterPhone", async () => {
+    const krop = await kropFraEtRigtigtKald({
+      emne: "x", krop: "y", intakeKey: "k", kontaktTelefon: "+45 20 12 34 56",
+    });
+    expect(krop.requesterPhone).toBe("+45 20 12 34 56");
+  });
+
+  it("uden nummer sendes feltet SLET IKKE", async () => {
+    const krop = await kropFraEtRigtigtKald({ emne: "x", krop: "y", intakeKey: "k" });
+    expect("requesterPhone" in krop).toBe(false);
+  });
+
+  it("mail og telefon kan sendes SAMMEN — det er ikke et enten-eller hos dem", async () => {
+    // Vores formular kræver ÉT af de to. Den der giver begge, skal have begge
+    // med: et menneske vælger selv om hun skriver eller ringer.
+    const krop = await kropFraEtRigtigtKald({
+      emne: "x", krop: "y", intakeKey: "k",
+      kontaktEmail: "hun@eksempel.dk", kontaktTelefon: "+45 20 12 34 56",
+    });
+    expect(krop.requesterEmail).toBe("hun@eksempel.dk");
+    expect(krop.requesterPhone).toBe("+45 20 12 34 56");
   });
 });

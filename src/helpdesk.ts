@@ -88,6 +88,16 @@ export interface NySag {
    */
   kontaktEmail?: string;
   /**
+   * §6b — nummeret hun gav i stedet for, eller ved siden af, en mailadresse.
+   *
+   * Det er et FELT og ikke et mærke, fordi et mærke plus et nummer i kroppen
+   * ville lægge en kendsgerning et sted et menneske kan læse den og et system
+   * ikke kan spørge på. HelpDesk foreslog mærket og skiftede mening; deres
+   * `requesterPhoneVerified` står ALTID på 0, fordi der ikke findes nogen måde
+   * at bevise et nummer på — der er ikke et link at klikke på.
+   */
+  kontaktTelefon?: string;
+  /**
    * Udelades med vilje når vi ikke VED det. Deres ord: et forkert intent er
    * værre end intet, fordi det ser målt ud. Uden feltet klassificerer de selv.
    */
@@ -151,6 +161,7 @@ export async function opretSag(sag: NySag): Promise<Sag> {
         ...(sag.kontaktEmail ? { requesterEmail: sag.kontaktEmail } : {}),
         ...(sag.intent ? { intent: sag.intent } : {}),
         ...(sag.kanal ? { kanal: sag.kanal } : {}),
+        ...(sag.kontaktTelefon ? { requesterPhone: sag.kontaktTelefon } : {}),
       }),
     });
     const tekst = await svar.text();
