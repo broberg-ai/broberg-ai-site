@@ -70,7 +70,7 @@ export function Support({ data, locale, cmsRef }: { data: SupportCopy; locale: L
                      autocomplete="tel" />
             </div>
             <div class="form-field">
-              <label for="sf-navn"><span {...fa("navn")}>{f("navn", isEn ? "Name (optional)" : "Navn (valgfrit)")}</span></label>
+              <label for="sf-navn"><span {...fa("navn")}>{f("navn", isEn ? "Name" : "Navn")}</span></label>
               <input id="sf-navn" name="navn" data-testid="support-input-navn" />
             </div>
             {/* MAIL ELLER TELEFON ER PÅKRÆVET — Christian 16/9. En henvendelse

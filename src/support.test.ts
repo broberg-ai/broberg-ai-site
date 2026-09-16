@@ -124,7 +124,7 @@ describe("opførslen, ikke kildeteksten", () => {
     delete process.env.HELPDESK_KEY;
     globalThis.fetch = (async () => new Response("nej", { status: 500 })) as unknown as typeof fetch;
 
-    const { ctx, svar } = fakeKontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
+    const { ctx, svar } = fakeKontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk", navn: "Hanne" });
     await handleSupport(ctx);
 
     expect((svar.krop as { ok: boolean }).ok).toBe(false);
@@ -148,7 +148,7 @@ describe("opførslen, ikke kildeteksten", () => {
       return new Response(JSON.stringify({ ticket: { ref: "BR-TEST1", state: "open", level: 0 }, created: true }), { status: 201 });
     }) as unknown as typeof fetch;
 
-    const { ctx, svar } = fakeKontekst({ besked: "hjælp mig", email: "ida@eksempel.dk" });
+    const { ctx, svar } = fakeKontekst({ besked: "hjælp mig", email: "ida@eksempel.dk", navn: "Hanne" });
     await handleSupport(ctx);
 
     expect((svar.krop as { vej: string }).vej).toBe("helpdesk");
@@ -170,7 +170,7 @@ describe("opførslen, ikke kildeteksten", () => {
 
     // Kontakten er et TELEFONNUMMER. Kravet er opfyldt, og der er stadig ingen
     // mail — så prøven måler præcis det den hed: at vi ikke opfinder en.
-    const { ctx } = fakeKontekst({ besked: "hjælp mig", telefon: "+45 20 12 34 56" });
+    const { ctx } = fakeKontekst({ besked: "hjælp mig", telefon: "+45 20 12 34 56", navn: "Hanne" });
     await handleSupport(ctx);
 
     const sendt = JSON.parse(sendtKrop) as Record<string, unknown>;
@@ -200,7 +200,7 @@ describe("Turnstile — mørkt indtil nøglen er sat, og så et rigtigt værn", 
     delete process.env.HELPDESK_KEY;
     expect(turnstileAktiv()).toBe(false);
     globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
-    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk", navn: "Hanne" });
     await handleSupport(ctx);
     expect((svar.krop as { ok: boolean }).ok).toBe(true);   // nåede reservevejen, altså forbi spam-porten
   });
@@ -208,7 +208,7 @@ describe("Turnstile — mørkt indtil nøglen er sat, og så et rigtigt værn", 
   it("MED nøglen afvises en indsendelse uden bevis — et tomt felt er ikke en undtagelse", async () => {
     process.env.TURNSTILE_SECRET_KEY = "0x-test";
     expect(turnstileAktiv()).toBe(true);
-    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind" });
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", navn: "Hanne" });
     await handleSupport(ctx);
     expect((svar.krop as { ok: boolean }).ok).toBe(false);
     expect(svar.status).toBe(400);
@@ -232,7 +232,7 @@ describe("Turnstile — mørkt indtil nøglen er sat, og så et rigtigt værn", 
       return new Response(JSON.stringify({ success: false }), { status: 200 });
     }) as unknown as typeof fetch;
 
-    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", turnstileToken: "forfalsket" });
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", turnstileToken: "forfalsket", navn: "Hanne" });
     await handleSupport(ctx);
 
     expect(svar.status).toBe(400);
@@ -457,7 +457,7 @@ describe("F024.5 — spam-porten kan aflæses", () => {
 
   it("honeypot tælles for sig — og rører ikke de to andre grunde", async () => {
     reservevejSvarer();
-    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind", [HONEYPOT_FIELD]: "bot@eksempel.dk" });
+    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind", [HONEYPOT_FIELD]: "bot@eksempel.dk", navn: "Hanne" });
     await handleSupport(ctx);
     expect(spamTaeller.honeypot).toBe(1);
     expect(spamTaeller.hastighed).toBe(0);
@@ -479,7 +479,7 @@ describe("F024.5 — spam-porten kan aflæses", () => {
   it("MED nøglen tæller et forfalsket bevis på `turnstile`", async () => {
     process.env.TURNSTILE_SECRET_KEY = "0x-test";
     globalThis.fetch = (async () => new Response(JSON.stringify({ success: false }), { status: 200 })) as unknown as typeof fetch;
-    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind", turnstileToken: "forfalsket" });
+    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind", turnstileToken: "forfalsket", navn: "Hanne" });
     await handleSupport(ctx);
     expect(spamTaeller.turnstile).toBe(1);
   });
@@ -490,7 +490,7 @@ describe("F024.5 — spam-porten kan aflæses", () => {
     // der er slukket. Et nul der betyder to ting er ikke en måling.
     reservevejSvarer();
     expect(turnstileAktiv()).toBe(false);
-    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
+    const { ctx, svar } = kontekst({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk", navn: "Hanne" });
     await handleSupport(ctx);
     expect((svar.krop as { ok: boolean }).ok).toBe(true);   // slap FAKTISK igennem
     expect(spamTaeller.turnstile).toBe(0);
@@ -498,7 +498,7 @@ describe("F024.5 — spam-porten kan aflæses", () => {
 
   it("`ialt` tæller også dem der slipper igennem — ellers kan afvist/ialt ikke regnes ud", async () => {
     reservevejSvarer();
-    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind" });
+    const { ctx } = kontekst({ besked: "Jeg kan ikke logge ind", navn: "Hanne" });
     await handleSupport(ctx);
     expect(spamTaeller.ialt).toBe(1);
     expect(spamTaeller.honeypot + spamTaeller.hastighed + spamTaeller.turnstile).toBe(0);
@@ -577,13 +577,23 @@ describe("mail ELLER telefon er påkrævet", () => {
     };
   }
 
-  it("uden BEGGE afvises den — og INTET kald forlader huset", async () => {
+  it("uden NAVN afvises den — samme krav som i chatten", async () => {
+    const kaldt: string[] = [];
+    globalThis.fetch = (async (u: string) => { kaldt.push(String(u)); return new Response("{}", { status: 200 }); }) as unknown as typeof fetch;
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
+    await handleSupport(c);
+    expect(svar.status).toBe(400);
+    expect((svar.krop as { fejl: string }).fejl).toBe("kontakt_kraeves");
+    expect(kaldt).toEqual([]);
+  });
+
+  it("uden BEGGE kontaktveje afvises den — og INTET kald forlader huset", async () => {
     // Det er den halvdel der gør det til en spærre frem for en besked: en
     // afvist henvendelse må ikke koste HelpDesk en sag eller reservevejen en
     // mail. Bliver der ringet ud, er den sluppet forbi.
     const kaldt: string[] = [];
     globalThis.fetch = (async (u: string) => { kaldt.push(String(u)); return new Response("{}", { status: 200 }); }) as unknown as typeof fetch;
-    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind" });
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", navn: "Hanne" });
     await handleSupport(c);
     expect(svar.status).toBe(400);
     expect((svar.krop as { fejl: string }).fejl).toBe("kontakt_kraeves");
@@ -592,20 +602,20 @@ describe("mail ELLER telefon er påkrævet", () => {
 
   it("KUN mail slipper igennem", async () => {
     globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
-    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", email: "hun@eksempel.dk" });
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", navn: "Hanne", email: "hun@eksempel.dk" });
     await handleSupport(c);
     expect(svar.status).not.toBe(400);
   });
 
   it("KUN telefon slipper igennem — ellers var det ikke «eller»", async () => {
     globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
-    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", telefon: "+45 20 12 34 56" });
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", navn: "Hanne", telefon: "+45 20 12 34 56" });
     await handleSupport(c);
     expect(svar.status).not.toBe(400);
   });
 
   it("mellemrum tæller ikke som et telefonnummer", async () => {
-    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", telefon: "   ", email: "  " });
+    const { c, svar } = ctx({ besked: "Jeg kan ikke logge ind", navn: "Hanne", telefon: "   ", email: "  " });
     await handleSupport(c);
     expect(svar.status).toBe(400);
   });

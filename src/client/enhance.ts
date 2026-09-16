@@ -443,9 +443,15 @@ function supportFormular(): void {
       besked.focus();
       return;
     }
-    // MAIL ELLER TELEFON. Kontrollen her er en HØFLIGHED — den sparer hende en
-    // rundtur til serveren. Porten er serverens, og den svarer det samme på en
-    // indsendelse der går uden om siden.
+    // NAVN + MAIL ELLER TELEFON. Kontrollen her er en HØFLIGHED — den sparer
+    // hende en rundtur til serveren. Porten er serverens, og den svarer det
+    // samme på en indsendelse der går uden om siden.
+    const navnFelt = form.querySelector<HTMLInputElement>("#sf-navn");
+    if (!navnFelt?.value.trim()) {
+      vis("err", isEn ? "Please tell us your name." : "Skriv venligst dit navn.");
+      navnFelt?.focus();
+      return;
+    }
     const mailFelt = form.querySelector<HTMLInputElement>("#sf-email");
     const telFelt = form.querySelector<HTMLInputElement>("#sf-telefon");
     if (!mailFelt?.value.trim() && !telFelt?.value.trim()) {

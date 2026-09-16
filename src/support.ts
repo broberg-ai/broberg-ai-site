@@ -236,7 +236,10 @@ export async function handleSupport(c: Context): Promise<Response> {
    * SPÆRREN LIGGER HER, PÅ SERVEREN. Browseren spørger også, men det er en
    * høflighed: en indsendelse uden om siden skal ramme den samme mur.
    */
-  if (!email && !telefon) {
+  // Navnet kom med 17/9, dagen efter kontaktkravet, og gør de to døre ens:
+  // chatten spurgte allerede om det. En sag uden et navn er en henvendelse fra
+  // ingen — og mennesket der skal svare, skal kunne skrive «Hej …».
+  if (!navn || !email && !telefon) {
     return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "kontakt_kraeves" }, 400);
   }
 
