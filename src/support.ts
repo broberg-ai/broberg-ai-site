@@ -251,6 +251,7 @@ export async function handleSupport(c: Context): Promise<Response> {
       // Ikke et tidsstempel — så ville nøglen være værdiløs ved netop det
       // genforsøg den findes for.
       intakeKey: await fingeraftryk(`${emne}\n${besked}\n${email}`),
+      kanal: "formular",
       // intent udelades: vi ved det ikke, og et forkert intent er værre end
       // intet, fordi det ser målt ud.
       ...(email ? { kontaktEmail: email } : {}),
@@ -338,6 +339,7 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
         udskrift,
       ].join("\n"),
       intakeKey: `aidan-${samtaleId}`,
+      kanal: "chat",
       ...(email ? { kontaktEmail: email } : {}),
       // intent udelades: Aidan ved det ikke, og HelpDesks egen klassifikator er
       // bedre til det end et gæt fra en chat-prompt.

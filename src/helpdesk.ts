@@ -92,6 +92,15 @@ export interface NySag {
    * værre end intet, fordi det ser målt ud. Uden feltet klassificerer de selv.
    */
   intent?: string;
+  /**
+   * §3.5 — HVILKEN AF VORES FLADER sagen kom fra. Fri tekst; vi navngiver
+   * vores egne. HelpDesks `kilde` svarer på hvilken af DERES døre den kom ind
+   * ad (`vaert-api` for os begge veje) — to dimensioner, to felter.
+   *
+   * Udelades den, står den som null hos dem: «ikke oplyst» og «oplyst som
+   * ingenting» skal kunne skelnes. Vi sender den altid.
+   */
+  kanal?: string;
 }
 
 export interface Sag {
@@ -141,6 +150,7 @@ export async function opretSag(sag: NySag): Promise<Sag> {
         intakeKey: sag.intakeKey,
         ...(sag.kontaktEmail ? { requesterEmail: sag.kontaktEmail } : {}),
         ...(sag.intent ? { intent: sag.intent } : {}),
+        ...(sag.kanal ? { kanal: sag.kanal } : {}),
       }),
     });
     const tekst = await svar.text();

@@ -17,7 +17,7 @@ import { opretSag } from "@/helpdesk.ts";
  * usynligt for et blik på kildeteksten — det var netop sådan `intent` undslap
  * min egen udtrækning med et regulært udtryk.
  */
-const TILLADTE = new Set(["subject", "body", "requesterEmail", "intent", "intakeKey", "erProeve"]);
+const TILLADTE = new Set(["subject", "body", "requesterEmail", "intent", "intakeKey", "erProeve", "kanal"]);
 
 const gemFetch = globalThis.fetch;
 afterEach(() => { globalThis.fetch = gemFetch; });
@@ -65,5 +65,20 @@ describe("POST /tickets sender KUN felter HelpDesks dør kender", () => {
     // Uden den her ville de tre ovenfor bestå på en tilladelsesliste der
     // tilfældigvis rummer alt vi sender — og ikke bevise at den kan sige nej.
     expect(["subject", "hvor"].filter((k) => !TILLADTE.has(k))).toEqual(["hvor"]);
+  });
+});
+
+describe("§3.5 — kanalen siger hvilken af VORES flader sagen kom fra", () => {
+  it("formularen sender kanal: formular", async () => {
+    const krop = await kropFraEtRigtigtKald({ emne: "x", krop: "y", intakeKey: "k", kanal: "formular" });
+    expect(krop.kanal).toBe("formular");
+  });
+
+  it("udelades den, sendes feltet SLET IKKE — ikke som tom streng", async () => {
+    // HelpDesk gemmer et udeladt felt som null. Sendte vi "", ville «ikke
+    // oplyst» og «oplyst som ingenting» blive det samme hos dem — samme
+    // skelnen vi to har brugt to døgn på.
+    const krop = await kropFraEtRigtigtKald({ emne: "x", krop: "y", intakeKey: "k" });
+    expect("kanal" in krop).toBe(false);
   });
 });
