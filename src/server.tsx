@@ -10,6 +10,8 @@ import { handleIcd } from "@/content/icd.ts";
 import { handleSupport, handleSupportTriage } from "@/support.ts";
 import { handleBekraeft } from "@/bekraeft-rute.ts";
 import { handleHelpdeskWebhook } from "@/helpdesk-webhook.ts";
+import { draenKo } from "@/support-ko.ts";
+import { opretSag, type NySag } from "@/helpdesk.ts";
 import { handleAidanChat, handleAidanHealth, handleAidanStatus } from "@/aidan.ts";
 import { handleAidanIndsigter, handleAidanLaes, handleAidanTidskoder, handleAidanGemTidskoder } from "@/aidan-laes.ts";
 import { handleAidanSendLyd, handleAidanSendSvar, handleAidanFeedback } from "@/aidan-mail.ts";
@@ -408,3 +410,17 @@ if (await storeIsEmpty()) {
 
 console.log(`broberg.ai listening on :${config.port}`);
 export default { port: config.port, fetch: app.fetch };
+
+/* F024.7 — genforsøg det køen har tilbage.
+ *
+ * Løkken lever i PROCESSEN, men køen ligger på volumet — så en genstart
+ * mister et forsøg, ikke en henvendelse. Det er hele forskellen fra HelpDesks
+ * egen bagstop, som vi netop har lært dør med deres proces.
+ *
+ * Hvert femte minut, højst fem ad gangen: en kø der hamrer løs efter et udfald
+ * rammer dem præcis mens de er ved at komme sig. */
+setInterval(() => {
+  void draenKo(async (kald) => opretSag(kald as unknown as NySag))
+    .then((r) => { if (r.forsoegt) console.log("[ko] genforsøgte", r.forsoegt, "leverede", r.leveret); })
+    .catch((e) => console.error("[ko] dræning fejlede:", String(e)));
+}, 5 * 60_000);

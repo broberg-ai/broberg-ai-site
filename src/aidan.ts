@@ -22,6 +22,7 @@ import { helpdeskStatus } from "@/helpdesk.ts";
 import { taelTilbudtSag, triageTaeller, spamTaeller, turnstileAktiv } from "@/support.ts";
 import { bekraeftTaeller } from "@/bekraeft-rute.ts";
 import { webhookTaeller, webhookKonfigureret } from "@/helpdesk-webhook.ts";
+import { koTaeller } from "@/support-ko.ts";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import { createHash } from "node:crypto";
 import { buildSearchIndex } from "@/content/compose.ts";
@@ -513,6 +514,9 @@ export function handleAidanHealth(c: Context): Response {
       // nul modtagne hændelser betyder enten «der er ikke sket noget» eller
       // «døren er lukket fordi hemmeligheden mangler». De renderer ens.
       webhook: { konfigureret: webhookKonfigureret(), ...webhookTaeller },
+      // F024.7 — køen. `skrivefejl` står med, fordi en kø der ikke kan skrive
+      // er præcis den tilstand hvor alt andet ser normalt ud.
+      ko: { ...koTaeller },
     },
     aidanConfigured() ? 200 : 503,
   );

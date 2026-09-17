@@ -1,5 +1,6 @@
 import { describe, test as it, expect, afterEach, beforeEach } from "bun:test";
 import { readFileSync } from "node:fs";
+import { readFile, rm } from "node:fs/promises";
 import { emneFor, kropFor, handleSupport, handleSupportTriage, turnstileAktiv, taelTilbudtSag, triageTaeller, spamTaeller } from "./support.ts";
 import { handleAidanHealth } from "./aidan.ts";
 import { HONEYPOT_FIELD, _resetRateLimiter } from "@broberg/forms-turnstile/server";
@@ -623,5 +624,68 @@ describe("mail ELLER telefon er påkrævet", () => {
   it("telefonnummeret står i sagens krop, så mennesket kan ringe", () => {
     const k = kropFor("Jeg kan ikke logge ind", "", "", [["Telefon", "+45 20 12 34 56"]]);
     expect(k).toContain("Telefon: +45 20 12 34 56");
+  });
+});
+
+/**
+ * F024.7 / AC#1 — RÆKKEFØLGEN er hele featuren.
+ *
+ * En prøve der kun måler at køen KAN skrives, beviser ikke at den skrives
+ * FØR. Derfor lægges kaldet ned, og teksten skal findes i køen bagefter.
+ */
+describe("F024.7 — hendes tekst gemmes FØR vi ringer", () => {
+  const KO = "/tmp/test-rute-ko.jsonl";
+  const gemF = globalThis.fetch;
+  beforeEach(async () => { process.env.SUPPORT_KO = KO; await rm(KO, { force: true }); });
+  afterEach(() => { globalThis.fetch = gemF; delete process.env.SUPPORT_KO; });
+
+  function k(krop: Record<string, unknown>) {
+    const svar: { status?: number; krop?: unknown } = {};
+    return {
+      ctx: { req: { json: async () => krop, header: () => undefined },
+             json: (x: unknown, st = 200) => { svar.krop = x; svar.status = st; return new Response(null); },
+             get: () => undefined } as never,
+      svar,
+    };
+  }
+
+  it("HelpDesk nede → teksten står i køen, og svaret siger vi HAR den", async () => {
+    delete process.env.HELPDESK_KEY;
+    globalThis.fetch = (async () => new Response("nej", { status: 500 })) as unknown as typeof fetch;
+    const { ctx, svar } = k({ besked: "Min faktura mangler et bilag", navn: "Hanne", email: "hun@eksempel.dk" });
+    await handleSupport(ctx);
+
+    const linjer = (await readFile(KO, "utf-8")).split("\n").filter(Boolean).map((l) => JSON.parse(l));
+    expect(linjer.length).toBe(1);
+    expect(JSON.stringify(linjer[0].kald)).toContain("Min faktura mangler et bilag");
+    expect(linjer[0].leveret).toBeUndefined();
+
+    // Hun må IKKE få at vide at det mislykkedes — så ville hun sende igen og
+    // lave en dublet af noget vi allerede har.
+    expect((svar.krop as { ok: boolean; vej: string }).ok).toBe(true);
+    expect((svar.krop as { vej: string }).vej).toBe("ko");
+  });
+
+  it("LYKKET levering markeres — så dræningen aldrig rører den igen", async () => {
+    process.env.HELPDESK_KEY = "hd_live_test";
+    process.env.HELPDESK_TENANT = "broberg-ai";
+    process.env.HELPDESK_BASE = "http://127.0.0.1:1";
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ ticket: { ref: "BR-KO1", state: "open", level: 0 } }), { status: 201 })
+    ) as unknown as typeof fetch;
+    const { ctx } = k({ besked: "Jeg kan ikke logge ind", navn: "Hanne", email: "hun@eksempel.dk" });
+    await handleSupport(ctx);
+
+    const p = JSON.parse((await readFile(KO, "utf-8")).split("\n").filter(Boolean)[0]!);
+    expect(p.ref).toBe("BR-KO1");
+    expect(typeof p.leveret).toBe("number");
+  });
+
+  it("en AFVIST henvendelse skriver INTET i køen — køen er ikke et affaldsspand", async () => {
+    globalThis.fetch = (async () => new Response("{}", { status: 200 })) as unknown as typeof fetch;
+    const { ctx, svar } = k({ besked: "Jeg kan ikke logge ind" });   // intet navn, ingen kontakt
+    await handleSupport(ctx);
+    expect(svar.status).toBe(400);
+    await expect(readFile(KO, "utf-8")).rejects.toThrow();           // filen findes slet ikke
   });
 });

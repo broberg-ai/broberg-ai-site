@@ -30,7 +30,8 @@
  */
 import type { Context } from "hono";
 import { isHoneypotTriggered, hashIp, isRateLimited, validateTurnstile } from "@broberg/forms-turnstile/server";
-import { opretSag, HelpDeskFejl } from "@/helpdesk.ts";
+import { opretSag, HelpDeskFejl, type NySag } from "@/helpdesk.ts";
+import { skrivIKo, markerLeveret, markerFejlet } from "@/support-ko.ts";
 
 const CMS_FORMULAR = "https://webhouse.app/api/forms/contact?site=broberg-ai";
 
@@ -59,7 +60,7 @@ export interface SupportSvar {
   /** Sagens reference — kun når HelpDesk tog imod. Kan læses op i telefonen. */
   ref?: string;
   /** Hvilken vej henvendelsen faktisk gik. Aldrig gættet af kalderen. */
-  vej: "helpdesk" | "reserve" | "ingen";
+  vej: "helpdesk" | "reserve" | "ko" | "ingen";
   fejl?: string;
 }
 
@@ -243,32 +244,48 @@ export async function handleSupport(c: Context): Promise<Response> {
     return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "kontakt_kraeves" }, 400);
   }
 
+  const sagen: NySag = {
+    emne,
+    krop: kropFor(besked, navn, email, [["Telefon", telefon], ["Hvor skete det", hvor]]),
+    // STABIL pr. henvendelse, ENS ved genforsøg: indholdets fingeraftryk.
+    // Ikke et tidsstempel — så ville nøglen være værdiløs ved netop det
+    // genforsøg den findes for.
+    intakeKey: await fingeraftryk(`${emne}\n${besked}\n${email}`),
+    kanal: "formular",
+    ...(telefon ? { kontaktTelefon: telefon } : {}),
+    // intent udelades: vi ved det ikke, og et forkert intent er værre end
+    // intet, fordi det ser målt ud.
+    ...(email ? { kontaktEmail: email } : {}),
+  };
+
+  // F024.7 — NED PÅ DISK FØR VI RINGER. Rækkefølgen ER hele featuren: gemmes
+  // den bagefter, findes der et vindue hvor hendes ord kun er i luften.
+  //
+  // Vi gemmer det FÆRDIGE kald, ikke felterne. Et genforsøg der genopbygger
+  // kroppen er et nyt sted en forskel kan snige sig ind — og en forskel her
+  // ville give en NY sag i stedet for et genforsøg af den samme.
+  const koId = `f-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const iKo = await skrivIKo({ id: koId, intakeKey: sagen.intakeKey, kald: sagen as unknown as Record<string, unknown>, kanal: "formular" });
+
   try {
-    const sag = await opretSag({
-      emne,
-      krop: kropFor(besked, navn, email, [["Telefon", telefon], ["Hvor skete det", hvor]]),
-      // STABIL pr. henvendelse, ENS ved genforsøg: indholdets fingeraftryk.
-      // Ikke et tidsstempel — så ville nøglen være værdiløs ved netop det
-      // genforsøg den findes for.
-      intakeKey: await fingeraftryk(`${emne}\n${besked}\n${email}`),
-      kanal: "formular",
-      ...(telefon ? { kontaktTelefon: telefon } : {}),
-      // intent udelades: vi ved det ikke, og et forkert intent er værre end
-      // intet, fordi det ser målt ud.
-      ...(email ? { kontaktEmail: email } : {}),
-    });
+    const sag = await opretSag(sagen);
+    await markerLeveret(koId, sag.ref);
     return c.json<SupportSvar>({ ok: true, ref: sag.ref, vej: "helpdesk" });
   } catch (e) {
+    await markerFejlet(koId, e instanceof Error ? e.message : String(e));
     // HER er forskellen fra Trail. Vi svarer ikke bare «beklager».
     const reddet = await tilReserve(navn, email, besked);
     const grund = e instanceof HelpDeskFejl ? `${e.status}: ${e.message}` : String(e);
     console.error("[support] HelpDesk afviste — reservevej:", reddet ? "ok" : "FEJLEDE", grund);
-    return c.json<SupportSvar>(
-      reddet
-        ? { ok: true, vej: "reserve" }
-        : { ok: false, vej: "ingen", fejl: "ingen_vej_naaede_frem" },
-      reddet ? 200 : 502,
-    );
+    // VI HAR DEN STADIG. Køen holder hendes ord, så det her ikke er et tab men
+    // en forsinkelse — og svaret må sige det, ellers prøver hun igen og laver
+    // en dublet af noget vi allerede har.
+    // «VI HAR DEN» KUN HVIS VI FAKTISK HAR DEN. Fejlede skrivningen, er det
+    // en løgn — og den værste af alle: hun går fra skærmen i den tro at nogen
+    // har hendes ord, og ingen har dem. Så siger vi det ærligt i stedet.
+    if (reddet) return c.json<SupportSvar>({ ok: true, vej: "reserve" }, 200);
+    if (iKo) return c.json<SupportSvar>({ ok: true, vej: "ko" }, 200);
+    return c.json<SupportSvar>({ ok: false, vej: "ingen", fejl: "ingen_vej_naaede_frem" }, 502);
   }
 }
 
@@ -322,8 +339,7 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
     .map((m) => `${m.rolle === "user" ? "Besøgende" : "Aidan"}: ${m.tekst}`)
     .join("\n\n");
 
-  try {
-    const sag = await opretSag({
+  const triageSag: NySag = {
       // Emnet er den besøgendes FØRSTE spørgsmål — det hun kom for. Det sidste
       // er typisk «må jeg tale med et menneske», og det er ikke hvad sagen
       // handler om.
@@ -345,18 +361,27 @@ export async function handleSupportTriage(c: Context): Promise<Response> {
       ...(email ? { kontaktEmail: email } : {}),
       // intent udelades: Aidan ved det ikke, og HelpDesks egen klassifikator er
       // bedre til det end et gæt fra en chat-prompt.
-      // bekraeftetEmail udelades: en adresse i en chat er ikke mere bekræftet
-      // end en i et felt.
-    });
+    // bekraeftetEmail udelades: en adresse i en chat er ikke mere bekræftet
+    // end en i et felt.
+  };
+
+  // Samme net som formularen: ned på disk FØR kaldet.
+  const koId = `c-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const iKo = await skrivIKo({ id: koId, intakeKey: triageSag.intakeKey, kald: triageSag as unknown as Record<string, unknown>, kanal: "chat" });
+
+  try {
+    const sag = await opretSag(triageSag);
+    await markerLeveret(koId, sag.ref);
     triageTaeller.oprettet++;
     if (!email) triageTaeller.udenMail++;
     return c.json<SupportSvar>({ ok: true, ref: sag.ref, vej: "helpdesk" });
   } catch (e) {
+    await markerFejlet(koId, e instanceof Error ? e.message : String(e));
     const reddet = await tilReserve("(via Aidan)", "", udskrift);
     console.error("[triage] HelpDesk afviste — reservevej:", reddet ? "ok" : "FEJLEDE", String(e));
     return c.json<SupportSvar>(
-      reddet ? { ok: true, vej: "reserve" } : { ok: false, vej: "ingen", fejl: "ingen_vej_naaede_frem" },
-      reddet ? 200 : 502,
+      reddet ? { ok: true, vej: "reserve" } : iKo ? { ok: true, vej: "ko" } : { ok: false, vej: "ingen", fejl: "ingen_vej_naaede_frem" },
+      reddet || iKo ? 200 : 502,
     );
   }
 }

@@ -494,6 +494,14 @@ function supportFormular(): void {
         vis("ok", isEn
           ? `Received. Your case reference is ${j.ref} — keep it.`
           : `Modtaget. Din sagsreference er ${j.ref} — gem den.`);
+      } else if (j.ok && j.vej === "ko") {
+        // VI HAR DEN. Sagssystemet svarede ikke, men hendes ord ligger hos os
+        // og bliver sendt videre. Hun må IKKE tro hun skal prøve igen — så
+        // ville hun lave en dublet af noget vi allerede har.
+        form.reset();
+        vis("ok", isEn
+          ? "Received — we have your message. Our case system didn't answer just now, so we'll pass it on shortly. You don't need to send it again."
+          : "Modtaget — vi har din besked. Vores sagssystem svarede ikke lige nu, så vi sender den videre om lidt. Du skal ikke sende igen.");
       } else if (j.ok && j.vej === "reserve") {
         // Ærligt frem for pænt: henvendelsen NÅEDE frem, men der er ingen
         // sagsreference at give, og det skal hun vide nu i stedet for at
