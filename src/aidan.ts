@@ -22,7 +22,7 @@ import { helpdeskStatus } from "@/helpdesk.ts";
 import { taelTilbudtSag, triageTaeller, spamTaeller, turnstileAktiv } from "@/support.ts";
 import { bekraeftTaeller } from "@/bekraeft-rute.ts";
 import { webhookTaeller, webhookKonfigureret } from "@/helpdesk-webhook.ts";
-import { koTaeller } from "@/support-ko.ts";
+import { koTaeller, koStatus } from "@/support-ko.ts";
 import { createAI, type AiClient } from "@broberg/ai-sdk";
 import { createHash } from "node:crypto";
 import { buildSearchIndex } from "@/content/compose.ts";
@@ -480,7 +480,13 @@ const MAX_HISTORIK = 20;
 const OPSTART = Date.now();
 
 /** GET /api/aidan/health — {ok} når chatten kan svare. */
-export function handleAidanHealth(c: Context): Response {
+export async function handleAidanHealth(c: Context): Promise<Response> {
+  // KØENS TILSTAND LÆSES FRA FILEN, ikke fra tællerne. Tællerne nulstilles ved
+  // hver udrulning — en henvendelse der har ventet siden i går ville stå som
+  // «ventende: 0» efter et deploy, altså usynlig præcis når den er mest
+  // alvorlig. `aeldsteVentendeMs` er tallet der betyder noget: tre ventende er
+  // harmløst hvis de er et minut gamle og en alarm hvis de er to dage.
+  const koStatusNu = await koStatus();
   // Vidensbasens bidrag er MÅLT her, ikke påstået. Uden tallet kan «Trail
   // bidrager til svarene» stå som sandt i måneder mens hvert opslag
   // tidsudløber — det var præcis tilstanden 9/9-2026.
@@ -516,7 +522,7 @@ export function handleAidanHealth(c: Context): Response {
       webhook: { konfigureret: webhookKonfigureret(), ...webhookTaeller },
       // F024.7 — køen. `skrivefejl` står med, fordi en kø der ikke kan skrive
       // er præcis den tilstand hvor alt andet ser normalt ud.
-      ko: { ...koTaeller },
+      ko: { ...koTaeller, ...koStatusNu },
     },
     aidanConfigured() ? 200 : 503,
   );

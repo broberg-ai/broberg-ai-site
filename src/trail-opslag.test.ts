@@ -134,9 +134,15 @@ describe("opslagets udfald er talt, ikke gættet", () => {
   });
 
   it("health-ruten udstiller tallet", () => {
-    const i = kode.indexOf("export function handleAidanHealth");
+    // Fandt funktionen på «export function …» og læste 420 TEGN frem. Begge
+    // dele knækkede da ruten blev async og fik en linje mere: markøren
+    // matchede ikke, og udsnittet ville have flyttet sig uanset hvad.
+    // En prøve der måler kildetekst skal måle et OMRÅDE, ikke en afstand.
+    const i = kode.search(/export (?:async )?function handleAidanHealth/);
     expect(i).toBeGreaterThan(-1);
-    expect(kode.slice(i, i + 420)).toContain("trailTaeller");
+    const slut = kode.indexOf("\n}", i);
+    expect(slut).toBeGreaterThan(i);
+    expect(kode.slice(i, slut)).toContain("trailTaeller");
   });
 
   it("tidsgrænsen er en navngivet konstant, ikke et tal i en linje", () => {

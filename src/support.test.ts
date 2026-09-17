@@ -505,11 +505,11 @@ describe("F024.5 — spam-porten kan aflæses", () => {
     expect(spamTaeller.honeypot + spamTaeller.hastighed + spamTaeller.turnstile).toBe(0);
   });
 
-  it("health viser tallene MED `turnstileAktiv` — et nul skal kunne skelnes fra en slukket vagt", () => {
+  it("health viser tallene MED `turnstileAktiv` — et nul skal kunne skelnes fra en slukket vagt", async () => {
     delete process.env.TURNSTILE_SECRET_KEY;
     const svar: { krop?: unknown } = {};
     const ctx = { json: (k: unknown) => { svar.krop = k; return new Response(null); } } as never;
-    handleAidanHealth(ctx);
+    await handleAidanHealth(ctx);
     const spam = (svar.krop as { spam: Record<string, unknown> }).spam;
     expect(spam).toBeDefined();
     expect(spam.turnstileAktiv).toBe(false);
