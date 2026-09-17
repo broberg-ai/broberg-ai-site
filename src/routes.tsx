@@ -570,6 +570,11 @@ export async function renderBekraeftelse(locale: Locale, token: string): Promise
 export async function renderSupport(locale: Locale): Promise<string> {
   const isEn = locale === "en";
   const { ref: globalsRef, g } = await globalsChrome(locale);
+  // F024.8 — flagskibene læses fra CMS, ikke fra en liste i koden. Én kilde:
+  // kommer der et nyt flagskib, står det på formularen uden en udrulning, og
+  // et der fjernes forsvinder. En hardkodet liste ville drive fra virkeligheden
+  // stille, og feltet ville pege på produkter vi ikke har.
+  const flagskibe = (await loadPlatforms(locale)).map((p) => p.name).filter(Boolean);
   return await page(
     <>
       <section id="top">
@@ -589,11 +594,12 @@ export async function renderSupport(locale: Locale): Promise<string> {
           // NØDBREMSE, ikke et hjem: står værdien ikke i CMS, kan Christian
           // hverken søge den frem eller rette den.
           felter: Object.fromEntries(
-            ["heading", "lead", "emne", "besked", "hvor", "hvorPlaceholder", "navn", "email", "telefon", "emailNote", "kontaktKraeves", "submit"]
+            ["heading", "lead", "emne", "besked", "hvor", "hvorPlaceholder", "navn", "email", "telefon", "emailNote", "kontaktKraeves", "flagskib", "flagskibIngen", "submit"]
               .map((k) => [k, g(`supportForm.${k}`, "")])
               .filter(([, v]) => v),
           ),
         }}
+        flagskibe={flagskibe}
         locale={locale}
         cmsRef={globalsRef}
       />

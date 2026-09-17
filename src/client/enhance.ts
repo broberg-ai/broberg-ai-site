@@ -474,6 +474,7 @@ function supportFormular(): void {
           besked: String(d.get("besked") ?? ""),
           hvor: String(d.get("hvor") ?? ""),
           telefon: String(d.get("telefon") ?? ""),
+          flagskib: String(d.get("flagskib") ?? ""),
           navn: String(d.get("navn") ?? ""),
           email: String(d.get("email") ?? ""),
           _gotcha: String(d.get("_gotcha") ?? ""),

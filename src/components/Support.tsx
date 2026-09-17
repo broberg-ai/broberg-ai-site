@@ -20,7 +20,15 @@ export interface SupportCopy {
   felter?: Record<string, string>;
 }
 
-export function Support({ data, locale, cmsRef }: { data: SupportCopy; locale: Locale; cmsRef?: CmsRef }) {
+export function Support({ data, flagskibe = [], locale, cmsRef }: {
+  data: SupportCopy;
+  /** F024.8 — navnene fra CMS'ets platforms. BONUS-INFO, ikke et krav:
+   *  Christian 17/9 «et ekstra felt som bonus info». Den der ikke ved hvilket
+   *  produkt det er, skal ikke stoppes af feltet. */
+  flagskibe?: string[];
+  locale: Locale;
+  cmsRef?: CmsRef;
+}) {
   const isEn = locale === "en";
   const f = (key: string, fallback: string): string => data.felter?.[key] ?? fallback;
   const fa = (key: string) => cmsAttrs(cmsRef, `supportForm.${key}`);
@@ -54,6 +62,36 @@ export function Support({ data, locale, cmsRef }: { data: SupportCopy; locale: L
               <label for="sf-besked"><span {...fa("besked")}>{f("besked", isEn ? "What happened?" : "Hvad er der sket?")}</span></label>
               <textarea id="sf-besked" name="besked" rows={5} required data-testid="support-input-besked" />
             </div>
+            {/* F024.8 — HVILKET FLAGSKIB. Valgfrit, og bygget som en gruppe
+                radioknapper frem for et <select>: huset har en hård regel mod
+                native controls, og en <select> med seksten punkter er
+                desuden en dårlig oplevelse på en telefon.
+
+                «Ved ikke / noget andet» er FØRST og forvalgt, så den der bare
+                vil skrive ikke skal tage stilling til en produktliste for at
+                komme videre. */}
+            {flagskibe.length > 0 && (
+              <div class="form-field">
+                <span class="form-label" {...fa("flagskib")}>
+                  {f("flagskib", isEn ? "Which product? (optional)" : "Hvilket produkt? (valgfrit)")}
+                </span>
+                <div class="support-flagskibe" role="radiogroup"
+                     aria-label={f("flagskib", isEn ? "Which product?" : "Hvilket produkt?")}
+                     data-testid="support-flagskibe">
+                  <label class="support-flagskib">
+                    <input type="radio" name="flagskib" value="" checked data-testid="support-flagskib-ingen" />
+                    <span>{f("flagskibIngen", isEn ? "Don't know / something else" : "Ved ikke / noget andet")}</span>
+                  </label>
+                  {flagskibe.map((navn) => (
+                    <label class="support-flagskib" key={navn}>
+                      <input type="radio" name="flagskib" value={navn}
+                             data-testid={`support-flagskib-${navn.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} />
+                      <span>{navn}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* F024.2 — BEVISET PÅ AT FORMEN KAN UDBYGGES. Feltet er tilføjet
                 efter at sagsoprettelsen kørte i drift, og kaldet til HelpDesk
                 blev IKKE rørt: værdien går med i sagens krop gennem `ekstra`.

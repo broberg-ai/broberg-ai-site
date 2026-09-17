@@ -5135,3 +5135,69 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
   outline: 2px solid var(--blue-light);
   outline-offset: 3px;
 }
+
+/* F024.8 — flagskibs-valget på supportformularen.
+ *
+ * RADIOKNAPPER OG IKKE EN <select>: huset har en hård regel mod native
+ * controls (de kan ikke styles, ignorerer temaet og ser system-ud), og en
+ * rulleliste med seksten punkter er desuden en dårlig oplevelse på en telefon.
+ *
+ * Den native input er skjult for ØJET, ikke for tastaturet eller for en
+ * skærmlæser: `appearance:none` + størrelse 0 ville fjerne fokus-ringen, og
+ * `display:none` ville tage elementet ud af tabuleringen helt. `:focus-visible`
+ * på forælderen giver ringen tilbage hvor man kan se den. */
+.form-field .form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 7px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.support-flagskibe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.support-flagskib {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  cursor: pointer;
+}
+.support-flagskib input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+.support-flagskib span {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  background: var(--dark2);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.2;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.support-flagskib:hover span {
+  border-color: var(--accent, #F3522C);
+  color: var(--light);
+}
+.support-flagskib input:checked + span {
+  border-color: var(--accent, #F3522C);
+  background: color-mix(in srgb, var(--accent, #F3522C) 14%, transparent);
+  color: var(--light);
+}
+.support-flagskib input:focus-visible + span {
+  outline: 2px solid var(--accent, #F3522C);
+  outline-offset: 2px;
+}
+.support-flagskib input:active + span,
+.support-flagskib span:active {
+  transform: translateY(1px);
+}

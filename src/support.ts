@@ -214,6 +214,8 @@ export async function handleSupport(c: Context): Promise<Response> {
   // Det mest brugbare ekstra felt i support: hvilken side stod hun på.
   const hvor = String(krop.hvor ?? "").trim();
   const telefon = String(krop.telefon ?? "").trim();
+  // F024.8 — bonus-info. Går gennem samme `ekstra`-dør som «Hvor skete det».
+  const flagskib = String(krop.flagskib ?? "").trim();
   const navn = String(krop.navn ?? "").trim();
   const email = String(krop.email ?? "").trim();
   const emne = emneFor(String(krop.emne ?? ""), besked);
@@ -246,7 +248,7 @@ export async function handleSupport(c: Context): Promise<Response> {
 
   const sagen: NySag = {
     emne,
-    krop: kropFor(besked, navn, email, [["Telefon", telefon], ["Hvor skete det", hvor]]),
+    krop: kropFor(besked, navn, email, [["Telefon", telefon], ["Flagskib", flagskib], ["Hvor skete det", hvor]]),
     // STABIL pr. henvendelse, ENS ved genforsøg: indholdets fingeraftryk.
     // Ikke et tidsstempel — så ville nøglen være værdiløs ved netop det
     // genforsøg den findes for.

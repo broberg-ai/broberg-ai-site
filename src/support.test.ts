@@ -689,3 +689,35 @@ describe("F024.7 — hendes tekst gemmes FØR vi ringer", () => {
     await expect(readFile(KO, "utf-8")).rejects.toThrow();           // filen findes slet ikke
   });
 });
+
+/**
+ * F024.8 — flagskibet er BONUS-INFO. Christian: «Nej et ekstra felt som bonus
+ * info» — altså ikke et krav, og ikke en produktdimension hos HelpDesk (de har
+ * ingen; jeg probede: `produkt` giver 400).
+ */
+describe("F024.8 — flagskibet som bonus-info", () => {
+  it("valget lander i sagens krop med sin etiket", () => {
+    const k = kropFor("Knappen svarer ikke", "", "", [["Flagskib", "cms"]]);
+    expect(k).toContain("Flagskib: cms");
+  });
+
+  it("INTET valg efterlader ingen tom rubrik — feltet er valgfrit", () => {
+    // Den der ikke ved hvilket produkt det er, må ikke efterlade et spor der
+    // ligner et ubesvaret spørgsmål hos den der skal hjælpe.
+    expect(kropFor("Knappen svarer ikke", "", "", [["Flagskib", ""]])).not.toContain("Flagskib");
+  });
+
+  it("det blokerer ALDRIG en indsendelse", async () => {
+    const gem = globalThis.fetch;
+    globalThis.fetch = (async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch;
+    const svar: { status?: number } = {};
+    const ctx = {
+      req: { json: async () => ({ besked: "Jeg kan ikke logge ind", navn: "Hanne", email: "h@e.dk" }), header: () => undefined },
+      json: (_k: unknown, s = 200) => { svar.status = s; return new Response(null); },
+      get: () => undefined,
+    } as never;
+    await handleSupport(ctx);
+    globalThis.fetch = gem;
+    expect(svar.status).not.toBe(400);
+  });
+});
