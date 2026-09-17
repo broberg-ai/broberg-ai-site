@@ -180,8 +180,10 @@ function adminPanel() {
         err.style.display = "none";
         // The endpoint returns the value it actually stored, re-read from disk.
         // Paint THAT, never the value we asked for.
-        const body = (await res.json()) as { enabled: boolean };
-        paintToggle(body.enabled);
+        // Same defensive read as the initial paint above: a missing field is
+        // NOT "off". The type says optional because the wire cannot promise it.
+        const body = (await res.json()) as { enabled?: boolean };
+        paintToggle(body.enabled === true);
       } else {
         err.style.display = "block";
       }
