@@ -76,6 +76,20 @@ export function manglendeFelter(felter, data) {
       const m = new RegExp("^" + navn.split(/\$\{[^}]*\}/).map(esc).join(".+") + "$");
       return !noegler.some((k) => m.test(k) && udfyldt(data[k]));
     }
+    // DEN FLADE NØGLE FØRST, fordi det er DEN g() slår op.
+    //
+    // globalsChrome laver `data[field]` — ét opslag, ingen nedstigning. Vores
+    // CMS gemmer derfor «bekraeft.eyebrow» som ÉN nøgle med et punktum i, ikke
+    // som et objekt «bekraeft» med «eyebrow» indeni.
+    //
+    // Porten steg ned. Så et felt der FINDES og bliver renderet korrekt blev
+    // meldt som manglende — og fordi de eksisterende præfiks-felter lagde
+    // præfikset på i kalderen, så scanneren dem aldrig, og fejlen lå usynlig
+    // indtil et felt skrev sit fulde navn i kilden.
+    //
+    // Nedstigningen beholdes som RESERVE: et site der gemmer rigtige nested
+    // objekter skal stadig kunne måles.
+    if (udfyldt(data?.[navn])) return false;
     const v = navn.split(".").reduce((o, k) => (o == null ? undefined : o[k]), data);
     return !udfyldt(v);
   });

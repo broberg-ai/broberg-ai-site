@@ -64,3 +64,20 @@ uden input = fund
 Værktøjer
 — jeg kender dit skema, dit indhold og dine indstillinger, og kan bygge, rette og udgive for dig.
 — organiseret efter funktion.
+# F024.10 — /live-test. En INTERN prøveflade, ikke en kundeside: den findes for
+# at bevise at en besked kan naa fra en anden maskine ind i en aaben chat, og
+# den er noindex og uden for navigationen. At lægge dens etiketter i CMS ville
+# gøre et engangsværktøj til redaktionelt indhold Christian skal vedligeholde.
+#
+# Forsvinder fladen, skal disse linjer ud igen — de er ikke app-chrome.
+Live-prøve → Aidan
+Skriv sagens reference (den chatten viser hende, fx BR-XXXXX) og en besked. Har hun chatten åben, dukker den op med det samme.
+Hemmelighed
+LIVE_TEST_TOKEN
+Sagens reference
+BR-XXXXX
+Dit navn (vises i chatten)
+Christian
+Besked
+Send til chatten
+

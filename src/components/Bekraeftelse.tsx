@@ -51,7 +51,7 @@ export function Bekraeftelse({
   cmsRef?: CmsRef;
 }) {
   const isEn = locale === "en";
-  const ga = (k: string) => cmsAttrs(cmsRef, `bekraeft.${k}`);
+  const ga = (k: string) => cmsAttrs(cmsRef, k);
 
   if (!brugbar) {
     const t = AFVIST_TEKST[grund ?? "ukendt-grund"][isEn ? "en" : "da"];
@@ -61,7 +61,7 @@ export function Bekraeftelse({
           <h1 data-testid="bekraeft-afvist-titel">{t[0]}</h1>
           <p class="lead" style="margin:18px auto 30px">{t[1]}</p>
           <a class="btn" href={isEn ? "/en/support" : "/support"} data-testid="bekraeft-til-support">
-            {g("tilSupport", isEn ? "Write to support" : "Skriv til support")}
+            {g("bekraeft.tilSupport", isEn ? "Write to support" : "Skriv til support")}
           </a>
         </div>
       </section>
@@ -71,11 +71,11 @@ export function Bekraeftelse({
   return (
     <section id="bekraeft">
       <div class="wrap" style="max-width:640px;padding-top:150px;text-align:center">
-        <div class="eyebrow" style="justify-content:center" {...ga("eyebrow")}>
-          {g("eyebrow", isEn ? "Your case" : "Din sag")}
+        <div class="eyebrow" style="justify-content:center" {...ga("bekraeft.eyebrow")}>
+          {g("bekraeft.eyebrow", isEn ? "Your case" : "Din sag")}
         </div>
-        <h1 {...ga("heading")} data-testid="bekraeft-titel">
-          {g("heading", isEn ? "Did we solve it?" : "Blev det løst?")}
+        <h1 {...ga("bekraeft.heading")} data-testid="bekraeft-titel">
+          {g("bekraeft.heading", isEn ? "Did we solve it?" : "Blev det løst?")}
         </h1>
 
         {/* HVILKEN sag. Uden den er spørgsmålet ubesvarligt: folk har mere
@@ -88,8 +88,8 @@ export function Bekraeftelse({
           </p>
         )}
 
-        <p class="lead" style="margin:6px auto 30px" {...ga("lead")}>
-          {g("lead", isEn
+        <p class="lead" style="margin:6px auto 30px" {...ga("bekraeft.lead")}>
+          {g("bekraeft.lead", isEn
             ? "One tap. If it isn't solved, we reopen the case — you don't have to explain again."
             : "Ét tryk. Er den ikke løst, åbner vi sagen igen — du skal ikke forklare det hele forfra.")}
         </p>
@@ -97,10 +97,10 @@ export function Bekraeftelse({
         <form id="bekraeft-form" data-token={token} data-lang={isEn ? "en" : "da"}
               style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           <button type="button" class="btn" data-svar="solved" data-testid="bekraeft-ja">
-            {g("ja", isEn ? "Yes, it's solved" : "Ja, den er løst")}
+            {g("bekraeft.ja", isEn ? "Yes, it's solved" : "Ja, den er løst")}
           </button>
           <button type="button" class="btn btn-ghost" data-svar="not_solved" data-testid="bekraeft-nej">
-            {g("nej", isEn ? "No, not yet" : "Nej, ikke endnu")}
+            {g("bekraeft.nej", isEn ? "No, not yet" : "Nej, ikke endnu")}
           </button>
         </form>
         <p class="form-status" data-testid="bekraeft-status" aria-live="polite"></p>

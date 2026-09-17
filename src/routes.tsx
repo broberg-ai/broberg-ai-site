@@ -552,8 +552,7 @@ export async function renderLiveTest(): Promise<string> {
       <div style="max-width:560px;margin:0 auto">
         <h1 style="font-size:20px;margin:0 0 6px">Live-prøve → Aidan</h1>
         <p style="color:#8a8a8a;font-size:13px;margin:0 0 28px;line-height:1.5">
-          Skriv sagens reference (den chatten viser hende, fx BR-XXXXX) og en besked.
-          Har hun chatten åben, dukker den op med det samme.
+          Skriv sagens reference (den chatten viser hende, fx BR-XXXXX) og en besked. Har hun chatten åben, dukker den op med det samme.
         </p>
 
         <label style="display:block;font-size:12px;color:#8a8a8a;margin-bottom:6px">Hemmelighed</label>
@@ -600,7 +599,7 @@ export async function renderBekraeftelse(locale: Locale, token: string): Promise
       emne={b.emne}
       grund={b.grund}
       locale={locale}
-      g={(k, f) => g(`bekraeft.${k}`, f)}
+      g={g}
       cmsRef={globalsRef}
     />,
     {
