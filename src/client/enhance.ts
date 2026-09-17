@@ -1767,6 +1767,10 @@ function aidan() {
         sig(isEn ? "Case " : "Sag ", j.ref,
             isEn ? " is open — a human reads the whole conversation. Keep the reference."
                  : " er oprettet — et menneske læser hele samtalen. Gem referencen.");
+        // F024.10 — SAMTALEN SLUTTER IKKE HER. Fra nu af lytter chatten på
+        // sagens kanal, så et menneske kan skrive ind i DENNE tråd i stedet
+        // for at hun skal vente på en mail.
+        lytPaaSagen(j.ref, boblEl, rulNed, isEn);
       } else if (j.ok && j.vej === "reserve") {
         sig(isEn ? "We have it, but our case system did not answer, so there is no reference this time."
                  : "Vi har den, men vores sagssystem svarede ikke, så der er ingen reference denne gang.", null, "");
@@ -2239,6 +2243,7 @@ safe(mountTurnstile);
 safe(contactForm);
 safe(supportFormular);   // F024.2
 safe(bekraeftKnapper);   // F024.4
+safe(liveTestFlade);     // F024.10
 safe(inlineEdit);
 safe(adminPanel);
 safe(mountAdminChat);
@@ -2415,4 +2420,92 @@ function bekraeftKnapper(): void {
       }
     });
   }
+}
+
+/* F024.10 — skrivefladen. Ren betjening, ingen ambitioner.
+ *
+ * Tokenet gemmes i browseren så han ikke skal indsætte det ved hvert forsøg.
+ * Det er en PRØVE-hemmelighed; ville det være en rigtig nøgle, hørte den ikke
+ * hjemme i localStorage. */
+function liveTestFlade(): void {
+  const knap = document.querySelector<HTMLButtonElement>("#lt-send");
+  if (!knap) return;
+  const f = (id: string) => document.querySelector<HTMLInputElement | HTMLTextAreaElement>(id);
+  const status = document.querySelector<HTMLElement>("#lt-status");
+  const token = f("#lt-token"), ref = f("#lt-ref"), fra = f("#lt-fra"), tekst = f("#lt-tekst");
+  if (!status || !token || !ref || !fra || !tekst) return;
+
+  try { token.value = localStorage.getItem("lt-token") ?? ""; } catch { /* privat vindue */ }
+  token.addEventListener("change", () => { try { localStorage.setItem("lt-token", token.value); } catch { /* ignoreret */ } });
+
+  const vis = (farve: string, t: string) => { status.style.color = farve; status.textContent = t; };
+
+  knap.addEventListener("click", async () => {
+    if (!ref.value.trim() || !tekst.value.trim()) { vis("#e0574a", "Udfyld reference og besked."); return; }
+    knap.disabled = true;
+    const oprindelig = knap.textContent ?? "";
+    knap.textContent = "Sender…";
+    try {
+      const r = await fetch(`/api/live/${encodeURIComponent(ref.value.trim().toUpperCase())}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-live-token": token.value },
+        body: JSON.stringify({ tekst: tekst.value, fra: fra.value }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; naaede?: number; fejl?: string };
+      if (j.ok) {
+        // «NÅEDE 0» ER IKKE EN FEJL, men det er heller ikke en succes — hun
+        // havde bare ikke chatten åben. At sige «sendt» ville lade ham lede
+        // efter en fejl i transporten når svaret er at der ikke sad nogen.
+        if (j.naaede) { vis("#4ade80", `Sendt — ${j.naaede} åben chat modtog den.`); tekst.value = ""; }
+        else vis("#f0b429", "Sendt, men INGEN lyttede på den reference lige nu.");
+      } else {
+        vis("#e0574a", j.fejl === "token" ? "Forkert hemmelighed."
+          : j.fejl === "ikke_konfigureret" ? "Serveren har ingen LIVE_TEST_TOKEN sat."
+          : `Gik ikke igennem (${j.fejl ?? r.status}).`);
+      }
+    } catch {
+      vis("#e0574a", "Ingen forbindelse.");
+    } finally {
+      knap.disabled = false;
+      knap.textContent = oprindelig;
+    }
+  });
+}
+
+/* F024.10 — den besøgendes ende af live-kanalen.
+ *
+ * VI LUKKER STRØMMEN NÅR FANEN LUKKES. En EventSource der ikke lukkes holder
+ * en forbindelse åben på serveren for hver sag hun nogensinde har oprettet.
+ *
+ * OG VI GENSKABER IKKE SELV. EventSource genforbinder af sig selv; skriver vi
+ * vores egen løkke ovenpå, får vi to. */
+function lytPaaSagen(
+  ref: string,
+  boblEl: (cls: string) => HTMLElement,
+  rulNed: () => void,
+  isEn: boolean,
+): void {
+  let kilde: EventSource;
+  try { kilde = new EventSource(`/api/live/${encodeURIComponent(ref)}`); } catch { return; }
+
+  kilde.addEventListener("message", (e) => {
+    let d: { type?: string; fra?: string; tekst?: string };
+    try { d = JSON.parse((e as MessageEvent).data as string); } catch { return; }
+    // «klar» og «puls» er transportens egen snak og hører ikke i en samtale.
+    if (d.type !== "besked" || !d.tekst) return;
+
+    const b = boblEl("fra-aidan fra-menneske");
+    const hvem = document.createElement("span");
+    hvem.className = "aidan-afsender";
+    // HVEM der skriver SKAL stå. Uden det ligner et menneskes svar noget
+    // Aidan fandt på — og hele pointen er at hun ved der sidder nogen.
+    hvem.textContent = d.fra || (isEn ? "Support" : "Support");
+    const t = document.createElement("p");
+    t.textContent = d.tekst;
+    b.append(hvem, t);
+    b.dataset.testid = "aidan-live-besked";
+    rulNed();
+  });
+
+  window.addEventListener("pagehide", () => kilde.close(), { once: true });
 }

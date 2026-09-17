@@ -5201,3 +5201,26 @@ html.aidan-aaben [data-cms-inline-edit-badge] {
 .support-flagskib span:active {
   transform: translateY(1px);
 }
+
+/* F024.10 — et menneskes svar i Aidan-tråden.
+ *
+ * Det skal kunne SKELNES fra Aidans egne svar uden at ligne en fejl. Samme
+ * boble, men med afsenderens navn over — præcis som i Zendesk, hvor «Van
+ * Nguyen» står over sin egen replik. Uden navnet ligner et menneskes svar
+ * noget AI'en fandt på. */
+.aidan-msg.fra-menneske {
+  border-left: 2px solid var(--accent, #F3522C);
+  padding-left: 12px;
+}
+.aidan-msg .aidan-afsender {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent, #F3522C);
+  margin-bottom: 4px;
+}
+.aidan-msg.fra-menneske p {
+  margin: 0;
+}

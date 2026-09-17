@@ -536,6 +536,54 @@ export async function renderHome(locale: Locale): Promise<string> {
  * Egen side frem for et felt i bunden af forsiden: en der SØGER hjælp skal
  * kunne lande ét sted, og adressen skal kunne siges i en telefon.
  */
+/**
+ * F024.10 — skrivefladen. «Uden UI» taget bogstaveligt: to felter og en knap.
+ *
+ * Den er IKKE en agent-konsol og skal ikke blive til en. Den findes for at
+ * bevise at en besked kan nå fra en anden maskine ind i en åben chat — og for
+ * at Christian kan se det ske frem for at tage mit ord for det.
+ *
+ * Tokenet gemmes i browseren så han ikke skal indsætte det hver gang. Det er
+ * en PRØVE-hemmelighed, ikke en nøgle til noget der betyder noget.
+ */
+export async function renderLiveTest(): Promise<string> {
+  return renderPage(
+    <div id="live-test" style="min-height:100vh;background:#0d0d0d;color:#f0f4f8;font-family:system-ui,-apple-system,sans-serif;padding:40px 20px">
+      <div style="max-width:560px;margin:0 auto">
+        <h1 style="font-size:20px;margin:0 0 6px">Live-prøve → Aidan</h1>
+        <p style="color:#8a8a8a;font-size:13px;margin:0 0 28px;line-height:1.5">
+          Skriv sagens reference (den chatten viser hende, fx BR-XXXXX) og en besked.
+          Har hun chatten åben, dukker den op med det samme.
+        </p>
+
+        <label style="display:block;font-size:12px;color:#8a8a8a;margin-bottom:6px">Hemmelighed</label>
+        <input id="lt-token" type="password" placeholder="LIVE_TEST_TOKEN" data-testid="lt-token"
+               style="width:100%;padding:10px 12px;margin-bottom:16px;background:#151515;border:1px solid #2a2a2a;border-radius:8px;color:#f0f4f8;font-size:14px" />
+
+        <label style="display:block;font-size:12px;color:#8a8a8a;margin-bottom:6px">Sagens reference</label>
+        <input id="lt-ref" placeholder="BR-XXXXX" autocapitalize="characters" data-testid="lt-ref"
+               style="width:100%;padding:10px 12px;margin-bottom:16px;background:#151515;border:1px solid #2a2a2a;border-radius:8px;color:#f0f4f8;font-size:14px" />
+
+        <label style="display:block;font-size:12px;color:#8a8a8a;margin-bottom:6px">Dit navn (vises i chatten)</label>
+        <input id="lt-fra" placeholder="Christian" value="Christian" data-testid="lt-fra"
+               style="width:100%;padding:10px 12px;margin-bottom:16px;background:#151515;border:1px solid #2a2a2a;border-radius:8px;color:#f0f4f8;font-size:14px" />
+
+        <label style="display:block;font-size:12px;color:#8a8a8a;margin-bottom:6px">Besked</label>
+        <textarea id="lt-tekst" rows={4} data-testid="lt-tekst"
+                  style="width:100%;padding:10px 12px;margin-bottom:16px;background:#151515;border:1px solid #2a2a2a;border-radius:8px;color:#f0f4f8;font-size:14px;font-family:inherit" />
+
+        <button id="lt-send" data-testid="lt-send"
+                style="padding:11px 20px;background:#F3522C;border:0;border-radius:8px;color:#fff;font-size:14px;font-weight:600;cursor:pointer">
+          Send til chatten
+        </button>
+        <p id="lt-status" data-testid="lt-status" style="margin-top:16px;font-size:13px;min-height:20px"></p>
+      </div>
+    </div>,
+    { title: "Live-prøve — broberg.ai", description: "", locale: "da", forceTheme: "dark", noindex: true },
+    resolveAssets(),
+  );
+}
+
 export async function renderBekraeftelse(locale: Locale, token: string): Promise<string> {
   const isEn = locale === "en";
   const { ref: globalsRef, g } = await globalsChrome(locale);

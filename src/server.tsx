@@ -11,6 +11,8 @@ import { handleSupport, handleSupportTriage } from "@/support.ts";
 import { handleBekraeft } from "@/bekraeft-rute.ts";
 import { handleHelpdeskWebhook } from "@/helpdesk-webhook.ts";
 import { draenKo } from "@/support-ko.ts";
+import { handleLiveStream, handleLiveSend } from "@/live-rute.ts";
+import { renderLiveTest } from "@/routes.tsx";
 import { opretSag, type NySag } from "@/helpdesk.ts";
 import { handleAidanChat, handleAidanHealth, handleAidanStatus } from "@/aidan.ts";
 import { handleAidanIndsigter, handleAidanLaes, handleAidanTidskoder, handleAidanGemTidskoder } from "@/aidan-laes.ts";
@@ -136,6 +138,9 @@ app.post("/api/support", handleSupport);
 app.post("/api/support/triage", handleSupportTriage);   // F024.3
 app.post("/api/bekraeft", handleBekraeft);                 // F024.4
 app.post("/api/helpdesk/webhook", handleHelpdeskWebhook);   // F024.6
+app.get("/api/live/:ref", handleLiveStream);                // F024.10
+app.post("/api/live/:ref", handleLiveSend);
+app.get("/live-test", async () => html(await renderLiveTest()));
 
 app.post("/api/aidan/chat", handleAidanChat);
 app.get("/api/aidan/health", handleAidanHealth);
