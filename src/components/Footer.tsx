@@ -26,7 +26,19 @@ export function Footer({ data, cmsRef }: { data: FooterData; cmsRef?: CmsRef }) 
           </div>
         ))}
       </div>
-      <div class="wrap foot-legal" {...cmsAttrs(cmsRef, "footerLegal")}>{data.legal}</div>
+      <div class="wrap foot-legal">
+        <span {...cmsAttrs(cmsRef, "footerLegal")}>{data.legal}</span>
+        {/* Juridisk link hører i bunden, ikke i en indholdskolonne — det er
+            dér både brugere og platform-anmeldere (LinkedIn) leder efter den. */}
+        {data.privacy ? (
+          <>
+            {" · "}
+            <a href={data.privacy.href} data-testid="footer-privatliv">
+              <span {...cmsAttrs(cmsRef, "privacyHeading")}>{data.privacy.label}</span>
+            </a>
+          </>
+        ) : null}
+      </div>
       {data.techTicker.length ? (
         <div class="foot-ticker">
           <div class="foot-ticker-track">

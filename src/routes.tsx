@@ -1804,7 +1804,7 @@ export async function renderPrivatliv(locale: Locale): Promise<string> {
           <div class="divider" />
         </div>
         <div
-          class="prose"
+          class="richtext"
           data-testid="privatliv-indhold"
           {...cmsAttrs(globalsRef, "privacyHtml")}
           dangerouslySetInnerHTML={{ __html: html }}

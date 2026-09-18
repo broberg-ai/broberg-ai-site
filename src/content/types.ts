@@ -166,6 +166,8 @@ export interface FooterData {
   columns: FooterColumn[];
   techTicker: TechTickerItem[];
   legal: string;
+  /** F025 — juridisk link i bunden. Udelades hvis CMS ikke har teksten. */
+  privacy?: { label: string; href: string };
 }
 
 // F157 — identifies the cms document a section's plain-text fields came from,

@@ -824,6 +824,12 @@ export async function loadFooter(locale: Locale): Promise<FooterData> {
       : fb.columns,
     techTicker,
     legal: str(g.footerLegal) || FOOTER_LEGAL_FALLBACK,
+    // Labelet er CMS'ets egen overskrift på siden, så de to aldrig kan sige
+    // hver sit navn på samme side.
+    privacy: {
+      label: str(g.privacyHeading) || (locale === "en" ? "Privacy policy" : "Privatlivspolitik"),
+      href: locale === "en" ? "/en/privacy" : "/privatliv",
+    },
   };
 }
 
