@@ -42,6 +42,7 @@ import {
   renderAdmin,
   renderAdminChat,
   renderPodcast,
+  renderPrivatliv,
 } from "@/routes.tsx";
 import { renderSitemapXml } from "@/sitemap.ts";
 import { renderLlmsTxt } from "@/llms.ts";
@@ -297,6 +298,8 @@ app.get(`/en/${flagshipsSegment("en")}/:slug`, async (c) => {
 });
 
 // F012 — podcast (samme segment på begge sprog; ordet oversættes ikke).
+app.get("/privatliv", async () => html(await renderPrivatliv("da")));        // F025
+app.get("/en/privacy", async () => html(await renderPrivatliv("en")));
 app.get("/podcast", async () => html(await renderPodcast("da")));
 app.get("/en/podcast", async () => html(await renderPodcast("en")));
 

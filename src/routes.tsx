@@ -3,6 +3,7 @@
    render valid minimal pages so navigation never 404s before content lands.
    When cms is wired, each handler builds its model from the local store. */
 import type { Locale } from "@/config.ts";
+import { PRIVACY_DA, PRIVACY_EN } from "@/privatliv-tekst.ts";
 import { Nav, AdminNav } from "@/components/Nav.tsx";
 import { FeaturedBaand, FeaturedBoks, FeaturedEmblem } from "@/components/Featured.tsx";
 import { Footer } from "@/components/Footer.tsx";
@@ -1765,4 +1766,61 @@ export async function renderPodcast(locale: Locale): Promise<string> {
     canonical: isEn ? "/en/podcast" : "/podcast",
     altHref: isEn ? "/podcast" : "/en/podcast",
   });
+}
+
+/* F025 — Privatlivspolitik. Nødvendig som URL til LinkedIn-app-registrering
+ * (Christian, 18/9: «Jeg skal lige have lavet en Privacy policy URL … NU»).
+ *
+ * HELE TEKSTEN BOR I CMS på globals-feltet `privacyHtml`, ikke i koden.
+ * Reservefeltet herunder er en NØDBREMSE så siden ikke går i stykker hvis
+ * feltet slettes — aldrig tekstens hjem. En juridisk tekst skal kunne rettes
+ * uden en udrulning, og den skal kunne findes af CMS-søgningen.
+ *
+ * INDHOLDET ER MÅLT, IKKE SKREVET EFTER SKABELON:
+ *   Set-Cookie på broberg.ai/          INGEN    → afsnittet om cookies er kort og sandt
+ *   eksterne domæner i forsidens HTML  INGEN
+ *   databehandlere i koden             helpdesk · Mistral (via @broberg/ai-sdk)
+ *                                      Resend (@broberg/mail) · Cloudflare Turnstile
+ *   hosting                            Fly.io, Stockholm (arn)
+ *   CVR                                opslået i det offentlige register
+ * At påstå «vi bruger ikke tracking-cookies» uden at have kigget efter ville
+ * være præcis den slags grøn-retningsfejl resten af dagen har handlet om. */
+export async function renderPrivatliv(locale: Locale): Promise<string> {
+  const isEn = locale === "en";
+  const { ref: globalsRef, g } = await globalsChrome(locale);
+
+  const html = g("privacyHtml", isEn ? PRIVACY_EN : PRIVACY_DA);
+
+  return await page(
+    <section id="privatliv">
+      <div class="wrap reveal" style="max-width:820px">
+        <div class="sec-head">
+          <div class="eyebrow" {...cmsAttrs(globalsRef, "privacyEyebrow")}>
+            {g("privacyEyebrow", isEn ? "Legal" : "Juridisk")}
+          </div>
+          <h1 {...cmsAttrs(globalsRef, "privacyHeading")}>
+            {g("privacyHeading", isEn ? "Privacy policy" : "Privatlivspolitik")}
+          </h1>
+          <div class="divider" />
+        </div>
+        <div
+          class="prose"
+          data-testid="privatliv-indhold"
+          {...cmsAttrs(globalsRef, "privacyHtml")}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
+    </section>,
+    {
+      title: isEn ? "Privacy policy — broberg.ai" : "Privatlivspolitik — broberg.ai",
+      description: isEn
+        ? "How broberg.ai handles personal data: no cookies, no accounts, and a short list of processors."
+        : "Sådan behandler broberg.ai personoplysninger: ingen cookies, ingen konti, og en kort liste over databehandlere.",
+      locale,
+      canonical: isEn ? "/en/privacy" : "/privatliv",
+      altHref: isEn ? "/privatliv" : "/en/privacy",
+      // Aidan skal ikke sælge noget oven på en juridisk tekst.
+      aidanTavs: true,
+    },
+  );
 }
