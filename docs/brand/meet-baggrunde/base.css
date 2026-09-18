@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1920px; height:1080px; overflow:hidden; }
+body {
+  font-family:"DM Sans",system-ui,sans-serif;
+  background:#04222f;
+  position:relative;
+}
+/* Dybde: en blød blå glød i HØJRE side, hvor indholdet bor, og et mørkt
+   midterfelt hvor personen sidder — så ansigtet aldrig konkurrerer med lys. */
+.glow {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(1100px 900px at 78% 34%, rgba(0,178,255,.20), transparent 62%),
+    radial-gradient(900px 800px at 12% 78%, rgba(243,82,44,.075), transparent 60%),
+    radial-gradient(1400px 1100px at 45% 62%, rgba(0,0,0,.42), transparent 70%),
+    linear-gradient(160deg,#052a3a 0%,#04222f 46%,#031a24 100%);
+}
+/* Frekvens-motivet fra hero'en, meget nedtonet — brandets eget billedsprog
+   frem for generisk teknologi-grafik. */
+/* Motivet flyttet til VENSTRE. Første render lod bølgen og trekanten løbe
+   tværs gennem sloganet — dekoration der konkurrerer med det den pynter på.
+   Venstre side er tom i en webcam-ramme (personen sidder 28–72%), så motivet
+   får plads uden at røre hverken tekst eller ansigt. */
+.freq { position:absolute; left:-140px; top:330px; width:860px; opacity:.11; }
+.grain { position:absolute; inset:0; opacity:.35;
+  background-image:radial-gradient(rgba(255,255,255,.055) 1px, transparent 1px);
+  background-size:3px 3px; }
+
+/* INDHOLDSZONEN. Målt mod Christians eget skærmbillede:
+   nederste 20% = knapper · øverste venstre 30%×10% = navneskilt ·
+   midten 28–72% = personen. Alt herunder holder sig inden for x 60–93%,
+   y 15–62%, med margin til at Meet beskærer kanterne i gallery-visning. */
+.blok { position:absolute; left:72.5%; top:18%; width:23.5%; }
+.maerke { width:66px; height:66px; display:block; margin-bottom:22px; }
+.ord { font-size:53px; font-weight:600; letter-spacing:-.035em; color:#f0f4f8; line-height:1; }
+.ord .ai { color:#ff6a45; }
+.regel { width:66px; height:3px; background:#ff6a45; margin:22px 0 20px; border-radius:2px; }
+.slogan { font-family:"Cormorant Garamond",Georgia,serif; font-size:31px; line-height:1.24;
+  color:#dce6ee; font-weight:400; }
+.slogan em { font-style:italic; color:#40c8ff; }
+.under { margin-top:20px; font-size:15px; letter-spacing:.055em; text-transform:uppercase;
+  color:#7e97a8; font-weight:500; }
+
+/* ── Hero-varianten: eyebrow + overskrift + underoverskrift, som på forsiden.
+   Blokken er bredere og højere end slogan-varianterne, fordi underoverskriften
+   er en hel sætning. Den holder sig stadig HELT til højre for person-zonen
+   (x 26–72%), under navneskiltet og over knapperne. */
+.blok.hero { left:68.5%; top:15.5%; width:28.5%; }
+.hero .eyebrow {
+  display:flex; align-items:center; gap:12px;
+  font-size:12px; font-weight:600; letter-spacing:.15em; text-transform:uppercase;
+  color:#40c8ff; margin-bottom:22px; line-height:1.5;
+}
+.hero .eyebrow::before { content:""; flex:0 0 22px; height:2px; background:#f3522c; border-radius:2px; }
+.hero h1 {
+  font-family:"DM Sans",sans-serif; font-size:38px; font-weight:600;
+  letter-spacing:-.025em; line-height:1.18; text-wrap:balance; color:#f0f4f8;
+}
+.hero h1 .o { color:#ff6a45; }
+.hero .sub {
+  margin-top:24px; font-size:19.5px; line-height:1.55; color:#b9cbd8; font-weight:400;
+}
+
+/* ── Sitets EGEN hero-typografi, målt på broberg.ai/en med getComputedStyle
+   frem for aflæst af CSS-filen:
+       spalte   580px
+       eyebrow  DM Sans 11px/17.6 w600 ls1.98px
+       h1       Cormorant Garamond 76px/80.56 w500 ls-0.76px
+       lead     DM Sans 18px/31.5 w400, 60% opacitet
+   Blokken her er 605px, altså faktor 1.043 — alle tre skaleres med DEN, så
+   forholdet 11 : 76 : 18 holder præcis.
+   ÉN bevidst afvigelse: farverne. Sitet måltes i lyst tema (næsten sort tekst,
+   mørkeblå eyebrow); baggrunden her er mørk, så tekstfarverne er sitets egne
+   MØRKE-tema-tokens. Størrelser og vægt er urørte. */
+.blok.site { left:64.5%; top:15%; width:24%; }
+.site .eyebrow {
+  display:flex; align-items:center; gap:13px;
+  font-family:"DM Sans",sans-serif; font-size:9px; font-weight:600;
+  letter-spacing:1.57px; line-height:14px; text-transform:uppercase;
+  color:#40c8ff; margin-bottom:19px;
+}
+.site .eyebrow::before { content:""; flex:0 0 19px; height:2px; background:#f3522c; border-radius:2px; }
+.site h1 {
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:60px; font-weight:500; line-height:64px; letter-spacing:-.6px;
+  color:#f0f4f8;
+}
+.site h1 .o { color:#ff6a45; }
+.site .lead {
+  margin-top:25px;
+  font-family:"DM Sans",sans-serif; font-size:14.3px; font-weight:400;
+  line-height:25px; color:rgba(240,244,248,.62);
+}
+
+/* ── Logo-lockup: det RIGTIGE mærke (public/brand/broberg-mark.svg, ikke
+   faviconet) efterfulgt af wordmarket, sat som headeren på sitet:
+   "broberg" + ".ai" i --orange-text, DM Sans 600, ls -0.03em. */
+.lockup { display:flex; align-items:center; gap:13px; margin-bottom:21px; }
+.lockup img { width:46px; height:46px; display:block; }
+.lockup .ord {
+  font-family:"DM Sans",sans-serif; font-size:29px; font-weight:600;
+  letter-spacing:-.03em; line-height:1; color:#f0f4f8;
+}
+.lockup .ord .ai { color:#ff6a45; }
