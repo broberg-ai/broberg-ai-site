@@ -15,17 +15,19 @@ const OPDATERET_EN = "18 September 2026";
 export const PRIVACY_DA = `
 <p><em>Sidst opdateret ${OPDATERET_DA}.</em></p>
 
-<p>broberg.ai er et websted <strong>uden log-in, uden kundekonti og uden
-cookies</strong>. Der er derfor kun få steder, vi overhovedet behandler
-personoplysninger om dig. Denne side forklarer hvilke, hvorfor, og hvordan du
-kommer af med dem igen.</p>
+<p>broberg.ai er et <strong>åbent websted</strong>: du kan læse alt uden at
+logge ind, vi viser ingen annoncer, og vi sporer dig ikke. Der er derfor kun få
+steder, vi overhovedet behandler personoplysninger om dig. Denne side forklarer
+hvilke, hvorfor, og hvordan du kommer af med dem igen.</p>
+<p>Har du en konto i vores <strong>kundeportal</strong>, gælder afsnittet om
+portalen herunder <em>oveni</em> resten.</p>
 
 <h2>Dataansvarlig</h2>
 <p>WEB HOUSE ApS<br>
 Riberhusvej 9<br>
 9492 Blokhus<br>
 CVR: 21221198<br>
-Kontakt: <a href="mailto:christian@broberg.ai">christian@broberg.ai</a></p>
+Kontakt: <a href="mailto:cb@broberg.ai">cb@broberg.ai</a></p>
 
 <h2>Hvilke oplysninger vi behandler</h2>
 <ul>
@@ -75,6 +77,23 @@ Kontakt: <a href="mailto:christian@broberg.ai">christian@broberg.ai</a></p>
   <li><strong>Fly.io (Stockholm, EU)</strong> — hosting af selve sitet.</li>
 </ul>
 
+<h2>Kundeportalen</h2>
+<p>Er du kunde, kan du få en konto i vores kundeportal, hvor du kan følge dine
+egne sager, aftaler og løsninger ét sted. En konto oprettes kun efter aftale —
+man kan ikke oprette sig selv.</p>
+<ul>
+  <li><strong>Hvad vi gemmer:</strong> dit navn, din e-mailadresse, din rolle hos
+      kunden, og det indhold der hører til jeres eget samarbejde med os.</li>
+  <li><strong>Hvad du ser:</strong> kun din egen virksomheds oplysninger. En
+      konto giver aldrig indblik i andre kunders data.</li>
+  <li><strong>Hvor længe:</strong> så længe samarbejdet består. Ophører det,
+      lukkes kontoen, og oplysningerne slettes bortset fra det bogføringsloven
+      kræver vi gemmer.</li>
+  <li><strong>Retsgrundlag:</strong> opfyldelse af aftale (GDPR art. 6.1.b).</li>
+</ul>
+<p>Portalen er under opbygning. Udvides den med funktioner der behandler flere
+oplysninger end ovenstående, opdateres dette afsnit, før funktionen åbner.</p>
+
 <h2>Når vi behandler data for vores kunder</h2>
 <p>Bygger og driver vi et website, en webshop eller en platform for dig, er du
 <strong>dataansvarlig</strong> for dine egne brugeres oplysninger, og vi er
@@ -123,14 +142,19 @@ den billigste sikkerhed der findes.</p>
 <h2>Dine rettigheder</h2>
 <p>Du har ret til indsigt, berigtigelse, sletning, begrænsning, indsigelse og
 dataportabilitet. Skriv til
-<a href="mailto:christian@broberg.ai">christian@broberg.ai</a>, så hjælper vi
+<a href="mailto:cb@broberg.ai">cb@broberg.ai</a>, så hjælper vi
 dig — også hvis du blot vil have slettet en henvendelse igen.</p>
 <p>Er du uenig i måden vi behandler dine oplysninger på, kan du klage til
 <a href="https://www.datatilsynet.dk" target="_blank" rel="noopener">Datatilsynet</a>.</p>
 
 <h2>Cookies</h2>
-<p>broberg.ai sætter <strong>ingen cookies</strong> — hverken tekniske eller
-til statistik. Der er derfor heller ingen cookie-boks at klikke væk.</p>
+<p>broberg.ai sætter <strong>ingen cookies til sporing, statistik eller
+annoncering</strong> — hverken vores egne eller tredjeparters. Der er derfor
+ingen cookie-boks at klikke væk, og der er ingen samtykke at give eller trække
+tilbage.</p>
+<p>Logger du ind i kundeportalen, sættes én <strong>teknisk cookie</strong>, der
+alene holder dig logget ind. Den er nødvendig for at portalen kan fungere, den
+bruges ikke til andet, og den forsvinder når du logger ud.</p>
 
 <h2>Ændringer</h2>
 <p>Ændres denne politik, opdateres datoen øverst.</p>
@@ -139,17 +163,19 @@ til statistik. Der er derfor heller ingen cookie-boks at klikke væk.</p>
 export const PRIVACY_EN = `
 <p><em>Last updated ${OPDATERET_EN}.</em></p>
 
-<p>broberg.ai is a website with <strong>no log-in, no customer accounts and no
-cookies</strong>. There are therefore only a few places where we process
-personal data about you at all. This page explains which, why, and how to have
-them removed again.</p>
+<p>broberg.ai is an <strong>open website</strong>: you can read everything
+without logging in, we show no advertising, and we do not track you. There are
+therefore only a few places where we process personal data about you at all.
+This page explains which, why, and how to have them removed again.</p>
+<p>If you hold an account in our <strong>customer portal</strong>, the section on
+the portal below applies <em>in addition</em> to the rest.</p>
 
 <h2>Data controller</h2>
 <p>WEB HOUSE ApS<br>
 Riberhusvej 9<br>
 9492 Blokhus, Denmark<br>
 Company reg. (CVR): 21221198<br>
-Contact: <a href="mailto:christian@broberg.ai">christian@broberg.ai</a></p>
+Contact: <a href="mailto:cb@broberg.ai">cb@broberg.ai</a></p>
 
 <h2>What we process</h2>
 <ul>
@@ -197,6 +223,23 @@ Contact: <a href="mailto:christian@broberg.ai">christian@broberg.ai</a></p>
       keeps bots away from the contact form.</li>
   <li><strong>Fly.io (Stockholm, EU)</strong> — hosting of the site itself.</li>
 </ul>
+
+<h2>The customer portal</h2>
+<p>If you are a client, you can be given an account in our customer portal, where
+you can follow your own cases, agreements and solutions in one place. Accounts
+are created by arrangement only — you cannot sign yourself up.</p>
+<ul>
+  <li><strong>What we store:</strong> your name, your email address, your role at
+      the client, and the content belonging to your own engagement with us.</li>
+  <li><strong>What you see:</strong> only your own company's data. An account
+      never gives sight of another client's data.</li>
+  <li><strong>For how long:</strong> for as long as the engagement lasts. When it
+      ends the account is closed and the data deleted, except what Danish
+      bookkeeping law requires us to keep.</li>
+  <li><strong>Legal basis:</strong> performance of a contract (GDPR art. 6.1.b).</li>
+</ul>
+<p>The portal is being built. If it gains features that process more data than
+the above, this section is updated before that feature opens.</p>
 
 <h2>When we process data on behalf of our clients</h2>
 <p>When we build and operate a website, a webshop or a platform for you, you are
@@ -247,15 +290,19 @@ security there is.</p>
 <h2>Your rights</h2>
 <p>You have the right of access, rectification, erasure, restriction, objection
 and data portability. Write to
-<a href="mailto:christian@broberg.ai">christian@broberg.ai</a> and we will help
+<a href="mailto:cb@broberg.ai">cb@broberg.ai</a> and we will help
 you — including if you simply want an enquiry deleted again.</p>
 <p>If you disagree with how we handle your data, you may complain to the Danish
 Data Protection Agency
 (<a href="https://www.datatilsynet.dk/english" target="_blank" rel="noopener">Datatilsynet</a>).</p>
 
 <h2>Cookies</h2>
-<p>broberg.ai sets <strong>no cookies</strong> — neither technical nor
-analytical. There is therefore no cookie banner to dismiss.</p>
+<p>broberg.ai sets <strong>no cookies for tracking, analytics or
+advertising</strong> — neither our own nor any third party's. There is therefore
+no cookie banner to dismiss, and no consent to give or withdraw.</p>
+<p>If you log in to the customer portal, one <strong>technical cookie</strong> is
+set, solely to keep you signed in. It is required for the portal to work, it is
+used for nothing else, and it disappears when you log out.</p>
 
 <h2>Changes</h2>
 <p>If this policy changes, the date at the top is updated.</p>
