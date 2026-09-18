@@ -27,7 +27,7 @@ portalen herunder <em>oveni</em> resten.</p>
 Riberhusvej 9<br>
 9492 Blokhus<br>
 CVR: 21221198<br>
-Kontakt: <a href="mailto:cb@broberg.ai">cb@broberg.ai</a></p>
+Kontakt: <a href="mailto:legal@broberg.ai">legal@broberg.ai</a></p>
 
 <h2>Hvilke oplysninger vi behandler</h2>
 <ul>
@@ -142,7 +142,7 @@ den billigste sikkerhed der findes.</p>
 <h2>Dine rettigheder</h2>
 <p>Du har ret til indsigt, berigtigelse, sletning, begrænsning, indsigelse og
 dataportabilitet. Skriv til
-<a href="mailto:cb@broberg.ai">cb@broberg.ai</a>, så hjælper vi
+<a href="mailto:legal@broberg.ai">legal@broberg.ai</a>, så hjælper vi
 dig — også hvis du blot vil have slettet en henvendelse igen.</p>
 <p>Er du uenig i måden vi behandler dine oplysninger på, kan du klage til
 <a href="https://www.datatilsynet.dk" target="_blank" rel="noopener">Datatilsynet</a>.</p>
@@ -175,7 +175,7 @@ the portal below applies <em>in addition</em> to the rest.</p>
 Riberhusvej 9<br>
 9492 Blokhus, Denmark<br>
 Company reg. (CVR): 21221198<br>
-Contact: <a href="mailto:cb@broberg.ai">cb@broberg.ai</a></p>
+Contact: <a href="mailto:legal@broberg.ai">legal@broberg.ai</a></p>
 
 <h2>What we process</h2>
 <ul>
@@ -290,7 +290,7 @@ security there is.</p>
 <h2>Your rights</h2>
 <p>You have the right of access, rectification, erasure, restriction, objection
 and data portability. Write to
-<a href="mailto:cb@broberg.ai">cb@broberg.ai</a> and we will help
+<a href="mailto:legal@broberg.ai">legal@broberg.ai</a> and we will help
 you — including if you simply want an enquiry deleted again.</p>
 <p>If you disagree with how we handle your data, you may complain to the Danish
 Data Protection Agency
